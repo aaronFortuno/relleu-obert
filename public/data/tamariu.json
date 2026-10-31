@@ -1,0 +1,42 @@
+{
+  "name": "Tamariu · Palafrugell",
+  "bbox": [
+    3.196,
+    41.91,
+    3.219,
+    41.926
+  ],
+  "date": "2026-10-31T21:56:22.630Z",
+  "vectorSource": "https://tiles.openfreemap.org/planet/20261025_080012_pt/{z}/{x}/{y}.pbf",
+  "tiles": [
+    {
+      "z": 14,
+      "x": 8337,
+      "y": 6086,
+      "dem": "14-8337-6086.webp",
+      "vector": "14-8337-6086.pbf"
+    },
+    {
+      "z": 14,
+      "x": 8337,
+      "y": 6087,
+      "dem": "14-8337-6087.webp",
+      "vector": "14-8337-6087.pbf"
+    },
+    {
+      "z": 14,
+      "x": 8338,
+      "y": 6086,
+      "dem": "14-8338-6086.webp",
+      "vector": "14-8338-6086.pbf"
+    },
+    {
+      "z": 14,
+      "x": 8338,
+      "y": 6087,
+      "dem": "14-8338-6087.webp",
+      "vector": "14-8338-6087.pbf"
+    }
+  ],
+  "credits": "© OpenStreetMap contributors (ODbL), © OpenMapTiles, OpenFreeMap. Elevations: Mapterhorn; see SOURCES.md."
+}

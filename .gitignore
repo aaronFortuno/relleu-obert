@@ -1,0 +1,6 @@
+node_modules/
+dist/
+.pnpm-store/
+*.log
+output/
+.publish-local.ps1
