@@ -22,6 +22,12 @@ L’atribut `altura` de les construccions RTT s’expressa en metres: [especific
 
 ## Biblioteques
 
+Importació local (v0.6): [geotiff.js](https://github.com/geotiffjs/geotiff.js) 3.0.5 i [Proj4js](https://github.com/proj4js/proj4js) 2.22.0, MIT. Llicències pròpies i avisos de dependències a `public/licenses/`, incloent float16, parse-headers, quick-lru, web-worker, xml-utils, zstddec, lerc, mgrs i wkt-parser. Només s’admeten MDT numèrics amb compressió sense pèrdua; no es reconstrueixen altituds a partir de visualitzacions.
+
+Les dades locals conserven la seva llicència original, que l’usuari ha de respectar en reutilitzar-les. El programa registra el fitxer, importació, CRS i metadades de lectura; en el GeoTIFF registra també SHA-256. La data d’importació no acredita la data d’aixecament. No s’han incorporat noves dades oficials ni s’ha validat encara una millora de precisió de Tamariu amb aquestes opcions.
+
+Opcions de broquet del dialecte Bambu: referència de camp `nozzle_diameter` als [perfils oficials del laminador](https://github.com/bambulab/BambuStudio/blob/master/resources/profiles/BBL/machine/Bambu%20Lab%20A1%200.4%20nozzle.json). No es copia un perfil de màquina; el reconeixement de les opcions continua pendent de validació de l’usuari a Bambu.
+
 Three.js (MIT), Leaflet (BSD-2-Clause), Manifold (Apache-2.0), polygon-clipping (MIT), polyclip-ts (MIT), earcut (ISC), @mapbox/vector-tile (BSD-3-Clause), pbf (BSD-3-Clause), fflate (MIT), Vite (MIT). Les versions queden fixades al manifest i al fitxer de dependències.
 
 Lectura d’elevacions: [jSquash WebP](https://github.com/jamsinclair/jSquash/tree/main/packages/webp) (Apache-2.0), amb libwebp (BSD-3-Clause), i [fast-png](https://github.com/image-js/fast-png) (MIT). Les còpies de les llicències es distribueixen a `public/licenses/`. La lectura binària s’utilitza perquè els valors RGB són dades numèriques: les proteccions de [Brave sobre lectures de canvas](https://brave.com/privacy-updates/4-fingerprinting-defenses-2.0/) poden alterar píxels. La incidència concreta de l’usuari encara no s’ha reproduït al seu navegador.

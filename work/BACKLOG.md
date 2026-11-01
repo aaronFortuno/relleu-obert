@@ -1,12 +1,14 @@
 # Backlog de Relleu Obert
 
-Actualitzat: **2026-11-01**. Referència del codi: **v0.5.0**.
+Actualitzat: **2026-11-01**. Referència del codi: **v0.6.0**.
 
 Aquest és el registre de prioritats, decisions i comprovacions del projecte. El document [MILLORES-BUGS.md](MILLORES-BUGS.md) conserva les observacions originals de l’usuari, datades l’1 de novembre a les 12:30. La versió exacta del navegador amb què es van recollir aquestes observacions encara no consta: no es pressuposa que siguin totes de la v0.4.1.
 
 **RO-001 tancat amb la confirmació de l’usuari de v0.4.2.** RO-004, RO-005 i RO-006 implementats a v0.5.0, pendents de validar per l’usuari. RO-002 diagnosticat: cal una font amb divisions d’edificis. RO-003 ajornat expressament.
 
 Nova petició registrada: **RO-026**, millorar la fidelitat dels edificis i definir la selecció/combinació de fonts. Estudi documental inicial fet; comparació de geometries i integració encara pendents.
+
+**Bloc v0.6.0 (2026-11-01):** RO-004 ajustat i P2 actius implementats, inclòs RO-010 promogut a P2. Pendents de validació d’usuari. RO-003, RO-014 i RO-016 continuen ajornats per resposta expressa de l’usuari. RO-023 incorpora importació local; l’accés automàtic a noves fonts i la política de fusió d’edificis continuen per estudiar amb RO-026.
 
 ## Com es manté
 
@@ -52,23 +54,23 @@ Nova petició registrada: **RO-026**, millorar la fidelitat dels edificis i defi
 | [RO-004](#ro-004--apartats-collapsables-dels-sidebars) | P1 | Pendent de validar | Apartats col·lapsables i menys scroll |
 | [RO-005](#ro-005--més-espai-útil-al-preview) | P1 | Pendent de validar | Controls i missatges dins del preview |
 | [RO-006](#ro-006--selecció-duna-escala-destí) | P1 | Pendent de validar | Selecció d’una escala destí |
-| [RO-007](#ro-007--escala-i-triangles-al-sidebar) | P2 | Preparat | Treure redundàncies estadístiques del header |
-| [RO-008](#ro-008--footer-i-quadre-v4v) | P2 | Preparat | Fonts dins de V4V i enllaços repo/llicència |
-| [RO-009](#ro-009--favicon) | P2 | Preparat | Favicon amb el logotip actual |
-| [RO-010](#ro-010--transicions-homogènies) | P3 | Preparat | Transicions de 220 ms |
+| [RO-007](#ro-007--escala-i-triangles-al-sidebar) | P2 | Pendent de validar | Treure redundàncies estadístiques del header |
+| [RO-008](#ro-008--footer-i-quadre-v4v) | P2 | Pendent de validar | Fonts dins de V4V i enllaços repo/llicència |
+| [RO-009](#ro-009--favicon) | P2 | Pendent de validar | Favicon amb el logotip actual |
+| [RO-010](#ro-010--transicions-homogènies) | P2 | Pendent de validar | Transicions de 220 ms |
 | [RO-011](#ro-011--comptador-dexportacions-i-umami) | P3 | Per estudiar | Comptador públic i futura integració Umami |
 | [RO-012](#ro-012--presentació-realista-del-model-imprès) | P3 | Ajornat | Escena de presentació sobre una taula |
-| [RO-013](#ro-013--marc-a-la-previsualització) | P2 | Per estudiar | Marc opcional a la previsualització |
+| [RO-013](#ro-013--marc-a-la-previsualització) | P2 | Pendent de validar | Marc opcional a la previsualització |
 | [RO-014](#ro-014--marc-imprimible-independent) | P2 | Ajornat | Marc imprimible amb marge configurable |
-| [RO-015](#ro-015--opcions-de-broquet-i-filament) | P2 | Per estudiar | Exportació amb broquet/material seleccionables |
+| [RO-015](#ro-015--opcions-de-broquet-i-filament) | P2 | Pendent de validar | Exportació amb broquet/material seleccionables |
 | [RO-016](#ro-016--plaques-i-etiquetes-educatives) | P2 | Ajornat | Nom, coordenades i textos educatius imprimibles |
 | [RO-017](#ro-017--rosa-dels-vents-i-altres-complements) | P3 | Ajornat | Rosa dels vents i altres accessoris |
-| [RO-018](#ro-018--rotació-de-la-regió-seleccionada) | P2 | Per estudiar | Rotació del retall geogràfic |
+| [RO-018](#ro-018--rotació-de-la-regió-seleccionada) | P2 | Pendent de validar | Rotació del retall geogràfic |
 | [RO-019](#ro-019--internacionalització) | P3 | Ajornat | Català, castellà, gallec, euskera i anglès |
 | [RO-020](#ro-020--unions-arrodonides-dels-camins) | P1 | Validat | Unions arrodonides dels camins |
 | [RO-021](#ro-021--quatre-materials-i-colors-a-bambu) | P1 | Validat | Quatre materials i colors a Bambu |
 | [RO-022](#ro-022--cobertes-horitzontals-dels-edificis) | P1 | Validat | Cobertes horitzontals de la v0.4.1 |
-| [RO-023](#ro-023--relleu-local-i-fonts-vectorials-de-més-precisió) | P2 | Per estudiar | MDT local i cartografia de més precisió |
+| [RO-023](#ro-023--relleu-local-i-fonts-vectorials-de-més-precisió) | P2 | Pendent de validar | MDT local i cartografia de més precisió |
 | [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió) | P1 | Per estudiar | Unió general de volums i impressió física |
 | [RO-025](#ro-025--vegetació-mesurada-i-paisatges-històrics) | P3 | Ajornat | Vegetació mesurada i paisatges històrics |
 | [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts) | P1 | Per estudiar | Petjades, parts, altures i priorització de fonts d’edificis |
@@ -76,7 +78,7 @@ Nova petició registrada: **RO-026**, millorar la fidelitat dels edificis i defi
 ## Ordre de treball proposat
 
 1. **RO-001 validat:** reobrir només si reapareix amb nova evidència.
-2. **RO-004, RO-005 i RO-006:** validar l’ús de v0.5.0. La comprovació remota la fa l’usuari.
+2. **Bloc v0.6.0:** validar RO-004, RO-007–RO-010, RO-013, RO-015 i RO-018. RO-023 pendent de prova amb dades locals de l’usuari; l’accés automàtic continua per estudiar. La comprovació remota i de laminador la fa l’usuari.
 3. **RO-026 amb RO-002 i RO-023:** comparar Catastre INSPIRE (edificis i parts), ICGC RTL i les fonts actuals. Primer cas: el polígon ICGC 1074761 de Tamariu. RO-026 concentra l’estudi de fidelitat i selecció de fonts; RO-002 conserva el cas de regressió i RO-023 el marc general de precisió cartogràfica.
 4. **RO-024:** concretar una prova de laminat/impressió, conservant camins, cobertes i quatre materials ja validats.
 5. **RO-003:** reconsiderar després d’aquest grup, segons la prioritat expressa de l’usuari. No s’han canviat perfils de Bambu.
@@ -126,6 +128,8 @@ Nova petició registrada: **RO-026**, millorar la fidelitat dels edificis i defi
 
 ### RO-004 — Apartats col·lapsables dels sidebars
 
+**Actualització v0.6.0 (2026-11-01):** reobert per avís de l’usuari: el contingut llarg del bloc 2 empenyia els altres menús. Ara els quatre títols i el botó Generar queden fora del scroll; només es desplaça el contingut de l’apartat obert. Comprovat a 1280 × 720: sidebar 630 px de contingut/630 px de viewport, bloc 2 amb scroll intern i tots els títols visibles. Reobrir el mapa conserva la selecció i el model continua exportable. Pendent de validar per l’usuari.
+
 **Implementat a v0.5.0, pendent de validar (2026-11-01):** acordió exclusiu al sidebar esquerre, primera secció oberta i generació fora dels apartats. Retirada la introducció visible per donar lloc als quatre apartats. Comprovat localment amb clic i teclat, conservant valors i sense reiniciar el model; header/footer visibles a 1280 × 720. Falta la valoració d’ús de l’usuari.
 
 **Abast:** començar amb «Tria el lloc» obert i els apartats següents replegats; comportament exclusiu amb un apartat desplegat cada vegada, seguint la referència de Pentagrama. Revisar sobretot el sidebar esquerre.
@@ -154,11 +158,15 @@ Nova petició registrada: **RO-026**, millorar la fidelitat dels edificis i defi
 
 ### RO-007 — Escala i triangles al sidebar
 
+**Implementat a v0.6.0:** escala retirada del header i recompte de triangles traslladat a «La teva maqueta». L’escala només es mostra a les estadístiques del model (a banda del control d’escala sol·licitada). Comprovat al navegador; els triangles s’etiqueten com a complexitat, no precisió. Pendent de validar.
+
 **Abast:** mostrar l’escala només a «La teva maqueta»; traslladar el recompte de triangles a estadístiques del sidebar. Només reconsiderar-ne la presència destacada si té una funció clara per a l’usuari.
 
 **Per validar:** no hi ha duplicació al header i es conserven les dades útils. El nombre de triangles no es presenta com una garantia de precisió cartogràfica. Coordinar amb RO-005.
 
 ### RO-008 — Footer i quadre V4V
+
+**Implementat a v0.6.0:** fonts i projectes oberts integrats en un desplegable del V4V; footer amb enllaços separats al repositori i MIT, sense duplicació dins del modal. Conservats autor, foto, Lightning i atribució del mapa. Comprovats rutes al DOM local, obertura, tancament amb Escape i retorn del focus. No s’han visitat els enllaços remots. Pendent de validar.
 
 **Abast:** integrar «Fonts cartogràfiques» dins de «Sobre el projecte · V4V», amb espai per a fonts obertes i projectes utilitzats. Al footer, «Codi obert» enllaça al repositori i «MIT» a la llicència; retirar la duplicació d’aquests enllaços dins del quadre.
 
@@ -166,11 +174,15 @@ Nova petició registrada: **RO-026**, millorar la fidelitat dels edificis i defi
 
 ### RO-009 — Favicon
 
+**Implementat a v0.6.0:** favicon SVG amb els tres triangles, contrast propi sobre fons clar i ruta relativa al subdirectori. Asset inclòs a la construcció i enllaç verificat al DOM local. Pendent de validar a les pestanyes del navegador habitual de l’usuari.
+
 **Abast:** reutilitzar els tres triangles del header com a marca provisional de la pestanya.
 
 **Per validar:** es veu en navegador clar/fosc, no hi ha peticions de favicon inexistents i les rutes funcionen sota el subdirectori de GitHub Pages.
 
 ### RO-010 — Transicions homogènies
+
+**Promogut a P2 i implementat a v0.6.0 per petició de l’usuari:** transicions de color/vores i entrada de contingut de 220 ms; modals amb entrada i sortida i tancament accessible. Preferència de moviment reduït respectada per CSS i JavaScript. Durada de 0,22 s i Escape comprovats al navegador; avisos de càlcul/errors sense animació ni demora afegida. Pendent de validar l’experiència i el mode de moviment reduït al dispositiu de l’usuari.
 
 **Abast:** transicions coherents d’aproximadament 220 ms en modals, popups i controls adequats. No imposar una animació a controls nadius que no la permetin bé.
 
@@ -196,6 +208,8 @@ Nova petició registrada: **RO-026**, millorar la fidelitat dels edificis i defi
 
 ### RO-013 — Marc a la previsualització
 
+**Implementat a v0.6.0:** selector de marc visual negre, blanc o to de fusta, o sense marc. Adaptat a les dimensions reals del model, separat del grup de malles i del Worker. No modifica escala ni exportació. Comprovada la selecció al navegador amb model rectangular; el marc imprimible RO-014 continua ajornat. Pendent de validar.
+
 **Proposta:** marc opcional al voltant de la maqueta, amb acabat blanc/negre o fusta segons el disseny que s’acordi.
 
 **Proper pas:** definir secció, gruix, color, marge interior i relació amb la base. El marc de visualització ha de quedar distingit del model exportat i d’un futur marc imprimible.
@@ -212,9 +226,11 @@ Nova petició registrada: **RO-026**, millorar la fidelitat dels edificis i defi
 
 ### RO-015 — Opcions de broquet i filament
 
+**Primera implementació v0.6.0:** PLA/PETG i broquet opcional de 0,2/0,4/0,6 mm; per defecte no s’escriu diàmetre i es conserva el del laminador. Valors explícits al dialecte Bambu i procedència en 3MF/STL, sense perfils de màquina, temperatures ni G-code. Proves de metadades i preservació de geometria. Abast acotat mentre RO-003 continua ajornat: no es dona per resolta la configuració inesperada de Bambu. Pendent de validar el reconeixement amb el laminador de l’usuari.
+
 **Proposta:** poder seleccionar broquet de 0,2 / 0,4 / 0,6 mm i material, per exemple PLA o PETG, quan l’exportació i el laminador ho puguin interpretar correctament.
 
-**Dependència:** RO-003. Separar dades geomètriques, assignació de materials i perfils específics d’impressora abans de decidir què s’inclou al 3MF.
+**Dependència acotada:** RO-003 continua ajornat. Aquesta primera iteració només incorpora els valors de consumibles escollits explícitament, sense generar perfils de màquina ni investigar els valors inesperats d’importació. La validació al laminador segueix pendent.
 
 **Per validar:** opcions reconegudes amb la impressora/perfil seleccionats, valors modificables per l’usuari i regressió de quatre colors. No prometre un perfil complet ni temperatures adequades només a partir de «PLA» o del diàmetre del broquet.
 
@@ -235,6 +251,8 @@ Nova petició registrada: **RO-026**, millorar la fidelitat dels edificis i defi
 **Per validar:** nord real coherent amb l’angle del retall, dimensions imprimibles i peça separada quan es demani. Girar la càmera no ha de modificar la direcció geogràfica indicada.
 
 ### RO-018 — Rotació de la regió seleccionada
+
+**Implementat a v0.6.0:** gir horari −180° a 180°, amb centre, dimensions reals i cantonades compartides entre mapa, càrrega, projecció i exportació. L’envolupant inclou totes les cantonades. La numeració de peces es refereix a dalt/esquerra del model; el nord s’obté del gir registrat. Proves amb rectangles, escala fixa, latituds 0°/41,918°/65° i angles diversos. Model generat al navegador a 35°, 150 × 200 mm i 1:1.000. La mostra de Tamariu recupera gir zero. Pendent de validar per l’usuari.
 
 **Proposta:** orientar el retall amb un angle lliure; decidir si resulta més intuïtiu girar el mapa o el requadre.
 
@@ -275,6 +293,8 @@ Nova petició registrada: **RO-026**, millorar la fidelitat dels edificis i defi
 ## Línies tècniques ja identificades
 
 ### RO-023 — Relleu local i fonts vectorials de més precisió
+
+**Primera implementació v0.6.0:** importació local GeoTIFF numèric i GeoJSON d’edificis, reprojecció WGS84/Web Mercator/UTM i límits explícits. Es comprova cobertura i NoData; es rebutgen RGB, compressió inadequada i CRS desconegut. MDT en metres, sense transformar datum vertical ni convertir DSM en terreny nu. El GeoJSON substitueix tota la capa d’edificis, conservant parts i patis disponibles. Proves numèriques i de càrrega de fonts; al navegador, importació d’un MDT sintètic identificat com a prova i del GeoJSON oficial inclòs, seguida de generació girada. Pendent de validar amb MDT oficial d’alta resolució i dades de l’usuari. L’accés automàtic COG/serveis i la comparació/priorització de proveïdors no queden resolts: continuen amb RO-026.
 
 **Origen:** [ARCHITECTURE.md](../ARCHITECTURE.md). Estudiar MDT ICGC/GeoTIFF/COG i cartografia vectorial original o oficial més detallada. Es prioritza el diagnòstic de RO-001 abans de canviar de proveïdor per tapar-ne el símptoma.
 
@@ -318,6 +338,14 @@ Nova petició registrada: **RO-026**, millorar la fidelitat dels edificis i defi
 **Seguiment:** documentació inicial consultada; mostres comparatives, decisió de fonts, prototip, validació i integració pendents. RO-002 continua obert; RO-023 coordina projeccions/cartografia/relleu; RO-022 conserva el comportament de les cobertes ja validat.
 
 ## Decisions, ajornaments i historial
+
+**Iteració P2 (2026-11-01):** iniciades RO-004, RO-007–RO-010, RO-013, RO-015, RO-018 i RO-023. Resposta expressa de l’usuari: mantenir RO-003, RO-014 i RO-016 ajornats. Fi del bloc a v0.6.0: implementacions pendents de validar, amb abast parcial explícit a RO-015/RO-023; no s’ha descartat cap línia.
+
+**Evidència local del bloc:** 56 proves automatitzades superades; model realment generat i descarregat del navegador local a 150 × 200 mm, 1:1.000 i gir de 35°, amb GeoTIFF sintètic de control i els 632 edificis del GeoJSON oficial inclòs. Inspeccionats els 63.484 vèrtexs del 3MF compatible: límits XY correctes, procedència dels fitxers, gir, PETG i broquet de 0,4 mm conservats; marc visual absent de l’arxiu. El MDT de prova no acredita una millora del relleu real. No s’ha obert al laminador ni imprès, ni s’han comprovat Pages/CI remots.
+
+**Incidència trobada durant el bloc:** la partició d’un retall girat de 400 × 400 mm fallava en tornar a retallar un sòlid d’aigua que ja havia quedat buit en una peça (`NonFiniteVertex`). Reproduïda localment amb la mostra i corregida aturant el retall quan no queden triangles. Afegida una regressió de capa absent en tres peces; el cas complet de mostra genera les quatre peces, amb la capa d’aigua absent on correspon. Relació amb RO-018 i RO-024; no valida unions generals ni impressió física.
+
+**Regressió posterior al navegador:** exportació ZIP completada amb quatre 3MF de 200 × 200 mm, gir de 35° i escala 1:1.000, amb relleu públic real. Inspeccionats tots els vèrtexs i la procedència de les quatre peces: coordenades finites dins de cada peça i mateix gir/escala. No comprovat al laminador.
 
 **Descarts:** cap petició de l’usuari descartada en aquest triatge. Les idees posposades conserven una entrada amb condició de represa. **Bloquejos actuals:** cap declarat; les dependències es detallen a cada línia.
 

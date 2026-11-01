@@ -6,6 +6,14 @@ Terrology és un motor Python amb FastAPI, processos i dependències natives. Un
 
 ## Flux actual
 
+Des de v0.6, `selectionPose` conserva centre, amplada/alçada reals, gir horari, cantonades i envolupant. La càrrega de fonts utilitza l’envolupant; `makeProjection` aplica la transformació inversa comuna al retall físic. La triangulació i els retalls de capes continuen en mil·límetres locals. La selecció es conserva durant els canvis de mida del mapa i l’obertura/tancament del panell; reobrir-lo no equival a seleccionar un altre territori.
+
+`local-import.js` es carrega sota demanda al Worker i valida GeoTIFF amb geotiff.js i GeoJSON. `local-raster.js` aplica la transformació afí del ràster (incloent PixelIsArea/Point i matrius girades) i la reprojecció amb Proj4js; el mostreig bilineal exigeix cobertura i dades vàlides. No hi ha lectura de canvas; només s’accepten compressions TIFF numèriques sense pèrdua. No s’ajusten datum vertical, geoide ni altures de DSM a terreny nu: l’usuari ha d’aportar un MDT adequat. EPSG:4258 s’aproxima a WGS84 i les definicions UTM ETRS89 utilitzen GRS80 sense correccions de datum d’alta precisió.
+
+La importació local evita descarregar DEM global i substitueix explícitament la capa d’edificis quan hi ha GeoJSON; no introdueix encara una política de fusió de proveïdors. El Worker d’exportació afegeix les opcions de filament/broquet a la procedència; el dialecte Bambu les escriu també a `project_settings.config`. No es generen perfils de màquina ni G-code. El marc visual és un grup Three.js fora del grup de malles semàntiques i mai es passa al Worker.
+
+La compilació utilitza Workers ES modules per permetre descodificadors TIFF carregats sota demanda; `vite.config.js` fixa `worker.format: 'es'`. En aquest entorn Windows s’ha construït amb `--configLoader native` per evitar l’accés als directoris superiors que intenta el carregador de configuració d’esbuild; el resultat continua sent estàtic.
+
 1. El navegador llegeix una mostra estàtica o descarrega tessel·les directament de fonts públiques.
 2. Decodifica MVT i Terrarium i projecta la regió en un sistema mètric local.
 3. Envia les dades al Web Worker.

@@ -2,7 +2,15 @@
 
 Prototip educatiu separat de Terrology: generació de maquetes geogràfiques amb JavaScript, íntegrament al navegador, publicable a GitHub Pages. No s’ha copiat codi de Terrology.
 
-**v0.5.0 experimental · 1 de novembre de 2026**
+**v0.6.0 experimental · 1 de novembre de 2026**
+
+La v0.6 manté sempre visibles els quatre menús de configuració: només té scroll el contingut de l’apartat obert. Estadístiques al sidebar dret, fonts dins del V4V, favicon i transicions de 220 ms amb moviment reduït. Marc visual opcional (negre, blanc o to de fusta), separat de les malles exportades.
+
+El retall es pot girar respecte al nord, també amb mida rectangular i escala fixada. Es carrega l’envolupant de totes les cantonades i el mateix gir s’aplica a les capes, el relleu i l’exportació. Les files de peces es numeren des de la part superior del model, que amb un gir no equival necessàriament al nord.
+
+«Dades locals de més precisió», dins de «Mida i relleu», admet MDT GeoTIFF numèric d’una banda en metres (100 MB / 4 milions de cel·les) i edificis GeoJSON (30 MB / 10.000 elements / 300.000 vèrtexs). S’admeten EPSG:4326/4258/3857, UTM WGS84 i ETRS89 UTM 29–31. El GeoTIFF ha de cobrir tot el retall sense buits; no es transforma el datum vertical. El GeoJSON substitueix tota la capa d’edificis i conserva parts i patis que ja existeixin al fitxer; les dades absents no s’inventen ni es completen amb una altra font. No és encara una selecció automàtica de fonts més bones (RO-026). Els fitxers es processen al navegador, sense servidor d’importació.
+
+L’exportació permet triar PLA/PETG i, opcionalment, broquet de 0,2/0,4/0,6 mm. Al 3MF compatible s’escriuen el tipus de filament i el broquet demanat; els altres formats els documenten a la procedència. No inclou perfils d’impressora, temperatures ni G-code, i el broquet no canvia el detall geomètric. Cal validar-ne la importació al laminador. RO-003, el marc imprimible i les etiquetes continuen ajornats per indicació de l’usuari.
 
 Apartats de configuració replegables, controls flotants al preview i escala horitzontal fixa (1:1.000, 1:1.500, 1:2.000 o personalitzada). En mode fix, la mida física defineix el territori a aquesta escala: 15 × 20 cm a 1:1.000 són 150 × 200 m. Arrossegar el mapa canvia el centre; fer zoom només canvia la vista del mapa. L’exageració vertical és independent. «Mostra de Tamariu» recupera el retall de mostra i el mode lliure.
 
@@ -22,7 +30,7 @@ Amb Node.js 22 o posterior i pnpm instal·lats:
 ```sh
 pnpm install
 pnpm build
-pnpm exec vite preview --host 127.0.0.1
+pnpm exec vite preview --host 127.0.0.1 --configLoader native
 ```
 
 Obre l’adreça local que apareix. `pnpm dev` és útil per desenvolupar. La versió construïda no necessita Node: només un allotjament estàtic HTTP.

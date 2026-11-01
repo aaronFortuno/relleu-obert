@@ -19,3 +19,11 @@ export function scaledBBox(center,widthMM,heightMM,denominator){
   if(![lat,lon,widthMM,heightMM].every(Number.isFinite)||Math.abs(lat)>70||widthMM<=0||heightMM<=0)throw Error('Centre o mida fora de l’àmbit admès.');
   return physicalBBox(center,widthMM*scale/1e6,heightMM*scale/1e6);
 }
+export function selectionPose(bbox,rotation=0){
+  if(!Number.isFinite(rotation)||Math.abs(rotation)>180)throw Error('El gir ha de ser entre −180° i 180°.');
+  const [w,s,e,n]=bbox,lat=(s+n)/2,lon=(w+e)/2,c=Math.cos(lat*Math.PI/180),widthM=(e-w)*111320*c,heightM=(n-s)*111320;
+  if(widthM<=0||heightM<=0)throw Error('El retall no té una extensió vàlida.');
+  const a=rotation*Math.PI/180,cos=Math.cos(a),sin=Math.sin(a);
+  const corners=[[-1,-1],[1,-1],[1,1],[-1,1]].map(([x,y])=>{const dx=x*widthM/2,dy=y*heightM/2;return [lon+(dx*cos+dy*sin)/(111320*c),lat+(-dx*sin+dy*cos)/111320];});
+  return {center:[lat,lon],widthM,heightM,rotation,corners,bbox:[Math.min(...corners.map(p=>p[0])),Math.min(...corners.map(p=>p[1])),Math.max(...corners.map(p=>p[0])),Math.max(...corners.map(p=>p[1]))]};
+}

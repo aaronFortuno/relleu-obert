@@ -1,5 +1,18 @@
 # Canvis
 
+## v0.6.0 — 2026-11-01
+
+- RO-004: quatre títols sempre visibles, primer ancorat a dalt i últim abans del botó Generar. Scroll exclusiu al contingut de l’apartat obert; el sidebar esquerre no es desplaça. Ocultar/reobrir el mapa conserva el retall.
+- RO-007–RO-009: escala i triangles al sidebar dret, fonts dins del V4V, enllaços separats de repositori i llicència al footer, i favicon SVG amb el logotip.
+- RO-010: transicions de 220 ms, entrada/sortida de modals, tancament amb Escape i respecte per moviment reduït. Avisos de treball i errors immediats.
+- RO-013: marc només visual (negre, blanc o to de fusta), sense modificar malles ni exportacions.
+- RO-018: gir real del retall, compartit per selecció, càrrega de fonts, projecció, malla i procedència. Conserva dimensions, escala i orientació en la partició de peces.
+- Corregit un cas de partició detectat en la prova girada de 40 cm: quan una capa ja queda buida en una peça, no es torna a retallar aquell sòlid buit. S’evita l’error de coordenades no finites del motor sense afegir geometria a les peces on la capa és absent.
+- RO-015: PLA/PETG i broquet opcional, sense perfil de màquina ni temperatures. Metadades explícites al dialecte Bambu; reconeixement al laminador pendent de validació.
+- RO-023: primera via local GeoTIFF/GeoJSON, processada al Worker. Reprojecció i registre de procedència, validació de banda numèrica, CRS, compressió, cobertura i buits. No s’han incorporat noves fonts automàtiques ni inventat divisions d’edificis.
+- RO-003, RO-014 i RO-016 continuen ajornats per confirmació de l’usuari. La comparació/priorització de fonts d’edificis segueix a RO-026.
+- 56 proves locals superades, construcció estàtica i prova de navegador amb importació, gir i exportació del 3MF. Validació d’usuari i laminador pendents.
+
 ## v0.5.0 — 2026-11-01
 
 - RO-001 validat i tancat per confirmació de l’usuari. RO-003 ajornat expressament per després d’aquesta iteració.
