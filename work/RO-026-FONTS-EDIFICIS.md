@@ -1,6 +1,6 @@
 # RO-026 — Fonts per a edificis més fidels
 
-Estudi inicial del **2026-11-01**. Seguiment i criteris d’acceptació a [BACKLOG.md](BACKLOG.md#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts). Estat: **Per estudiar**. Aquest document registra candidats; no acredita encara una millora a Tamariu ni modifica l’aplicació.
+Estudi inicial del **2026-11-01**. Seguiment i criteris d’acceptació a [BACKLOG.md](BACKLOG.md#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts). Estat: **En estudi**. Primera consulta i comparació geomètrica posterior a v0.7.0 a [PAISATGE-3D.md](PAISATGE-3D.md): el Catastre aporta parts a la Perica, però hi ha discrepàncies de cobertura i encara no es modifica el proveïdor de l’aplicació.
 
 ## Què volem comparar
 
@@ -43,4 +43,4 @@ Comparar el bloc 1074761 de la Perica, una casa aïllada i un cas amb pati de Ta
 
 Amb aquesta evidència es podrà decidir font principal, complements i substitució, i construir un primer adaptador. Si el servei no admet accés directe des del navegador, estudiar importació de fitxers o preparació de mostres estàtiques obertes. El resultat continuarà sent publicable a GitHub Pages sense backend propi.
 
-**Pendent:** obtenir i comparar aquestes geometries, verificar cobertura i accés real, decidir la política i implementar-la. Aquesta consulta documental no valida un futur model ni tanca RO-002.
+**Actualització posterior a v0.7.0:** obtingudes i comparades les geometries cadastrals del primer retall de la Perica; resposta amb CORS permissiu, parts i famílies distingides. Falta la segona zona, contrastar discrepàncies, provar l’accés dins d’un adaptador de navegador, decidir la política i integrar-la. L’estudi no valida un futur model ni tanca RO-002.

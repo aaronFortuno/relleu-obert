@@ -186,3 +186,115 @@ Per a una entrada nova: observació/origen, prioritat amb motiu, estat, següent
 | Organització de sidebars | RO-004 |
 | Preview | RO-005 |
 | Internacionalització | RO-019 |
+
+## Validacions de l’usuari sobre v0.7.0
+
+| ID | Anotació original de l’usuari |
+| --- | --- |
+| RO-002 | Per estudiar |
+| RO-004 | Validat, però a futur segurament li donem una volta més. |
+| RO-006 | Validat |
+| RO-008 | Validat |
+| RO-009 | Pendent de validar |
+| RO-011 | Per estudiar |
+| RO-015 | Validat, però eliminarem l'opció de material i gruix de broquet, perquè ho ignora, així que millor simplement exportem el 3MF i que l'usuari decideixi com enfocar exactament la seva configuració. Eliminem les opcions de material i gruix del broquet. |
+| RO-018 | Validat |
+| RO-023 | Comprovat que l'eina existeix, però poc intuïtiva i massa text. Valorar si podem carregar GeoJSON d'alguna font oberta, potser no com a opció principal però si com una opció d'usuari en cas que vulgui major detall per als edificis |
+| RO-024 | Per estudiar |
+| RO-026 | Per estudiar |
+| RO-027 | Validat |
+| RO-028 | Validat |
+| RO-029 | Validat |
+| RO-003 | Ajornat |
+| RO-012 | Ajornat |
+| RO-014 | Ajornat |
+| RO-016 | Ajornat |
+| RO-017 | Ajornat |
+| RO-019 | Ajornat |
+| RO-025 | Ajornat |
+
+### RO-004 — Apartats col·lapsables dels sidebars
+
+**Actualització v0.6.0 (2026-11-01):** reobert per avís de l’usuari: el contingut llarg del bloc 2 empenyia els altres menús. Ara els quatre títols i el botó Generar queden fora del scroll; només es desplaça el contingut de l’apartat obert. Comprovat a 1280 × 720: sidebar 630 px de contingut/630 px de viewport, bloc 2 amb scroll intern i tots els títols visibles. Reobrir el mapa conserva la selecció i el model continua exportable. Pendent de validar per l’usuari.
+
+**Implementat a v0.5.0, pendent de validar (2026-11-01):** acordió exclusiu al sidebar esquerre, primera secció oberta i generació fora dels apartats. Retirada la introducció visible per donar lloc als quatre apartats. Comprovat localment amb clic i teclat, conservant valors i sense reiniciar el model; header/footer visibles a 1280 × 720. Falta la valoració d’ús de l’usuari.
+
+**Abast:** començar amb «Tria el lloc» obert i els apartats següents replegats; comportament exclusiu amb un apartat desplegat cada vegada, seguint la referència de Pentagrama. Revisar sobretot el sidebar esquerre.
+
+**Per validar:** menys scroll sense perdre valors ni accés a generar/exportar, ús amb teclat, estat desplegat accessible i header/footer estables. Canviar d’apartat no ha de provocar càlculs innecessaris ni interrompre una operació activa.
+
+**Revisió v0.7.0 · Pendent de validar:** Quatre blocs: lloc/orientació, mida/escala, relleu/edificis i vegetació. Materials reunits al sidebar dret. Títols i Generar fora del scroll intern.
+
+**Anotació original de l’usuari sobre v0.6.0:** Validat però millorar. Controls d'escala moguts a un apartat propi, controls de "Colors i materials" els passen completament al sidebar dret, perquè aquí només hi tenim l'opció per triar quants materials i res més.
+
+**Arxivat després de v0.7.0 (2026-11-01):** Validat, però a futur segurament li donem una volta més.. La revisió futura indicada no té un canvi concret pendent; es pot reobrir quan n’hi hagi.
+
+### RO-006 — Selecció d’una escala destí
+
+**Implementat a v0.5.0, pendent de validar (2026-11-01):** mode lliure i escala fixada (presets i personalitzada, 100–100.000). En mode fix, mida i escala determinen l’extensió; moure el mapa canvia el centre, i el zoom només la vista del mapa. La mostra de Tamariu restaura el mode lliure i el retall de mostra.
+
+**Comprovacions locals:** 48 proves superades, amb latituds 0°, 41,918° i 65°, peces quadrades/rectangulars/40 cm, partició, escala personalitzada decimal, exageracions ×1/×3, coherència del motor, dimensions i unitats 3MF. Al navegador local: generació de 150 × 200 mm a 1:1.000, selecció de 150 × 200 m, canvi d’escala amb mapa ocult, zoom i reobertura del mapa, escala personalitzada i quatre peces de 200 mm, i bloqueig per escala invàlida. Tolerància numèrica i aproximació mètrica documentades a ARCHITECTURE.md. Falta la validació de l’usuari/laminador; no s’ha comprovat Pages ni CI remots.
+
+**Abast:** poder demanar 1:1000, 1:1500, 1:2000 o una escala personalitzada, i adaptar l’extensió del retall del mapa a la mida física escollida. L’escala és horitzontal; l’exageració vertical es manté independent.
+
+**Proper pas:** fixar quina variable s’ajusta quan es canvia mida/escala i com es mostra un retall pendent. Com a cas de control, una peça de 150 × 200 mm a 1:1000 representa 150 × 200 m. La disponibilitat/resolució de les tessel·les limita el detall, però no ha de definir arbitràriament l’escala sol·licitada.
+
+**Per validar:** retall, preview, dimensions exportades i metadades concorden dins d’una tolerància documentada, amb peces quadrades/rectangulars, diverses latituds i partició en peces. Coordinar amb RO-018.
+
+**Revisió v0.7.0 · Pendent de validar:** Un camp editable amb suggeriments, lectura 1:1000 o 1000, i equivalència entre centímetres del model i metres reals. Buit segueix el mapa.
+
+**Anotació original de l’usuari sobre v0.6.0:** Validat però millorar fluxe.
+
+**Arxivat després de v0.7.0 (2026-11-01):** Validat.
+
+### RO-008 — Footer i quadre V4V
+
+**Implementat a v0.6.0:** fonts i projectes oberts integrats en un desplegable del V4V; footer amb enllaços separats al repositori i MIT, sense duplicació dins del modal. Conservats autor, foto, Lightning i atribució del mapa. Comprovats rutes al DOM local, obertura, tancament amb Escape i retorn del focus. No s’han visitat els enllaços remots. Pendent de validar.
+
+**Abast:** integrar «Fonts cartogràfiques» dins de «Sobre el projecte · V4V», amb espai per a fonts obertes i projectes utilitzats. Al footer, «Codi obert» enllaça al repositori i «MIT» a la llicència; retirar la duplicació d’aquests enllaços dins del quadre.
+
+**Per validar:** tots els enllaços funcionen en local, fonts i atribucions continuen accessibles i el peu manté poca alçada. No es retira l’atribució pròpia del mapa. Mantenir el contingut de l’autor i les referències de Pentagrama/Plec.
+
+**Revisió v0.7.0 · Pendent de validar:** Versió al footer, icona de commit al repositori i V4V amb autor/fonts visibles a dues columnes.
+
+**Anotació original de l’usuari sobre v0.6.0:** Millorar layout del popup per encabir-ho sense haver de desplegar "Fonts cartogràfiques i projectes oberts". Podem utilitzar layout a doble columna a la part inferior (sobre l'autor - fonts i projectes oberts).
+
+**Arxivat després de v0.7.0 (2026-11-01):** Validat.
+
+### RO-018 — Rotació de la regió seleccionada
+
+**Implementat a v0.6.0:** gir horari −180° a 180°, amb centre, dimensions reals i cantonades compartides entre mapa, càrrega, projecció i exportació. L’envolupant inclou totes les cantonades. La numeració de peces es refereix a dalt/esquerra del model; el nord s’obté del gir registrat. Proves amb rectangles, escala fixa, latituds 0°/41,918°/65° i angles diversos. Model generat al navegador a 35°, 150 × 200 mm i 1:1.000. La mostra de Tamariu recupera gir zero. Pendent de validar per l’usuari.
+
+**Proposta:** orientar el retall amb un angle lliure; decidir si resulta més intuïtiu girar el mapa o el requadre.
+
+**Proper pas:** definir la transformació comuna de selecció, projecció, dades, preview, exportació i peces. Girar només la càmera no compleix aquesta petició. Cal carregar la cobertura de dades de totes les cantonades del retall girat.
+
+**Per validar:** un retall rectangular girat coincideix entre mapa i exportació, conserva mida/escala i exageració, costa i capes es retallen bé, i l’angle/nord queden a les metadades. Dependències de disseny: RO-006; afecta RO-014 i RO-017.
+
+**Revisió v0.7.0 · Pendent de validar:** Gir al costat del mapa amb passos de 15°, rang d’interacció −90°…90° i botó Nord. Manipulació directa del retall pendent d’una futura iteració.
+
+**Anotació original de l’usuari sobre v0.6.0:** Validat però sistema de rotació molt poc intuïtiu. Millor passar-ho d'alguna forma al mapa o inventar-se alguna altra forma. La rotació màxim entre -90º i 90º, no cal més (de fet, només amb 0-90º és suficient).
+
+**Arxivat després de v0.7.0 (2026-11-01):** Validat.
+
+### RO-027 — Auditoria d’usabilitat dels sidebars
+
+**v0.7.0 · Pendent de validar:** inventari, agrupació de controls, noms, descobribilitat, accessibilitat i reducció de textos redundants. Aplicar una distribució coherent amb lloc/orientació, mida/escala, relleu/edificis i vegetació, i reunir colors/materials a la dreta. Informe i criteris a [AUDITORIA-USABILITAT.md](AUDITORIA-USABILITAT.md); revisió d’usuari pendent.
+
+**Arxivat després de v0.7.0 (2026-11-01):** Validat.
+
+### RO-028 — Vegetació proporcionada a l’escala
+
+**Observació:** les capçades tenen radi en mil·límetres constants i poden semblar arbres gegants en maquetes de territoris amplis.
+
+**v0.7.0 · Pendent de validar:** capçada orientativa de 12 m convertida a l’escala horitzontal, sense exageració vertical. Variació i incrustació conservades. Per sota de 0,25 mm de diàmetre s’ometen els arbres i es conserva la superfície del bosc; avís explícit, sense engrandir-los artificialment. El llindar és una política de representació, no una garantia universal d’impressió. La vegetació no acredita arbres individuals mesurats.
+
+**Arxivat després de v0.7.0 (2026-11-01):** Validat.
+
+### RO-029 — Escala i límit real de càrrega
+
+**Observació:** el rang numèric arriba a 1:100.000 però 1:50.000 o 1:100.000 poden superar el límit de 16 tessel·les de la cartografia actual.
+
+**v0.7.0 · Pendent de validar:** validació contextual abans de generar, mateixa lògica de capacitat a la càrrega i missatge amb escala màxima aproximada segons centre, mida i orientació. No confondre rang numèric amb cobertura admissible. Ampliar territori o reduir el detall automàticament requereix un estudi posterior; no s’ha d’amagar la desaparició de capes en canviar de zoom de dades.
+
+**Arxivat després de v0.7.0 (2026-11-01):** Validat.

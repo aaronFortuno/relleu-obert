@@ -1,5 +1,16 @@
 # Canvis
 
+## v0.8.0 — 2026-11-01
+
+- RO-030: corregida la vegetació que s’aturava a mitja maqueta en arribar a 12.000 arbres. Mostreig determinista de tota la zona verda, sense augmentar el pressupost de geometria. Els arbres pintats tenen prioritat sobre els automàtics; quan el pressupost és íntegrament manual, els traços nous substitueixen els més antics amb avís. Procedència amb recomptes i reduccions; candidats reutilitzats al Worker per no tornar a recórrer tot el bosc en pintar.
+- RO-031: «Densitat del pinzell» afecta només els traços nous i no inicia cap càlcul en modificar-la. Cada traç conserva la seva densitat. La densitat automàtica inicial es manté a ×2,5.
+- RO-015: retirats els selectors de broquet i tipus de filament i les opcions corresponents de l’exportació, per decisió de l’usuari després de provar-les a Bambu. Colors, parts i assignacions de materials es conserven.
+- L’importador GeoJSON conserva l’etiqueta explícita d’altura estimada encara que el valor numèric sigui vàlid.
+- RO-002 / RO-026: consulta real de la Perica al Catastre i primera comparació amb RTT; 22 parts de 9 famílies intersecten el megabloc. Mostra local experimental i figura comparativa. No es canvia el proveïdor automàtic ni es dona per resolta la fidelitat dels edificis.
+- RO-032–RO-035: pla de dades i geometria per a cobertes, ponts/viaductes, túnels i cavitats naturals, amb criteris d’escala, exportació i validació. Encara sense reconstrucció d’aquests elements.
+- Set tasques validades de v0.7.0 passen a l’historial, amb les anotacions de l’usuari preservades. Ajornaments conservats.
+- 63 proves locals superades i construcció estàtica correcta. Revisió de navegador amb model de 40 cm i pinzell al límit; validació d’usuari i laminador pendents, sense comprovacions remotes.
+
 ## v0.7.0 — 2026-11-01
 
 - RO-027: auditoria heurística dels sidebars, agrupació per tasca i textos més directes. Quatre blocs: lloc/orientació, mida/escala, relleu/edificis i vegetació. Colors/materials reunits al sidebar dret. Els quatre títols i Generar continuen sempre visibles.

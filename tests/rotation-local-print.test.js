@@ -39,14 +39,15 @@ test('local GeoJSON preserves courtyards and heights, reprojects UTM and refuses
   const ring=[[3.2,41.9],[3.201,41.9],[3.201,41.901],[3.2,41.901],[3.2,41.9]],hole=[[3.2002,41.9002],[3.2002,41.9004],[3.2004,41.9004],[3.2004,41.9002],[3.2002,41.9002]];
   const feature={type:'Feature',id:'house',properties:{height:'8.5 m'},geometry:{type:'Polygon',coordinates:[ring,hole]}};
   const source={type:'FeatureCollection',features:[feature]},a=importBuildings(JSON.stringify(source));assert.deepEqual(a.features[0].geometry.coordinates,[ring,hole]);assert.equal(a.features[0].properties.render_height,8.5);
+  const estimated=importBuildings(JSON.stringify({...source,features:[{...feature,properties:{render_height:9,height_estimated:true,height_method:'floors × 3m'}}]}));assert.equal(estimated.features[0].properties.height_estimated,true);assert.equal(estimated.features[0].properties.height_method,'floors × 3m');
   const t=coordinateTransform(25831),projected={...source,crs:{properties:{name:'urn:ogc:def:crs:EPSG::25831'}},features:[{...feature,geometry:{type:'Polygon',coordinates:[ring.map(p=>t.inverse(p))]}}]};const b=importBuildings(JSON.stringify(projected));close(b.features[0].geometry.coordinates[0][0][0],3.2);close(b.features[0].geometry.coordinates[0][0][1],41.9);
   assert.throws(()=>importBuildings(JSON.stringify({...source,features:[{...feature,geometry:{type:'Point',coordinates:[3,42]}}]})),/Polygon/);
 });
-test('rotated model uses local DEM, keeps horizontal dimensions and exports chosen print settings',()=>{
+test('rotated model uses local DEM, keeps dimensions and leaves printer setup to the slicer',()=>{
   const pose=selectionPose(scaledBBox([41.918,3.2075],150,200,1000),35),localDEM={width:4,height:4,epsg:4326,affine:[.01,0,3.19,0,-.01,41.94],pixelIsArea:true,values:new Float32Array(16).fill(20)};
   const model=buildModel({meta:{bbox:pose.bbox},features:[],dem:[],localDEM},{size:200,widthMM:150,heightMM:200,targetScale:1000,selectionPose:pose,resolution:3,trees:false});assert.equal(model.width,150);assert.equal(model.height,200);assert.equal(model.scale,1000);assert.equal(model.provenance.options.selectionPose.rotation,35);
-  const files=unzipSync(threeMF(model,{bambu:true,printing:{filament:'PETG',nozzle:.6}})),settings=JSON.parse(strFromU8(files['Metadata/project_settings.config'])),meta=JSON.parse(strFromU8(files['Metadata/provenance.json']));assert.deepEqual(settings.nozzle_diameter,['0.6']);assert(settings.filament_type.every(x=>x==='PETG'));assert(!('printer_model'in settings));assert(!('nozzle_temperature'in settings));assert.equal(meta.printing.nozzle,.6);assert.equal(meta.printing.filament,'PETG');
-  assert.throws(()=>threeMF(model,{printing:{nozzle:9}}),/broquet/);
+  const files=unzipSync(threeMF(model,{bambu:true})),settings=JSON.parse(strFromU8(files['Metadata/project_settings.config'])),meta=JSON.parse(strFromU8(files['Metadata/provenance.json']));
+  assert(!('nozzle_diameter'in settings));assert(!('filament_type'in settings));assert(!('printer_model'in settings));assert(!('nozzle_temperature'in settings));assert(!('printing'in meta));assert(settings.filament_colour.length>0);assert.equal(meta.options.selectionPose.rotation,35);
 });
 test('local inputs replace the intended source layers and avoid downloading global elevation tiles',async()=>{
   const localBuildings=importBuildings(await readFile(new URL('../public/data/tamariu-buildings-icgc.geojson',import.meta.url),'utf8'),'test.geojson'),localDEM={metadata:{provider:'GeoTIFF local'}},previous=globalThis.fetch,requests=[];

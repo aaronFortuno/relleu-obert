@@ -24,7 +24,7 @@ export function importBuildings(text,name='Edificis locals'){
     if(!['Polygon','MultiPolygon'].includes(f.geometry?.type))throw Error('El GeoJSON d’edificis només pot contenir Polygon o MultiPolygon.');
     const mapRing=ring=>{if(ring.length<4)throw Error('Una petjada no té prou vèrtexs.');const result=ring.map(p=>{if(++vertices>300000)throw Error('El GeoJSON supera 300.000 vèrtexs.');if(!p.slice(0,2).every(Number.isFinite))throw Error('Coordenada GeoJSON invàlida.');const q=transform.forward(p.slice(0,2));if(!q.every(Number.isFinite)||Math.abs(q[0])>180||Math.abs(q[1])>70)throw Error('El GeoJSON conté coordenades fora de l’àmbit admès.');return q;});const a=result[0],b=result.at(-1);if(a[0]!==b[0]||a[1]!==b[1])throw Error('Les petjades GeoJSON han de tenir anells tancats.');return result;};
     const coordinates=f.geometry.type==='Polygon'?f.geometry.coordinates.map(mapRing):f.geometry.coordinates.map(p=>p.map(mapRing)),p=f.properties||{},value=p.render_height??p.altura??p.height,h=typeof value==='number'?value:typeof value==='string'&&/^\s*\d+(\.\d+)?\s*(m)?\s*$/.test(value)?parseFloat(value):NaN,valid=Number.isFinite(h)&&h>0&&h<=1200;
-    return {type:'Feature',id:f.id??`local-${i}`,geometry:{type:f.geometry.type,coordinates},properties:{...p,sourceLayer:'building',render_height:valid?h:6,height_estimated:!valid,provider:'GeoJSON local'}};
+    return {type:'Feature',id:f.id??`local-${i}`,geometry:{type:f.geometry.type,coordinates},properties:{...p,sourceLayer:'building',render_height:valid?h:6,height_estimated:!!p.height_estimated||!valid,provider:'GeoJSON local'}};
   });
   return {type:'FeatureCollection',features,metadata:{provider:'GeoJSON local',file:name,epsg,count:features.length,importedAt:new Date().toISOString()}};
 }

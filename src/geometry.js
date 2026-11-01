@@ -8,6 +8,7 @@ import {buildingOptions,buildingRise} from './building-options.js';
 import {validateScale} from './selection.js';
 import {localRasterSampler} from './local-raster.js';
 import {treeDimensions,TREE_CROWN_METRES,MIN_TREE_MM} from './tree-scale.js';
+import {treeSampler,fitTrees,MAX_TREES} from './vegetation-budget.js';
 export {sampleHeight} from './elevation.js';
 const pc=polygonOps();
 
@@ -158,8 +159,10 @@ export function updateVegetation(previous,changes={},progress=()=>{}){
   if(!Number.isFinite(density)||density<.25||density>5)throw Error('Densitat fora del rang admès.');
   const {ground,containsForest,containsLand,containsRoad,containsBuilding,width,height}=ctx;
   progress('Actualitzant la capa de vegetació…');
-  let seed=7341,capped=false;const rand=()=>{seed=(1664525*seed+1013904223)>>>0;return seed/4294967296;};
-  const dimensions=treeDimensions(ctx.scale),candidates=[],step=dimensions.spacing/Math.sqrt(density);
+  let seed=7341;const rand=()=>{seed=(1664525*seed+1013904223)>>>0;return seed/4294967296;};
+  const dimensions=treeDimensions(ctx.scale),step=dimensions.spacing/Math.sqrt(density);
+  const brushDensity=options.brushDensity??density;
+  if(!Number.isFinite(brushDensity)||brushDensity<.25||brushDensity>5)throw Error('Densitat del pinzell fora del rang admès.');
   const make=(x,y,manual=false)=>{
     const rx=dimensions.radius*(.85+rand()*.3),ry=dimensions.radius*(.85+rand()*.3),rz=dimensions.radius*(treeType==='round'?.9+rand()*.2:treeType==='tall'?1.35+rand()*.25:.95+rand()*.5),rotation=rand()*Math.PI*2,phase=rand()*Math.PI*2,r=Math.max(rx,ry)*1.06,p=[x,y];
     const contains=manual?containsLand:containsForest;
@@ -167,23 +170,43 @@ export function updateVegetation(previous,changes={},progress=()=>{}){
     const footprint=Array.from({length:12},(_,i)=>[x+Math.cos(i/12*Math.PI*2)*r,y+Math.sin(i/12*Math.PI*2)*r]);
     if(footprint.every(q=>contains(q)&&!containsBuilding(q)&&!containsRoad(q)))return {x,y,ground:ground(x,y),rx,ry,rz,rotation,phase};
   };
+  let candidates=[],eligible=0;
   if(trees&&dimensions.visible){
-    outer:for(let y=step;y<height-step;y+=step)for(let x=step;x<width-step;x+=step){const tree=make(x+(rand()-.5)*step*.5,y+(rand()-.5)*step*.5);if(tree)candidates.push(tree);if(candidates.length>=12000){capped=true;break outer;}}
-  }
-  let placements=candidates;
-  if(trees&&dimensions.visible)for(const stroke of strokes){
-    if(![stroke.x,stroke.y,stroke.radius].every(Number.isFinite)||stroke.radius<=0||stroke.radius>30)continue;
-    if(stroke.mode==='erase')placements=placements.filter(p=>Math.hypot(p.x-stroke.x,p.y-stroke.y)>stroke.radius);
-    if(stroke.mode==='add'){
-      const occupied=new Set(placements.map(p=>`${Math.round(p.x)},${Math.round(p.y)}`));
-      const manualStep=Math.max(1.5,dimensions.radius*2.2),steps=Math.floor(stroke.radius/manualStep);for(let j=-steps;j<=steps;j++)for(let i=-steps;i<=steps;i++){const x=stroke.x+i*manualStep,y=stroke.y+j*manualStep,key=`${Math.round(x)},${Math.round(y)}`;if(Math.hypot(x-stroke.x,y-stroke.y)>stroke.radius||occupied.has(key))continue;const tree=make(x,y,true);if(tree&&placements.length<12000){placements.push(tree);occupied.add(key);}}
+    const cached=ctx.vegetationCache;
+    if(cached&&cached.density===density&&cached.treeType===treeType){candidates=cached.candidates;eligible=cached.eligible;seed=cached.seed;}
+    else{
+      const sampler=treeSampler();
+      for(let y=step;y<height-step;y+=step)for(let x=step;x<width-step;x+=step){const tree=make(x+(rand()-.5)*step*.5,y+(rand()-.5)*step*.5);if(tree)sampler.add(tree);}
+      candidates=sampler.values;eligible=sampler.seen;
+      ctx.vegetationCache={density,treeType,candidates,eligible,seed};
     }
   }
+  let automatic=candidates.slice(),manual=[],manualDropped=0;
+  if(trees&&dimensions.visible)for(const stroke of strokes){
+    if(![stroke.x,stroke.y,stroke.radius].every(Number.isFinite)||stroke.radius<=0||stroke.radius>30)continue;
+    if(stroke.mode==='erase'){automatic=automatic.filter(p=>Math.hypot(p.x-stroke.x,p.y-stroke.y)>stroke.radius);manual=manual.filter(p=>Math.hypot(p.x-stroke.x,p.y-stroke.y)>stroke.radius);}
+    if(stroke.mode==='add'){
+      const strokeDensity=stroke.density??brushDensity;
+      if(!Number.isFinite(strokeDensity)||strokeDensity<.25||strokeDensity>5)throw Error('Densitat del traç fora del rang admès.');
+      const keyFor=(x,y)=>`${Math.round(x*10)},${Math.round(y*10)}`,occupied=new Set([...automatic,...manual].map(p=>keyFor(p.x,p.y)));
+      const manualStep=Math.max(1.5,dimensions.radius*2.2)/Math.sqrt(strokeDensity),steps=Math.floor(stroke.radius/manualStep);
+      for(let j=-steps;j<=steps;j++)for(let i=-steps;i<=steps;i++){
+        const x=stroke.x+i*manualStep,y=stroke.y+j*manualStep,key=keyFor(x,y);
+        if(Math.hypot(x-stroke.x,y-stroke.y)>stroke.radius||occupied.has(key))continue;
+        const tree=make(x,y,true);if(tree){manual.push(tree);occupied.add(key);}
+      }
+      if(manual.length>MAX_TREES){manualDropped+=manual.length-MAX_TREES;manual=manual.slice(-MAX_TREES);}
+    }
+  }
+  const fitted=fitTrees(automatic,manual),{placements}=fitted;
+  const vegetationBudget={limit:MAX_TREES,eligibleAutomatic:eligible,automatic:fitted.automatic,manual:fitted.manual,automaticReduced:fitted.automaticReduced,manualDropped:manualDropped+fitted.manualDropped};
   const mesh={vertices:[],faces:[]};for(const tree of placements)append(mesh,treeMesh(tree));
   const categories=ctx.base.slice();categories[5]={...CATEGORIES[5],vertices:new Float32Array(mesh.vertices),faces:new Uint32Array(mesh.faces)};
-  const present=categories.filter(p=>p.faces.length),warnings=ctx.warnings.slice();if(capped)warnings.push('S’ha limitat la vegetació a 12.000 volums.');
+  const present=categories.filter(p=>p.faces.length),warnings=ctx.warnings.slice();
+  if(eligible>MAX_TREES||fitted.automaticReduced)warnings.push('Límit de 12.000 arbres: la vegetació automàtica es reparteix per tota la zona verda. El pinzell té prioritat i pot substituir arbres automàtics.');
+  if(vegetationBudget.manualDropped)warnings.push('S’ha assolit el límit de 12.000 arbres pintats: els traços nous substitueixen els arbres pintats més antics.');
   if(trees&&!dimensions.visible)warnings.push(`Arbres massa petits a aquesta escala (capçada inferior a ${MIN_TREE_MM} mm): es conserva la superfície del bosc, sense engrandir els arbres artificialment.`);
-  const raw={categories:present,width,height,treeCount:placements.length,buildingCount:ctx.buildingCount,scale:options.targetScale??Math.round(1000/ctx.scale),triangles:present.reduce((s,p)=>s+p.faces.length/3,0),warnings,elevationDiagnostics:ctx.diagnostics,provenance:{...ctx.meta,options,buildingHeightReference:'highest generated-terrain point within the clipped footprint; horizontal roof for limited/source modes',treeMode:'procedural, varied crowns embedded in the generated terrain mesh',treeRepresentation:{crownDiameterMetres:TREE_CROWN_METRES,scale:'horizontal geographic scale; no vertical exaggeration',minimumDiameterMM:MIN_TREE_MM,omittedBelowThreshold:!!trees&&!dimensions.visible},elevation:ctx.meta.terrain?.provider||'Mapterhorn Terrarium',elevationRepairs:ctx.diagnostics,units:'millimeters',verticalExaggeration:options.exaggeration}};
+  const raw={categories:present,width,height,treeCount:placements.length,buildingCount:ctx.buildingCount,scale:options.targetScale??Math.round(1000/ctx.scale),triangles:present.reduce((s,p)=>s+p.faces.length/3,0),warnings,elevationDiagnostics:ctx.diagnostics,provenance:{...ctx.meta,options,vegetationBudget,buildingHeightReference:'highest generated-terrain point within the clipped footprint; horizontal roof for limited/source modes',treeMode:'procedural, varied crowns embedded in the generated terrain mesh',treeRepresentation:{crownDiameterMetres:TREE_CROWN_METRES,scale:'horizontal geographic scale; no vertical exaggeration',minimumDiameterMM:MIN_TREE_MM,omittedBelowThreshold:!!trees&&!dimensions.visible},elevation:ctx.meta.terrain?.provider||'Mapterhorn Terrarium',elevationRepairs:ctx.diagnostics,units:'millimeters',verticalExaggeration:options.exaggeration}};
   const model=groupMaterials(raw,4);for(const material of MATERIALS)if(!model.parts.some(p=>p.id===material.id))warnings.push(`${material.name}: no hi ha geometria exportable d’aquesta capa a les dades carregades.`);
   Object.defineProperty(model,'context',{value:ctx});return model;
 }

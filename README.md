@@ -2,7 +2,9 @@
 
 Prototip educatiu separat de Terrology: generació de maquetes geogràfiques amb JavaScript, íntegrament al navegador, publicable a GitHub Pages. No s’ha copiat codi de Terrology.
 
-**v0.7.0 experimental · 1 de novembre de 2026**
+**v0.8.0 experimental · 1 de novembre de 2026**
+
+La vegetació automàtica es reparteix per tota la zona verda encara que s’assoleixin els 12.000 arbres. El pinzell té prioritat sobre la vegetació automàtica, i la densitat només afecta els traços nous. Exportació sense opcions de broquet ni tipus de filament: es trien al laminador. Estudi i comparació de parts d’edificis, cobertes, ponts, túnels i cavitats a [work/PAISATGE-3D.md](work/PAISATGE-3D.md).
 
 Sidebars reorganitzats en quatre tasques: lloc/orientació, mida/escala, relleu/edificis i vegetació. Materials reunits a la dreta. Escala en un únic camp amb suggeriments, gir al costat del mapa amb retorn al nord i avís d’àrea massa gran abans de generar. Els arbres es dimensionen segons l’escala geogràfica; si són massa petits es conserva la superfície del bosc sense ampliar-los artificialment. Vegeu l’[auditoria d’usabilitat](work/AUDITORIA-USABILITAT.md).
 
@@ -12,7 +14,7 @@ El retall es pot girar respecte al nord, també amb mida rectangular i escala fi
 
 «Dades locals de més precisió», dins de «Relleu i edificis», admet MDT GeoTIFF numèric d’una banda en metres (100 MB / 4 milions de cel·les) i edificis GeoJSON (30 MB / 10.000 elements / 300.000 vèrtexs). S’admeten EPSG:4326/4258/3857, UTM WGS84 i ETRS89 UTM 29–31. El GeoTIFF ha de cobrir tot el retall sense buits; no es transforma el datum vertical. El GeoJSON substitueix tota la capa d’edificis i conserva parts i patis que ja existeixin al fitxer; les dades absents no s’inventen ni es completen amb una altra font. No és encara una selecció automàtica de fonts més bones (RO-026). Els fitxers es processen al navegador, sense servidor d’importació.
 
-L’exportació permet triar PLA/PETG i, opcionalment, broquet de 0,2/0,4/0,6 mm. Al 3MF compatible s’escriuen el tipus de filament i el broquet demanat; els altres formats els documenten a la procedència. No inclou perfils d’impressora, temperatures ni G-code, i el broquet no canvia el detall geomètric. Cal validar-ne la importació al laminador. RO-003, el marc imprimible i les etiquetes continuen ajornats per indicació de l’usuari.
+L’exportació conserva colors i assignacions de materials, sense selectors de broquet ni tipus de filament. L’usuari tria aquests ajustos al laminador. RO-003, el marc imprimible i les etiquetes continuen ajornats per indicació de l’usuari.
 
 Apartats de configuració replegables, controls flotants al preview i escala horitzontal en un sol camp (per exemple, 1:1.000 o 1000; buit segueix el mapa). En mode fix, la mida física defineix el territori a aquesta escala: 15 × 20 cm a 1:1.000 són 150 × 200 m. Arrossegar el mapa canvia el centre; fer zoom només canvia la vista del mapa. L’exageració vertical és independent. «Mostra de Tamariu» recupera el retall de mostra i el mode lliure.
 
@@ -50,7 +52,7 @@ La v0.2 inclou també les edificacions oficials de l’ICGC per a la mostra. En 
 - Edificis amb coberta horitzontal i altura limitada a 5 m reals per defecte, regulable i mesurada des del punt més alt del terreny dins de la petjada. Al costat baix d’un pendent la façana és més alta. Opcions alternatives: altura de les dades amb coberta horitzontal, petjades de color (0,12 mm) o sense edificis. No s’inventen teulades inclinades.
 - Camins amb vores contínues i arrodonides a les corbes i als extrems, calculades a partir de l’amplada de cada traçat.
 - Volums d’arbres procedimentals dins de zones verdes, evitant edificis i camins.
-- Densitat de vegetació regulable de ×0,25 a ×5 (inicial ×2,5), variació moderada de capçada i arrels incrustades a la malla generada.
+- Densitat del pinzell regulable de ×0,25 a ×5 (inicial ×2,5), desada per traç. Bosc inicial amb densitat ×2,5, distribució per tota la zona verda amb pressupost de 12.000 arbres, variació de capçada i arrels incrustades a la malla. En saturació, el pinzell substitueix arbres automàtics; si tot són arbres pintats, els nous substitueixen els més antics amb avís.
 - Altitud comuna per a totes les superfícies i objectes; detecció de mostres invàlides i pics aïllats d’un quilòmetre, amb reparacions documentades.
 - Lectura numèrica directa dels fitxers d’elevació WebP/PNG, sense canvas; preserva els canals RGB originals. Les metadades de descodificació i els hashes de les tessel·les faciliten investigar pics intermitents.
 - Fonts alternatives de relleu (Mapterhorn / Mapzen Terrain Tiles), amb tractament explícit dels 404 marins només quan la cartografia confirma cobertura oceànica completa.

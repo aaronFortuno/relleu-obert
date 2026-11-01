@@ -26,7 +26,7 @@ Importació local (v0.6): [geotiff.js](https://github.com/geotiffjs/geotiff.js) 
 
 Les dades locals conserven la seva llicència original, que l’usuari ha de respectar en reutilitzar-les. El programa registra el fitxer, importació, CRS i metadades de lectura; en el GeoTIFF registra també SHA-256. La data d’importació no acredita la data d’aixecament. No s’han incorporat noves dades oficials ni s’ha validat encara una millora de precisió de Tamariu amb aquestes opcions.
 
-Opcions de broquet del dialecte Bambu: referència de camp `nozzle_diameter` als [perfils oficials del laminador](https://github.com/bambulab/BambuStudio/blob/master/resources/profiles/BBL/machine/Bambu%20Lab%20A1%200.4%20nozzle.json). No es copia un perfil de màquina; el reconeixement de les opcions continua pendent de validació de l’usuari a Bambu.
+Des de v0.8 es retiren els selectors de broquet i tipus de filament per decisió de l’usuari després de provar-los a Bambu. Es conserven colors i assignacions per material.
 
 Three.js (MIT), Leaflet (BSD-2-Clause), Manifold (Apache-2.0), polygon-clipping (MIT), polyclip-ts (MIT), earcut (ISC), @mapbox/vector-tile (BSD-3-Clause), pbf (BSD-3-Clause), fflate (MIT), Vite (MIT). Les versions queden fixades al manifest i al fitxer de dependències.
 
@@ -45,3 +45,7 @@ Es distribueixen les llicències de Leaflet i Manifold a `public/licenses/`. La 
 ## Referència visual
 
 La imatge de Lichtbild aportada per l’usuari s’ha utilitzat per entendre l’objectiu funcional. No s’inclou al projecte, no se n’han extret dades i no s’ha copiat codi, marca ni contingut de Lichtbild.
+
+## Recerca de parts d’edificis i paisatge 3D
+
+Consulta del WFS INSPIRE BU del Catastre el 2026-11-01, amb envolupant i metodologia a [work/PAISATGE-3D.md](work/PAISATGE-3D.md). La figura comparativa deriva de petjades ICGC RTT i parts de la Dirección General del Catastro. Els GML originals i la mostra GeoJSON experimental són locals, no s’inclouen en la web ni es declaren MIT. Referències i [condicions de la font](https://www.catastro.hacienda.gob.es/webinspire/documentos/Licencia.pdf) a l’estudi. Cap proveïdor nou s’ha incorporat encara al mode automàtic.
