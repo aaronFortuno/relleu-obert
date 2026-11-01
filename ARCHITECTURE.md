@@ -21,6 +21,13 @@ Terrology és un motor Python amb FastAPI, processos i dependències natives. Un
 - `src/worker.js`: càlcul i exportació en segon pla.
 - `src/export.js`: fitxers estàndard amb procedència, unitats i materials.
 - `src/main.js`: controls i previsualització.
+- `src/place-map.js` i `src/selection.js`: mapa Leaflet, cerca Photon, coordenades, proporcions i pla de peces.
+- `src/materials.js`: vuit categories semàntiques, paletes i agrupació de geometries segons els materials disponibles.
+- `src/mesh-tiles.js`: retalls de sòlids amb Manifold/WASM, tancament de talls i exportació del conjunt de peces.
+
+Des de v0.3, el Worker conserva el terreny, els edificis i el camp d’altitud en un context privat. Els canvis de vegetació només regeneren les capçades i el preview conserva els buffers de les altres capes. Els canvis de material només actualitzen l’aparença; l’agrupació física es fa en exportar. Els canvis de regió, mida, detall o exageració requereixen generar de nou i bloquegen l’exportació del model anterior.
+
+`src/polygon-index.js` accelera les comprovacions d’ancoratge de la vegetació amb una graella de polígons i bandes d’arestes. Manté el test vectorial exacte; no rasteritza ni simplifica els límits.
 
 ## Prioritats següents
 
@@ -30,7 +37,7 @@ Actualització v0.2: ja hi ha adaptador d’edificacions ICGC, fonts alternative
 2. **Relleu de Catalunya:** adaptador de GeoTIFF/COG i projeccions amb dades ICGC. WMS ombrejat és una imatge de visualització i no s’ha d’utilitzar com a elevació numèrica.
 3. **Font vectorial de precisió:** dades originals OSM o cartografia oficial, costa ben polygonitzada, toleràncies en mil·límetres i tractament de límits de tessel·la. La primera prova usa polígons d’aigua ja processats d’OpenFreeMap per evitar heurístiques de costat de costa.
 4. **Vegetació mesurada:** permetre posicions individuals cartografiades i, més endavant, detecció de capçades amb LiDAR o dades equivalents. Mantenir sempre visible si els arbres són mesurats o procedimentals.
-5. **Experiència d’aula:** mapa per seleccionar regió, cercador, presets de relleu/paisatge/ciutat, marques tàctils, nord, escala i una fitxa de fonts. Memòria cau local amb límits i possibilitat d’importar dades per funcionar sense connexió.
+5. **Experiència d’aula:** ampliar el mapa i cercador ja disponibles amb presets de relleu/paisatge/ciutat, marques tàctils, nord, escala i una fitxa de fonts. Memòria cau local amb límits i possibilitat d’importar dades per funcionar sense connexió.
 
 ## Limitacions de disseny
 

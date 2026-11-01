@@ -5,8 +5,19 @@ import * as robust from 'polyclip-ts';
 export function polygonOps(precision=1e-6){
   return Object.fromEntries(['union','intersection','difference'].map(name=>[name,(...args)=>{
     try{return fast[name](...args);}catch{
-      robust.setPrecision(precision);
-      try{return robust[name](...args);}finally{robust.setPrecision();}
+      let last;
+      for(const tolerance of [precision,precision*10,precision*100]){
+        robust.setPrecision(tolerance);
+        try{return robust[name](...args);}catch(error){last=error;}finally{robust.setPrecision();}
+      }
+      // Quantize the input too: tolerances alone cannot repair coincident
+      // segments already rounded differently by preceding intersections.
+      const quantize=value=>typeof value==='number'?Math.round(value*1e4)/1e4:Array.isArray(value)?value.map(quantize):value;
+      const snapped=args.map(quantize);
+      try{return fast[name](...snapped);}catch{}
+      robust.setPrecision(precision*100);
+      try{return robust[name](...snapped);}catch{}finally{robust.setPrecision();}
+      throw last;
     }
   }]));
 }

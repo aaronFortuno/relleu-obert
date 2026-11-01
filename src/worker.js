@@ -1,7 +1,17 @@
-import {buildModel} from './geometry.js';
+import {buildModel,updateVegetation} from './geometry.js';
 import {threeMF,stlZip} from './export.js';
-let current;
-self.onmessage=({data})=>{try{
-  if(data.type==='build'){current=buildModel(data.region,data.options,message=>self.postMessage({type:'progress',message}));self.postMessage({type:'model',model:current});}
-  if(data.type==='export'){if(!current)throw Error('Genera primer el model.');const bytes=data.format==='stl'?stlZip(current):threeMF(current,{bambu:data.format==='bambu'});self.postMessage({type:'download',format:data.format,bytes},[bytes.buffer]);}
+import {groupMaterials} from './materials.js';
+import {splitModel,tileArchive} from './mesh-tiles.js';
+import Module from 'manifold-3d';
+import wasmURL from 'manifold-3d/manifold.wasm?url';
+let current,api;
+const progress=message=>self.postMessage({type:'progress',message});
+self.onmessage=async({data})=>{try{
+  if(data.type==='build'||data.type==='vegetation'){current=data.type==='build'?buildModel(data.region,data.options,progress):updateVegetation(current,data.options,progress);self.postMessage({type:'model',model:current,vegetation:data.type==='vegetation'});}
+  if(data.type==='export'){
+    if(!current)throw Error('Genera primer el model.');const model=groupMaterials(current,data.materialCount,data.assignments);let bytes,archive=false;
+    if(data.split&&(model.width>200||model.height>200)){progress('Preparant els talls de les peces…');if(!api){api=await Module({locateFile:()=>wasmURL});api.setup();}bytes=tileArchive(splitModel(model,api,200,progress),data.format);archive=true;}
+    else bytes=data.format==='stl'?stlZip(model):threeMF(model,{bambu:data.format==='bambu'});
+    self.postMessage({type:'download',format:data.format,archive,bytes},[bytes.buffer]);
+  }
 }catch(e){self.postMessage({type:'error',message:e.message,detail:e.stack});}};

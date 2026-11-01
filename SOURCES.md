@@ -18,7 +18,15 @@
 
 ## Biblioteques
 
-Three.js (MIT), polygon-clipping (MIT), polyclip-ts (MIT), earcut (ISC), @mapbox/vector-tile (BSD-3-Clause), pbf (BSD-3-Clause), fflate (MIT), Vite (MIT). Les versions queden fixades al manifest i al fitxer de dependències.
+Three.js (MIT), Leaflet (BSD-2-Clause), Manifold (Apache-2.0), polygon-clipping (MIT), polyclip-ts (MIT), earcut (ISC), @mapbox/vector-tile (BSD-3-Clause), pbf (BSD-3-Clause), fflate (MIT), Vite (MIT). Les versions queden fixades al manifest i al fitxer de dependències.
+
+Es distribueixen les llicències de Leaflet i Manifold a `public/licenses/`. La llicència MIT del projecte es refereix al codi propi.
+
+## Mapa, cerca i contingut de l’autor
+
+- Mapa de selecció: tessel·les estàndard d’OpenStreetMap, https://tile.openstreetmap.org/ , amb atribució visible. No es descarreguen àrees en bloc ni s’hi implementa una memòria cau pròpia. Política: https://operations.osmfoundation.org/policies/tiles/ .
+- Cerca de llocs: Photon, https://photon.komoot.io/ i https://github.com/komoot/photon . Consulta explícita, màxim cinc resultats i memòria de sessió; el servidor públic depèn de disponibilitat i ús raonable. La cerca no es fa a cada tecla.
+- El contingut V4V, la fotografia d’Aarón Fortuño i el QR Lightning s’han reutilitzat del projecte Plec de l’autor, a petició seva. La fotografia i la identitat de l’autor no es concedeixen sota la llicència MIT del codi. No s’hi ha incorporat analítica.
 
 ## Referència visual
 
