@@ -3,6 +3,8 @@ import earcut from 'earcut';
 import {sampleHeight,prepareElevationTiles,createTerrainField} from './elevation.js';
 import {CATEGORIES,groupMaterials} from './materials.js';
 import {polygonTester} from './polygon-index.js';
+import {lineBuffer} from './roads.js';
+import {buildingOptions,buildingRise} from './building-options.js';
 export {sampleHeight} from './elevation.js';
 const pc=polygonOps();
 
@@ -21,7 +23,6 @@ export function makeProjection(bbox,size,physical={}){
   return {width,height,scale:Math.min(sx,sy),project:([lon,lat])=>[snap((lon-w)*111320*c*sx),snap((lat-s)*111320*sy)],unproject:([x,y])=>[w+x/(111320*c*sx),s+y/(111320*sy)]};
 }
 function geoPolys(f,project){const coords=f.geometry.type==='Polygon'?[f.geometry.coordinates]:f.geometry.type==='MultiPolygon'?f.geometry.coordinates:[];return coords.map(poly=>poly.map(r=>r.map(project)));}
-function lineBuffer(line,r){const polys=[];for(let i=1;i<line.length;i++){const a=line[i-1],b=line[i],dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy);if(l<1e-5)continue;const x=-dy/l*r,y=dx/l*r;polys.push([[[a[0]+x,a[1]+y],[a[0]-x,a[1]-y],[b[0]-x,b[1]-y],[b[0]+x,b[1]+y],[a[0]+x,a[1]+y]]]);}return polys;}
 export class Surface {
   constructor(){this.vertices=[];this.faces=[];this.lookup=new Map();}
   vertex(p){if(!p.every(Number.isFinite))throw Error('La geometria conté una coordenada invàlida.');const key=p.map(x=>x.toFixed(6)).join(',');if(!this.lookup.has(key)){this.lookup.set(key,this.vertices.length/3);this.vertices.push(...p);}return this.lookup.get(key);}
@@ -55,8 +56,10 @@ function terrainSolid(polys,height,bottom,width,heightMM,res){
   const result={vertices:[],faces:[]};if(!polys.length)return {vertices:new Float32Array(),faces:new Uint32Array()};
   // Clip into columns once. Intersecting a whole road network for every triangle
   // is both slow and numerically fragile; each cell then sees only local edges.
-  const columns=Array.from({length:res},(_,i)=>intersect(polys,[[[[i*width/res,0],[(i+1)*width/res,0],[(i+1)*width/res,heightMM],[i*width/res,heightMM],[i*width/res,0]]]]));
-  for(let j=0;j<res;j++)for(let i=0;i<res;i++){
+  let minX=width,minY=heightMM,maxX=0,maxY=0;for(const poly of polys)for(const [x,y]of poly[0]){minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);}
+  const i0=Math.max(0,Math.floor(minX/width*res)),i1=Math.min(res-1,Math.floor(maxX/width*res)),j0=Math.max(0,Math.floor(minY/heightMM*res)),j1=Math.min(res-1,Math.floor(maxY/heightMM*res)),columns=[];
+  for(let i=i0;i<=i1;i++)columns[i]=intersect(polys,[[[[i*width/res,0],[(i+1)*width/res,0],[(i+1)*width/res,heightMM],[i*width/res,heightMM],[i*width/res,0]]]]);
+  for(let j=j0;j<=j1;j++)for(let i=i0;i<=i1;i++){
     const x=i*width/res,y=j*heightMM/res,x1=(i+1)*width/res,y1=(j+1)*heightMM/res;
     const candidates=intersect(columns[i],[[[[x,y],[x1,y],[x1,y1],[x,y1],[x,y]]]]);
     if(!candidates.length)continue;
@@ -73,6 +76,7 @@ export function treeMesh({x,y,ground,rx,ry,rz,rotation=0,phase=0}){
   return {vertices:surf.vertices,faces:surf.faces};
 }
 export function buildModel(data,options={},progress=()=>{}){
+  const buildingsConfig=buildingOptions(options),{buildingMode,maxBuildingHeight}=buildingsConfig;
   const {size=160,exaggeration=1.5,density=2.5,resolution=36}=options,proj=makeProjection(data.meta.bbox,size,options),{width,height,project,scale}=proj,rect=box(width,height),warnings=[...(data.meta.sourceWarnings||[])];
   if(!Number.isFinite(density)||density<.25||density>5||!Number.isInteger(resolution)||resolution<2||resolution>100||!Number.isFinite(exaggeration)||exaggeration<1||exaggeration>5||!Number.isFinite(size)||size<50||size>450||width>450||height>450)throw Error('Els ajustos de la maqueta són fora del rang admès.');
   const prepared=prepareElevationTiles(data.dem);
@@ -86,7 +90,7 @@ export function buildModel(data,options={},progress=()=>{}){
     if(layer==='transportation'&&p.brunnel!=='tunnel'&&f.geometry.type.includes('LineString')){
       const lines=f.geometry.type==='LineString'?[f.geometry.coordinates]:f.geometry.coordinates;
       const r=Math.max(.22,(['primary','secondary','tertiary'].includes(p.class)?5:2)*scale);
-      for(const line of lines)roads.push(...lineBuffer(line.map(project),r).map(p=>[p]));
+      for(const line of lines)roads.push(...lineBuffer(line.map(project),r,[width,height]).map(p=>[p]));
     }
   }
   progress('Delimitant costa i capes…');
@@ -104,15 +108,22 @@ export function buildModel(data,options={},progress=()=>{}){
   // A swimming pool or lake on a hillside must not be extruded down to sea level.
   add(7,terrainSolid(inlandWater,(x,y)=>Math.max(3,ground(x,y)-.3),()=>0,width,height,resolution));
   progress('Afegint edificis i vegetació…');
-  let buildingCount=0;const clippedBuildings=[];
-  for(const b of buildings){const polys=intersect(intersect([b.poly],rect),land);for(const poly of polys){
-    if(Math.abs(area(poly[0]))<.04)continue;clippedBuildings.push(poly);const pts=poly[0],base=Math.max(...pts.map(p=>ground(...p))),h=Math.max(.6,b.height*scale),surf=new Surface();surf.polygon(poly,()=>base+h);add(2,surf.solid((x,y)=>ground(x,y)-.3));buildingCount++;if(b.estimated)approximateBuildings++;
+  let buildingCount=0,limitedBuildings=0;const clippedBuildings=[];
+  if(buildingMode!=='none')for(const b of buildings){const polys=intersect(intersect([b.poly],rect),land);for(const poly of polys){
+    if(Math.abs(area(poly[0]))<.04)continue;clippedBuildings.push(poly);const h=buildingRise(b.height,scale,buildingsConfig);
+    if(buildingMode==='source'){const base=Math.max(...poly[0].map(p=>ground(...p))),surf=new Surface();surf.polygon(poly,()=>base+h);add(2,surf.solid((x,y)=>ground(x,y)-.3));}
+    else add(2,terrainSolid([poly],(x,y)=>ground(x,y)+h,(x,y)=>ground(x,y)-.3,width,height,resolution));
+    buildingCount++;if(b.estimated)approximateBuildings++;if(buildingMode==='limited'&&b.height>maxBuildingHeight)limitedBuildings++;
   }}
   const buildingMask=merge(clippedBuildings.map(poly=>[poly]));
   if(approximateBuildings)warnings.push(`${approximateBuildings} fragments d’edificis sense alçària disponible: alçària orientativa de 6 m.`);
+  if(buildingMode==='limited')warnings.push(`Edificis adaptats al terreny i limitats a ${maxBuildingHeight} m reals, sense exageració vertical ni altura mínima de maqueta. ${limitedBuildings} fragments retallats en altura.`);
+  if(buildingMode==='source')warnings.push('Edificis amb altura de les dades i coberta horitzontal sobre el punt més alt de la petjada: els pendents poden produir façanes més altes. No es disposa de la forma real de les teulades.');
+  if(buildingMode==='flat')warnings.push('Només petjades d’edificis: capa de color de 0,12 mm adaptada al terreny, sense reconstrucció de teulades.');
+  if(buildingMode==='none')warnings.push('Edificis omesos; es conserva el relleu actual de les dades, sense reconstrucció del paisatge històric.');
   warnings.push('Els arbres són una representació procedimental dins de zones verdes, no posicions d’arbres mesurades.');
   warnings.push('Les tessel·les vectorials estan generalitzades. Aquesta prova no substitueix cartografia topogràfica de precisió.');
-  const context={ground,forest,land,roadPoly,buildingMask,containsForest:polygonTester(forest),containsLand:polygonTester(land),containsRoad:polygonTester(roadPoly),containsBuilding:polygonTester(buildingMask),width,height,scale,buildingCount,warnings,options:{...options,size,exaggeration,resolution},meta:data.meta,diagnostics:prepared.diagnostics,base:aggregates.map(p=>({...p,vertices:new Float32Array(p.vertices),faces:new Uint32Array(p.faces)}))};
+  const context={ground,forest,land,roadPoly,buildingMask,containsForest:polygonTester(forest),containsLand:polygonTester(land),containsRoad:polygonTester(roadPoly),containsBuilding:polygonTester(buildingMask),width,height,scale,buildingCount,warnings,options:{...options,...buildingsConfig,size,exaggeration,resolution},meta:data.meta,diagnostics:prepared.diagnostics,base:aggregates.map(p=>({...p,vertices:new Float32Array(p.vertices),faces:new Uint32Array(p.faces)}))};
   return updateVegetation({context},options,progress);
 }
 

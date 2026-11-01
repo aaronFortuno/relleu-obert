@@ -2,7 +2,7 @@
 
 Prototip educatiu separat de Terrology: generació de maquetes geogràfiques amb JavaScript, íntegrament al navegador, publicable a GitHub Pages. No s’ha copiat codi de Terrology.
 
-**v0.3 experimental · 1 de novembre de 2026**
+**v0.4 experimental · 1 de novembre de 2026**
 
 - Web: https://aaronFortuno.github.io/relleu-obert/
 - Repositori: https://github.com/aaronFortuno/relleu-obert
@@ -32,6 +32,8 @@ La v0.2 inclou també les edificacions oficials de l’ICGC per a la mostra. En 
 - Partició vectorial de terra/aigua, vegetació i camins. Els límits es retallen contra les cel·les del relleu: no es classifiquen triangles sencers per un únic punt.
 - Mar pla, base, exageració vertical explícita i dimensions en mil·límetres.
 - Edificis extrudits a partir de petjades cartogràfiques.
+- Edificis limitats a 5 m reals per defecte, amb altura màxima configurable. El volum limitat segueix el terreny per respectar el límit també als vessants. Opcions alternatives: altura de les dades amb coberta horitzontal, petjades de color (0,12 mm) o sense edificis. No s’inventen teulades inclinades.
+- Camins amb vores contínues i arrodonides a les corbes i als extrems, calculades a partir de l’amplada de cada traçat.
 - Volums d’arbres procedimentals dins de zones verdes, evitant edificis i camins.
 - Densitat de vegetació regulable de ×0,25 a ×5 (inicial ×2,5), variació moderada de capçada i arrels incrustades a la malla generada.
 - Altitud comuna per a totes les superfícies i objectes; detecció de mostres invàlides i pics aïllats d’un quilòmetre, amb reparacions documentades.
@@ -40,6 +42,7 @@ La v0.2 inclou també les edificacions oficials de l’ICGC per a la mostra. En 
 - Layout d’escriptori estable, ajuda i changelog en diàlegs i peu amb llicència i V4V.
 - Mapa amb retall centrat, cerca d’adreces i coordenades `latitud,longitud`, i mides físiques quadrades o rectangulars.
 - Vegetació recalculada independentment del terreny; formes de capçada i pinzell/goma sobre el preview, amb desfer i restablir.
+- El pinzell aplica tot el traç en aixecar-lo, mostra un indicador durant el càlcul i impedeix començar-ne un altre fins que apareix el resultat. Desfer anul·la el traç complet.
 - Fins a 40 × 40 cm, amb exportació en peces de fins a 20 × 20 cm: talls tancats i plànol de muntatge, sense encaixos ni toleràncies d’unió.
 - Exportació 3MF estàndard com una única composició de parts i ZIP amb STL per material, amb metadades de procedència.
 - Càlcul i exportació en un Web Worker; la interfície es manté operativa.
@@ -58,7 +61,7 @@ La v0.2 inclou també les edificacions oficials de l’ICGC per a la mostra. En 
 - Encara no hi ha importació de GeoTIFF ni validació/reparació general de malla. La divisió en peces comprova que el motor pugui tractar les malles com a sòlids; un error atura l’exportació i queda visible.
 - L’opció 3MF estàndard és genèrica; un avís de Bambu Studio sobre un fitxer no nadiu és esperable. Els colors de visualització no són perfils de filament. Cal assignar els filaments i revisar l’escala i totes les parts.
 
-La v0.2 afegeix una exportació específica **3MF per a Bambu** amb colors, assignació de filament per part i per triangle, i les metadades requerides pel seu importador. Es manté el 3MF estàndard com a opció independent. El marcador `Application` del dialecte compatible és necessari perquè Bambu llegeixi aquestes metadades; `Designer`, `RelleuObert:Generator` i la procedència indiquen el generador real. No s’inclou cap perfil d’impressora ni configuració de temperatura. La importació a la versió de Bambu Studio de l’usuari continua pendent de verificació manual.
+La v0.2 afegeix una exportació específica **3MF per a Bambu** amb colors, assignació de filament per part i per triangle, i les metadades requerides pel seu importador. Es manté el 3MF estàndard com a opció independent. El marcador `Application` del dialecte compatible és necessari perquè Bambu llegeixi aquestes metadades; `Designer`, `RelleuObert:Generator` i la procedència indiquen el generador real. No s’inclou cap perfil d’impressora ni configuració de temperatura. L’usuari ha confirmat la importació de quatre materials amb colors correctes a Bambu Studio. La impressió física continua pendent.
 
 ## GitHub Pages
 
@@ -69,6 +72,8 @@ S’inclou `.github/workflows/pages.yml` per construir i desplegar quan es faci 
 Validació local de la v0.2: 27 proves superades, construcció estàtica i generació real de Tamariu i d’una regió de Barcelona. El cas amb latitud 42.918 i longitud 3.2075, que retorna tessel·les de relleu inexistents, s’ha comprovat com a regió completament marina. La comprovació del 3MF Bambu cobreix l’estructura i les assignacions exportades; encara cal verificar-ne la importació i el laminat a l’aplicació de l’usuari.
 
 Validació local de la v0.3: 34 proves superades, construcció estàtica i comprovació visual d’escriptori a 1440 × 900. Cerca natural de La Torre de Claramunt, assignació d’1 a 8 materials, goma/desfer i generació real de Tamariu a 40 × 40 cm amb 12.000 arbres. Exportació al navegador d’un ZIP amb quatre models de 20 × 20 cm i talls tancats. La impressió i la comprovació remota continuen a càrrec de l’usuari.
+
+Validació local de la v0.4: 39 proves superades i construcció estàtica. Proves de revolts i amplada dels camins, límit dels edificis sobre pendent amb exageració ×1 i ×3, petjades i mode sense edificis. Tamariu real generat amb límit de 5 m, malles comprovades amb Manifold i retall de prova. Interfície verificada amb indicador de vegetació i bloqueig de traços nous durant el càlcul.
 
 ## Direcció del projecte
 

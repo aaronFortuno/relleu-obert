@@ -12,5 +12,8 @@ for(const t of meta.tiles){features.push(...readVector(await readFile('public/da
 let allFeatures=features;
 if(meta.officialBuildings){const combined=combineBuildings(features,JSON.parse(await readFile('public/data/'+meta.officialBuildings)));allFeatures=combined.features;meta.buildings=combined.metadata;console.log('Buildings',combined.metadata);}
 console.time('fixture');const model=buildModel({meta,features:allFeatures,dem},{size:160,resolution:24},message=>console.log(new Date().toISOString(),message));console.timeEnd('fixture');
+const buildings=model.categories.find(p=>p.id==='buildings');let maxRise=0;
+if(buildings)for(let i=0;i<buildings.vertices.length;i+=3){const [x,y,z]=buildings.vertices.slice(i,i+3),rise=z-model.context.ground(x,y);maxRise=Math.max(maxRise,rise);if(rise>model.context.scale*5+.0001)throw Error('Building exceeds the default five-metre cap.');}
+console.log('Maximum building rise',maxRise,'mm; five-metre cap verified');
 for(const p of model.parts){if(!Array.from(p.vertices).every(Number.isFinite))throw Error('Non-finite coordinates');let max=-Infinity,min=Infinity;for(let i=2;i<p.vertices.length;i+=3){max=Math.max(max,p.vertices[i]);min=Math.min(min,p.vertices[i]);}console.log(p.id,p.faces.length/3,'triangles; z range',min,max,'mm');}
 await mkdir('output',{recursive:true});await writeFile('output/tamariu.3mf',threeMF(model));await writeFile('output/tamariu-bambu.3mf',threeMF(model,{bambu:true}));await writeFile('output/tamariu-stl.zip',stlZip(model));await writeFile('output/provenance.json',JSON.stringify(model.provenance,null,2));console.log('Trees',model.treeCount,'Buildings',model.buildingCount);
