@@ -50,15 +50,28 @@ export function cadastralVolumes(buildings,parts){
   // Keep a coherent family: never extrude its envelope over its component parts.
   return [...parts.filter(f=>f.properties.above_ground_floors!==0),...buildings.filter(f=>!families.has(f.properties.family))];
 }
-export async function fetchCadastralBuildings(bbox,fetcher=fetch){
+const CADASTRE_TIMEOUT=45000,sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function wfsGet(url,fetcher,{retries=1,backoff=()=>sleep(1500)}={}){
+  const maxRetries=Math.min(1,Math.max(0,Number.isFinite(+retries)?Math.floor(+retries):1));
+  for(let attempt=0;;attempt++){
+    try{
+      const response=await fetcher(url,{signal:AbortSignal.timeout(CADASTRE_TIMEOUT)});
+      if(!response.ok)throw Object.assign(Error(`Catastre: error ${response.status} en carregar edificis. Pots triar una altra font.`),{permanent:true});
+      if(Number(response.headers?.get('content-length'))>20_000_000)throw Object.assign(Error('Catastre: resposta massa gran.'),{permanent:true});
+      return new TextDecoder('windows-1252').decode(await response.arrayBuffer());
+    }catch(e){
+      if(e?.permanent)throw e;
+      if(attempt<maxRetries){await backoff(attempt);continue;}
+      if(e?.name==='TimeoutError'||e?.name==='AbortError')throw Error(`Catastre: el servei del Catastro no ha respost en ${CADASTRE_TIMEOUT/1000} s (${maxRetries+1} intents). Torna-ho a provar d’aquí a una estona; si persisteix, redueix la regió o tria la font ICGC o OpenStreetMap.`);
+      throw Error(`Catastre: no s’ha pogut connectar amb el servei del Catastro (${e?.message||'error de xarxa'}). Comprova la connexió a internet i torna-ho a provar.`);
+    }
+  }
+}
+export async function fetchCadastralBuildings(bbox,fetcher=fetch,options={}){
   const query=cadastreQuery(bbox),datasets=[];
   for(const kind of ['Building','BuildingPart']){
     const params=new URLSearchParams({service:'wfs',version:'2.0.0',request:'getfeature',typenames:'BU.'+kind.toUpperCase(),bbox:query.bbox.join(','),srsname:'EPSG::'+query.epsg});
-    const response=await fetcher(CADASTRE_URL+'?'+params,{signal:AbortSignal.timeout(30000)});
-    if(!response.ok)throw Error(`Catastre: error ${response.status} en carregar edificis. Pots triar una altra font.`);
-    if(Number(response.headers?.get('content-length'))>20_000_000)throw Error('Catastre: resposta massa gran.');
-    const text=new TextDecoder('windows-1252').decode(await response.arrayBuffer());
-    datasets.push(parseCadastreGML(text,{kind,epsg:query.epsg}));
+    datasets.push(parseCadastreGML(await wfsGet(CADASTRE_URL+'?'+params,fetcher,options),{kind,epsg:query.epsg}));
   }
   const [buildings,parts]=datasets,features=cadastralVolumes(buildings,parts);
   if(!features.length)throw Error('Catastre: no hi ha edificis sobre rasant disponibles. Tria ICGC o OpenStreetMap.');

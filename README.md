@@ -2,7 +2,9 @@
 
 Prototip educatiu separat de Terrology: generació de maquetes geogràfiques amb JavaScript, íntegrament al navegador, publicable a GitHub Pages. No s’ha copiat codi de Terrology.
 
-**v0.9.0 experimental · 1 de novembre de 2026**
+**v0.10.0 experimental · 1 de novembre de 2026**
+
+Novetats de v0.10: reintent limitat i errors entenedors en carregar el Catastre; la càrrega real de Tamariu continua pendent de validació. [Sistema d’idiomes preparat](work/RO-019-SETUP.md), amb català com a única llengua disponible i migració de textos parcial. [Propostes d’implementació](work/DELEGACIONS.md) de marc imprimible, etiquetes, rosa dels vents i escena de presentació; aquestes funcions encara no s’han construït.
 
 Pinzell amb repartiment aleatori, font Catastre opcional amb parts d’edificis i actualització d’aquesta capa sense reconstruir el terreny. ICGC queda seleccionat per defecte dins de l’àmbit català i OpenStreetMap fora; no hi ha una opció Automàtic duplicada.
 
@@ -16,7 +18,7 @@ El retall es pot girar respecte al nord, també amb mida rectangular i escala fi
 
 «Dades locals de més precisió», dins de «Relleu i edificis», admet MDT GeoTIFF numèric d’una banda en metres (100 MB / 4 milions de cel·les) i edificis GeoJSON (30 MB / 10.000 elements / 300.000 vèrtexs). S’admeten EPSG:4326/4258/3857, UTM WGS84 i ETRS89 UTM 29–31. El GeoTIFF ha de cobrir tot el retall sense buits; no es transforma el datum vertical. El GeoJSON substitueix tota la capa d’edificis i conserva parts i patis que ja existeixin al fitxer; les dades absents no s’inventen ni es completen amb una altra font. No és encara una selecció automàtica de fonts més bones (RO-026). Els fitxers es processen al navegador, sense servidor d’importació.
 
-L’exportació conserva colors i assignacions de materials, sense selectors de broquet ni tipus de filament. L’usuari tria aquests ajustos al laminador. RO-003, el marc imprimible i les etiquetes continuen ajornats per indicació de l’usuari.
+L’exportació conserva colors i assignacions de materials, sense selectors de broquet ni tipus de filament. L’usuari tria aquests ajustos al laminador. RO-003 continua ajornat. Marc imprimible i etiquetes disposen ara de proposta de disseny; implementació i validació física pendents.
 
 Apartats de configuració replegables, controls flotants al preview i escala horitzontal en un sol camp (per exemple, 1:1.000 o 1000; buit segueix el mapa). En mode fix, la mida física defineix el territori a aquesta escala: 15 × 20 cm a 1:1.000 són 150 × 200 m. Arrossegar el mapa canvia el centre; fer zoom només canvia la vista del mapa. L’exageració vertical és independent. «Mostra de Tamariu» recupera el retall de mostra i el mode lliure.
 

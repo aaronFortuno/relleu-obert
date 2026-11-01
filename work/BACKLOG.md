@@ -1,8 +1,10 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-01**. Iteració **v0.9.0**: implementació i comprovacions locals; validació d’usuari pendent. Les quatre validacions de v0.8.0 i les anotacions originals són a [HISTORIAL.md](HISTORIAL.md). Identificadors estables, versions 0.x fins a declaració explícita d’estabilitat.
+Actualitzat: **2026-11-01**. Iteració **v0.10.0**: implementació i comprovacions locals; validació d’usuari pendent. Les quatre validacions de v0.8.0 i les anotacions originals són a [HISTORIAL.md](HISTORIAL.md). Identificadors estables, versions 0.x fins a declaració explícita d’estabilitat.
 
 ## Prioritats immediates
+
+**Nova petició:** execució seqüencial delegada a Kimi, amb revisió i proves obligatòries; cua i abast a [DELEGACIONS.md](DELEGACIONS.md). Primer RO-039, després setup de RO-019 i propostes de RO-014/016/017/012. RO-033–035 mantenen la dependència de RO-024.
 
 1. Validar pinzell aleatori, font Catastre i actualització incremental (RO-002 / RO-036–RO-038).
 2. Comparar fidelitat de parts i cobertes, segona zona i noves fonts (RO-026 / RO-032).
@@ -24,17 +26,25 @@ Actualitzat: **2026-11-01**. Iteració **v0.9.0**: implementació i comprovacion
 | [RO-036](#ro-036--pinzell-de-vegetació-sense-quadrícula) | P2 | Pendent de validar | Dispersió aleatòria dins del pinzell |
 | [RO-037](#ro-037--selecció-explícita-de-fonts-dedificis) | P1 | Pendent de validar | Fonts explícites i Catastre opcional |
 | [RO-038](#ro-038--capa-dedificis-incremental) | P1 | Pendent de validar | Actualització de només edificis |
+| [RO-039](#ro-039--timeout-de-la-font-catastre) | P1 | Pendent de validar | Timeout del Catastre: reintent fitat i missatge accionable |
+| [RO-019](#ro-019--internacionalització) | P3 | Setup preparat; traduccions pendents | Català, castellà, gallec, euskera i anglès |
+
+## Dissenys preparats
+
+Propostes revisades, encara sense funcionalitat implementada. Les proves específiques de geometria i les validacions físiques són criteris futurs.
+
+| ID | Prioritat | Estat | Feina |
+| --- | --- | --- | --- |
+| [RO-014](#ro-014--marc-imprimible-independent) | P2 | Proposta preparada; implementació pendent | Marc imprimible amb marge configurable |
+| [RO-016](#ro-016--plaques-i-etiquetes-educatives) | P2 | Proposta preparada; implementació pendent | Nom, coordenades i textos educatius imprimibles |
+| [RO-017](#ro-017--rosa-dels-vents-i-altres-complements) | P3 | Proposta preparada; implementació pendent | Rosa dels vents i altres accessoris |
+| [RO-012](#ro-012--presentació-realista-del-model-imprès) | P3 | Proposta preparada; implementació pendent | Escena de presentació sobre una taula |
 
 ## Ajornats
 
 | ID | Prioritat | Estat | Feina |
 | --- | --- | --- | --- |
 | [RO-003](#ro-003--configuració-inesperada-en-importar-a-bambu) | P2 | Ajornat | Impressora, broquet i filament inesperats a Bambu |
-| [RO-012](#ro-012--presentació-realista-del-model-imprès) | P3 | Ajornat | Escena de presentació sobre una taula |
-| [RO-014](#ro-014--marc-imprimible-independent) | P2 | Ajornat | Marc imprimible amb marge configurable |
-| [RO-016](#ro-016--plaques-i-etiquetes-educatives) | P2 | Ajornat | Nom, coordenades i textos educatius imprimibles |
-| [RO-017](#ro-017--rosa-dels-vents-i-altres-complements) | P3 | Ajornat | Rosa dels vents i altres accessoris |
-| [RO-019](#ro-019--internacionalització) | P3 | Ajornat | Català, castellà, gallec, euskera i anglès |
 | [RO-025](#ro-025--vegetació-mesurada-i-paisatges-històrics) | P3 | Ajornat | Vegetació mesurada i paisatges històrics |
 
 ## Criteris de seguiment
@@ -81,6 +91,8 @@ P1: fidelitat/fiabilitat; P2: funcionalitat/interfície; P3: exploració. Proves
 
 ### RO-012 — Presentació realista del model imprès
 
+**Disseny preparat:** [proposta d’escena de presentació](RO-012-PROPOSTA.md), revisada per reutilitzar malles, gestionar canvis de model, restaurar càmera/recursos i renderitzar amb amortiment sense bucle permanent en repòs. 106 proves existents i build correctes; escena i comprovacions visuals/rendiment pendents.
+
 **Proposta:** escena sobre una taula d’escola, amb perspectiva, llum, ombres i colors que ajudin a imaginar la peça impresa.
 
 **Ajornament:** després de resoldre fiabilitat de geometria/exportació (RO-001/RO-002/RO-003). Estudiar renderitzat local amb la malla real abans de triar tècnica o recursos gràfics.
@@ -88,6 +100,8 @@ P1: fidelitat/fiabilitat; P2: funcionalitat/interfície; P3: exploració. Proves
 **Per validar:** la representació usa la geometria, escala i colors seleccionats; es diferencia una escena il·lustrativa d’un resultat físic garantit. El model i la descàrrega continuen operatius si es desactiva aquesta vista.
 
 ### RO-014 — Marc imprimible independent
+
+**Disseny preparat:** [proposta de marc imprimible](RO-014-PROPOSTA.md), revisada per separar tolerància/solapa i segmentar només el perímetre exterior. 106 proves existents i build correctes; geometria, proves específiques futures, laminador i ajust físic pendents.
 
 **Proposta:** exportar el marc en un altre fitxer, amb buit interior calculat des de la maqueta i un marge configurable per encabir-la.
 
@@ -97,6 +111,8 @@ P1: fidelitat/fiabilitat; P2: funcionalitat/interfície; P3: exploració. Proves
 
 ### RO-016 — Plaques i etiquetes educatives
 
+**Disseny preparat:** [proposta de plaques](RO-016-PROPOSTA.md), revisada amb mides, contacte base/relleu i distinció de coordenades automàtiques/text editat. 106 proves existents i build correctes; font amb llicència, implementació i llegibilitat física pendents.
+
 **Proposta:** nom del lloc, coordenades o text lliure («Serralada», «Estret», «Badia»...), en placa separada o integrada al model/marc, també llegible des del lateral en una prestatgeria.
 
 **Ajornament:** després del flux principal i de definir les superfícies d’ubicació; coordinació amb RO-013/RO-014.
@@ -105,6 +121,8 @@ P1: fidelitat/fiabilitat; P2: funcionalitat/interfície; P3: exploració. Proves
 
 ### RO-017 — Rosa dels vents i altres complements
 
+**Disseny preparat:** [proposta de fletxa del nord](RO-017-PROPOSTA.md), revisada i fórmula comprovada contra la projecció real (0° i ±30°, escales iguals/desiguals). 106 proves existents i build correctes; accessori, exportació i validació física pendents.
+
 **Proposta:** accessoris sobre el model o en arxiu independent per afegir-los després d’imprimir.
 
 **Ajornament:** després del flux d’etiquetes i de definir l’orientació geogràfica de RO-018.
@@ -112,6 +130,8 @@ P1: fidelitat/fiabilitat; P2: funcionalitat/interfície; P3: exploració. Proves
 **Per validar:** nord real coherent amb l’angle del retall, dimensions imprimibles i peça separada quan es demani. Girar la càmera no ha de modificar la direcció geogràfica indicada.
 
 ### RO-019 — Internacionalització
+
+**Setup v0.10.0 implementat:** [arquitectura i migració](RO-019-SETUP.md). Catàleg català, selector amb altres llengües desactivades, formats i persistència amb alternativa segura. 106 proves de suite i build correctes després de revisió; selector i Enter/Escape comprovats al navegador local. Migració de textos parcial, traduccions pendents per petició de l’usuari; lectors de pantalla i validació d’usuari pendents.
 
 **Objectiu:** català, castellà, gallec, euskera i anglès. Traduccions ajornades fins a estabilitzar el flux, tal com indica l’usuari.
 
@@ -215,3 +235,11 @@ Un MDT d’una altura per XY no descriu cavitats ni voladissos. Investigar núvo
 - Delegació acotada a un únic Kimi k3-256k per al repartiment del pinzell, després que l’usuari confirmés consum inicial del 0%. Dos fitxers revisats i vuit proves pròpies superades; cap altre agent simultani. No es declara un percentatge final de consum que no s’hagi mesurat.
 
 **Comprovació local de v0.9.0:** 82 proves superades i construcció estàtica correcta. Al navegador, retall de 150 × 150 mm a 1:1.000 centrat a 41.91814, 3.20528: 18 fragments amb ICGC i 117 volums retallats amb Catastre. Exportacions STL amb vuit assignacions: material-1 (terreny), material-4 (camins), material-5 (bosc), material-6 (arbres) i material-8 (aigua interior) idèntics byte a byte abans/després; només material-3 (edificis) canvia. Les categories absents continuen absents. El canvi de font manté la càmera i el mapa ocult conserva la selecció. Falta la validació de l’usuari, laminador i impressió; no s’han comprovat Pages/CI remots.
+
+### RO-039 — Timeout de la font Catastre
+
+**Observació de l’usuari:** carregar edificis del Catastre sobre la mateixa zona retorna «signal timed out». No es dona per reproduïda la causa només per aquest text.
+
+**Encàrrec completat:** Kimi ha rebut diagnòstic acotat del WFS, gestió de temps límit/reintents limitats, errors entenedors i regressions. Ha de conservar model/font explícita en fallar i evitar resultats parcials a la memòria cau. Entrega només amb totes les proves i construcció passades, o informe de bloqueig després de tres intents.
+
+**RO-039 · entrega revisada:** [diagnòstic i correcció](RO-039-CATASTRE-TIMEOUT.md), 45 s per intent i un reintent, inclosa la lectura del cos. 89 proves de suite i build correctes; proves específiques repetides pel revisor. Causa exacta del cas real i càrrega satisfactòria de Tamariu pendents de validar.

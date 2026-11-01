@@ -19,3 +19,34 @@ test('bounded WFS requests load both families and parts, and do not silently swi
  assert.equal(calls.length,2);assert.equal(result.features.length,1);assert.equal(result.features[0].id,'A_part1');assert.equal(result.metadata.partCount,1);assert.equal(calls[0].searchParams.get('srsname'),'EPSG::25831');
  await assert.rejects(()=>fetchCadastralBuildings([3.204,41.917,3.206,41.919],async()=>new Response('',{status:503})),/503/);
 });
+const ok=url=>{const u=new URL(url);return new Response(gml(u.searchParams.get('typenames')==='BU.BUILDING'?'Building':'BuildingPart',u.searchParams.get('typenames')==='BU.BUILDING'?[{id:'A'}]:undefined));};
+const timeoutError=()=>Object.assign(new Error('signal timed out'),{name:'TimeoutError'});
+const noSleep={backoff:()=>Promise.resolve()};
+test('a WFS timeout retries once and then fails with a localized, actionable message instead of the raw abort',async()=>{
+ let n=0;await assert.rejects(()=>fetchCadastralBuildings([3.204,41.917,3.206,41.919],async()=>{n++;throw timeoutError();},noSleep),e=>{assert(!/signal timed out/.test(e.message));assert(/no ha respost en 45 s \(2 intents\)/.test(e.message));return true;});
+ assert.equal(n,2);
+});
+test('a transient timeout recovers on retry and still loads both families and parts',async()=>{
+ let n=0,result=await fetchCadastralBuildings([3.204,41.917,3.206,41.919],async url=>{if(!n++)throw timeoutError();return ok(url);},noSleep);
+ assert.equal(n,3);assert.equal(result.features.length,1);assert.equal(result.metadata.buildingCount,1);assert.equal(result.metadata.partCount,1);
+});
+test('a permanent network failure reports a connection error',async()=>{
+ await assert.rejects(()=>fetchCadastralBuildings([3.204,41.917,3.206,41.919],async()=>{throw new TypeError('fetch failed');},noSleep),/no s’ha pogut connectar/);
+});
+const stallingBody=()=>({ok:true,headers:new Headers(),arrayBuffer:async()=>{throw timeoutError();}});
+test('a body-read timeout recovers on retry and still loads both datasets',async()=>{
+ let n=0;const result=await fetchCadastralBuildings([3.204,41.917,3.206,41.919],async url=>++n===1?stallingBody():ok(url),noSleep);
+ assert.equal(n,3);assert.equal(result.features.length,1);assert.equal(result.metadata.buildingCount,1);assert.equal(result.metadata.partCount,1);
+});
+test('body-read timeouts exhaust the attempts and surface a localized message without the raw abort',async()=>{
+ let n=0;await assert.rejects(()=>fetchCadastralBuildings([3.204,41.917,3.206,41.919],async()=>{n++;return stallingBody();},noSleep),e=>{assert(!/signal timed out/.test(e.message));assert(/no ha respost en 45 s \(2 intents\)/.test(e.message));return true;});
+ assert.equal(n,2);
+});
+test('permanent HTTP failures fail on the first attempt and are never retried',async()=>{
+ let n=0;await assert.rejects(()=>fetchCadastralBuildings([3.204,41.917,3.206,41.919],async()=>{n++;return new Response('',{status:503});},noSleep),/503/);
+ assert.equal(n,1);
+});
+test('configurable retries are clamped to one so the worst-case bound cannot be bypassed',async()=>{
+ let n=0;await assert.rejects(()=>fetchCadastralBuildings([3.204,41.917,3.206,41.919],async()=>{n++;throw timeoutError();},{retries:99,backoff:()=>Promise.resolve()}),/no ha respost en 45 s \(2 intents\)/);
+ assert.equal(n,2);
+});

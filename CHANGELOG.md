@@ -1,5 +1,12 @@
 # Canvis
 
+## v0.10.0 — 2026-11-01
+
+- RO-039: peticions del Catastre amb 45 s per intent i un reintent limitat, també durant la lectura de la resposta. Errors en català amb alternatives; es conserva el model anterior en fallar. Causa exacta i càrrega real de Tamariu pendents de validar.
+- RO-019: catàleg català i infraestructura d’idiomes amb alternativa segura, formats, persistència i selector accessible. Altres llengües desactivades; migració parcial de textos, sense traduccions noves.
+- Propostes concretes de RO-014 (marc imprimible), RO-016 (plaques), RO-017 (rosa dels vents) i RO-012 (escena realista). Dissenys documentats, sense atribuir-los funcionalitat implementada. RO-033–035 conserven les dependències de sòlids de RO-024.
+- Encàrrecs seqüencials a Kimi K3, amb revisió entre entregues i correccions retornades abans d’acceptar-les. 106 proves locals superades i construcció estàtica correcta. Selector comprovat al navegador local; validació d’usuari i física pendents. Cap comprovació remota de Pages/CI.
+
 ## v0.9.0 — 2026-11-01
 
 - RO-036: pinzell sense quadrícula de col·locació; punts aleatoris dins del cercle, separació mínima, densitat desada per traç i generació reproduïble amb intents acotats. Primer component delegat a un únic Kimi k3-256k, revisat i integrat localment.
