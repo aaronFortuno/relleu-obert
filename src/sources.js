@@ -23,7 +23,31 @@ async function get(url){const r=await fetch(url,{signal:AbortSignal.timeout(2500
 async function decodeDEM(blob,t){
   const decoder=await import('./dem-browser.js');return decoder.decodeDEM(blob,t);
 }
-export async function loadRegion({sample=true,bbox,buildingSource='auto',decodeElevation=decodeDEM,localDEM,localBuildings},progress=()=>{}){
+export const defaultBuildingSource=bbox=>inCatalonia(bbox)?'icgc':'osm';
+const buildingLayers=new WeakMap();
+export async function loadBuildingLayer(region,{source=defaultBuildingSource(region.meta.bbox),localBuildings}={},progress=()=>{}){
+  if(localBuildings)return {features:localBuildings.features,metadata:localBuildings.metadata,source:'local',warnings:['Els edificis del GeoJSON local substitueixen tota la capa: els que faltin al fitxer no es completen automàticament.']};
+  if(source==='auto')source=defaultBuildingSource(region.meta.bbox);
+  let cache=buildingLayers.get(region);if(!cache){cache=new Map();buildingLayers.set(region,cache);}if(cache.has(source))return cache.get(source);
+  const vectors=region.vectorFeatures||region.features,osm=vectors.filter(f=>f.properties.sourceLayer==='building');let result;
+  if(source==='osm')result={features:osm,metadata:{provider:'OpenStreetMap · OpenFreeMap',count:osm.length},warnings:[]};
+  else if(source==='icgc'){
+    if(!inCatalonia(region.meta.bbox))throw Error('ICGC: font disponible només dins de l’àmbit català. Tria OpenStreetMap.');
+    progress('Carregant la capa d’edificis de l’ICGC…');
+    const base=(import.meta.env?.BASE_URL||'./')+'data/',official=region.meta.officialBuildings?await(await get(base+region.meta.officialBuildings)).json():await fetchOfficialBuildings(region.meta.bbox);
+    if(!official.features.length)throw Error('ICGC: no hi ha edificis disponibles. Pots triar OpenStreetMap.');
+    const combined=combineBuildings(osm,official);result={features:combined.features,metadata:combined.metadata,warnings:[]};
+  }else if(source==='catastre'){
+    progress('Carregant edificis i parts del Catastre…');const {fetchCadastralBuildings}=await import('./cadastre.js');result=await fetchCadastralBuildings(region.meta.bbox);
+  }else throw Error('Font d’edificis desconeguda.');
+  result={...result,source};cache.set(source,result);return result;
+}
+export function applyBuildingLayer(region,layer){
+  region.features=[...(region.vectorFeatures||region.features).filter(f=>f.properties.sourceLayer!=='building'),...layer.features];
+  region.meta={...region.meta,buildings:layer.metadata,buildingSource:layer.source,sourceWarnings:[...(region.terrainWarnings||[]),...layer.warnings],localSources:{...region.meta.localSources,buildings:layer.source==='local'?layer.metadata:null}};
+  return region;
+}
+export async function loadRegion({sample=true,bbox,buildingSource,decodeElevation=decodeDEM,localDEM,localBuildings},progress=()=>{}){
   const base=(import.meta.env?.BASE_URL||'./')+'data/';
   let meta=sample?await(await get(base+'tamariu.json')).json():{name:'Regió seleccionada',bbox,tiles:tileList(bbox),date:new Date().toISOString()};
   let template;if(!sample)template=(await(await get('https://tiles.openfreemap.org/planet')).json()).tiles[0];
@@ -38,17 +62,7 @@ export async function loadRegion({sample=true,bbox,buildingSource='auto',decodeE
   if(!sample&&!localDEM){const terrain=await loadTerrain(meta.bbox,decodeElevation,fetch,progress,oceanTilePredicate(features,meta.bbox));dem=terrain.tiles;meta.terrain=terrain.metadata;terrainWarnings=terrain.warnings;}
   if(localDEM){meta.terrain=localDEM.metadata;terrainWarnings.push('MDT GeoTIFF local: altituds en metres, datum vertical de la font sense transformar. No es completen buits amb relleu inventat.');}
   meta.elevationDecoding=localDEM?{method:'numeric GeoTIFF raster; no canvas readback',file:localDEM.metadata}:{method:'binary RGB; no canvas readback',tiles:dem.map(t=>({z:t.z,x:t.x,y:t.y,...t.decoding}))};
-  meta={...meta,sourceWarnings:terrainWarnings,buildings:{provider:'OpenStreetMap · OpenFreeMap'}};
-  if(!localBuildings&&buildingSource!=='osm'&&(buildingSource==='icgc'||inCatalonia(meta.bbox))){
-    progress('Carregant edificacions oficials de l’ICGC…');
-    try{
-      const official=sample&&meta.officialBuildings?await(await get(base+meta.officialBuildings)).json():await fetchOfficialBuildings(meta.bbox);
-      if(!official.features.length)throw Error('ICGC: no hi ha edificacions retornades per a aquesta regió.');
-      const combined=combineBuildings(features,official);features=combined.features;meta.buildings=combined.metadata;
-    }catch(e){if(buildingSource==='icgc')throw e;meta.sourceWarnings.push(`No s’han pogut incorporar els edificis ICGC: ${e.message} Es mantenen els d’OpenStreetMap.`);}
-  }
-  meta.buildingSource=buildingSource;
-  if(localBuildings){features=[...features.filter(f=>f.properties.sourceLayer!=='building'),...localBuildings.features];meta.buildings=localBuildings.metadata;meta.sourceWarnings.push('Els edificis del GeoJSON local substitueixen tota la capa d’edificis: els que faltin al fitxer no es completen automàticament.');}
   meta.localSources={dem:localDEM?.metadata||null,buildings:localBuildings?.metadata||null};
-  return {meta,features,dem,localDEM};
+  const region={meta,features,vectorFeatures:features,terrainWarnings,dem,localDEM};
+  return applyBuildingLayer(region,await loadBuildingLayer(region,{source:buildingSource,localBuildings},progress));
 }

@@ -298,3 +298,70 @@ Per a una entrada nova: observació/origen, prioritat amb motiu, estat, següent
 **v0.7.0 · Pendent de validar:** validació contextual abans de generar, mateixa lògica de capacitat a la càrrega i missatge amb escala màxima aproximada segons centre, mida i orientació. No confondre rang numèric amb cobertura admissible. Ampliar territori o reduir el detall automàticament requereix un estudi posterior; no s’ha d’amagar la desaparició de capes en canviar de zoom de dades.
 
 **Arxivat després de v0.7.0 (2026-11-01):** Validat.
+
+## Validacions de l’usuari sobre v0.8.0
+
+| ID | Anotació original |
+| --- | --- |
+| RO-002 | Per estudiar |
+| RO-009 | Validat |
+| RO-011 | Per estudiar |
+| RO-015 | Validat |
+| RO-023 | Per millorar |
+| RO-024 | Per estudiar |
+| RO-026 | En estudi |
+| RO-030 | Validat |
+| RO-031 | Validat |
+| RO-032 | Per estudiar |
+| RO-033 | Per estudiar |
+| RO-034 | Per estudiar |
+| RO-035 | Per estudiar |
+| RO-003 | Ajornat |
+| RO-012 | Ajornat |
+| RO-014 | Ajornat |
+| RO-016 | Ajornat |
+| RO-017 | Ajornat |
+| RO-019 | Ajornat |
+| RO-025 | Ajornat |
+
+### RO-009 — Favicon
+
+**Implementat a v0.6.0:** favicon SVG amb els tres triangles, contrast propi sobre fons clar i ruta relativa al subdirectori. Asset inclòs a la construcció i enllaç verificat al DOM local. Pendent de validar a les pestanyes del navegador habitual de l’usuari.
+
+**Abast:** reutilitzar els tres triangles del header com a marca provisional de la pestanya.
+
+**Per validar:** es veu en navegador clar/fosc, no hi ha peticions de favicon inexistents i les rutes funcionen sota el subdirectori de GitHub Pages.
+
+**Revisió v0.7.0 · Pendent de validar:** Favicon amb llenç quadrat de 38 × 38, conservant el logotip.
+
+**Anotació original de l’usuari sobre v0.6.0:** Fons de la icona quadrat, no rectangular, per aprofitar millor l'espai disponible.
+
+**Arxivat (2026-11-01):** validació expressa de l’usuari sobre v0.8.0.
+
+### RO-015 — Opcions de broquet i filament
+
+**v0.8.0 · Retirada implementada, pendent de validar:** eliminats els dos selectors, el mòdul d’opcions i els camps de broquet/tipus de filament al 3MF. Colors i assignacions de materials conservats. La configuració d’impressió es decideix al laminador. La funció pot reprendre’s amb demanda o una contribució específica; no es promet una versió. Les notes següents documenten la implementació anterior.
+
+**Primera implementació v0.6.0:** PLA/PETG i broquet opcional de 0,2/0,4/0,6 mm; per defecte no s’escriu diàmetre i es conserva el del laminador. Valors explícits al dialecte Bambu i procedència en 3MF/STL, sense perfils de màquina, temperatures ni G-code. Proves de metadades i preservació de geometria. Abast acotat mentre RO-003 continua ajornat: no es dona per resolta la configuració inesperada de Bambu. Pendent de validar el reconeixement amb el laminador de l’usuari.
+
+**Proposta:** poder seleccionar broquet de 0,2 / 0,4 / 0,6 mm i material, per exemple PLA o PETG, quan l’exportació i el laminador ho puguin interpretar correctament.
+
+**Dependència acotada:** RO-003 continua ajornat. Aquesta primera iteració només incorpora els valors de consumibles escollits explícitament, sense generar perfils de màquina ni investigar els valors inesperats d’importació. La validació al laminador segueix pendent.
+
+**Per validar:** opcions reconegudes amb la impressora/perfil seleccionats, valors modificables per l’usuari i regressió de quatre colors. No prometre un perfil complet ni temperatures adequades només a partir de «PLA» o del diàmetre del broquet.
+
+**Decisió de l’usuari després de v0.7.0:** Validat, però eliminarem l'opció de material i gruix de broquet, perquè ho ignora, així que millor simplement exportem el 3MF i que l'usuari decideixi com enfocar exactament la seva configuració. Eliminem les opcions de material i gruix del broquet..
+
+**Arxivat (2026-11-01):** validació expressa de l’usuari sobre v0.8.0.
+
+### RO-030 — Vegetació incompleta i límit de recursos
+
+El generador s’atura en arribar a 12.000 arbres, deixant sense cobrir les files finals; el pinzell no afegeix arbres al límit. Mostreig determinista de tota l’àrea, prioritat dels arbres pintats, avís de saturació i memòria cau de candidats. Provar una zona verda que superi el límit i pintar-hi amb capacitat plena.
+
+**Arxivat (2026-11-01):** validació expressa de l’usuari sobre v0.8.0.
+
+### RO-031 — Densitat dels traços de vegetació
+
+La densitat deixa de regenerar automàticament tot el bosc. Es desa per traç perquè canviar-la no modifiqui els traços anteriors. Confirmar en navegador que el control no inicia un càlcul i que el pinzell pinta més/menys arbres.
+
+**Arxivat (2026-11-01):** validació expressa de l’usuari sobre v0.8.0.

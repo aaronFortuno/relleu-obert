@@ -49,3 +49,11 @@ La imatge de Lichtbild aportada per l’usuari s’ha utilitzat per entendre l�
 ## Recerca de parts d’edificis i paisatge 3D
 
 Consulta del WFS INSPIRE BU del Catastre el 2026-11-01, amb envolupant i metodologia a [work/PAISATGE-3D.md](work/PAISATGE-3D.md). La figura comparativa deriva de petjades ICGC RTT i parts de la Dirección General del Catastro. Els GML originals i la mostra GeoJSON experimental són locals, no s’inclouen en la web ni es declaren MIT. Referències i [condicions de la font](https://www.catastro.hacienda.gob.es/webinspire/documentos/Licencia.pdf) a l’estudi. Cap proveïdor nou s’ha incorporat encara al mode automàtic.
+
+## Catastre i cobertes (v0.9)
+
+Font opcional: Dirección General del Catastro, [WFS INSPIRE BU](https://ovc.catastro.meh.es/INSPIRE/wfsBU.aspx) i [condicions d’accés/ús](https://www.catastro.hacienda.gob.es/webinspire/documentos/Licencia.pdf). Peticions d’edificis i parts per envolupant, fins a 4 km², sense dades de titulars. Identificador, família, versió de registre, proveïdor, consulta i mètode d’estimació d’altura conservats. La data del registre no és data d’aixecament. Les dades originals no es copien a la web; els models exportats són transformacions geomètriques amb atribució i llicència de la font.
+
+El mode de dades interpreta cobertes gabled/skillion segons [OSM Simple 3D Buildings](https://wiki.openstreetmap.org/wiki/Simple_3D_Buildings) i [roof:direction](https://wiki.openstreetmap.org/wiki/Key:roof:direction). Calen atributs explícits; no se n’infereix una forma real a partir de petjada/plantes. Catastre i la capa actual d’OpenMapTiles no proporcionen aquesta informació de coberta; primer suport disponible amb dades locals.
+
+Descodificació GML: fast-xml-parser 5.11.2 (MIT), carregat sota demanda. Avisos de les vuit biblioteques XML distribuïts a public/licenses, incloent @nodable/entities, fast-xml-builder, is-unsafe, path-expression-matcher, strnum i xml-naming.

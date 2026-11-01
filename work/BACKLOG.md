@@ -1,31 +1,29 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-01**. Iteració **v0.8.0**: implementació i proves locals acabades; pendent de validació d’usuari. Validacions de v0.7.0 arxivades a [HISTORIAL.md](HISTORIAL.md), conservant les anotacions originals. No es reutilitzen identificadors.
+Actualitzat: **2026-11-01**. Iteració **v0.9.0**: implementació i comprovacions locals; validació d’usuari pendent. Les quatre validacions de v0.8.0 i les anotacions originals són a [HISTORIAL.md](HISTORIAL.md). Identificadors estables, versions 0.x fins a declaració explícita d’estabilitat.
 
 ## Prioritats immediates
 
-1. Vegetació completa, pinzell al límit i densitat per traç (RO-030 / RO-031).
-2. Retirar broquet i tipus de filament; colors i assignacions de materials es conserven (RO-015).
-3. Comparar el megabloc de Tamariu amb parts del Catastre i preparar la política de fonts (RO-002 / RO-026). Millorar la via local sense afegir opcions confuses (RO-023).
-4. Estudiar cobertes, ponts, túnels i cavitats per fases (RO-032–RO-035), amb dades i criteris a [PAISATGE-3D.md](PAISATGE-3D.md).
+1. Validar pinzell aleatori, font Catastre i actualització incremental (RO-002 / RO-036–RO-038).
+2. Comparar fidelitat de parts i cobertes, segona zona i noves fonts (RO-026 / RO-032).
+3. Preparar sòlids i proves de continuïtat per a ponts/túnels/cavitats (RO-024), segons [RO-024-SOLIDS.md](RO-024-SOLIDS.md).
 
 ## Feina pendent
 
 | ID | Prioritat | Estat | Feina |
 | --- | --- | --- | --- |
-| [RO-002](#ro-002--edificis-contigus-representats-com-a-megablocs) | P1 | Per estudiar | Edificis contigus representats com a megablocs |
-| [RO-009](#ro-009--favicon) | P2 | Pendent de validar | Favicon quadrat |
+| [RO-002](#ro-002--edificis-contigus-representats-com-a-megablocs) | P1 | Pendent de validar | Edificis contigus representats com a megablocs |
 | [RO-011](#ro-011--comptador-dexportacions-i-umami) | P3 | Per estudiar | Comptador públic i futura integració Umami |
-| [RO-015](#ro-015--opcions-de-broquet-i-filament) | P2 | Pendent de validar | Retirar broquet i tipus de filament de la configuració i del 3MF |
 | [RO-023](#ro-023--relleu-local-i-fonts-vectorials-de-més-precisió) | P2 | Per millorar | Simplificar la importació local i estudiar fonts GeoJSON accessibles |
 | [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió) | P1 | Per estudiar | Unió general de volums i impressió física |
 | [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts) | P1 | En estudi | Comparar parts cadastrals i petjades, amb política de fonts explícita |
-| [RO-030](#ro-030--vegetació-incompleta-i-límit-de-recursos) | P1 | Pendent de validar | Vegetació completa i pinzell quan s’assoleix el límit |
-| [RO-031](#ro-031--densitat-dels-traços-de-vegetació) | P2 | Pendent de validar | Densitat només per als traços nous del pinzell |
-| [RO-032](#ro-032--cobertes-i-volums-singulars) | P2 | Per estudiar | Cobertes reals segons dades disponibles |
+| [RO-032](#ro-032--cobertes-i-volums-singulars) | P2 | En estudi | Cobertes reals segons dades disponibles |
 | [RO-033](#ro-033--ponts-i-viaductes) | P2 | Per estudiar | Ponts i viaductes amb cota pròpia |
 | [RO-034](#ro-034--túnels-imprimibles) | P3 | Per estudiar | Túnels com a passos oberts dins del model |
 | [RO-035](#ro-035--cavitats-i-relleus-amb-voladissos) | P3 | Per estudiar | Baumes, coves i arcs naturals amb dades 3D |
+| [RO-036](#ro-036--pinzell-de-vegetació-sense-quadrícula) | P2 | Pendent de validar | Dispersió aleatòria dins del pinzell |
+| [RO-037](#ro-037--selecció-explícita-de-fonts-dedificis) | P1 | Pendent de validar | Fonts explícites i Catastre opcional |
+| [RO-038](#ro-038--capa-dedificis-incremental) | P1 | Pendent de validar | Actualització de només edificis |
 
 ## Ajornats
 
@@ -41,7 +39,7 @@ Actualitzat: **2026-11-01**. Iteració **v0.8.0**: implementació i proves local
 
 ## Criteris de seguiment
 
-P1: fidelitat/fiabilitat o flux principal; P2: funcionalitat/interfície; P3: exploració. Una correcció implementada o una prova local no tanca una incidència d’ús. Només s’arxiven entrades validades per l’usuari o retirades expressament. Els ajornaments es mantenen i no són descarts. Versions 0.x fins que l’usuari declari estabilitat. Pages/CI remots els comprova l’usuari. Notes inicials intactes a [MILLORES-BUGS.md](MILLORES-BUGS.md).
+P1: fidelitat/fiabilitat; P2: funcionalitat/interfície; P3: exploració. Proves locals, validació d’usuari, laminador i impressió són fases diferents. Només s’arxiven validacions expresses o retirades decidides per l’usuari. Ajornaments conservats; cap petició descartada. Notes inicials a [MILLORES-BUGS.md](MILLORES-BUGS.md). Pages/CI remots els comprova l’usuari.
 
 ## Detall
 
@@ -59,6 +57,8 @@ P1: fidelitat/fiabilitat o flux principal; P2: funcionalitat/interfície; P3: ex
 
 **Per validar:** comparació de petjades d’entrada/sortida amb casos de cases contigües sobre pendent, conservant les separacions presents a les dades i una cota de coberta per edifici identificable. No donar per real una divisió inventada només per corregir l’aspecte. Si falten dades de separació, documentar el límit o buscar una font oberta millor. Validació d’alçàries condicionada a RO-001; relacionada amb RO-022 i RO-023.
 
+**Actualització v0.9.0:** Catastre com a font opcional de parts sobre el mateix retall. No se superposen envolupants ni es creen divisions inventades. Procedència de volums i famílies; validació visual de Tamariu pendent.
+
 ### RO-003 — Configuració inesperada en importar a Bambu
 
 **Ajornat (2026-11-01):** petició expressa de l’usuari, prioritat P2. Reconsiderar després de RO-002, RO-004, RO-005 i RO-006. No es modifiquen perfils d’impressora en aquesta iteració.
@@ -68,18 +68,6 @@ P1: fidelitat/fiabilitat o flux principal; P2: funcionalitat/interfície; P3: ex
 **Evidència del codi, no diagnòstic final:** l’exportador actual escriu colors i `filament_type: PLA`, però no un perfil d’impressora ni un diàmetre de broquet. Cal determinar què interpreta o completa el laminador, en lloc d’atribuir tots els valors al nostre fitxer.
 
 **Per validar:** comparar 3MF compatible i estàndard amb una configuració d’importació coneguda; entendre d’on surten els valors i corregir/documentar el comportament. Conservar l’assignació correcta dels quatre colors (RO-021), les mides i els materials. No confondre diàmetre del broquet, altura de capa i detall de la malla. Aquesta investigació precedeix RO-015; la comprovació al Bambu de l’usuari continua sent explícita.
-
-### RO-009 — Favicon
-
-**Implementat a v0.6.0:** favicon SVG amb els tres triangles, contrast propi sobre fons clar i ruta relativa al subdirectori. Asset inclòs a la construcció i enllaç verificat al DOM local. Pendent de validar a les pestanyes del navegador habitual de l’usuari.
-
-**Abast:** reutilitzar els tres triangles del header com a marca provisional de la pestanya.
-
-**Per validar:** es veu en navegador clar/fosc, no hi ha peticions de favicon inexistents i les rutes funcionen sota el subdirectori de GitHub Pages.
-
-**Revisió v0.7.0 · Pendent de validar:** Favicon amb llenç quadrat de 38 × 38, conservant el logotip.
-
-**Anotació original de l’usuari sobre v0.6.0:** Fons de la icona quadrat, no rectangular, per aprofitar millor l'espai disponible.
 
 ### RO-011 — Comptador d’exportacions i Umami
 
@@ -106,20 +94,6 @@ P1: fidelitat/fiabilitat o flux principal; P2: funcionalitat/interfície; P3: ex
 **Ajornament:** fins a definir RO-013 i una prova d’ajust físic (RO-024).
 
 **Per validar:** dimensions, tolerància i gruixos explícits; arxiu independent, ajust físic comprovat i estratègia per a marcs que superin el llit d’impressió. No assumir un encaix universal per a totes les impressores/materials.
-
-### RO-015 — Opcions de broquet i filament
-
-**v0.8.0 · Retirada implementada, pendent de validar:** eliminats els dos selectors, el mòdul d’opcions i els camps de broquet/tipus de filament al 3MF. Colors i assignacions de materials conservats. La configuració d’impressió es decideix al laminador. La funció pot reprendre’s amb demanda o una contribució específica; no es promet una versió. Les notes següents documenten la implementació anterior.
-
-**Primera implementació v0.6.0:** PLA/PETG i broquet opcional de 0,2/0,4/0,6 mm; per defecte no s’escriu diàmetre i es conserva el del laminador. Valors explícits al dialecte Bambu i procedència en 3MF/STL, sense perfils de màquina, temperatures ni G-code. Proves de metadades i preservació de geometria. Abast acotat mentre RO-003 continua ajornat: no es dona per resolta la configuració inesperada de Bambu. Pendent de validar el reconeixement amb el laminador de l’usuari.
-
-**Proposta:** poder seleccionar broquet de 0,2 / 0,4 / 0,6 mm i material, per exemple PLA o PETG, quan l’exportació i el laminador ho puguin interpretar correctament.
-
-**Dependència acotada:** RO-003 continua ajornat. Aquesta primera iteració només incorpora els valors de consumibles escollits explícitament, sense generar perfils de màquina ni investigar els valors inesperats d’importació. La validació al laminador segueix pendent.
-
-**Per validar:** opcions reconegudes amb la impressora/perfil seleccionats, valors modificables per l’usuari i regressió de quatre colors. No prometre un perfil complet ni temperatures adequades només a partir de «PLA» o del diàmetre del broquet.
-
-**Decisió de l’usuari després de v0.7.0:** Validat, però eliminarem l'opció de material i gruix de broquet, perquè ho ignora, així que millor simplement exportem el 3MF i que l'usuari decideixi com enfocar exactament la seva configuració. Eliminem les opcions de material i gruix del broquet..
 
 ### RO-016 — Plaques i etiquetes educatives
 
@@ -167,6 +141,8 @@ P1: fidelitat/fiabilitat o flux principal; P2: funcionalitat/interfície; P3: ex
 
 **Per validar:** malles, superfícies internes/encavalcaments, separació de materials i continuïtat entre peces; després, laminat i impressió física amb mesures d’ajust i observacions registrades. Les validacions de Bambu i d’impressió es documenten separades. Relació amb RO-003, RO-014 i RO-015.
 
+**Actualització v0.9.0:** Pla de sòlids i portes de validació a RO-024-SOLIDS.md, abans de ponts/túnels/cavitats. Encara sense unió general ni validació física.
+
 ### RO-025 — Vegetació mesurada i paisatges històrics
 
 **Origen:** conversa i [ARCHITECTURE.md](../ARCHITECTURE.md). Arbres individuals cartografiats/LiDAR i models d’un lloc en altres anys són línies futures diferents de la vegetació procedimental i de l’opció actual d’ocultar edificis.
@@ -198,17 +174,13 @@ P1: fidelitat/fiabilitat o flux principal; P2: funcionalitat/interfície; P3: ex
 
 **Decisió de l’usuari després de v0.7.0:** Per estudiar.
 
-### RO-030 — Vegetació incompleta i límit de recursos
-
-El generador s’atura en arribar a 12.000 arbres, deixant sense cobrir les files finals; el pinzell no afegeix arbres al límit. Mostreig determinista de tota l’àrea, prioritat dels arbres pintats, avís de saturació i memòria cau de candidats. Provar una zona verda que superi el límit i pintar-hi amb capacitat plena.
-
-### RO-031 — Densitat dels traços de vegetació
-
-La densitat deixa de regenerar automàticament tot el bosc. Es desa per traç perquè canviar-la no modifiqui els traços anteriors. Confirmar en navegador que el control no inicia un càlcul i que el pinzell pinta més/menys arbres.
+**Actualització v0.9.0:** Primer adaptador Catastre WFS: consultes acotades, XML validat i reprojecció. Altures estimades a partir de plantes, zero plantes excloses. Comparació amb ICGC/OSM disponible. RTL, segona zona i priorització de fonts addicionals pendents.
 
 ### RO-032 — Cobertes i volums singulars
 
 Estudiar roof:shape, roof:height, roof:direction/angle i parts d’OSM original, CityGML/CityJSON o models municipals 3D. Distingir coberta paramètrica d’una malla real (p. ex. Torre Glòries). Respectar els modes limitat/pla; no inventar cobertes per donar aparença de realisme. Pla i casos de control a PAISATGE-3D.md.
+
+**Actualització v0.9.0:** Primer suport de cobertes gabled/skillion amb forma, altura i direcció explícites en dades locals. Respecta el gir, els patis, el retall i el mode limitat pla. Falten fonts automàtiques de cobertes i formes corbes/complexes; Catastre no les aporta.
 
 ### RO-033 — Ponts i viaductes
 
@@ -222,13 +194,24 @@ Escombrar una secció sobre un eix 3D i restar-la dels volums de terreny i capes
 
 Un MDT d’una altura per XY no descriu cavitats ni voladissos. Investigar núvols de punts o malles d’aixecaments amb cobertura de la cavitat; LiDAR aeri no garanteix veure’n l’interior. Començar per un arc petit amb malla oberta i llicència comprovada. Pla a PAISATGE-3D.md.
 
-## Historial de v0.8.0
+### RO-036 — Pinzell de vegetació sense quadrícula
 
-- Validades i arxivades: RO-004, RO-006, RO-008, RO-018, RO-027, RO-028, RO-029. RO-004 es pot reobrir quan hi hagi una nova millora concreta.
-- RO-015: retirada expressa de dues opcions; no es retiren colors ni separació de materials. La funció es pot reprendre si hi ha una contribució i demanda, sense compromís de versió.
-- RO-023: l’usuari confirma l’existència, no la usabilitat ni una millora de dades.
-- RO-030 / RO-031: implementats i pendents de validar. RO-032–RO-035: estudi registrat, encara sense reconstrucció 3D real.
+**Implementat, pendent de validar:** Mostreig uniforme dins del disc amb distància mínima, llavor determinista per traç i intents acotats. Cap malla de col·locació; els contenidors espacials només serveixen per comprovar veïns. Variació de capçades independent del recorregut automàtic. Canviar densitat no altera traços antics.
 
-**Comprovacions locals v0.8.0:** 63 proves automatitzades superades i construcció estàtica correcta. Regressió de bosc saturat, repartiment als quatre quadrants, prioritat del pinzell, densitat desada per traç, memòria cau i exportació sense configuració d’impressora. En navegador local: densitat de ×2,5 a ×5 sense canvi de 4.559 arbres ni inici de càlcul; generació de 40 × 40 cm amb 12.000 arbres i traç processat a capacitat plena. Validació d’usuari/laminador/impressió separada; Pages i CI no comprovats.
+### RO-037 — Selecció explícita de fonts d’edificis
 
-**Exportació real del navegador:** 3MF únic de 400 × 400 mm amb 623.484 vèrtexs finits dins dels límits. Quatre colors conservats, sense camps de broquet/tipus de filament; 11.955 arbres automàtics i 45 pintats, sumant 12.000. Desat localment a `output/v0.8.0-saturated-painted.3mf`. No obert al laminador ni imprès. Mostra cadastral experimental acceptada per l’importador: 80 parts, altures marcades com a estimades.
+**Implementat, pendent de validar:** Retirat Automàtic · ICGC. ICGC per defecte dins de l’àmbit configurat i OSM fora; ICGC desactivat fora de l’àmbit, sense confondre’l amb cobertura comprovada de cada edifici. Catastre opcional a península/Balears, límit de 4 km² i errors sense canvi silenciós de font. Fonts noves només quan es validin.
+
+### RO-038 — Capa d’edificis incremental
+
+**Implementat, pendent de validar:** Càrrega i memòria cau de la capa d’edificis sense redescàrrega de vectors/DEM. Worker reutilitza terreny, aigua, camins i cobertes del sòl; conserva les capçades que no xoquen amb petjades noves. Canvis d’altura no mouen arbres. Missatges parcials al preview, càmera conservada i botó Actualitzar els edificis. Una regió, mida, gir, font de relleu o exageració nous sí que necessiten reconstrucció general.
+
+## Historial de v0.9.0
+
+- RO-009, RO-015, RO-030 i RO-031: validats → historial.
+- RO-002: alternativa implementada per provar al mateix cas; no es dona per validada tota la fidelitat cadastral.
+- RO-026 / RO-032: abast parcial explícit; fonts/cobertes noves pendents.
+- RO-036–RO-038: implementats i pendents de validar. RO-024 / RO-033–RO-035 segueixen oberts.
+- Delegació acotada a un únic Kimi k3-256k per al repartiment del pinzell, després que l’usuari confirmés consum inicial del 0%. Dos fitxers revisats i vuit proves pròpies superades; cap altre agent simultani. No es declara un percentatge final de consum que no s’hagi mesurat.
+
+**Comprovació local de v0.9.0:** 82 proves superades i construcció estàtica correcta. Al navegador, retall de 150 × 150 mm a 1:1.000 centrat a 41.91814, 3.20528: 18 fragments amb ICGC i 117 volums retallats amb Catastre. Exportacions STL amb vuit assignacions: material-1 (terreny), material-4 (camins), material-5 (bosc), material-6 (arbres) i material-8 (aigua interior) idèntics byte a byte abans/després; només material-3 (edificis) canvia. Les categories absents continuen absents. El canvi de font manté la càmera i el mapa ocult conserva la selecció. Falta la validació de l’usuari, laminador i impressió; no s’han comprovat Pages/CI remots.

@@ -10,7 +10,7 @@ export function createPlaceMap(container,{onChange,onName,width=150,height=150})
   map.on('movestart zoomstart',()=>{if(!restoring)retainedBase=null;});
   function frameSize(){const w=container.clientWidth,h=container.clientHeight,r=physical[0]/physical[1],a=rotation*Math.PI/180,c=Math.abs(Math.cos(a)),s=Math.abs(Math.sin(a)),fw=Math.min((w-46)/(c+s/r),(h-54)/(s+c/r));return [fw,fw/r];}
   function baseSelection(){
-    const center=map.getCenter();
+    const anchor=(!container.clientWidth||!container.clientHeight)&&(pendingFit||lastBase),center=anchor?{lat:(anchor[1]+anchor[3])/2,lng:(anchor[0]+anchor[2])/2}:map.getCenter();
     if(targetScale){
       const bbox=scaledBBox([center.lat,center.lng],...physical,targetScale),a=map.latLngToContainerPoint([bbox[1],bbox[0]]),b=map.latLngToContainerPoint([bbox[3],bbox[2]]);
       frame.style.width=Math.abs(b.x-a.x)+'px';frame.style.height=Math.abs(b.y-a.y)+'px';
@@ -33,13 +33,13 @@ export function createPlaceMap(container,{onChange,onName,width=150,height=150})
     const prior=restoring;restoring=true;pendingFit=null;map.fitBounds([[bbox[1],bbox[0]],[bbox[3],bbox[2]]],{padding:[(w-fw)/2,(h-fh)/2],animate:false});map.setView([(bbox[1]+bbox[3])/2,(bbox[0]+bbox[2])/2],map.getZoom(),{animate:false});restoring=prior;changed();
   }
   new ResizeObserver(()=>{if(!container.clientWidth||!container.clientHeight)return;const previous=pendingFit||lastBase;restoring=true;map.invalidateSize({pan:false});if(previous)fit(previous);restoring=false;changed();}).observe(container);
-  return {map,getBBox:selection,getPose:pose,setRotation(value){const previous=baseSelection();selectionPose(previous,value);rotation=value;fit(previous);changed();},setScale(value){const previous=baseSelection();targetScale=value===null?null:validateScale(value);fit(targetScale?baseSelection():previous);changed();},setSize(w,h){const previous=baseSelection();physical=[w,h];if(targetScale)fit(baseSelection());else if(previous){const lat=(previous[1]+previous[3])/2,lon=(previous[0]+previous[2])/2,km=(previous[3]-previous[1])*111.32;fit(physicalBBox([lat,lon],km*w/h,km));}changed();},setRegion(bbox){if(targetScale){map.panTo([(bbox[1]+bbox[3])/2,(bbox[0]+bbox[2])/2],{animate:false});fit(baseSelection());}else fit(bbox);},async search(text){
-    const coordinate=parseCoordinates(text);if(coordinate){map.setView([coordinate.lat,coordinate.lon],map.getZoom());onName(text);return [];}
+  return {map,getBBox:selection,getPose:pose,setRotation(value){const previous=baseSelection();selectionPose(previous,value);rotation=value;fit(previous);changed();},setScale(value){const previous=baseSelection();targetScale=value===null?null:validateScale(value);fit(targetScale?baseSelection():previous);changed();},setSize(w,h){const previous=baseSelection();physical=[w,h];if(targetScale)fit(baseSelection());else if(previous){const lat=(previous[1]+previous[3])/2,lon=(previous[0]+previous[2])/2,km=(previous[3]-previous[1])*111.32;fit(physicalBBox([lat,lon],km*w/h,km));}changed();},setRegion(bbox){if(targetScale)fit(scaledBBox([(bbox[1]+bbox[3])/2,(bbox[0]+bbox[2])/2],...physical,targetScale));else fit(bbox);},async search(text){
+    const coordinate=parseCoordinates(text);if(coordinate){map.setView([coordinate.lat,coordinate.lon],map.getZoom(),{animate:false});onName(text);return [];}
     const cacheKey='relleu-search:'+text.trim().toLowerCase();let cached;try{cached=JSON.parse(sessionStorage.getItem(cacheKey));}catch{}
     if(cached)return cached;
     const url=new URL('https://photon.komoot.io/api/');url.searchParams.set('q',text);url.searchParams.set('limit','5');const c=map.getCenter();url.searchParams.set('lat',c.lat);url.searchParams.set('lon',c.lng);
     const response=await fetch(url,{signal:AbortSignal.timeout(12000)});if(!response.ok)throw Error('El cercador no està disponible. Pots introduir coordenades o moure el mapa.');
     const data=await response.json(),results=data.features.map(f=>({lat:f.geometry.coordinates[1],lon:f.geometry.coordinates[0],label:[f.properties.name,[f.properties.street,f.properties.housenumber].filter(Boolean).join(' '),f.properties.city||f.properties.county,f.properties.postcode,f.properties.country].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join(', ')}));
     try{sessionStorage.setItem(cacheKey,JSON.stringify(results));}catch{}return results;
-  },choose(result){map.setView([result.lat,result.lon],targetScale?map.getZoom():15);if(targetScale)fit(baseSelection());onName(result.label);}};
+  },choose(result){map.setView([result.lat,result.lon],targetScale?map.getZoom():15,{animate:false});if(targetScale)fit(baseSelection());onName(result.label);}};
 }

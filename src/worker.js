@@ -1,4 +1,4 @@
-import {buildModel,updateVegetation} from './geometry.js';
+import {buildModel,updateVegetation,updateBuildings} from './geometry.js';
 import {threeMF,stlZip} from './export.js';
 import {groupMaterials} from './materials.js';
 import {splitModel,tileArchive} from './mesh-tiles.js';
@@ -11,7 +11,8 @@ self.onmessage=async({data})=>{try{
     const decoder=await import('./local-import.js'),value=data.type==='import-dem'?await decoder.importDEM(data.buffer,data.name):decoder.importBuildings(data.text,data.name);
     self.postMessage({type:'imported',kind:data.type,value},value.values?[value.values.buffer]:[]);return;
   }
-  if(data.type==='build'||data.type==='vegetation'){current=data.type==='build'?buildModel(data.region,data.options,progress):updateVegetation(current,data.options,progress);self.postMessage({type:'model',model:current,vegetation:data.type==='vegetation'});}
+  if(data.type==='build'||data.type==='vegetation'){current=data.type==='build'?buildModel(data.region,data.options,progress):updateVegetation(current,data.options,progress);self.postMessage({type:'model',model:{...current,parts:undefined,categories:data.type==='vegetation'?current.categories.filter(p=>p.id==='trees'):current.categories},vegetation:data.type==='vegetation'});}
+  if(data.type==='buildings'){current=updateBuildings(current,data.layer,data.options,progress);self.postMessage({type:'model',model:{...current,parts:undefined,categories:current.categories.filter(p=>['buildings','trees'].includes(p.id))},buildings:true});}
   if(data.type==='export'){
     if(!current)throw Error('Genera primer el model.');const model=groupMaterials(current,data.materialCount,data.assignments);let bytes,archive=false;
     if(data.split&&(model.width>200||model.height>200)){progress('Preparant els talls de les peces…');if(!api){api=await Module({locateFile:()=>wasmURL});api.setup();}bytes=tileArchive(splitModel(model,api,200,progress),data.format);archive=true;}

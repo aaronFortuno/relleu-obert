@@ -18,13 +18,19 @@ test('painted trees take capacity from automatic trees; latest paint remains pos
 });
 
 const bbox=[0,0,.01,.01],forest={type:'Feature',properties:{sourceLayer:'landcover',class:'wood'},geometry:{type:'Polygon',coordinates:[[[0,0],[.01,0],[.01,.01],[0,.01],[0,0]]]}},region={meta:{bbox},features:[forest],dem:[{z:0,x:0,y:0,size:2,elev:new Float32Array(4)}]};
-test('a full forest still accepts paint and brush density does not regenerate the forest or change previous strokes',()=>{
+test('a saturated forest still accepts paint without recomputing automatic candidates',()=>{
   const base=buildModel(region,{size:200,resolution:2,density:5}),cache=base.context.vegetationCache;
   assert.equal(base.treeCount,MAX_TREES);assert(base.provenance.vegetationBudget.eligibleAutomatic>MAX_TREES);
-  const add={mode:'add',x:100,y:175,radius:5,density:.25};
+  const dense=updateVegetation(base,{brushDensity:5,strokes:[{mode:'add',x:100,y:175,radius:5,density:5}]});
+  assert.strictEqual(dense.context.vegetationCache,cache);assert(dense.provenance.vegetationBudget.manual>0);assert.equal(dense.treeCount,MAX_TREES);assert(dense.provenance.vegetationBudget.automaticReduced>0);
+  assert.strictEqual(dense.categories.find(c=>c.id==='terrain').vertices,base.categories.find(c=>c.id==='terrain').vertices);
+});
+test('brush density preserves the forest and previously painted strokes',()=>{
+  const base=buildModel(region,{size:50,resolution:2,density:2.5}),cache=base.context.vegetationCache;
+  const add={mode:'add',x:25,y:25,radius:5,density:.25};
   const sparse=updateVegetation(base,{brushDensity:.25,strokes:[add]}),dense=updateVegetation(base,{brushDensity:5,strokes:[{...add,density:5}]});
   assert.strictEqual(base.context.vegetationCache,cache);assert(sparse.provenance.vegetationBudget.manual>0);assert(dense.provenance.vegetationBudget.manual>sparse.provenance.vegetationBudget.manual);
-  assert.equal(dense.treeCount,MAX_TREES);assert(dense.provenance.vegetationBudget.automaticReduced>0);
+  assert(dense.treeCount>sparse.treeCount);
   const futureOnly=updateVegetation(base,{brushDensity:5,strokes:[add]});
   assert.deepEqual(futureOnly.categories.find(c=>c.id==='trees').vertices,sparse.categories.find(c=>c.id==='trees').vertices);
   const unchanged=updateVegetation(base,{brushDensity:5});assert.deepEqual(unchanged.categories.find(c=>c.id==='trees').vertices,base.categories.find(c=>c.id==='trees').vertices);

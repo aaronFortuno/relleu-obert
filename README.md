@@ -2,7 +2,9 @@
 
 Prototip educatiu separat de Terrology: generació de maquetes geogràfiques amb JavaScript, íntegrament al navegador, publicable a GitHub Pages. No s’ha copiat codi de Terrology.
 
-**v0.8.0 experimental · 1 de novembre de 2026**
+**v0.9.0 experimental · 1 de novembre de 2026**
+
+Pinzell amb repartiment aleatori, font Catastre opcional amb parts d’edificis i actualització d’aquesta capa sense reconstruir el terreny. ICGC queda seleccionat per defecte dins de l’àmbit català i OpenStreetMap fora; no hi ha una opció Automàtic duplicada.
 
 La vegetació automàtica es reparteix per tota la zona verda encara que s’assoleixin els 12.000 arbres. El pinzell té prioritat sobre la vegetació automàtica, i la densitat només afecta els traços nous. Exportació sense opcions de broquet ni tipus de filament: es trien al laminador. Estudi i comparació de parts d’edificis, cobertes, ponts, túnels i cavitats a [work/PAISATGE-3D.md](work/PAISATGE-3D.md).
 
@@ -18,7 +20,7 @@ L’exportació conserva colors i assignacions de materials, sense selectors de 
 
 Apartats de configuració replegables, controls flotants al preview i escala horitzontal en un sol camp (per exemple, 1:1.000 o 1000; buit segueix el mapa). En mode fix, la mida física defineix el territori a aquesta escala: 15 × 20 cm a 1:1.000 són 150 × 200 m. Arrossegar el mapa canvia el centre; fer zoom només canvia la vista del mapa. L’exageració vertical és independent. «Mostra de Tamariu» recupera el retall de mostra i el mode lliure.
 
-RO-001 validat per l’usuari. El [diagnòstic RO-002](work/RO-002-DIAGNOSTIC.md) identifica el megabloc de la Perica com una única petjada ICGC sense divisions; separar-ne les cases requereix millors dades.
+RO-001 validat per l’usuari. El [diagnòstic RO-002](work/RO-002-DIAGNOSTIC.md) identifica el megabloc de la Perica com una única petjada ICGC sense divisions; es pot comparar amb parts del Catastre mitjançant el nou selector. Les parts són volums, no necessàriament habitatges independents; la fidelitat del resultat segueix pendent de validació.
 
 - Web: https://aaronFortuno.github.io/relleu-obert/
 - Repositori: https://github.com/aaronFortuno/relleu-obert
@@ -41,7 +43,7 @@ Obre l’adreça local que apareix. `pnpm dev` és útil per desenvolupar. La ve
 
 La mostra de Tamariu conté quatre tessel·les vectorials i quatre tessel·les d’elevació reals, amb origen i data a `public/data/tamariu.json`. El model inicial usa aquestes dades locals; el mapa de selecció carrega imatges d’OpenStreetMap. També es pot carregar una altra regió des del mapa: el navegador consulta directament OpenFreeMap i els proveïdors de relleu, amb temps límit i errors visibles. La cerca d’adreces consulta Photon en prémer el botó, amb resultats guardats durant la sessió. Les coordenades s’interpreten localment. No hi ha servidor propi ni comptes d’usuari.
 
-La v0.2 inclou també les edificacions oficials de l’ICGC per a la mostra. En regions de Catalunya, el mode automàtic consulta el Referencial Topogràfic Territorial i substitueix les petjades OSM que s’hi encavalquen, conservant les petjades OSM complementàries. Es poden comparar les fonts amb el selector d’edificis. La font i la data de consulta es desen a les metadades; més cobertura no implica que totes les edificacions estiguin actualitzades al dia.
+La v0.2 inclou també les edificacions oficials de l’ICGC per a la mostra. A l’àmbit català, ICGC és la font seleccionada per defecte: consulta el Referencial Topogràfic Territorial i substitueix les petjades OSM que s’hi encavalquen, conservant les petjades OSM complementàries. Es poden comparar les fonts amb el selector d’edificis. La font i la data de consulta es desen a les metadades; més cobertura no implica que totes les edificacions estiguin actualitzades al dia.
 
 ## Què hi ha implementat
 
@@ -49,7 +51,7 @@ La v0.2 inclou també les edificacions oficials de l’ICGC per a la mostra. En 
 - Partició vectorial de terra/aigua, vegetació i camins. Els límits es retallen contra les cel·les del relleu: no es classifiquen triangles sencers per un únic punt.
 - Mar pla, base, exageració vertical explícita i dimensions en mil·límetres.
 - Edificis extrudits a partir de petjades cartogràfiques.
-- Edificis amb coberta horitzontal i altura limitada a 5 m reals per defecte, regulable i mesurada des del punt més alt del terreny dins de la petjada. Al costat baix d’un pendent la façana és més alta. Opcions alternatives: altura de les dades amb coberta horitzontal, petjades de color (0,12 mm) o sense edificis. No s’inventen teulades inclinades.
+- Edificis amb coberta horitzontal i altura limitada a 5 m reals per defecte, regulable i mesurada des del punt més alt del terreny dins de la petjada. Al costat baix d’un pendent la façana és més alta. Opcions alternatives: altura de les dades amb coberta horitzontal, petjades de color (0,12 mm) o sense edificis. En mode d’altura/coberta de dades, s’admeten gabled/skillion si el GeoJSON aporta roof:shape, roof:height i roof:direction; les altres es mantenen planes. Catastre i les tessel·les actuals no aporten aquesta forma.
 - Camins amb vores contínues i arrodonides a les corbes i als extrems, calculades a partir de l’amplada de cada traçat.
 - Volums d’arbres procedimentals dins de zones verdes, evitant edificis i camins.
 - Densitat del pinzell regulable de ×0,25 a ×5 (inicial ×2,5), desada per traç. Bosc inicial amb densitat ×2,5, distribució per tota la zona verda amb pressupost de 12.000 arbres, variació de capçada i arrels incrustades a la malla. En saturació, el pinzell substitueix arbres automàtics; si tot són arbres pintats, els nous substitueixen els més antics amb avís.
@@ -100,3 +102,9 @@ Validació local de la v0.4.2: 44 proves; els quatre WebP coincideixen byte a by
 ## Direcció del projecte
 
 Vegeu `ARCHITECTURE.md` per les decisions i els passos següents. Vegeu `SOURCES.md` per fonts i llicències. El codi propi es publica sota MIT; això no canvia les llicències de les dades cartogràfiques.
+
+## Fonts d’edificis i actualització de capes
+
+Catastre és una alternativa opcional en àrees de menys de 4 km² de la península i les Balears, amb les limitacions territorials del servei. Es consulten edificis i parts, excloent parts de zero plantes sobre rasant i sense superposar envolupants a les parts. Les altures de plantes × 3 m (o 6 m quan no hi ha informació) són estimacions, no mesures. El servei s’accedeix directament des del navegador i pot retornar errors de cobertura o disponibilitat; no es canvia silenciosament de proveïdor. Detalls a [PAISATGE-3D.md](work/PAISATGE-3D.md).
+
+Si només canvien els edificis, «Actualitzar els edificis» reutilitza terreny, mar, camins i cobertes del sòl; conserva els arbres que no col·lideixen amb les petjades noves. Canviar altura no mou els arbres. Canviar lloc, mida, gir, relleu o exageració sí que requereix reconstruir el model. Unió general i impressió física pendents; pla a [RO-024-SOLIDS.md](work/RO-024-SOLIDS.md).

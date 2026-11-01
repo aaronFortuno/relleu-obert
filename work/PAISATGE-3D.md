@@ -1,5 +1,7 @@
 # Paisatge 3D: dades, geometria i pla de treball
 
+Actualització v0.9.0: Catastre ja és una font opcional al selector, carregada des del navegador; edificis i parts coherents amb límit de consulta. Primeres cobertes gabled/skillion disponibles amb atributs locals, sense font automàtica de teulades. Els resultats nous continuen pendents de validació. El text següent conserva el contrast inicial de v0.8.0.
+
 2026-11-01 · RO-002 / RO-023 / RO-026 / RO-032–RO-035. Estudi i primer contrast de dades; no implica que aquestes funcions estiguin implementades. Seguiment al [backlog](BACKLOG.md).
 
 ## Resultat immediat: el megabloc de la Perica
@@ -81,3 +83,12 @@ Cal un aixecament volumètric, núvol de punts o malla que observi les superfíc
 | Cavitats naturals | Arc amb malla observada i unió al terreny | Exploració posterior |
 
 No s’han comprovat Pages ni CI remots. Els models realistes nous no es donen per resolts amb aquesta recerca documental.
+
+## Continuació de v0.9.0
+
+- Retall de 150 × 150 m centrat a 41.91814, 3.20528: consulta real de 43 edificis i 140 parts; 134 volums després d’ometre sis parts de zero plantes. La comparació inicial de 22 parts sobre el megabloc és un altre retall d’estudi; no confondre’n els recomptes.
+- Catastre reemplaça la capa d’edificis, sense cobrir les seves parts amb ICGC ni OSM. Font explícita i errors visibles; cap jerarquia universal de qualitat ni equivalència de part amb habitatge.
+- Cobertes gabled/skillion comprovades amb casos de control sintètics, patis, gir i retall. Corbes, torres de secció variable i malles CityJSON encara pendents; no s’ha validat un cas real de teulada de Tamariu.
+- Sòlids abans d’infraestructures: [RO-024-SOLIDS.md](RO-024-SOLIDS.md).
+
+**Comprovació local de v0.9.0:** 82 proves superades i construcció estàtica correcta. Al navegador, retall de 150 × 150 mm a 1:1.000 centrat a 41.91814, 3.20528: 18 fragments amb ICGC i 117 volums retallats amb Catastre. Exportacions STL amb vuit assignacions: material-1 (terreny), material-4 (camins), material-5 (bosc), material-6 (arbres) i material-8 (aigua interior) idèntics byte a byte abans/després; només material-3 (edificis) canvia. Les categories absents continuen absents. El canvi de font manté la càmera i el mapa ocult conserva la selecció. Falta la validació de l’usuari, laminador i impressió; no s’han comprovat Pages/CI remots.

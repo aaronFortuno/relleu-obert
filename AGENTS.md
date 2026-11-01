@@ -8,3 +8,4 @@
 - L’autorització de publicar els canvis d’aquest projecte a GitHub ja consta a la conversa. Utilitza Git Credential Manager i git.exe amb `http.sslBackend=openssl`; no utilitzis `gh` ni exposis credencials.
 - Consulta `work/BACKLOG.md` abans d’obrir una línia de treball. Mantén els identificadors estables i actualitza l’entrada, la vista de conjunt i l’historial en començar, acabar o canviar de decisió. Conserva les observacions originals de `work/MILLORES-BUGS.md`.
 - Distingeix correcció implementada, proves locals i validació d’usuari/laminador/impressió. No tanquis una incidència només perquè la construcció o les proves existents passin; registra què falta, i els motius de qualsevol ajornament o descart.
+- Si es delega a Kimi, fes tasques acotades i seqüencials. Comprova el consum disponible abans de començar; una dada de consum d’una iteració anterior no acredita el pressupost actual. No llancis múltiples agents sense control del consum.

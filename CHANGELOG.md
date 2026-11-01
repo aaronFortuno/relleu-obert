@@ -1,5 +1,15 @@
 # Canvis
 
+## v0.9.0 — 2026-11-01
+
+- RO-036: pinzell sense quadrícula de col·locació; punts aleatoris dins del cercle, separació mínima, densitat desada per traç i generació reproduïble amb intents acotats. Primer component delegat a un únic Kimi k3-256k, revisat i integrat localment.
+- RO-037 / RO-002: retirat el selector duplicat Automàtic · ICGC. Font explícita amb ICGC per defecte a l’àmbit català i OSM fora. Catastre WFS opcional per a parts d’edificis a península/Balears: màxim 4 km², famílies coherents, patis, reprojecció i altures estimades. Excloses parts amb zero plantes sobre rasant. No s’afegeix l’envolupant sobre les seves parts ni es canvia de font silenciosament en cas d’error.
+- RO-038: actualització d’edificis sobre la geometria existent. Carrega només la capa necessària, conserva terreny/aigua/camins/cobertes del sòl i elimina només arbres que xoquen amb les petjades noves. Altura/font d’edificis no reinicien la càmera. Missatges parcials del Worker, sense tornar a copiar les capes estàtiques al preview.
+- RO-032: primera implementació de cobertes d’una i dues aigües amb forma, altura i direcció explícites de la font, en mode d’altura/coberta de dades. Respecta gir, patis i retall. El mode limitat continua pla; paràmetres absents o formes no admeses conserven coberta plana amb procedència explícita. No hi ha encara dades automàtiques de teulades a les fonts actuals ni suport de formes corbes complexes.
+- Seleccions de coordenades sense animació i centre conservat amb mapa ocult per evitar que un canvi de panell alteri un retall a escala fixa.
+- Quatre validacions de v0.8.0 arxivades; RO-024 amb pla de sòlids, unions i prova de cavitat abans de ponts/túnels/cavitats reals.
+- 82 proves locals superades; validacions d’usuari/laminador pendents. Cap comprovació remota de Pages/CI.
+
 ## v0.8.0 — 2026-11-01
 
 - RO-030: corregida la vegetació que s’aturava a mitja maqueta en arribar a 12.000 arbres. Mostreig determinista de tota la zona verda, sense augmentar el pressupost de geometria. Els arbres pintats tenen prioritat sobre els automàtics; quan el pressupost és íntegrament manual, els traços nous substitueixen els més antics amb avís. Procedència amb recomptes i reduccions; candidats reutilitzats al Worker per no tornar a recórrer tot el bosc en pintar.
