@@ -2,7 +2,7 @@
 
 Prototip educatiu separat de Terrology: generació de maquetes geogràfiques amb JavaScript, íntegrament al navegador, publicable a GitHub Pages. No s’ha copiat codi de Terrology.
 
-**v0.1 experimental · 31 d’octubre de 2026**
+**v0.2 experimental · 1 de novembre de 2026**
 
 - Web: https://aaronFortuno.github.io/relleu-obert/
 - Repositori: https://github.com/aaronFortuno/relleu-obert
@@ -24,6 +24,8 @@ Obre l’adreça local que apareix. `pnpm dev` és útil per desenvolupar. La ve
 
 La mostra de Tamariu conté quatre tessel·les vectorials i quatre tessel·les d’elevació reals, amb origen i data a `public/data/tamariu.json`. No consulta serveis cartogràfics en obrir-la. També es pot carregar una altra regió amb coordenades (entre 0,3 i 3 km): el navegador consulta directament OpenFreeMap i Mapterhorn, amb temps límit i errors visibles. Les dades carregades no s’envien a cap servidor propi.
 
+La v0.2 inclou també les edificacions oficials de l’ICGC per a la mostra. En regions de Catalunya, el mode automàtic consulta el Referencial Topogràfic Territorial i substitueix les petjades OSM que s’hi encavalquen, conservant les petjades OSM complementàries. Es poden comparar les fonts amb el selector d’edificis. La font i la data de consulta es desen a les metadades; més cobertura no implica que totes les edificacions estiguin actualitzades al dia.
+
 ## Què hi ha implementat
 
 - Previsualització 3D giratòria i vista zenital.
@@ -31,6 +33,9 @@ La mostra de Tamariu conté quatre tessel·les vectorials i quatre tessel·les d
 - Mar pla, base, exageració vertical explícita i dimensions en mil·límetres.
 - Edificis extrudits a partir de petjades cartogràfiques.
 - Volums d’arbres procedimentals dins de zones verdes, evitant edificis i camins.
+- Densitat de vegetació regulable de ×0,25 a ×5 (inicial ×2,5), variació moderada de capçada i arrels incrustades a la malla generada.
+- Altitud comuna per a totes les superfícies i objectes; detecció de mostres invàlides i pics aïllats d’un quilòmetre, amb reparacions documentades.
+- Fonts alternatives de relleu (Mapterhorn / Mapzen Terrain Tiles), amb tractament explícit dels 404 marins només quan la cartografia confirma cobertura oceànica completa.
 - Quatre materials: terreny, aigua, edificis/camins i vegetació.
 - Exportació 3MF estàndard com una única composició de parts i ZIP amb STL per material, amb metadades de procedència.
 - Càlcul i exportació en un Web Worker; la interfície es manté operativa.
@@ -47,13 +52,17 @@ La mostra de Tamariu conté quatre tessel·les vectorials i quatre tessel·les d
 - Boscos, aigua i camins poden tenir omissions en les dades originals. Els ponts i túnels no es reconstrueixen encara de manera específica.
 - Les connexions a fonts públiques depenen de disponibilitat, CORS i condicions d’ús del proveïdor. “Sense backend propi” no vol dir “sense serveis externs”.
 - No hi ha encara cercador de llocs, selector de regió sobre mapa, importació de GeoTIFF ni validació de malla amb reparació automàtica.
-- El 3MF és genèric; un avís de Bambu Studio sobre un fitxer no nadiu és esperable. Els colors de visualització no són perfils de filament. Cal assignar els filaments i revisar l’escala i totes les parts.
+- L’opció 3MF estàndard és genèrica; un avís de Bambu Studio sobre un fitxer no nadiu és esperable. Els colors de visualització no són perfils de filament. Cal assignar els filaments i revisar l’escala i totes les parts.
+
+La v0.2 afegeix una exportació específica **3MF per a Bambu** amb colors, assignació de filament per part i per triangle, i les metadades requerides pel seu importador. Es manté el 3MF estàndard com a opció independent. El marcador `Application` del dialecte compatible és necessari perquè Bambu llegeixi aquestes metadades; `Designer`, `RelleuObert:Generator` i la procedència indiquen el generador real. No s’inclou cap perfil d’impressora ni configuració de temperatura. La importació a la versió de Bambu Studio de l’usuari continua pendent de verificació manual.
 
 ## GitHub Pages
 
 La carpeta `dist/` conté només fitxers estàtics. La construcció utilitza rutes relatives (`--base=./`) i empaqueta el Worker. Es pot publicar sota `usuari.github.io/repositori/`.
 
 S’inclou `.github/workflows/pages.yml` per construir i desplegar quan es faci push a `main` o s’executi manualment. GitHub Pages utilitza GitHub Actions com a font. La v0.1 s’ha comprovat en local; les comprovacions de la web desplegada les fa l’usuari manualment.
+
+Validació local de la v0.2: 27 proves superades, construcció estàtica i generació real de Tamariu i d’una regió de Barcelona. El cas amb latitud 42.918 i longitud 3.2075, que retorna tessel·les de relleu inexistents, s’ha comprovat com a regió completament marina. La comprovació del 3MF Bambu cobreix l’estructura i les assignacions exportades; encara cal verificar-ne la importació i el laminat a l’aplicació de l’usuari.
 
 ## Direcció del projecte
 

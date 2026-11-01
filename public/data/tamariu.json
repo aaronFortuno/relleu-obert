@@ -38,5 +38,6 @@
       "vector": "14-8338-6087.pbf"
     }
   ],
-  "credits": "© OpenStreetMap contributors (ODbL), © OpenMapTiles, OpenFreeMap. Elevations: Mapterhorn; see SOURCES.md."
+  "credits": "© OpenStreetMap contributors (ODbL), © OpenMapTiles, OpenFreeMap. Elevations: Mapterhorn; see SOURCES.md.",
+  "officialBuildings": "tamariu-buildings-icgc.geojson"
 }

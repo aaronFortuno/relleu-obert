@@ -24,6 +24,8 @@ Terrology és un motor Python amb FastAPI, processos i dependències natives. Un
 
 ## Prioritats següents
 
+Actualització v0.2: ja hi ha adaptador d’edificacions ICGC, fonts alternatives de relleu, reconstrucció d’altituds invàlides, densitat i variació de capçades i un camp triangular d’altitud compartit amb la vegetació. Es manté pendent l’adaptador de MDT ICGC/GeoTIFF i la validació booleana/laminat de tots els volums.
+
 1. **Validació d’impressió:** eliminar encavalcaments i superfícies internes amb un motor booleà robust en WebAssembly; verificar malles tancades i orientació; importar i laminar les quatre parts en Bambu Studio. Comparar amb la mateixa extensió exacta que l’exemple de l’usuari.
 2. **Relleu de Catalunya:** adaptador de GeoTIFF/COG i projeccions amb dades ICGC. WMS ombrejat és una imatge de visualització i no s’ha d’utilitzar com a elevació numèrica.
 3. **Font vectorial de precisió:** dades originals OSM o cartografia oficial, costa ben polygonitzada, toleràncies en mil·límetres i tractament de límits de tessel·la. La primera prova usa polígons d’aigua ja processats d’OpenFreeMap per evitar heurístiques de costat de costa.
