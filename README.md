@@ -2,23 +2,25 @@
 
 Prototip educatiu separat de Terrology: generació de maquetes geogràfiques amb JavaScript, íntegrament al navegador, publicable a GitHub Pages. No s’ha copiat codi de Terrology.
 
-**v0.6.0 experimental · 1 de novembre de 2026**
+**v0.7.0 experimental · 1 de novembre de 2026**
+
+Sidebars reorganitzats en quatre tasques: lloc/orientació, mida/escala, relleu/edificis i vegetació. Materials reunits a la dreta. Escala en un únic camp amb suggeriments, gir al costat del mapa amb retorn al nord i avís d’àrea massa gran abans de generar. Els arbres es dimensionen segons l’escala geogràfica; si són massa petits es conserva la superfície del bosc sense ampliar-los artificialment. Vegeu l’[auditoria d’usabilitat](work/AUDITORIA-USABILITAT.md).
 
 La v0.6 manté sempre visibles els quatre menús de configuració: només té scroll el contingut de l’apartat obert. Estadístiques al sidebar dret, fonts dins del V4V, favicon i transicions de 220 ms amb moviment reduït. Marc visual opcional (negre, blanc o to de fusta), separat de les malles exportades.
 
 El retall es pot girar respecte al nord, també amb mida rectangular i escala fixada. Es carrega l’envolupant de totes les cantonades i el mateix gir s’aplica a les capes, el relleu i l’exportació. Les files de peces es numeren des de la part superior del model, que amb un gir no equival necessàriament al nord.
 
-«Dades locals de més precisió», dins de «Mida i relleu», admet MDT GeoTIFF numèric d’una banda en metres (100 MB / 4 milions de cel·les) i edificis GeoJSON (30 MB / 10.000 elements / 300.000 vèrtexs). S’admeten EPSG:4326/4258/3857, UTM WGS84 i ETRS89 UTM 29–31. El GeoTIFF ha de cobrir tot el retall sense buits; no es transforma el datum vertical. El GeoJSON substitueix tota la capa d’edificis i conserva parts i patis que ja existeixin al fitxer; les dades absents no s’inventen ni es completen amb una altra font. No és encara una selecció automàtica de fonts més bones (RO-026). Els fitxers es processen al navegador, sense servidor d’importació.
+«Dades locals de més precisió», dins de «Relleu i edificis», admet MDT GeoTIFF numèric d’una banda en metres (100 MB / 4 milions de cel·les) i edificis GeoJSON (30 MB / 10.000 elements / 300.000 vèrtexs). S’admeten EPSG:4326/4258/3857, UTM WGS84 i ETRS89 UTM 29–31. El GeoTIFF ha de cobrir tot el retall sense buits; no es transforma el datum vertical. El GeoJSON substitueix tota la capa d’edificis i conserva parts i patis que ja existeixin al fitxer; les dades absents no s’inventen ni es completen amb una altra font. No és encara una selecció automàtica de fonts més bones (RO-026). Els fitxers es processen al navegador, sense servidor d’importació.
 
 L’exportació permet triar PLA/PETG i, opcionalment, broquet de 0,2/0,4/0,6 mm. Al 3MF compatible s’escriuen el tipus de filament i el broquet demanat; els altres formats els documenten a la procedència. No inclou perfils d’impressora, temperatures ni G-code, i el broquet no canvia el detall geomètric. Cal validar-ne la importació al laminador. RO-003, el marc imprimible i les etiquetes continuen ajornats per indicació de l’usuari.
 
-Apartats de configuració replegables, controls flotants al preview i escala horitzontal fixa (1:1.000, 1:1.500, 1:2.000 o personalitzada). En mode fix, la mida física defineix el territori a aquesta escala: 15 × 20 cm a 1:1.000 són 150 × 200 m. Arrossegar el mapa canvia el centre; fer zoom només canvia la vista del mapa. L’exageració vertical és independent. «Mostra de Tamariu» recupera el retall de mostra i el mode lliure.
+Apartats de configuració replegables, controls flotants al preview i escala horitzontal en un sol camp (per exemple, 1:1.000 o 1000; buit segueix el mapa). En mode fix, la mida física defineix el territori a aquesta escala: 15 × 20 cm a 1:1.000 són 150 × 200 m. Arrossegar el mapa canvia el centre; fer zoom només canvia la vista del mapa. L’exageració vertical és independent. «Mostra de Tamariu» recupera el retall de mostra i el mode lliure.
 
 RO-001 validat per l’usuari. El [diagnòstic RO-002](work/RO-002-DIAGNOSTIC.md) identifica el megabloc de la Perica com una única petjada ICGC sense divisions; separar-ne les cases requereix millors dades.
 
 - Web: https://aaronFortuno.github.io/relleu-obert/
 - Repositori: https://github.com/aaronFortuno/relleu-obert
-- Backlog, prioritats i seguiment: [work/BACKLOG.md](work/BACKLOG.md). Observacions originals: [work/MILLORES-BUGS.md](work/MILLORES-BUGS.md).
+- Backlog, prioritats i seguiment: [work/BACKLOG.md](work/BACKLOG.md). Tasques validades: [work/HISTORIAL.md](work/HISTORIAL.md). Observacions originals: [work/MILLORES-BUGS.md](work/MILLORES-BUGS.md).
 - Historial de versions: [CHANGELOG.md](CHANGELOG.md). Decisions tècniques: [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## Provar-lo
@@ -66,13 +68,13 @@ La v0.2 inclou també les edificacions oficials de l’ICGC per a la mostra. En 
 
 **És un prototip geomètric, no una garantia de models llestos per imprimir.** Cal validar les interseccions de volums i el laminat amb el programa d’impressió. Les peces d’una mateixa capa poden contenir closques que es toquen o s’encavalquen; encara falta una unió booleana robusta abans de l’exportació. No s’ha comprovat una impressió física.
 
-- Els arbres són una distribució procedimental; no són arbres individuals localitzats a partir de LiDAR o ortofotografia.
+- Els arbres són una distribució procedimental amb capçada orientativa de 12 m, convertida a l’escala horitzontal. Per sota de 0,25 mm de diàmetre s’ometen amb avís; el llindar no garanteix impressió amb qualsevol broquet. No són arbres individuals localitzats a partir de LiDAR o ortofotografia.
 - Les tessel·les d’OpenFreeMap són cartografia generalitzada per visualització: la costa pot ser molt millor que una classificació per triangles, però no equival a una línia topogràfica de precisió. No es promet paritat amb Lichtbild.
-- Les elevacions de Mapterhorn combinen fonts amb precisions diferents. La resolució de la imatge no és la resolució real del terreny. Els penya-segats poden estar suavitzats. Falta incorporar un proveïdor de MDT local d’alta precisió (ICGC/GeoTIFF).
+- Les elevacions de Mapterhorn combinen fonts amb precisions diferents. La resolució de la imatge no és la resolució real del terreny. Els penya-segats poden estar suavitzats. Es pot importar un MDT local GeoTIFF; falta incorporar-ne un proveïdor automàtic d’alta precisió.
 - L’alçària d’edificis de la font vectorial pot ser orientativa, fins i tot quan `render_height` existeix. Les peces sense valor utilitzen 6 m i queden indicades. La mida mínima visible és també una adaptació per representació/impressió.
 - Boscos, aigua i camins poden tenir omissions en les dades originals. Els ponts i túnels no es reconstrueixen encara de manera específica.
 - Les connexions a fonts públiques depenen de disponibilitat, CORS i condicions d’ús del proveïdor. “Sense backend propi” no vol dir “sense serveis externs”.
-- Encara no hi ha importació de GeoTIFF ni validació/reparació general de malla. La divisió en peces comprova que el motor pugui tractar les malles com a sòlids; un error atura l’exportació i queda visible.
+- Hi ha importació local de GeoTIFF, però encara falta validació/reparació general de malla. La divisió en peces comprova que el motor pugui tractar les malles com a sòlids; un error atura l’exportació i queda visible.
 - L’opció 3MF estàndard és genèrica; un avís de Bambu Studio sobre un fitxer no nadiu és esperable. Els colors de visualització no són perfils de filament. Cal assignar els filaments i revisar l’escala i totes les parts.
 
 La v0.2 afegeix una exportació específica **3MF per a Bambu** amb colors, assignació de filament per part i per triangle, i les metadades requerides pel seu importador. Es manté el 3MF estàndard com a opció independent. El marcador `Application` del dialecte compatible és necessari perquè Bambu llegeixi aquestes metadades; `Designer`, `RelleuObert:Generator` i la procedència indiquen el generador real. No s’inclou cap perfil d’impressora ni configuració de temperatura. L’usuari ha confirmat la importació de quatre materials amb colors correctes a Bambu Studio. La impressió física continua pendent.

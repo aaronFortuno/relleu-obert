@@ -1,106 +1,57 @@
-# Backlog de Relleu Obert
+# Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-01**. Referència del codi: **v0.6.0**.
+Actualitzat: **2026-11-01**. Iteració **v0.7.0**: implementació i proves locals acabades; pendent de validació d’usuari.
 
-Aquest és el registre de prioritats, decisions i comprovacions del projecte. El document [MILLORES-BUGS.md](MILLORES-BUGS.md) conserva les observacions originals de l’usuari, datades l’1 de novembre a les 12:30. La versió exacta del navegador amb què es van recollir aquestes observacions encara no consta: no es pressuposa que siguin totes de la v0.4.1.
+Només conté feina pendent, pendent de validar o ajornada. Les entrades completament validades i les anotacions originals de l’usuari són a [HISTORIAL.md](HISTORIAL.md). Les observacions inicials es conserven a [MILLORES-BUGS.md](MILLORES-BUGS.md). Els identificadors són estables i no es reutilitzen.
 
-**RO-001 tancat amb la confirmació de l’usuari de v0.4.2.** RO-004, RO-005 i RO-006 implementats a v0.5.0, pendents de validar per l’usuari. RO-002 diagnosticat: cal una font amb divisions d’edificis. RO-003 ajornat expressament.
+## Prioritats immediates
 
-Nova petició registrada: **RO-026**, millorar la fidelitat dels edificis i definir la selecció/combinació de fonts. Estudi documental inicial fet; comparació de geometries i integració encara pendents.
+1. Revisió dels sidebars i dels controls d’escala/orientació (RO-004, RO-006, RO-018, RO-027).
+2. Vegetació a escala i avís coherent abans de carregar àrees massa grans (RO-028, RO-029).
+3. Ajustos de footer, V4V i favicon (RO-008, RO-009).
+4. Fidelitat d’edificis i fonts obertes (RO-002, RO-026); validacions de dades i d’impressió (RO-015, RO-023, RO-024).
 
-**Bloc v0.6.0 (2026-11-01):** RO-004 ajustat i P2 actius implementats, inclòs RO-010 promogut a P2. Pendents de validació d’usuari. RO-003, RO-014 i RO-016 continuen ajornats per resposta expressa de l’usuari. RO-023 incorpora importació local; l’accés automàtic a noves fonts i la política de fusió d’edificis continuen per estudiar amb RO-026.
+## Feina pendent
 
-## Com es manté
-
-- Cada línia té un identificador estable `RO-NNN`. No es renumera ni s’esborra quan es tanca.
-- En començar una tasca, s’anota `En curs`, l’abast concret i la data. En acabar, s’anoten el commit/versió, què s’ha comprovat i què falta.
-- Un canvi de codi amb proves locals passa a `Pendent de validar` quan encara cal la comprovació d’usuari, de laminador o d’impressió corresponent. Compilar no resol per si sol una incidència observada al navegador.
-- Les comprovacions locals, les de l’usuari a la web desplegada, les del laminador i les d’impressió física s’anoten separadament. Després de validar localment, la comprovació remota la fa l’usuari.
-- Si reapareix un problema, es reobre la línia amb la nova evidència i es conserva l’historial. Un símptoma semblant no demostra que la causa sigui la mateixa.
-- Ajornar requereix indicar quan es reconsiderarà. Descartar requereix data, motiu i alternativa, si n’hi ha. No es presenta una idea ajornada com a descartada.
-- Les captures són evidència de comparació visual, no dades per generar geometries. Les hipòtesis es distingeixen dels resultats reproduïts.
-- Es manté la numeració `0.x` / `0.x.x` fins que l’usuari declari explícitament una versió estable. Una entrada al backlog no implica passar a `1.0` ni prometre una data.
-
-### Prioritats
-
-| Prioritat | Criteri |
-| --- | --- |
-| P0 | Fiabilitat del model: pot deformar el relleu i contaminar altres geometries. Primer diagnòstic abans d’ampliar funcionalitats. |
-| P1 | Fidelitat, exportació o ús principal d’escriptori. Següent grup de treball. |
-| P2 | Millora funcional o d’interfície amb un benefici clar, després de les incidències principals. |
-| P3 | Exploració o acabat; es reconsidera quan el nucli sigui fiable. |
-
-### Estats
-
-| Estat | Significat |
-| --- | --- |
-| Per reproduir | Observació registrada; falta un cas controlat amb versió, dades i ajustos. |
-| Per estudiar | Falta determinar la causa, viabilitat o disseny. |
-| Preparat | Abast i comprovacions definits; encara no començat. |
-| En curs | S’hi està treballant; cal deixar-ne l’abast i el següent pas. |
-| Pendent de validar | Implementat o corregit, però falta una comprovació explícita. |
-| Validat | Comprovació satisfactòria registrada, dins de l’abast indicat. |
-| Ajornat | Es conserva la proposta i la condició per reprendre-la. |
-| Descartat | Decisió de no continuar amb motiu registrat. |
-| Bloquejat | No pot avançar per una dependència concreta, que s’ha d’identificar. |
-
-## Vista de conjunt
-
-| ID | Prioritat | Estat | Línia |
+| ID | Prioritat | Estat | Feina |
 | --- | --- | --- | --- |
-| [RO-001](#ro-001--pics-de-relleu-i-efectes-sobre-edificis) | P0 | Validat | Pics de relleu i efectes sobre edificis |
 | [RO-002](#ro-002--edificis-contigus-representats-com-a-megablocs) | P1 | Per estudiar | Edificis contigus representats com a megablocs |
-| [RO-003](#ro-003--configuració-inesperada-en-importar-a-bambu) | P2 | Ajornat | Impressora, broquet i filament inesperats a Bambu |
-| [RO-004](#ro-004--apartats-collapsables-dels-sidebars) | P1 | Pendent de validar | Apartats col·lapsables i menys scroll |
-| [RO-005](#ro-005--més-espai-útil-al-preview) | P1 | Pendent de validar | Controls i missatges dins del preview |
-| [RO-006](#ro-006--selecció-duna-escala-destí) | P1 | Pendent de validar | Selecció d’una escala destí |
-| [RO-007](#ro-007--escala-i-triangles-al-sidebar) | P2 | Pendent de validar | Treure redundàncies estadístiques del header |
-| [RO-008](#ro-008--footer-i-quadre-v4v) | P2 | Pendent de validar | Fonts dins de V4V i enllaços repo/llicència |
-| [RO-009](#ro-009--favicon) | P2 | Pendent de validar | Favicon amb el logotip actual |
-| [RO-010](#ro-010--transicions-homogènies) | P2 | Pendent de validar | Transicions de 220 ms |
+| [RO-004](#ro-004--apartats-collapsables-dels-sidebars) | P1 | Pendent de validar | Reorganitzar els quatre menús; traslladar materials a la dreta |
+| [RO-006](#ro-006--selecció-duna-escala-destí) | P1 | Pendent de validar | Unificar el control d’escala i explicar-ne el resultat |
+| [RO-008](#ro-008--footer-i-quadre-v4v) | P2 | Pendent de validar | Versió al footer, icona del repo i V4V a dues columnes |
+| [RO-009](#ro-009--favicon) | P2 | Pendent de validar | Favicon quadrat |
 | [RO-011](#ro-011--comptador-dexportacions-i-umami) | P3 | Per estudiar | Comptador públic i futura integració Umami |
-| [RO-012](#ro-012--presentació-realista-del-model-imprès) | P3 | Ajornat | Escena de presentació sobre una taula |
-| [RO-013](#ro-013--marc-a-la-previsualització) | P2 | Pendent de validar | Marc opcional a la previsualització |
-| [RO-014](#ro-014--marc-imprimible-independent) | P2 | Ajornat | Marc imprimible amb marge configurable |
 | [RO-015](#ro-015--opcions-de-broquet-i-filament) | P2 | Pendent de validar | Exportació amb broquet/material seleccionables |
-| [RO-016](#ro-016--plaques-i-etiquetes-educatives) | P2 | Ajornat | Nom, coordenades i textos educatius imprimibles |
-| [RO-017](#ro-017--rosa-dels-vents-i-altres-complements) | P3 | Ajornat | Rosa dels vents i altres accessoris |
-| [RO-018](#ro-018--rotació-de-la-regió-seleccionada) | P2 | Pendent de validar | Rotació del retall geogràfic |
-| [RO-019](#ro-019--internacionalització) | P3 | Ajornat | Català, castellà, gallec, euskera i anglès |
-| [RO-020](#ro-020--unions-arrodonides-dels-camins) | P1 | Validat | Unions arrodonides dels camins |
-| [RO-021](#ro-021--quatre-materials-i-colors-a-bambu) | P1 | Validat | Quatre materials i colors a Bambu |
-| [RO-022](#ro-022--cobertes-horitzontals-dels-edificis) | P1 | Validat | Cobertes horitzontals de la v0.4.1 |
+| [RO-018](#ro-018--rotació-de-la-regió-seleccionada) | P2 | Pendent de validar | Orientació al costat del mapa, amb gir senzill i retorn al nord |
 | [RO-023](#ro-023--relleu-local-i-fonts-vectorials-de-més-precisió) | P2 | Pendent de validar | MDT local i cartografia de més precisió |
 | [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió) | P1 | Per estudiar | Unió general de volums i impressió física |
-| [RO-025](#ro-025--vegetació-mesurada-i-paisatges-històrics) | P3 | Ajornat | Vegetació mesurada i paisatges històrics |
 | [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts) | P1 | Per estudiar | Petjades, parts, altures i priorització de fonts d’edificis |
+| [RO-027](#ro-027--auditoria-dusabilitat-dels-sidebars) | P1 | Pendent de validar | Auditoria d’usabilitat i distribució de controls |
+| [RO-028](#ro-028--vegetació-proporcionada-a-lescala) | P1 | Pendent de validar | Mida de la vegetació coherent amb l’escala |
+| [RO-029](#ro-029--escala-i-límit-real-de-càrrega) | P1 | Pendent de validar | Coherència entre escala sol·licitada i àrea carregable |
 
-## Ordre de treball proposat
+## Ajornats
 
-1. **RO-001 validat:** reobrir només si reapareix amb nova evidència.
-2. **Bloc v0.6.0:** validar RO-004, RO-007–RO-010, RO-013, RO-015 i RO-018. RO-023 pendent de prova amb dades locals de l’usuari; l’accés automàtic continua per estudiar. La comprovació remota i de laminador la fa l’usuari.
-3. **RO-026 amb RO-002 i RO-023:** comparar Catastre INSPIRE (edificis i parts), ICGC RTL i les fonts actuals. Primer cas: el polígon ICGC 1074761 de Tamariu. RO-026 concentra l’estudi de fidelitat i selecció de fonts; RO-002 conserva el cas de regressió i RO-023 el marc general de precisió cartogràfica.
-4. **RO-024:** concretar una prova de laminat/impressió, conservant camins, cobertes i quatre materials ja validats.
-5. **RO-003:** reconsiderar després d’aquest grup, segons la prioritat expressa de l’usuari. No s’han canviat perfils de Bambu.
-6. Reavaluar P2/P3 amb els resultats anteriors, inclosos RO-007–RO-009. No s’activa analítica ni es construeixen complements en aquesta iteració.
+| ID | Prioritat | Estat | Feina |
+| --- | --- | --- | --- |
+| [RO-003](#ro-003--configuració-inesperada-en-importar-a-bambu) | P2 | Ajornat | Impressora, broquet i filament inesperats a Bambu |
+| [RO-012](#ro-012--presentació-realista-del-model-imprès) | P3 | Ajornat | Escena de presentació sobre una taula |
+| [RO-014](#ro-014--marc-imprimible-independent) | P2 | Ajornat | Marc imprimible amb marge configurable |
+| [RO-016](#ro-016--plaques-i-etiquetes-educatives) | P2 | Ajornat | Nom, coordenades i textos educatius imprimibles |
+| [RO-017](#ro-017--rosa-dels-vents-i-altres-complements) | P3 | Ajornat | Rosa dels vents i altres accessoris |
+| [RO-019](#ro-019--internacionalització) | P3 | Ajornat | Català, castellà, gallec, euskera i anglès |
+| [RO-025](#ro-025--vegetació-mesurada-i-paisatges-històrics) | P3 | Ajornat | Vegetació mesurada i paisatges històrics |
 
-## Detall de les línies
+## Criteris de seguiment
 
-### RO-001 — Pics de relleu i efectes sobre edificis
+- P1: fidelitat, fiabilitat o flux principal. P2: millora funcional o d’interfície. P3: exploració o acabat.
+- Estat breu a les taules; observacions, decisions i validacions al detall.
+- Proves locals, revisió d’usuari, laminador i impressió es distingeixen. Una compilació correcta no tanca una incidència d’ús.
+- Només s’arxiven les entrades completament validades. Els punts validats parcialment conserven l’abast pendent.
+- Els ajornaments indiquen una condició per reprendre’ls; no són descarts.
+- Versions 0.x fins que l’usuari declari estabilitat. Pages i CI remots els comprova l’usuari.
 
-**Validat / tancat (2026-11-01):** l’usuari confirma que sembla solucionat i demana tancar RO-001. Es conserva l’informe de proves i la distinció entre el mecanisme simulat i el navegador de l’usuari. Reobrir si reapareix amb dades concretes.
-
-**Correcció candidata (v0.4.2, 2026-11-01):** lectura binària WebP/PNG sense canvas, amb hashes i diagnòstics de tessel·les a la procedència. [Informe i comprovacions pendents](RO-001-DIAGNOSTIC.md).
-
-**Resultats locals:** quatre tessel·les de Tamariu comparades byte a byte amb libvips/sharp; prova de soroll simulat que crea un pic de 256 m i eleva l’edifici; sis generacions de geometria amb tres malles idèntiques per entrades idèntiques i terreny conservat en desactivar arbres/edificis. 44 proves i construcció estàtica superades.
-
-**Historial de la validació:** inicialment es va demanar confirmar a Brave si desapareixien els pics intermitents amb v0.4.2. La protecció de lectura de canvas continua sent una hipòtesi sustentada, no una causa demostrada directament al seu navegador. L’usuari va informar de tres simulacions sense deformacions i, posteriorment, ha confirmat que sembla solucionat i ha demanat tancar l’entrada. La comprovació directa del navegador afectat no s’havia completat.
-
-**Observació:** l’usuari veu habitualment un pic i de vegades dos, en posicions aparentment variables; poden elevar també els edificis pròxims. La sospita que siguin un càlcul nostre és una hipòtesi, encara no una causa demostrada. Es reobre la línia de fiabilitat del relleu tractada anteriorment: les reparacions de mostres de la v0.2 no tanquen aquest nou avís.
-
-**Si reapareix:** conservar regió, ajustos, diagnòstics i 3MF afectat per reobrir el cas; comparar dades, malla i preview. No hi ha feina activa sobre RO-001.
-
-**Per validar:** reproducció documentada abans/després, proves de regressió sobre la causa trobada i sèrie d’execucions amb les mateixes entrades sense nous pics. Comprovar també 3MF/STL, edificis propers i una zona amb penya-segats reals, que no s’han d’aplanar. La comprovació local ja existent d’altituds invàlides no és evidència suficient per tancar-lo.
+## Detall
 
 ### RO-002 — Edificis contigus representats com a megablocs
 
@@ -116,6 +67,7 @@ Nova petició registrada: **RO-026**, millorar la fidelitat dels edificis i defi
 
 **Per validar:** comparació de petjades d’entrada/sortida amb casos de cases contigües sobre pendent, conservant les separacions presents a les dades i una cota de coberta per edifici identificable. No donar per real una divisió inventada només per corregir l’aspecte. Si falten dades de separació, documentar el límit o buscar una font oberta millor. Validació d’alçàries condicionada a RO-001; relacionada amb RO-022 i RO-023.
 
+
 ### RO-003 — Configuració inesperada en importar a Bambu
 
 **Ajornat (2026-11-01):** petició expressa de l’usuari, prioritat P2. Reconsiderar després de RO-002, RO-004, RO-005 i RO-006. No es modifiquen perfils d’impressora en aquesta iteració.
@@ -125,6 +77,7 @@ Nova petició registrada: **RO-026**, millorar la fidelitat dels edificis i defi
 **Evidència del codi, no diagnòstic final:** l’exportador actual escriu colors i `filament_type: PLA`, però no un perfil d’impressora ni un diàmetre de broquet. Cal determinar què interpreta o completa el laminador, en lloc d’atribuir tots els valors al nostre fitxer.
 
 **Per validar:** comparar 3MF compatible i estàndard amb una configuració d’importació coneguda; entendre d’on surten els valors i corregir/documentar el comportament. Conservar l’assignació correcta dels quatre colors (RO-021), les mides i els materials. No confondre diàmetre del broquet, altura de capa i detall de la malla. Aquesta investigació precedeix RO-015; la comprovació al Bambu de l’usuari continua sent explícita.
+
 
 ### RO-004 — Apartats col·lapsables dels sidebars
 
@@ -136,13 +89,10 @@ Nova petició registrada: **RO-026**, millorar la fidelitat dels edificis i defi
 
 **Per validar:** menys scroll sense perdre valors ni accés a generar/exportar, ús amb teclat, estat desplegat accessible i header/footer estables. Canviar d’apartat no ha de provocar càlculs innecessaris ni interrompre una operació activa.
 
-### RO-005 — Més espai útil al preview
+**Revisió v0.7.0 · Pendent de validar:** Quatre blocs: lloc/orientació, mida/escala, relleu/edificis i vegetació. Materials reunits al sidebar dret. Títols i Generar fora del scroll intern.
 
-**Implementat a v0.5.0, pendent de validar (2026-11-01):** eliminat el subheader; controls, ajuda i estats dins del preview. En la comprovació local a 1280 × 720, la vista ocupa tot l’espai de 630 px entre header i footer. Canvis pendents i errors es mantenen en regions accessibles; exportació bloquejada fins a generar. Detectada i corregida la desaparició visual de la barra sobre el canvas animat, forçant-ne la composició en una capa pròpia. Falta validar-ne comoditat i visibilitat amb l’usuari.
+**Anotació original de l’usuari sobre v0.6.0:** Validat però millorar. Controls d'escala moguts a un apartat propi, controls de "Colors i materials" els passen completament al sidebar dret, perquè aquí només hi tenim l'opció per triar quants materials i res més.
 
-**Abast:** retirar el subheader «Tamariu · Palafrugell» i el text «Càlcul al navegador»; situar Restablir, Vista zenital, ajuda de gestos i missatges d’actualització com a elements flotants dins del preview. Es conserva la identificació de la regió a la selecció i a les metadades.
-
-**Per validar:** augment d’espai de model, controls llegibles sense tapar zones importants i sense interferir amb gir/zoom/pinzell. Els avisos de càlcul, errors i canvis pendents de generar continuen sent inequívocs i accessibles; no es perden en eliminar contenidors actuals. Relació amb RO-004 i RO-007.
 
 ### RO-006 — Selecció d’una escala destí
 
@@ -156,13 +106,10 @@ Nova petició registrada: **RO-026**, millorar la fidelitat dels edificis i defi
 
 **Per validar:** retall, preview, dimensions exportades i metadades concorden dins d’una tolerància documentada, amb peces quadrades/rectangulars, diverses latituds i partició en peces. Coordinar amb RO-018.
 
-### RO-007 — Escala i triangles al sidebar
+**Revisió v0.7.0 · Pendent de validar:** Un camp editable amb suggeriments, lectura 1:1000 o 1000, i equivalència entre centímetres del model i metres reals. Buit segueix el mapa.
 
-**Implementat a v0.6.0:** escala retirada del header i recompte de triangles traslladat a «La teva maqueta». L’escala només es mostra a les estadístiques del model (a banda del control d’escala sol·licitada). Comprovat al navegador; els triangles s’etiqueten com a complexitat, no precisió. Pendent de validar.
+**Anotació original de l’usuari sobre v0.6.0:** Validat però millorar fluxe.
 
-**Abast:** mostrar l’escala només a «La teva maqueta»; traslladar el recompte de triangles a estadístiques del sidebar. Només reconsiderar-ne la presència destacada si té una funció clara per a l’usuari.
-
-**Per validar:** no hi ha duplicació al header i es conserven les dades útils. El nombre de triangles no es presenta com una garantia de precisió cartogràfica. Coordinar amb RO-005.
 
 ### RO-008 — Footer i quadre V4V
 
@@ -172,6 +119,11 @@ Nova petició registrada: **RO-026**, millorar la fidelitat dels edificis i defi
 
 **Per validar:** tots els enllaços funcionen en local, fonts i atribucions continuen accessibles i el peu manté poca alçada. No es retira l’atribució pròpia del mapa. Mantenir el contingut de l’autor i les referències de Pentagrama/Plec.
 
+**Revisió v0.7.0 · Pendent de validar:** Versió al footer, icona de commit al repositori i V4V amb autor/fonts visibles a dues columnes.
+
+**Anotació original de l’usuari sobre v0.6.0:** Millorar layout del popup per encabir-ho sense haver de desplegar "Fonts cartogràfiques i projectes oberts". Podem utilitzar layout a doble columna a la part inferior (sobre l'autor - fonts i projectes oberts).
+
+
 ### RO-009 — Favicon
 
 **Implementat a v0.6.0:** favicon SVG amb els tres triangles, contrast propi sobre fons clar i ruta relativa al subdirectori. Asset inclòs a la construcció i enllaç verificat al DOM local. Pendent de validar a les pestanyes del navegador habitual de l’usuari.
@@ -180,13 +132,10 @@ Nova petició registrada: **RO-026**, millorar la fidelitat dels edificis i defi
 
 **Per validar:** es veu en navegador clar/fosc, no hi ha peticions de favicon inexistents i les rutes funcionen sota el subdirectori de GitHub Pages.
 
-### RO-010 — Transicions homogènies
+**Revisió v0.7.0 · Pendent de validar:** Favicon amb llenç quadrat de 38 × 38, conservant el logotip.
 
-**Promogut a P2 i implementat a v0.6.0 per petició de l’usuari:** transicions de color/vores i entrada de contingut de 220 ms; modals amb entrada i sortida i tancament accessible. Preferència de moviment reduït respectada per CSS i JavaScript. Durada de 0,22 s i Escape comprovats al navegador; avisos de càlcul/errors sense animació ni demora afegida. Pendent de validar l’experiència i el mode de moviment reduït al dispositiu de l’usuari.
+**Anotació original de l’usuari sobre v0.6.0:** Fons de la icona quadrat, no rectangular, per aprofitar millor l'espai disponible.
 
-**Abast:** transicions coherents d’aproximadament 220 ms en modals, popups i controls adequats. No imposar una animació a controls nadius que no la permetin bé.
-
-**Per validar:** obertura/tancament i focus correctes, respecte per la preferència de moviment reduït i cap retard afegit als avisos de treball o als errors. Aplicar després d’estabilitzar els components de RO-004/RO-005/RO-008.
 
 ### RO-011 — Comptador d’exportacions i Umami
 
@@ -198,6 +147,7 @@ Nova petició registrada: **RO-026**, millorar la fidelitat dels edificis i defi
 
 **Per validar:** recompte amb definició, font i data d’actualització; errors d’analítica no trenquen l’eina i no es mostren nombres inventats. Reconsiderar quan hi hagi desplegament estable i s’acordin els esdeveniments a mesurar.
 
+
 ### RO-012 — Presentació realista del model imprès
 
 **Proposta:** escena sobre una taula d’escola, amb perspectiva, llum, ombres i colors que ajudin a imaginar la peça impresa.
@@ -206,15 +156,6 @@ Nova petició registrada: **RO-026**, millorar la fidelitat dels edificis i defi
 
 **Per validar:** la representació usa la geometria, escala i colors seleccionats; es diferencia una escena il·lustrativa d’un resultat físic garantit. El model i la descàrrega continuen operatius si es desactiva aquesta vista.
 
-### RO-013 — Marc a la previsualització
-
-**Implementat a v0.6.0:** selector de marc visual negre, blanc o to de fusta, o sense marc. Adaptat a les dimensions reals del model, separat del grup de malles i del Worker. No modifica escala ni exportació. Comprovada la selecció al navegador amb model rectangular; el marc imprimible RO-014 continua ajornat. Pendent de validar.
-
-**Proposta:** marc opcional al voltant de la maqueta, amb acabat blanc/negre o fusta segons el disseny que s’acordi.
-
-**Proper pas:** definir secció, gruix, color, marge interior i relació amb la base. El marc de visualització ha de quedar distingit del model exportat i d’un futur marc imprimible.
-
-**Per validar:** concordança amb mides rectangulars/quadrades i peces grans, sense alterar l’escala del terreny ni afegir el marc a l’exportació sense selecció explícita. Precedeix RO-014; pot existir sense RO-012.
 
 ### RO-014 — Marc imprimible independent
 
@@ -223,6 +164,7 @@ Nova petició registrada: **RO-026**, millorar la fidelitat dels edificis i defi
 **Ajornament:** fins a definir RO-013 i una prova d’ajust físic (RO-024).
 
 **Per validar:** dimensions, tolerància i gruixos explícits; arxiu independent, ajust físic comprovat i estratègia per a marcs que superin el llit d’impressió. No assumir un encaix universal per a totes les impressores/materials.
+
 
 ### RO-015 — Opcions de broquet i filament
 
@@ -234,6 +176,7 @@ Nova petició registrada: **RO-026**, millorar la fidelitat dels edificis i defi
 
 **Per validar:** opcions reconegudes amb la impressora/perfil seleccionats, valors modificables per l’usuari i regressió de quatre colors. No prometre un perfil complet ni temperatures adequades només a partir de «PLA» o del diàmetre del broquet.
 
+
 ### RO-016 — Plaques i etiquetes educatives
 
 **Proposta:** nom del lloc, coordenades o text lliure («Serralada», «Estret», «Badia»...), en placa separada o integrada al model/marc, també llegible des del lateral en una prestatgeria.
@@ -242,6 +185,7 @@ Nova petició registrada: **RO-026**, millorar la fidelitat dels edificis i defi
 
 **Per validar:** text personalitzat amb accents, dimensions i llegibilitat a l’escala d’impressió, ubicació que no tapi geometria important i exportació separada/integrada segons l’opció. L’etiqueta no modifica les coordenades geogràfiques del model.
 
+
 ### RO-017 — Rosa dels vents i altres complements
 
 **Proposta:** accessoris sobre el model o en arxiu independent per afegir-los després d’imprimir.
@@ -249,6 +193,7 @@ Nova petició registrada: **RO-026**, millorar la fidelitat dels edificis i defi
 **Ajornament:** després del flux d’etiquetes i de definir l’orientació geogràfica de RO-018.
 
 **Per validar:** nord real coherent amb l’angle del retall, dimensions imprimibles i peça separada quan es demani. Girar la càmera no ha de modificar la direcció geogràfica indicada.
+
 
 ### RO-018 — Rotació de la regió seleccionada
 
@@ -260,6 +205,11 @@ Nova petició registrada: **RO-026**, millorar la fidelitat dels edificis i defi
 
 **Per validar:** un retall rectangular girat coincideix entre mapa i exportació, conserva mida/escala i exageració, costa i capes es retallen bé, i l’angle/nord queden a les metadades. Dependències de disseny: RO-006; afecta RO-014 i RO-017.
 
+**Revisió v0.7.0 · Pendent de validar:** Gir al costat del mapa amb passos de 15°, rang d’interacció −90°…90° i botó Nord. Manipulació directa del retall pendent d’una futura iteració.
+
+**Anotació original de l’usuari sobre v0.6.0:** Validat però sistema de rotació molt poc intuïtiu. Millor passar-ho d'alguna forma al mapa o inventar-se alguna altra forma. La rotació màxim entre -90º i 90º, no cal més (de fet, només amb 0-90º és suficient).
+
+
 ### RO-019 — Internacionalització
 
 **Objectiu:** català, castellà, gallec, euskera i anglès. Traduccions ajornades fins a estabilitzar el flux, tal com indica l’usuari.
@@ -270,27 +220,6 @@ Nova petició registrada: **RO-026**, millorar la fidelitat dels edificis i defi
 
 ## Seguiment de canvis anteriors
 
-### RO-020 — Unions arrodonides dels camins
-
-**Implementació:** v0.4.0. **Validació:** l’usuari confirma a la conversa que s’ha resolt el tema de les carreteres. Hi ha proves locals de girs, revolts tancats, punts repetits i amplada del traçat.
-
-**Tancat dins d’aquest abast.** Reobrir si es troba un cas concret amb discontinuïtats; conservar com a regressió quan canviïn projecció, escala o retall.
-
-### RO-021 — Quatre materials i colors a Bambu
-
-**Implementació:** exportador compatible disponible des de v0.2 i ajustos posteriors. **Validació:** l’usuari confirma que el 3MF s’obre com quatre materials separats amb els colors que corresponen al preview.
-
-**Tancat per a quatre materials en el cas comprovat.** No equival a validar tots els perfils d’impressora, 1/2/8 materials o impressió física. RO-003 no reobre aquesta assignació de colors: investiga la configuració de la impressora i els consumibles. Revalidar colors si RO-015 modifica aquestes metadades.
-
-### RO-022 — Cobertes horitzontals dels edificis
-
-**Implementació:** v0.4.1, commit `1f22c13`. Una cota horitzontal per petjada, situada sobre el punt més alt del terreny sota l’edifici més l’altura representada; amb límit de 5 m per defecte. Al costat baix pot haver-hi més façana.
-
-**Validació local feta:** 40 proves del projecte, cas de pic interior a la petjada, exageració ×1/×3, Tamariu i 5.355 triangles de coberta comprovats com a horitzontals; sòlids auditats amb Manifold.
-
-**Validació d’usuari (2026-11-01):** confirma que els canvis de v0.4.1 són correctes, exceptuant els edificis afectats pels pics incorrectes del terreny. La correcció de cobertes queda validada dins d’aquest abast; les alçàries contaminades pel relleu continuen obertes a RO-001. Els megablocs de RO-002 són un altre problema: una coberta plana no prova que la petjada representi un únic edifici real.
-
-## Línies tècniques ja identificades
 
 ### RO-023 — Relleu local i fonts vectorials de més precisió
 
@@ -300,6 +229,9 @@ Nova petició registrada: **RO-026**, millorar la fidelitat dels edificis i defi
 
 **Per validar:** precisió/resolució documentades, projeccions i límits coherents, costa i penya-segats comparats amb dades de referència, atribució i càrrega directa/importació compatibles amb el navegador i GitHub Pages. Un ombrejat WMS no es tracta com a elevació numèrica. Dona suport a RO-002.
 
+**Anotació original de l’usuari sobre v0.6.0:** Validat aparentment, però no puc garantir en diferents escenaris.
+
+
 ### RO-024 — Unió de volums i validació d’impressió
 
 **Origen:** [ARCHITECTURE.md](../ARCHITECTURE.md). La comprovació de sòlids i els talls amb Manifold ja existeixen; falta concretar la unió/reparació general dels volums i una validació física. No marcar aquesta línia resolta només perquè es pot exportar o tancar un tall.
@@ -308,6 +240,7 @@ Nova petició registrada: **RO-026**, millorar la fidelitat dels edificis i defi
 
 **Per validar:** malles, superfícies internes/encavalcaments, separació de materials i continuïtat entre peces; després, laminat i impressió física amb mesures d’ajust i observacions registrades. Les validacions de Bambu i d’impressió es documenten separades. Relació amb RO-003, RO-014 i RO-015.
 
+
 ### RO-025 — Vegetació mesurada i paisatges històrics
 
 **Origen:** conversa i [ARCHITECTURE.md](../ARCHITECTURE.md). Arbres individuals cartografiats/LiDAR i models d’un lloc en altres anys són línies futures diferents de la vegetació procedimental i de l’opció actual d’ocultar edificis.
@@ -315,6 +248,7 @@ Nova petició registrada: **RO-026**, millorar la fidelitat dels edificis i defi
 **Ajornament:** fins a estabilitzar el nucli i disposar de fonts adequades. Si s’activa una d’aquestes línies, dividir-la en tasques pròpies amb fonts, data i precisió. La menció de «v1» a la conversa és una fita futura, no autorització per canviar la versió a 1.0.
 
 **Per validar:** diferenciar dades mesurades/procedimentals i reconstruccions històriques; documentar dates compatibles de relleu, edificació i cobertes del sòl. Eliminar un edifici actual no acredita com era abans el terreny.
+
 
 ### RO-026 — Fidelitat dels edificis i selecció de fonts
 
@@ -337,64 +271,28 @@ Nova petició registrada: **RO-026**, millorar la fidelitat dels edificis i defi
 
 **Seguiment:** documentació inicial consultada; mostres comparatives, decisió de fonts, prototip, validació i integració pendents. RO-002 continua obert; RO-023 coordina projeccions/cartografia/relleu; RO-022 conserva el comportament de les cobertes ja validat.
 
-## Decisions, ajornaments i historial
+### RO-027 — Auditoria d’usabilitat dels sidebars
 
-**Iteració P2 (2026-11-01):** iniciades RO-004, RO-007–RO-010, RO-013, RO-015, RO-018 i RO-023. Resposta expressa de l’usuari: mantenir RO-003, RO-014 i RO-016 ajornats. Fi del bloc a v0.6.0: implementacions pendents de validar, amb abast parcial explícit a RO-015/RO-023; no s’ha descartat cap línia.
+**v0.7.0 · Pendent de validar:** inventari, agrupació de controls, noms, descobribilitat, accessibilitat i reducció de textos redundants. Aplicar una distribució coherent amb lloc/orientació, mida/escala, relleu/edificis i vegetació, i reunir colors/materials a la dreta. Informe i criteris a [AUDITORIA-USABILITAT.md](AUDITORIA-USABILITAT.md); revisió d’usuari pendent.
 
-**Evidència local del bloc:** 56 proves automatitzades superades; model realment generat i descarregat del navegador local a 150 × 200 mm, 1:1.000 i gir de 35°, amb GeoTIFF sintètic de control i els 632 edificis del GeoJSON oficial inclòs. Inspeccionats els 63.484 vèrtexs del 3MF compatible: límits XY correctes, procedència dels fitxers, gir, PETG i broquet de 0,4 mm conservats; marc visual absent de l’arxiu. El MDT de prova no acredita una millora del relleu real. No s’ha obert al laminador ni imprès, ni s’han comprovat Pages/CI remots.
+### RO-028 — Vegetació proporcionada a l’escala
 
-**Incidència trobada durant el bloc:** la partició d’un retall girat de 400 × 400 mm fallava en tornar a retallar un sòlid d’aigua que ja havia quedat buit en una peça (`NonFiniteVertex`). Reproduïda localment amb la mostra i corregida aturant el retall quan no queden triangles. Afegida una regressió de capa absent en tres peces; el cas complet de mostra genera les quatre peces, amb la capa d’aigua absent on correspon. Relació amb RO-018 i RO-024; no valida unions generals ni impressió física.
+**Observació:** les capçades tenen radi en mil·límetres constants i poden semblar arbres gegants en maquetes de territoris amplis.
 
-**Regressió posterior al navegador:** exportació ZIP completada amb quatre 3MF de 200 × 200 mm, gir de 35° i escala 1:1.000, amb relleu públic real. Inspeccionats tots els vèrtexs i la procedència de les quatre peces: coordenades finites dins de cada peça i mateix gir/escala. No comprovat al laminador.
+**v0.7.0 · Pendent de validar:** capçada orientativa de 12 m convertida a l’escala horitzontal, sense exageració vertical. Variació i incrustació conservades. Per sota de 0,25 mm de diàmetre s’ometen els arbres i es conserva la superfície del bosc; avís explícit, sense engrandir-los artificialment. El llindar és una política de representació, no una garantia universal d’impressió. La vegetació no acredita arbres individuals mesurats.
 
-**Descarts:** cap petició de l’usuari descartada en aquest triatge. Les idees posposades conserven una entrada amb condició de represa. **Bloquejos actuals:** cap declarat; les dependències es detallen a cada línia.
+### RO-029 — Escala i límit real de càrrega
 
-| Data | Entrades | Moviment i evidència |
+**Observació:** el rang numèric arriba a 1:100.000 però 1:50.000 o 1:100.000 poden superar el límit de 16 tessel·les de la cartografia actual.
+
+**v0.7.0 · Pendent de validar:** validació contextual abans de generar, mateixa lògica de capacitat a la càrrega i missatge amb escala màxima aproximada segons centre, mida i orientació. No confondre rang numèric amb cobertura admissible. Ampliar territori o reduir el detall automàticament requereix un estudi posterior; no s’ha d’amagar la desaparició de capes en canviar de zoom de dades.
+
+## Historial d’aquesta iteració
+
+| Data | Entrada | Moviment |
 | --- | --- | --- |
-| 2026-11-01 | RO-001–RO-019 | Triatge inicial de les notes de l’usuari. Observacions encara no reproduïdes per aquest triatge; prioritats proposades, sense implementar funcionalitats. |
-| 2026-11-01 | RO-020, RO-021 | Incorporada la validació expressa de l’usuari sobre camins i quatre materials. Abast de validació limitat al cas confirmat. |
-| 2026-11-01 | RO-022 | Incorporada la correcció local de v0.4.1; continua pendent de validació d’usuari. |
-| 2026-11-01 | RO-023–RO-025 | Incorporades les línies tècniques prèvies per evitar que quedin fora del seguiment. |
-| 2026-11-01 | RO-022 | Pendent de validar → Validat. Confirmació expressa de l’usuari de v0.4.1; s’exclouen els edificis afectats pels pics de RO-001. |
-| 2026-11-01 | RO-001 | Per reproduir → En curs. Diagnòstic amb entrades repetides i comparació entre dades, malla i preview; encara sense causa demostrada. |
-| 2026-11-01 | RO-001 | En curs → Pendent de validar, v0.4.2. Lectura binària exacta, regressió amb soroll simulat i sis generacions locals; falta confirmació del cas intermitent a Brave. Informe RO-001-DIAGNOSTIC.md. |
-| 2026-11-01 | RO-026 | Nova petició → Per estudiar / P1. Registrat l’estudi de fidelitat dels edificis, fonts candidates i criteris de priorització. Consulta documental inicial feta; encara sense comparar geometries ni canviar el proveïdor. Vinculada a RO-002, RO-023 i RO-022. Canvi només documental sobre v0.5.0. |
+| 2026-11-01 | RO-001, RO-005, RO-007, RO-010, RO-013, RO-020–RO-022 | Validades → arxivades a HISTORIAL.md per petició de l’usuari. |
+| 2026-11-01 | RO-004, RO-006, RO-008, RO-009, RO-018 | Anotacions de validació parcial → En curs amb millores concretes. Notes originals preservades a l’historial. |
+| 2026-11-01 | RO-027–RO-029 | Noves línies → En curs: auditoria, vegetació a escala i límit coherent de càrrega. |
 
-### Iteració v0.5.0
-
-Actualitzacions d’aquesta iteració (2026-11-01):
-
-| Data | Entrada | Canvi / decisió |
-| --- | --- | --- |
-| 2026-11-01 | RO-001 | Pendent de validar → Validat. Confirmació expressa de l’usuari i petició de tancament de v0.4.2. |
-| 2026-11-01 | RO-003 | Per reproduir / P1 → Ajornat / P2 per petició expressa; reconsiderar després del grup actual. |
-| 2026-11-01 | RO-002 | Per estudiar → En curs → Per estudiar. Diagnòstic fet a v0.5.0: una petjada ICGC original sense divisions; cal estudiar una font més detallada. No corregit ni descartat. |
-| 2026-11-01 | RO-004–RO-006 | Preparat / Per estudiar → En curs → Pendent de validar, v0.5.0. Interfície i escala implementades; 48 proves i construcció superades, comprovació local al navegador. Falta validació de l’usuari. |
-
-El 3MF estàndard descarregat realment del navegador local conserva una envolupant XY de **150 × 200 mm**, territori de **150 × 200 m**, `targetScale: 1000` i exageració **1,5**. Inspecció de tots els vèrtexs i metadades satisfactòria. No és una validació al laminador ni una impressió física.
-
-### Plantilla d’actualització
-
-Per cada canvi d’estat, afegir una fila a l’historial i actualitzar la vista de conjunt i el detall:
-
-| Data | Entrada | Estat anterior → nou | Canvi / decisió | Evidència local | Validació d’usuari / pendent | Commit / versió |
-| --- | --- | --- | --- | --- | --- | --- |
-| AAAA-MM-DD | RO-NNN | Preparat → En curs | Abast concret | Encara no feta | Què caldrà comprovar | — |
-
-Per a una entrada nova: observació/origen, prioritat amb motiu, estat, següent pas, dependències i criteris de validació. Si no es disposa de dades per prioritzar o diagnosticar, s’ha de dir explícitament.
-
-## Cobertura de les notes originals
-
-| Apartat de MILLORES-BUGS.md | Seguiment |
-| --- | --- |
-| General | RO-001, RO-009, RO-010 |
-| Edificis i captures | RO-002; relació amb RO-001 i RO-022 |
-| Footer | RO-008, RO-011 |
-| Gestió d’escala | RO-006, RO-007 |
-| Preview d’impressió i marc | RO-012, RO-013, RO-014 |
-| Configuració d’impressió | RO-003, RO-015 |
-| Complements | RO-016, RO-017 |
-| Rotar el model | RO-018 |
-| Organització de sidebars | RO-004 |
-| Preview | RO-005 |
-| Internacionalització | RO-019 |
+**Tancament local v0.7.0:** RO-004, RO-006, RO-008, RO-009, RO-018 i RO-027–RO-029 passen a pendent de validar. No s’amplia la capacitat de càrrega ni es dona per validada la usabilitat només amb proves locals. RO-023 manté la confirmació aparent de l’usuari i els límits d’abast previs.

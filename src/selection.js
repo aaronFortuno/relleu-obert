@@ -14,6 +14,12 @@ export function validateScale(value){
   if(!Number.isFinite(scale)||scale<100||scale>100000)throw Error('L’escala ha de ser entre 1:100 i 1:100.000.');
   return scale;
 }
+export function parseScaleInput(text){
+  const raw=String(text).trim();if(!raw||/^(segons el mapa|auto|automàtica)$/i.test(raw))return null;
+  let value=raw.replace(/^1\s*:\s*/, '').trim();if(/^\d{1,3}(?:\.\d{3})+$/.test(value))value=value.replaceAll('.','');
+  if(!/^\d+(?:[.,]\d+)?$/.test(value))throw Error('Escriu una escala com 1:1000 o tria «Segons el mapa».');
+  return validateScale(Number(value.replace(',','.')));
+}
 export function scaledBBox(center,widthMM,heightMM,denominator){
   const scale=validateScale(denominator),[lat,lon]=center;
   if(![lat,lon,widthMM,heightMM].every(Number.isFinite)||Math.abs(lat)>70||widthMM<=0||heightMM<=0)throw Error('Centre o mida fora de l’àmbit admès.');

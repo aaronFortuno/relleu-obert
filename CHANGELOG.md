@@ -1,5 +1,15 @@
 # Canvis
 
+## v0.7.0 — 2026-11-01
+
+- RO-027: auditoria heurística dels sidebars, agrupació per tasca i textos més directes. Quatre blocs: lloc/orientació, mida/escala, relleu/edificis i vegetació. Colors/materials reunits al sidebar dret. Els quatre títols i Generar continuen sempre visibles.
+- RO-006 / RO-018: un sol camp d’escala amb suggeriments i equivalència en metres; gir al costat del mapa amb passos de 15°, rang −90°…90° i retorn al nord.
+- RO-028: capçades procedimentals dimensionades en metres i convertides amb l’escala horitzontal. S’ometen per sota de 0,25 mm amb avís, conservant la superfície del bosc; no s’engrandeixen artificialment. Es mantenen la variació i la incrustació al terreny.
+- RO-029: prevalidació de l’àrea segons centre, mida i orientació, amb una escala màxima aproximada abans de carregar dades. El límit de càrrega actual es conserva; el rang numèric no implica que qualsevol àrea hi càpiga.
+- RO-008 / RO-009: versió al footer, icona de commit al repositori, V4V amb dues columnes visibles i favicon quadrat.
+- Backlog actiu separat de l’historial: arxivades les vuit entrades expressament validades per l’usuari. Anotacions originals preservades; les validacions parcials i els ajornaments continuen pendents.
+- 60 proves locals superades. Noves funcions pendents de validació d’usuari; sense comprovacions remotes de Pages/CI.
+
 ## v0.6.0 — 2026-11-01
 
 - RO-004: quatre títols sempre visibles, primer ancorat a dalt i últim abans del botó Generar. Scroll exclusiu al contingut de l’apartat obert; el sidebar esquerre no es desplaça. Ocultar/reobrir el mapa conserva el retall.

@@ -16,7 +16,7 @@ test('higher density adds trees, the result is reproducible, and crown heights v
   const options={size:50,resolution:2,density:3},sparse=buildModel(data,{...options,density:.5}),dense=buildModel(data,options),repeat=buildModel(data,options);
   assert(dense.treeCount>sparse.treeCount*3);assert.equal(dense.treeCount,repeat.treeCount);
   const a=dense.parts.find(p=>p.id==='green'),b=repeat.parts.find(p=>p.id==='green');assert.deepEqual(a.vertices,b.vertices);
-  const above=new Set();for(let i=2;i<a.vertices.length;i+=3)if(a.vertices[i]>4.5)above.add(a.vertices[i].toFixed(2));assert(above.size>10);
+  const crowns=dense.categories.find(p=>p.id==='trees'),above=new Set();for(let i=2;i<crowns.vertices.length;i+=3)if(crowns.vertices[i]>3.6)above.add(crowns.vertices[i].toFixed(3));assert(above.size>10);
   assert.equal(dense.provenance.options.density,3);
 });
 test('invalid density is rejected rather than producing an unbounded generation loop',()=>{assert.throws(()=>buildModel(data,{density:Infinity}),/rang/);assert.throws(()=>buildModel(data,{density:0}),/rang/);});

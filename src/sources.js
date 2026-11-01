@@ -2,13 +2,15 @@ import {VectorTile} from '@mapbox/vector-tile';
 import Pbf from 'pbf';
 import {inCatalonia,fetchOfficialBuildings,combineBuildings} from './buildings.js';
 import {loadTerrain,oceanTilePredicate} from './terrain-provider.js';
+import {regionTileCount,MAX_REGION_TILES} from './region-limits.js';
 
 export {lonLatTile} from './elevation.js';
 import {lonLatTile} from './elevation.js';
 export function tileList(bbox,z=14){
+  if(regionTileCount(bbox,z)>MAX_REGION_TILES)throw Error('L’àrea seleccionada supera la capacitat actual de càrrega. Redueix la mida de la peça, tria una escala més detallada o apropa el mapa.');
   const a=lonLatTile(bbox[0],bbox[3],z),b=lonLatTile(bbox[2],bbox[1],z),out=[];
   for(let x=Math.floor(a[0]);x<=Math.floor(b[0]);x++)for(let y=Math.floor(a[1]);y<=Math.floor(b[1]);y++)out.push({z,x,y});
-  if(out.length>16)throw Error('Selecciona una zona més petita: màxim 16 tessel·les per prova.');return out;
+  return out;
 }
 export function readVector(bytes,{x,y,z}){
   const tile=new VectorTile(new Pbf(bytes)),features=[];
