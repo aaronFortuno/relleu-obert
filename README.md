@@ -6,7 +6,8 @@ Prototip educatiu separat de Terrology: generació de maquetes geogràfiques amb
 
 - Web: https://aaronFortuno.github.io/relleu-obert/
 - Repositori: https://github.com/aaronFortuno/relleu-obert
-- Canvis i treball pendent: `CHANGELOG.md` i `ARCHITECTURE.md`.
+- Backlog, prioritats i seguiment: [work/BACKLOG.md](work/BACKLOG.md). Observacions originals: [work/MILLORES-BUGS.md](work/MILLORES-BUGS.md).
+- Historial de versions: [CHANGELOG.md](CHANGELOG.md). Decisions tècniques: [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## Provar-lo
 
