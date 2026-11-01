@@ -16,6 +16,10 @@ Terrology és un motor Python amb FastAPI, processos i dependències natives. Un
 
 ## Mòduls
 
+Des de v0.5, la selecció admet escala horitzontal fixa. L’extensió es calcula amb `scaledBBox` a partir de centre, mil·límetres físics i denominador; comparteix la mètrica local (111.320 m/grau i cosinus de latitud) amb la projecció. No és una escala geodèsica cadastral. Les proves exigeixen error inferior a 0,000001 mm a les cantonades projectades i 0,000001 al denominador per als casos de control. Les coordenades de malla es quantitzen posteriorment a 0,0001 mm. El Worker rebutja retalls que divergeixin de l’escala demanada més d’una part per milió. L’escala sol·licitada es conserva en la procedència i al model; la partició de peces no reescala les geometries.
+
+El zoom en mode fix només canvia el context visible del mapa; el marc es projecta des del retall geogràfic fix i pot sortir de la vista si s’amplia molt. Canviar mida/escala torna a enquadrar-lo. L’acordió pot amagar el mapa: es conserva la selecció, es notifica igualment el nou retall i s’ajorna l’enquadrament fins que torna a ser visible. Els errors d’escala bloquegen generació i exportació. La mostra local restaura el mode lliure per evitar usar dades fora de la seva cobertura.
+
 - `src/sources.js`: lectura de dades; ha d’evolucionar cap a adaptadors independents de proveïdor.
 - `src/geometry.js`: escala, partició de capes, mostreig d’elevació i construcció de volums.
 - `src/dem-decoder.js`, `src/dem-browser.js` i `src/terrarium.js`: descodificació binària WebP/PNG i conversió RGB numèrica, separades del DOM i del preview. El WASM s’inclou com a asset estàtic i es carrega quan cal llegir elevacions.

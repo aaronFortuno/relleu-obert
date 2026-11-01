@@ -1,5 +1,14 @@
 # Canvis
 
+## v0.5.0 — 2026-11-01
+
+- RO-001 validat i tancat per confirmació de l’usuari. RO-003 ajornat expressament per després d’aquesta iteració.
+- RO-004: acordió exclusiu al sidebar esquerre, amb «Tria el lloc» obert inicialment, controls natius de teclat i generació accessible fora dels apartats.
+- RO-005: eliminat el subheader del preview. Restablir, vista zenital, ajuda, avisos de càlcul, errors i canvis pendents se superposen dins de la vista; es recupera espai vertical.
+- RO-006: escala horitzontal lliure o fixada a 1:1.000, 1:1.500, 1:2.000 o personalitzada (1:100–1:100.000). La mida física determina el retall; el zoom del mapa no altera l’escala fixada. Exageració i divisió en peces independents. Escales invàlides bloquejades; coherència del retall comprovada també al motor.
+- RO-002: identificat el polígon ICGC 1074761 del revolt de la Perica com una sola petjada original sense divisions, conservada sense canvis. Informe reproduïble, regressió de conservació de petjades i advertiment a les limitacions. La separació de cases queda pendent d’una font més detallada; no es dona per corregida.
+- Proves locals d’escala, dimensions 3MF, petjades adjacents i patis, a més de les regressions existents. Validació d’usuari de les noves funcions pendent; no s’ha comprovat la web remota.
+
 ## v0.4.2 — 2026-11-01
 
 - RO-001: substituïda la lectura de les altituds amb `createImageBitmap`/canvas per descodificació binària WebP (libwebp WASM) i PNG (JavaScript). Els canals RGB numèrics ja no passen per lectura de píxels del canvas ni conversions de color de visualització.

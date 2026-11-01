@@ -68,6 +68,8 @@ La construcció estàtica inclou el mòdul carregat sota demanda i el WASM WebP 
 
 ## Comprovació pendent de l’usuari
 
+**Actualització 2026-11-01:** l’usuari confirma que sembla solucionat i demana tancar RO-001. Entrada validada. Es conserven a continuació els passos de diagnòstic per si reapareix; aquesta confirmació no equival a una reproducció directa del mecanisme al navegador per part de l’agent.
+
 1. Confirmar que es carrega **v0.4.2** i tornar a generar el territori; un model ja carregat amb la lectura anterior no es transforma automàticament.
 2. Repetir la mateixa mostra i ajustos, i després les ampliacions amb què s’havien observat pics, mantenint les proteccions habituals de Brave.
 3. Si reapareix: conservar el 3MF afectat i anotar regió, mida, detall, exageració i passos previs. La procedència permetrà comparar fitxers font i descodificació; distingir també si el pic apareix al laminador o només al preview.

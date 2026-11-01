@@ -2,7 +2,11 @@
 
 Prototip educatiu separat de Terrology: generació de maquetes geogràfiques amb JavaScript, íntegrament al navegador, publicable a GitHub Pages. No s’ha copiat codi de Terrology.
 
-**v0.4.2 experimental · 1 de novembre de 2026**
+**v0.5.0 experimental · 1 de novembre de 2026**
+
+Apartats de configuració replegables, controls flotants al preview i escala horitzontal fixa (1:1.000, 1:1.500, 1:2.000 o personalitzada). En mode fix, la mida física defineix el territori a aquesta escala: 15 × 20 cm a 1:1.000 són 150 × 200 m. Arrossegar el mapa canvia el centre; fer zoom només canvia la vista del mapa. L’exageració vertical és independent. «Mostra de Tamariu» recupera el retall de mostra i el mode lliure.
+
+RO-001 validat per l’usuari. El [diagnòstic RO-002](work/RO-002-DIAGNOSTIC.md) identifica el megabloc de la Perica com una única petjada ICGC sense divisions; separar-ne les cases requereix millors dades.
 
 - Web: https://aaronFortuno.github.io/relleu-obert/
 - Repositori: https://github.com/aaronFortuno/relleu-obert

@@ -5,6 +5,7 @@ import {CATEGORIES,groupMaterials} from './materials.js';
 import {polygonTester} from './polygon-index.js';
 import {lineBuffer} from './roads.js';
 import {buildingOptions,buildingRise} from './building-options.js';
+import {validateScale} from './selection.js';
 export {sampleHeight} from './elevation.js';
 const pc=polygonOps();
 
@@ -94,6 +95,7 @@ export function buildModel(data,options={},progress=()=>{}){
   const buildingsConfig=buildingOptions(options),{buildingMode,maxBuildingHeight}=buildingsConfig;
   const {size=160,exaggeration=1.5,density=2.5,resolution=36}=options,proj=makeProjection(data.meta.bbox,size,options),{width,height,project,scale}=proj,rect=box(width,height),warnings=[...(data.meta.sourceWarnings||[])];
   if(!Number.isFinite(density)||density<.25||density>5||!Number.isInteger(resolution)||resolution<2||resolution>100||!Number.isFinite(exaggeration)||exaggeration<1||exaggeration>5||!Number.isFinite(size)||size<50||size>450||width>450||height>450)throw Error('Els ajustos de la maqueta són fora del rang admès.');
+  if(options.targetScale!=null&&Math.abs(1000/scale-validateScale(options.targetScale))>options.targetScale*1e-6)throw Error('El retall no concorda amb l’escala demanada. Torna a seleccionar la regió.');
   const prepared=prepareElevationTiles(data.dem);
   if(prepared.diagnostics.repaired)warnings.push(`S’han reconstruït ${prepared.diagnostics.repaired} mostres d’altitud invàlides o pics aïllats a partir dels veïns.`);
   const water=[],ocean=[],green=[],woods=[],roads=[],buildings=[];let approximateBuildings=0;
@@ -132,6 +134,7 @@ export function buildModel(data,options={},progress=()=>{}){
   }
   const buildingMask=merge(clippedBuildings.map(poly=>[poly]));
   if(approximateBuildings)warnings.push(`${approximateBuildings} fragments d’edificis sense alçària disponible: alçària orientativa de 6 m.`);
+  if(data.meta.buildings?.officialCount)warnings.push('Algunes petjades ICGC agrupen diverses cases en un sol polígon, sense divisions interiors. Es conserva la petjada disponible; no se n’inventen separacions.');
   if(buildingMode==='limited')warnings.push(`Edificis amb coberta horitzontal, com a màxim ${maxBuildingHeight} m reals sobre el punt més alt de la petjada. La façana del costat baix pot superar aquest valor. ${limitedBuildings} fragments limitats en altura.`);
   if(buildingMode==='source')warnings.push('Edificis amb altura de les dades i coberta horitzontal sobre el punt més alt de la petjada: els pendents poden produir façanes més altes. No es disposa de la forma real de les teulades.');
   if(buildingMode==='flat')warnings.push('Només petjades d’edificis: capa de color de 0,12 mm adaptada al terreny, sense reconstrucció de teulades.');
@@ -172,7 +175,7 @@ export function updateVegetation(previous,changes={},progress=()=>{}){
   const mesh={vertices:[],faces:[]};for(const tree of placements)append(mesh,treeMesh(tree));
   const categories=ctx.base.slice();categories[5]={...CATEGORIES[5],vertices:new Float32Array(mesh.vertices),faces:new Uint32Array(mesh.faces)};
   const present=categories.filter(p=>p.faces.length),warnings=ctx.warnings.slice();if(capped)warnings.push('S’ha limitat la vegetació a 12.000 volums.');
-  const raw={categories:present,width,height,treeCount:placements.length,buildingCount:ctx.buildingCount,scale:Math.round(1000/ctx.scale),triangles:present.reduce((s,p)=>s+p.faces.length/3,0),warnings,elevationDiagnostics:ctx.diagnostics,provenance:{...ctx.meta,options,buildingHeightReference:'highest generated-terrain point within the clipped footprint; horizontal roof for limited/source modes',treeMode:'procedural, varied crowns embedded in the generated terrain mesh',elevation:ctx.meta.terrain?.provider||'Mapterhorn Terrarium',elevationRepairs:ctx.diagnostics,units:'millimeters',verticalExaggeration:options.exaggeration}};
+  const raw={categories:present,width,height,treeCount:placements.length,buildingCount:ctx.buildingCount,scale:options.targetScale??Math.round(1000/ctx.scale),triangles:present.reduce((s,p)=>s+p.faces.length/3,0),warnings,elevationDiagnostics:ctx.diagnostics,provenance:{...ctx.meta,options,buildingHeightReference:'highest generated-terrain point within the clipped footprint; horizontal roof for limited/source modes',treeMode:'procedural, varied crowns embedded in the generated terrain mesh',elevation:ctx.meta.terrain?.provider||'Mapterhorn Terrarium',elevationRepairs:ctx.diagnostics,units:'millimeters',verticalExaggeration:options.exaggeration}};
   const model=groupMaterials(raw,4);for(const material of MATERIALS)if(!model.parts.some(p=>p.id===material.id))warnings.push(`${material.name}: no hi ha geometria exportable d’aquesta capa a les dades carregades.`);
   Object.defineProperty(model,'context',{value:ctx});return model;
 }

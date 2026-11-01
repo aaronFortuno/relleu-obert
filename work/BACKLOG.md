@@ -1,10 +1,10 @@
 # Backlog de Relleu Obert
 
-Actualitzat: **2026-11-01**. Referència del codi: **v0.4.2**.
+Actualitzat: **2026-11-01**. Referència del codi: **v0.5.0**.
 
 Aquest és el registre de prioritats, decisions i comprovacions del projecte. El document [MILLORES-BUGS.md](MILLORES-BUGS.md) conserva les observacions originals de l’usuari, datades l’1 de novembre a les 12:30. La versió exacta del navegador amb què es van recollir aquestes observacions encara no consta: no es pressuposa que siguin totes de la v0.4.1.
 
-Les prioritats següents parteixen del triatge inicial. **RO-001 té una correcció candidata a v0.4.2, pendent de validar a Brave.** No hi ha versions futures compromeses.
+**RO-001 tancat amb la confirmació de l’usuari de v0.4.2.** RO-004, RO-005 i RO-006 implementats a v0.5.0, pendents de validar per l’usuari. RO-002 diagnosticat: cal una font amb divisions d’edificis. RO-003 ajornat expressament.
 
 ## Com es manté
 
@@ -44,12 +44,12 @@ Les prioritats següents parteixen del triatge inicial. **RO-001 té una correcc
 
 | ID | Prioritat | Estat | Línia |
 | --- | --- | --- | --- |
-| [RO-001](#ro-001--pics-de-relleu-i-efectes-sobre-edificis) | P0 | Pendent de validar | Pics de relleu i efectes sobre edificis |
+| [RO-001](#ro-001--pics-de-relleu-i-efectes-sobre-edificis) | P0 | Validat | Pics de relleu i efectes sobre edificis |
 | [RO-002](#ro-002--edificis-contigus-representats-com-a-megablocs) | P1 | Per estudiar | Edificis contigus representats com a megablocs |
-| [RO-003](#ro-003--configuració-inesperada-en-importar-a-bambu) | P1 | Per reproduir | Impressora, broquet i filament inesperats a Bambu |
-| [RO-004](#ro-004--apartats-collapsables-dels-sidebars) | P1 | Preparat | Apartats col·lapsables i menys scroll |
-| [RO-005](#ro-005--més-espai-útil-al-preview) | P1 | Preparat | Controls i missatges dins del preview |
-| [RO-006](#ro-006--selecció-duna-escala-destí) | P1 | Per estudiar | Selecció d’una escala destí |
+| [RO-003](#ro-003--configuració-inesperada-en-importar-a-bambu) | P2 | Ajornat | Impressora, broquet i filament inesperats a Bambu |
+| [RO-004](#ro-004--apartats-collapsables-dels-sidebars) | P1 | Pendent de validar | Apartats col·lapsables i menys scroll |
+| [RO-005](#ro-005--més-espai-útil-al-preview) | P1 | Pendent de validar | Controls i missatges dins del preview |
+| [RO-006](#ro-006--selecció-duna-escala-destí) | P1 | Pendent de validar | Selecció d’una escala destí |
 | [RO-007](#ro-007--escala-i-triangles-al-sidebar) | P2 | Preparat | Treure redundàncies estadístiques del header |
 | [RO-008](#ro-008--footer-i-quadre-v4v) | P2 | Preparat | Fonts dins de V4V i enllaços repo/llicència |
 | [RO-009](#ro-009--favicon) | P2 | Preparat | Favicon amb el logotip actual |
@@ -72,30 +72,36 @@ Les prioritats següents parteixen del triatge inicial. **RO-001 té una correcc
 
 ## Ordre de treball proposat
 
-1. **RO-001:** aconseguir un cas reproduïble i distingir dades, càlcul de malla i visualització. La relació amb l’altura dels edificis fa que sigui la primera prioritat.
-2. **RO-002 i RO-003:** aclarir la procedència dels blocs d’edificis i reproduir la configuració de Bambu. L’estudi de les petjades pot avançar amb RO-001 obert; la validació de les alçàries depèn del relleu correcte.
-3. **RO-022 i RO-024:** completar la comprovació de cobertes i concretar la prova de laminat/impressió. Les validacions ja fetes de camins i quatre materials són proves de regressió.
-4. **RO-004 i RO-005:** una iteració d’ús d’escriptori, amb menys scroll i més espai de model. Després, RO-007, RO-008 i RO-009 són ajustos petits que es poden agrupar.
-5. **RO-006:** dissenyar i comprovar la selecció per escala, abans de combinar-la amb rotació o marcs.
-6. Reavaluar P2/P3 amb els resultats anteriors. No s’activa analítica ni es construeixen complements durant el triatge.
+1. **RO-001 validat:** reobrir només si reapareix amb nova evidència.
+2. **RO-004, RO-005 i RO-006:** validar l’ús de v0.5.0. La comprovació remota la fa l’usuari.
+3. **RO-002 amb RO-023:** estudiar dades obertes que divideixin el polígon ICGC 1074761 en cases o parts reals. El diagnòstic de procedència ja està fet; les divisions no existeixen a la mostra actual.
+4. **RO-024:** concretar una prova de laminat/impressió, conservant camins, cobertes i quatre materials ja validats.
+5. **RO-003:** reconsiderar després d’aquest grup, segons la prioritat expressa de l’usuari. No s’han canviat perfils de Bambu.
+6. Reavaluar P2/P3 amb els resultats anteriors, inclosos RO-007–RO-009. No s’activa analítica ni es construeixen complements en aquesta iteració.
 
 ## Detall de les línies
 
 ### RO-001 — Pics de relleu i efectes sobre edificis
 
+**Validat / tancat (2026-11-01):** l’usuari confirma que sembla solucionat i demana tancar RO-001. Es conserva l’informe de proves i la distinció entre el mecanisme simulat i el navegador de l’usuari. Reobrir si reapareix amb dades concretes.
+
 **Correcció candidata (v0.4.2, 2026-11-01):** lectura binària WebP/PNG sense canvas, amb hashes i diagnòstics de tessel·les a la procedència. [Informe i comprovacions pendents](RO-001-DIAGNOSTIC.md).
 
 **Resultats locals:** quatre tessel·les de Tamariu comparades byte a byte amb libvips/sharp; prova de soroll simulat que crea un pic de 256 m i eleva l’edifici; sis generacions de geometria amb tres malles idèntiques per entrades idèntiques i terreny conservat en desactivar arbres/edificis. 44 proves i construcció estàtica superades.
 
-**Pendent de l’usuari:** confirmar a Brave si desapareixen els pics intermitents amb v0.4.2. La protecció de lectura de canvas és una hipòtesi sustentada, no una causa demostrada al seu navegador. L’usuari informa que tres simulacions consecutives amb ampliacions diferents no presentaven deformacions. La comprovació directa del navegador s’ha aturat perquè no se n’ha pogut verificar l’URL; no s’ha substituït per una altra via de control.
+**Historial de la validació:** inicialment es va demanar confirmar a Brave si desapareixien els pics intermitents amb v0.4.2. La protecció de lectura de canvas continua sent una hipòtesi sustentada, no una causa demostrada directament al seu navegador. L’usuari va informar de tres simulacions sense deformacions i, posteriorment, ha confirmat que sembla solucionat i ha demanat tancar l’entrada. La comprovació directa del navegador afectat no s’havia completat.
 
 **Observació:** l’usuari veu habitualment un pic i de vegades dos, en posicions aparentment variables; poden elevar també els edificis pròxims. La sospita que siguin un càlcul nostre és una hipòtesi, encara no una causa demostrada. Es reobre la línia de fiabilitat del relleu tractada anteriorment: les reparacions de mostres de la v0.2 no tanquen aquest nou avís.
 
-**Proper pas:** repetir exactament la mateixa regió, font, resolució i exageració, primer amb Tamariu inclòs i després amb la regió afectada. Guardar identificació de les dades, diagnòstic d’altituds, malla i fitxer exportat de cada intent. Comparar actualització/recarrega i execucions amb/sense edificis i arbres; distingir un pic de la malla d’un artefacte exclusiu del preview.
+**Si reapareix:** conservar regió, ajustos, diagnòstics i 3MF afectat per reobrir el cas; comparar dades, malla i preview. No hi ha feina activa sobre RO-001.
 
 **Per validar:** reproducció documentada abans/després, proves de regressió sobre la causa trobada i sèrie d’execucions amb les mateixes entrades sense nous pics. Comprovar també 3MF/STL, edificis propers i una zona amb penya-segats reals, que no s’han d’aplanar. La comprovació local ja existent d’altituds invàlides no és evidència suficient per tancar-lo.
 
 ### RO-002 — Edificis contigus representats com a megablocs
+
+**Diagnòstic completat a v0.5.0; millora pendent (2026-11-01):** el bloc de la captura és `icgc-1074761`, una sola petjada original d’uns 1.723 m² amb 29 coordenades i cap divisió interior. No hi ha petjades OSM intersectants a les tessel·les de la mostra. La combinació conserva la geometria exacta. [Informe reproduïble](RO-002-DIAGNOSTIC.md).
+
+**Decisió:** no inventar divisions. Advertiment de petjades agrupades incorporat a les limitacions i exportacions; regressió de conservació de totes les petjades oficials, adjacències i patis. Torna a `Per estudiar` per buscar una font oberta amb parts d’edificis (RO-023). No es dona el problema visual per corregit.
 
 **Evidència:** [Google Maps](google-maps.png), [OpenStreetMap](openstreetmap.png) i [Relleu Obert](relleu-obert.png), a la corba del carrer de la Perica / GIV-6542 de Tamariu. La captura OSM mostra absència de diverses petjades; la de Relleu Obert mostra blocs grans. Les imatges no identifiquen per si soles quina operació els ha produït.
 
@@ -105,6 +111,8 @@ Les prioritats següents parteixen del triatge inicial. **RO-001 té una correcc
 
 ### RO-003 — Configuració inesperada en importar a Bambu
 
+**Ajornat (2026-11-01):** petició expressa de l’usuari, prioritat P2. Reconsiderar després de RO-002, RO-004, RO-005 i RO-006. No es modifiquen perfils d’impressora en aquesta iteració.
+
 **Observació:** l’usuari veu una impressora/configuració estranya, broquet de 0,2 mm i un filament que ha de canviar manualment. Cal registrar versió de Bambu, fitxer concret i passos d’importació.
 
 **Evidència del codi, no diagnòstic final:** l’exportador actual escriu colors i `filament_type: PLA`, però no un perfil d’impressora ni un diàmetre de broquet. Cal determinar què interpreta o completa el laminador, en lloc d’atribuir tots els valors al nostre fitxer.
@@ -113,17 +121,25 @@ Les prioritats següents parteixen del triatge inicial. **RO-001 té una correcc
 
 ### RO-004 — Apartats col·lapsables dels sidebars
 
+**Implementat a v0.5.0, pendent de validar (2026-11-01):** acordió exclusiu al sidebar esquerre, primera secció oberta i generació fora dels apartats. Retirada la introducció visible per donar lloc als quatre apartats. Comprovat localment amb clic i teclat, conservant valors i sense reiniciar el model; header/footer visibles a 1280 × 720. Falta la valoració d’ús de l’usuari.
+
 **Abast:** començar amb «Tria el lloc» obert i els apartats següents replegats; comportament exclusiu amb un apartat desplegat cada vegada, seguint la referència de Pentagrama. Revisar sobretot el sidebar esquerre.
 
 **Per validar:** menys scroll sense perdre valors ni accés a generar/exportar, ús amb teclat, estat desplegat accessible i header/footer estables. Canviar d’apartat no ha de provocar càlculs innecessaris ni interrompre una operació activa.
 
 ### RO-005 — Més espai útil al preview
 
+**Implementat a v0.5.0, pendent de validar (2026-11-01):** eliminat el subheader; controls, ajuda i estats dins del preview. En la comprovació local a 1280 × 720, la vista ocupa tot l’espai de 630 px entre header i footer. Canvis pendents i errors es mantenen en regions accessibles; exportació bloquejada fins a generar. Detectada i corregida la desaparició visual de la barra sobre el canvas animat, forçant-ne la composició en una capa pròpia. Falta validar-ne comoditat i visibilitat amb l’usuari.
+
 **Abast:** retirar el subheader «Tamariu · Palafrugell» i el text «Càlcul al navegador»; situar Restablir, Vista zenital, ajuda de gestos i missatges d’actualització com a elements flotants dins del preview. Es conserva la identificació de la regió a la selecció i a les metadades.
 
 **Per validar:** augment d’espai de model, controls llegibles sense tapar zones importants i sense interferir amb gir/zoom/pinzell. Els avisos de càlcul, errors i canvis pendents de generar continuen sent inequívocs i accessibles; no es perden en eliminar contenidors actuals. Relació amb RO-004 i RO-007.
 
 ### RO-006 — Selecció d’una escala destí
+
+**Implementat a v0.5.0, pendent de validar (2026-11-01):** mode lliure i escala fixada (presets i personalitzada, 100–100.000). En mode fix, mida i escala determinen l’extensió; moure el mapa canvia el centre, i el zoom només la vista del mapa. La mostra de Tamariu restaura el mode lliure i el retall de mostra.
+
+**Comprovacions locals:** 48 proves superades, amb latituds 0°, 41,918° i 65°, peces quadrades/rectangulars/40 cm, partició, escala personalitzada decimal, exageracions ×1/×3, coherència del motor, dimensions i unitats 3MF. Al navegador local: generació de 150 × 200 mm a 1:1.000, selecció de 150 × 200 m, canvi d’escala amb mapa ocult, zoom i reobertura del mapa, escala personalitzada i quatre peces de 200 mm, i bloqueig per escala invàlida. Tolerància numèrica i aproximació mètrica documentades a ARCHITECTURE.md. Falta la validació de l’usuari/laminador; no s’ha comprovat Pages ni CI remots.
 
 **Abast:** poder demanar 1:1000, 1:1500, 1:2000 o una escala personalitzada, i adaptar l’extensió del retall del mapa a la mida física escollida. L’escala és horitzontal; l’exageració vertical es manté independent.
 
@@ -288,6 +304,19 @@ Les prioritats següents parteixen del triatge inicial. **RO-001 té una correcc
 | 2026-11-01 | RO-022 | Pendent de validar → Validat. Confirmació expressa de l’usuari de v0.4.1; s’exclouen els edificis afectats pels pics de RO-001. |
 | 2026-11-01 | RO-001 | Per reproduir → En curs. Diagnòstic amb entrades repetides i comparació entre dades, malla i preview; encara sense causa demostrada. |
 | 2026-11-01 | RO-001 | En curs → Pendent de validar, v0.4.2. Lectura binària exacta, regressió amb soroll simulat i sis generacions locals; falta confirmació del cas intermitent a Brave. Informe RO-001-DIAGNOSTIC.md. |
+
+### Iteració v0.5.0
+
+Actualitzacions d’aquesta iteració (2026-11-01):
+
+| Data | Entrada | Canvi / decisió |
+| --- | --- | --- |
+| 2026-11-01 | RO-001 | Pendent de validar → Validat. Confirmació expressa de l’usuari i petició de tancament de v0.4.2. |
+| 2026-11-01 | RO-003 | Per reproduir / P1 → Ajornat / P2 per petició expressa; reconsiderar després del grup actual. |
+| 2026-11-01 | RO-002 | Per estudiar → En curs → Per estudiar. Diagnòstic fet a v0.5.0: una petjada ICGC original sense divisions; cal estudiar una font més detallada. No corregit ni descartat. |
+| 2026-11-01 | RO-004–RO-006 | Preparat / Per estudiar → En curs → Pendent de validar, v0.5.0. Interfície i escala implementades; 48 proves i construcció superades, comprovació local al navegador. Falta validació de l’usuari. |
+
+El 3MF estàndard descarregat realment del navegador local conserva una envolupant XY de **150 × 200 mm**, territori de **150 × 200 m**, `targetScale: 1000` i exageració **1,5**. Inspecció de tots els vèrtexs i metadades satisfactòria. No és una validació al laminador ni una impressió física.
 
 ### Plantilla d’actualització
 

@@ -9,3 +9,13 @@ export function tilePlan(width,height,max=200){
   return {cols,rows,tiles};
 }
 export function physicalBBox([lat,lon],widthKM,heightKM){const dy=heightKM/2/111.32,dx=widthKM/2/(111.32*Math.cos(lat*Math.PI/180));return [lon-dx,lat-dy,lon+dx,lat+dy];}
+export function validateScale(value){
+  const scale=Number(value);
+  if(!Number.isFinite(scale)||scale<100||scale>100000)throw Error('L’escala ha de ser entre 1:100 i 1:100.000.');
+  return scale;
+}
+export function scaledBBox(center,widthMM,heightMM,denominator){
+  const scale=validateScale(denominator),[lat,lon]=center;
+  if(![lat,lon,widthMM,heightMM].every(Number.isFinite)||Math.abs(lat)>70||widthMM<=0||heightMM<=0)throw Error('Centre o mida fora de l’àmbit admès.');
+  return physicalBBox(center,widthMM*scale/1e6,heightMM*scale/1e6);
+}
