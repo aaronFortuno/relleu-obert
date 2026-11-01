@@ -6,6 +6,8 @@ Aquest és el registre de prioritats, decisions i comprovacions del projecte. El
 
 **RO-001 tancat amb la confirmació de l’usuari de v0.4.2.** RO-004, RO-005 i RO-006 implementats a v0.5.0, pendents de validar per l’usuari. RO-002 diagnosticat: cal una font amb divisions d’edificis. RO-003 ajornat expressament.
 
+Nova petició registrada: **RO-026**, millorar la fidelitat dels edificis i definir la selecció/combinació de fonts. Estudi documental inicial fet; comparació de geometries i integració encara pendents.
+
 ## Com es manté
 
 - Cada línia té un identificador estable `RO-NNN`. No es renumera ni s’esborra quan es tanca.
@@ -69,12 +71,13 @@ Aquest és el registre de prioritats, decisions i comprovacions del projecte. El
 | [RO-023](#ro-023--relleu-local-i-fonts-vectorials-de-més-precisió) | P2 | Per estudiar | MDT local i cartografia de més precisió |
 | [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió) | P1 | Per estudiar | Unió general de volums i impressió física |
 | [RO-025](#ro-025--vegetació-mesurada-i-paisatges-històrics) | P3 | Ajornat | Vegetació mesurada i paisatges històrics |
+| [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts) | P1 | Per estudiar | Petjades, parts, altures i priorització de fonts d’edificis |
 
 ## Ordre de treball proposat
 
 1. **RO-001 validat:** reobrir només si reapareix amb nova evidència.
 2. **RO-004, RO-005 i RO-006:** validar l’ús de v0.5.0. La comprovació remota la fa l’usuari.
-3. **RO-002 amb RO-023:** estudiar dades obertes que divideixin el polígon ICGC 1074761 en cases o parts reals. El diagnòstic de procedència ja està fet; les divisions no existeixen a la mostra actual.
+3. **RO-026 amb RO-002 i RO-023:** comparar Catastre INSPIRE (edificis i parts), ICGC RTL i les fonts actuals. Primer cas: el polígon ICGC 1074761 de Tamariu. RO-026 concentra l’estudi de fidelitat i selecció de fonts; RO-002 conserva el cas de regressió i RO-023 el marc general de precisió cartogràfica.
 4. **RO-024:** concretar una prova de laminat/impressió, conservant camins, cobertes i quatre materials ja validats.
 5. **RO-003:** reconsiderar després d’aquest grup, segons la prioritat expressa de l’usuari. No s’han canviat perfils de Bambu.
 6. Reavaluar P2/P3 amb els resultats anteriors, inclosos RO-007–RO-009. No s’activa analítica ni es construeixen complements en aquesta iteració.
@@ -102,6 +105,8 @@ Aquest és el registre de prioritats, decisions i comprovacions del projecte. El
 **Diagnòstic completat a v0.5.0; millora pendent (2026-11-01):** el bloc de la captura és `icgc-1074761`, una sola petjada original d’uns 1.723 m² amb 29 coordenades i cap divisió interior. No hi ha petjades OSM intersectants a les tessel·les de la mostra. La combinació conserva la geometria exacta. [Informe reproduïble](RO-002-DIAGNOSTIC.md).
 
 **Decisió:** no inventar divisions. Advertiment de petjades agrupades incorporat a les limitacions i exportacions; regressió de conservació de totes les petjades oficials, adjacències i patis. Torna a `Per estudiar` per buscar una font oberta amb parts d’edificis (RO-023). No es dona el problema visual per corregit.
+
+**Continuació:** la investigació i priorització de fonts s’organitza a RO-026. Aquesta incidència manté l’evidència del megabloc i es validarà quan hi hagi una millora real sobre el mateix cas.
 
 **Evidència:** [Google Maps](google-maps.png), [OpenStreetMap](openstreetmap.png) i [Relleu Obert](relleu-obert.png), a la corba del carrer de la Perica / GIV-6542 de Tamariu. La captura OSM mostra absència de diverses petjades; la de Relleu Obert mostra blocs grans. Les imatges no identifiquen per si soles quina operació els ha produït.
 
@@ -291,6 +296,27 @@ Aquest és el registre de prioritats, decisions i comprovacions del projecte. El
 
 **Per validar:** diferenciar dades mesurades/procedimentals i reconstruccions històriques; documentar dates compatibles de relleu, edificació i cobertes del sòl. Eliminar un edifici actual no acredita com era abans el terreny.
 
+### RO-026 — Fidelitat dels edificis i selecció de fonts
+
+**Origen i prioritat:** petició expressa de l’usuari després de v0.5.0 (2026-11-01). P1 perquè afecta la fidelitat del model imprès i pot resoldre els megablocs de RO-002. Estat `Per estudiar`; no s’ha canviat el proveïdor de l’aplicació.
+
+**Objectiu:** obtenir petjades, separacions, patis i parts de volum més fidels; tractar per separat altures i cobertes. Definir quina font convé per regió i atribut, com substituir-la o complementar-la i com explicar-ne les limitacions.
+
+**Estudi inicial registrat:** [RO-026-FONTS-EDIFICIS.md](RO-026-FONTS-EDIFICIS.md). Fonts oficials consultades: Catastre INSPIRE, incloses les parts `BuildingPart`; ICGC RTL, equivalent a 1:1.000; RTT actual i OSM com a comparadors i possibles complements. Verificada la documentació, però no la cobertura detallada de Tamariu, la millora geomètrica, l’accés directe des del navegador ni la integració. L’ordre d’estudi no és encara una jerarquia automàtica de proveïdors.
+
+**Treball proposat:**
+
+1. Descarregar una mostra pública de Tamariu/Palafrugell i comparar el bloc 1074761, una casa aïllada i un edifici amb pati. Identificar parts, contorns, omissions, dates i atributs reals; no confondre parts cadastrals amb cases independents.
+2. Preparar una matriu de fonts: cobertura, data de captura/actualització, precisió, parts disponibles, significat de les altures, cobertes, llicència/atribució, formats, mida de descàrrega i viabilitat al navegador.
+3. Proposar selecció per qualitat comprovada de zona/atribut. Mantenir una família coherent d’edifici i parts, evitar duplicats i unions que eliminin separacions, i conservar procedència i motius de les alternatives utilitzades. No substituir sempre per ICGC o Catastre només pel nom del proveïdor.
+4. Provar un adaptador de la font que aporti una millora demostrada. Si l’accés directe no és viable, valorar importació local o preparació de dades estàtiques obertes, mantenint GitHub Pages sense backend propi.
+
+**Criteris d’acceptació:** millora comparada sobre els casos de control i una segona zona; petjades/parts i patis conservats sense duplicació ni divisions inventades; altures i cobertes distingint dades mesurades, estimacions i límits d’usuari; escala i cobertes horitzontals sense regressions; procedència per element/atribut i avisos de cobertura incompleta; mateixa geometria en preview i exportació; accés, reutilització i cost de càlcul compatibles amb el projecte. Validació local, d’usuari i de laminador separades.
+
+**Límits de l’estudi:** una imatge WMS no proporciona per si sola geometries vectorials; el nombre de plantes no és una altura mesurada; un fitxer 3D no garanteix teulades reals. No es prometen cobertes inclinades fidels on no hi hagi dades. No s’implementa tota aquesta línia només per registrar-la.
+
+**Seguiment:** documentació inicial consultada; mostres comparatives, decisió de fonts, prototip, validació i integració pendents. RO-002 continua obert; RO-023 coordina projeccions/cartografia/relleu; RO-022 conserva el comportament de les cobertes ja validat.
+
 ## Decisions, ajornaments i historial
 
 **Descarts:** cap petició de l’usuari descartada en aquest triatge. Les idees posposades conserven una entrada amb condició de represa. **Bloquejos actuals:** cap declarat; les dependències es detallen a cada línia.
@@ -304,6 +330,7 @@ Aquest és el registre de prioritats, decisions i comprovacions del projecte. El
 | 2026-11-01 | RO-022 | Pendent de validar → Validat. Confirmació expressa de l’usuari de v0.4.1; s’exclouen els edificis afectats pels pics de RO-001. |
 | 2026-11-01 | RO-001 | Per reproduir → En curs. Diagnòstic amb entrades repetides i comparació entre dades, malla i preview; encara sense causa demostrada. |
 | 2026-11-01 | RO-001 | En curs → Pendent de validar, v0.4.2. Lectura binària exacta, regressió amb soroll simulat i sis generacions locals; falta confirmació del cas intermitent a Brave. Informe RO-001-DIAGNOSTIC.md. |
+| 2026-11-01 | RO-026 | Nova petició → Per estudiar / P1. Registrat l’estudi de fidelitat dels edificis, fonts candidates i criteris de priorització. Consulta documental inicial feta; encara sense comparar geometries ni canviar el proveïdor. Vinculada a RO-002, RO-023 i RO-022. Canvi només documental sobre v0.5.0. |
 
 ### Iteració v0.5.0
 
