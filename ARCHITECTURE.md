@@ -41,7 +41,7 @@ Actualització v0.2: ja hi ha adaptador d’edificacions ICGC, fonts alternative
 
 ## Limitacions de disseny
 
-Des de v0.4, `src/roads.js` uneix buffers de segments amb discs del mateix radi als revolts i extrems. `src/building-options.js` explicita el límit de 5 m per defecte i les alternatives de petjada, font i absència. En mode limitat, les superfícies dels edificis comparteixen la triangulació del terreny i afegeixen com a màxim l’altura seleccionada; no es creen plataformes horitzontals sobre el punt més alt de la petjada ni mínims de 0,6 mm.
+Des de v0.4, `src/roads.js` uneix buffers de segments amb discs del mateix radi als revolts i extrems. `src/building-options.js` explicita el límit de 5 m per defecte i les alternatives de petjada, font i absència. Des de v0.4.1, tant el mode limitat com el de la font tenen una única coberta horitzontal per petjada: cota màxima del terreny retallat sota l’edifici més l’altura representada. El màxim inclou els vèrtexs dels talls del terreny dins de la petjada, no només el perímetre original. La base queda incrustada al terreny; al costat baix es veu més façana. L’altura afegida conserva l’escala geogràfica, sense exageració vertical ni mínim artificial de 0,6 mm.
 
 Les teulades reals requereixen dades addicionals de cobertes o malles 3D. Per a paisatges històrics caldran fonts datades compatibles de cartografia i relleu: ocultar construccions actuals no equival a reconstruir un any anterior. Ambdues línies queden per a fases posteriors.
 

@@ -1,5 +1,12 @@
 # Canvis
 
+## v0.4.1 — 2026-11-01
+
+- Corregida la interpretació del límit d’edificis: la coberta és horitzontal a tota la petjada, no segueix el pendent. L’altura limitada es mesura sobre el punt més alt del terreny dins de la petjada; la façana del costat baix pot ser més alta.
+- Referència de cota calculada sobre la triangulació real, incloent punts alts interiors i fragments retallats d’una mateixa petjada. La base segueix incrustada al terreny.
+- Textos d’interfície, procedència i documentació actualitzats; es conserven els modes de petjades sense volum i sense edificis.
+- 40 proves locals superades, incloses cobertes horitzontals amb exageració del relleu i pics interiors a la petjada.
+
 ## v0.4.0 — 2026-11-01
 
 - Camins amb unions i extrems arrodonits segons l’amplada del traçat. Es cobreixen els buits exteriors de les corbes i els girs tancats sense alterar l’eix cartogràfic.

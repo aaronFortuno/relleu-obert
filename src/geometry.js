@@ -52,8 +52,8 @@ export class Surface {
     return {vertices:new Float32Array(this.vertices),faces:new Uint32Array(this.faces)};
   }
 }
-function terrainSolid(polys,height,bottom,width,heightMM,res){
-  const result={vertices:[],faces:[]};if(!polys.length)return {vertices:new Float32Array(),faces:new Uint32Array()};
+function* terrainPatches(polys,width,heightMM,res){
+  if(!polys.length)return;
   // Clip into columns once. Intersecting a whole road network for every triangle
   // is both slow and numerically fragile; each cell then sees only local edges.
   let minX=width,minY=heightMM,maxX=0,maxY=0;for(const poly of polys)for(const [x,y]of poly[0]){minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);}
@@ -64,9 +64,24 @@ function terrainSolid(polys,height,bottom,width,heightMM,res){
     const candidates=intersect(columns[i],[[[[x,y],[x1,y],[x1,y1],[x,y1],[x,y]]]]);
     if(!candidates.length)continue;
     for(const tri of [[[x,y],[x1,y],[x1,y1],[x,y]],[[x,y],[x1,y1],[x,y1],[x,y]]]){
-      for(const poly of intersect(candidates,[[tri]])){const patch=new Surface();patch.polygon(poly,height);append(result,patch.solid(bottom));}
+      yield* intersect(candidates,[[tri]]);
     }
-  }return {vertices:new Float32Array(result.vertices),faces:new Uint32Array(result.faces)};
+  }
+}
+function solidPatches(patches,height,bottom){
+  const result={vertices:[],faces:[]};for(const poly of patches){const patch=new Surface();patch.polygon(poly,height);append(result,patch.solid(bottom));}
+  return {vertices:new Float32Array(result.vertices),faces:new Uint32Array(result.faces)};
+}
+function terrainSolid(polys,height,bottom,width,heightMM,res){
+  return solidPatches(terrainPatches(polys,width,heightMM,res),height,bottom);
+}
+export function levelBuildingSolid(polys,rise,ground,width,height,res){
+  const patches=[...terrainPatches(polys,width,height,res)];let referenceGround=-Infinity;
+  // Piecewise-planar terrain can peak inside the footprint, not just at its
+  // original outline vertices. Reuse the actual terrain cuts to find its maximum.
+  for(const poly of patches)for(const ring of poly)for(const [x,y]of ring)referenceGround=Math.max(referenceGround,ground(x,y));
+  const roof=referenceGround+rise;
+  return {...solidPatches(patches,()=>roof,(x,y)=>ground(x,y)-.3),roof,referenceGround};
 }
 function append(target,mesh){const offset=target.vertices.length/3;for(const v of mesh.vertices)target.vertices.push(v);for(const i of mesh.faces)target.faces.push(i+offset);}
 export function treeMesh({x,y,ground,rx,ry,rz,rotation=0,phase=0}){
@@ -109,15 +124,15 @@ export function buildModel(data,options={},progress=()=>{}){
   add(7,terrainSolid(inlandWater,(x,y)=>Math.max(3,ground(x,y)-.3),()=>0,width,height,resolution));
   progress('Afegint edificis i vegetació…');
   let buildingCount=0,limitedBuildings=0;const clippedBuildings=[];
-  if(buildingMode!=='none')for(const b of buildings){const polys=intersect(intersect([b.poly],rect),land);for(const poly of polys){
-    if(Math.abs(area(poly[0]))<.04)continue;clippedBuildings.push(poly);const h=buildingRise(b.height,scale,buildingsConfig);
-    if(buildingMode==='source'){const base=Math.max(...poly[0].map(p=>ground(...p))),surf=new Surface();surf.polygon(poly,()=>base+h);add(2,surf.solid((x,y)=>ground(x,y)-.3));}
-    else add(2,terrainSolid([poly],(x,y)=>ground(x,y)+h,(x,y)=>ground(x,y)-.3,width,height,resolution));
-    buildingCount++;if(b.estimated)approximateBuildings++;if(buildingMode==='limited'&&b.height>maxBuildingHeight)limitedBuildings++;
-  }}
+  if(buildingMode!=='none')for(const b of buildings){const polys=intersect(intersect([b.poly],rect),land).filter(poly=>Math.abs(area(poly[0]))>=.04);if(!polys.length)continue;
+    clippedBuildings.push(...polys);const h=buildingRise(b.height,scale,buildingsConfig);
+    if(buildingMode==='flat')add(2,terrainSolid(polys,(x,y)=>ground(x,y)+h,(x,y)=>ground(x,y)-.3,width,height,resolution));
+    else add(2,levelBuildingSolid(polys,h,ground,width,height,resolution));
+    buildingCount+=polys.length;if(b.estimated)approximateBuildings+=polys.length;if(buildingMode==='limited'&&b.height>maxBuildingHeight)limitedBuildings+=polys.length;
+  }
   const buildingMask=merge(clippedBuildings.map(poly=>[poly]));
   if(approximateBuildings)warnings.push(`${approximateBuildings} fragments d’edificis sense alçària disponible: alçària orientativa de 6 m.`);
-  if(buildingMode==='limited')warnings.push(`Edificis adaptats al terreny i limitats a ${maxBuildingHeight} m reals, sense exageració vertical ni altura mínima de maqueta. ${limitedBuildings} fragments retallats en altura.`);
+  if(buildingMode==='limited')warnings.push(`Edificis amb coberta horitzontal, com a màxim ${maxBuildingHeight} m reals sobre el punt més alt de la petjada. La façana del costat baix pot superar aquest valor. ${limitedBuildings} fragments limitats en altura.`);
   if(buildingMode==='source')warnings.push('Edificis amb altura de les dades i coberta horitzontal sobre el punt més alt de la petjada: els pendents poden produir façanes més altes. No es disposa de la forma real de les teulades.');
   if(buildingMode==='flat')warnings.push('Només petjades d’edificis: capa de color de 0,12 mm adaptada al terreny, sense reconstrucció de teulades.');
   if(buildingMode==='none')warnings.push('Edificis omesos; es conserva el relleu actual de les dades, sense reconstrucció del paisatge històric.');
@@ -157,7 +172,7 @@ export function updateVegetation(previous,changes={},progress=()=>{}){
   const mesh={vertices:[],faces:[]};for(const tree of placements)append(mesh,treeMesh(tree));
   const categories=ctx.base.slice();categories[5]={...CATEGORIES[5],vertices:new Float32Array(mesh.vertices),faces:new Uint32Array(mesh.faces)};
   const present=categories.filter(p=>p.faces.length),warnings=ctx.warnings.slice();if(capped)warnings.push('S’ha limitat la vegetació a 12.000 volums.');
-  const raw={categories:present,width,height,treeCount:placements.length,buildingCount:ctx.buildingCount,scale:Math.round(1000/ctx.scale),triangles:present.reduce((s,p)=>s+p.faces.length/3,0),warnings,elevationDiagnostics:ctx.diagnostics,provenance:{...ctx.meta,options,treeMode:'procedural, varied crowns embedded in the generated terrain mesh',elevation:ctx.meta.terrain?.provider||'Mapterhorn Terrarium',elevationRepairs:ctx.diagnostics,units:'millimeters',verticalExaggeration:options.exaggeration}};
+  const raw={categories:present,width,height,treeCount:placements.length,buildingCount:ctx.buildingCount,scale:Math.round(1000/ctx.scale),triangles:present.reduce((s,p)=>s+p.faces.length/3,0),warnings,elevationDiagnostics:ctx.diagnostics,provenance:{...ctx.meta,options,buildingHeightReference:'highest generated-terrain point within the clipped footprint; horizontal roof for limited/source modes',treeMode:'procedural, varied crowns embedded in the generated terrain mesh',elevation:ctx.meta.terrain?.provider||'Mapterhorn Terrarium',elevationRepairs:ctx.diagnostics,units:'millimeters',verticalExaggeration:options.exaggeration}};
   const model=groupMaterials(raw,4);for(const material of MATERIALS)if(!model.parts.some(p=>p.id===material.id))warnings.push(`${material.name}: no hi ha geometria exportable d’aquesta capa a les dades carregades.`);
   Object.defineProperty(model,'context',{value:ctx});return model;
 }

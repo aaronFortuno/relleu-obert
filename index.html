@@ -6,7 +6,7 @@
   <a class="brand" href="./" aria-label="Relleu Obert"><svg viewBox="0 0 38 32" aria-hidden="true"><path d="M3 27 18 3l17 24H3Z"/><path d="m8 23 10-15 11 15H8Zm5-4 5-7 5 7H13Z"/></svg><span>relleu<span class="brand-light">obert</span></span></a>
   <span class="tagline">Geografia que pots tocar.</span>
   <div class="header-stats"><span id="header-scale">Escala —</span><span id="header-geometry">— geometries</span></div>
-  <button id="help-open" class="header-button">Com funciona</button><button id="version-open" class="version-button" aria-label="Historial de versions">v0.4</button>
+  <button id="help-open" class="header-button">Com funciona</button><button id="version-open" class="version-button" aria-label="Historial de versions">v0.4.1</button>
 </header>
 <main class="app-layout">
   <aside class="sidebar sidebar-left" aria-label="Configuració del model">
@@ -24,7 +24,7 @@
       <div class="two-fields"><div><label for="detail">Detall</label><select id="detail"><option value="24">Ràpid</option><option value="36" selected>Equilibrat</option><option value="56">Alt</option></select></div><div><label for="building-source">Edificis</label><select id="building-source"><option value="auto">Automàtic · ICGC</option><option value="osm">OpenStreetMap</option><option value="icgc">ICGC</option></select></div></div>
       <label for="building-mode">Representació dels edificis</label><select id="building-mode"><option value="limited">Limitats · prioritza el relleu</option><option value="source">Altura de les dades · coberta plana</option><option value="flat">Només petjades · sense volum</option><option value="none">Sense edificis</option></select>
       <label for="building-height">Altura màxima <span class="unit">metres reals</span></label><input id="building-height" type="number" min="1" max="1200" step="1" value="5" inputmode="decimal">
-      <p id="building-mode-hint" class="hint">Màxim 5 m sobre el terreny de cada punt. Els volums s’adapten al relleu; no són teulades reals. Prem «Generar el model» per aplicar els canvis.</p>
+      <p id="building-mode-hint" class="hint">Coberta horitzontal, com a màxim 5 m sobre el punt més alt de la petjada. Al costat baix es veurà més façana. Prem «Generar el model» per aplicar els canvis.</p>
     </section>
     <section><div class="section-heading"><span>03</span><h2>Colors i materials</h2></div>
       <label for="material-count" class="sr-only">Nombre de materials</label><select id="material-count"><option value="1">1 material · impressió monocroma</option><option value="2">2 materials</option><option value="4" selected>4 materials</option><option value="8">8 materials</option></select><p class="hint">Totes les geometries es conserven. Assigna les capes als materials al panell dret.</p>

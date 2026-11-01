@@ -2,7 +2,7 @@
 
 Prototip educatiu separat de Terrology: generació de maquetes geogràfiques amb JavaScript, íntegrament al navegador, publicable a GitHub Pages. No s’ha copiat codi de Terrology.
 
-**v0.4 experimental · 1 de novembre de 2026**
+**v0.4.1 experimental · 1 de novembre de 2026**
 
 - Web: https://aaronFortuno.github.io/relleu-obert/
 - Repositori: https://github.com/aaronFortuno/relleu-obert
@@ -32,7 +32,7 @@ La v0.2 inclou també les edificacions oficials de l’ICGC per a la mostra. En 
 - Partició vectorial de terra/aigua, vegetació i camins. Els límits es retallen contra les cel·les del relleu: no es classifiquen triangles sencers per un únic punt.
 - Mar pla, base, exageració vertical explícita i dimensions en mil·límetres.
 - Edificis extrudits a partir de petjades cartogràfiques.
-- Edificis limitats a 5 m reals per defecte, amb altura màxima configurable. El volum limitat segueix el terreny per respectar el límit també als vessants. Opcions alternatives: altura de les dades amb coberta horitzontal, petjades de color (0,12 mm) o sense edificis. No s’inventen teulades inclinades.
+- Edificis amb coberta horitzontal i altura limitada a 5 m reals per defecte, regulable i mesurada des del punt més alt del terreny dins de la petjada. Al costat baix d’un pendent la façana és més alta. Opcions alternatives: altura de les dades amb coberta horitzontal, petjades de color (0,12 mm) o sense edificis. No s’inventen teulades inclinades.
 - Camins amb vores contínues i arrodonides a les corbes i als extrems, calculades a partir de l’amplada de cada traçat.
 - Volums d’arbres procedimentals dins de zones verdes, evitant edificis i camins.
 - Densitat de vegetació regulable de ×0,25 a ×5 (inicial ×2,5), variació moderada de capçada i arrels incrustades a la malla generada.
@@ -74,6 +74,8 @@ Validació local de la v0.2: 27 proves superades, construcció estàtica i gener
 Validació local de la v0.3: 34 proves superades, construcció estàtica i comprovació visual d’escriptori a 1440 × 900. Cerca natural de La Torre de Claramunt, assignació d’1 a 8 materials, goma/desfer i generació real de Tamariu a 40 × 40 cm amb 12.000 arbres. Exportació al navegador d’un ZIP amb quatre models de 20 × 20 cm i talls tancats. La impressió i la comprovació remota continuen a càrrec de l’usuari.
 
 Validació local de la v0.4: 39 proves superades i construcció estàtica. Proves de revolts i amplada dels camins, límit dels edificis sobre pendent amb exageració ×1 i ×3, petjades i mode sense edificis. Tamariu real generat amb límit de 5 m, malles comprovades amb Manifold i retall de prova. Interfície verificada amb indicador de vegetació i bloqueig de traços nous durant el càlcul.
+
+Validació local de la v0.4.1: 40 proves superades, construcció estàtica i previsualització de Tamariu. Comprovats 5.355 triangles de coberta horitzontals a la mostra real i les quatre malles com a sòlids amb Manifold. Les proves cobreixen el límit sobre la cota més alta, amb exageració ×1/×3 i un pic interior a la petjada.
 
 ## Direcció del projecte
 
