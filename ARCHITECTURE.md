@@ -18,6 +18,7 @@ Terrology és un motor Python amb FastAPI, processos i dependències natives. Un
 
 - `src/sources.js`: lectura de dades; ha d’evolucionar cap a adaptadors independents de proveïdor.
 - `src/geometry.js`: escala, partició de capes, mostreig d’elevació i construcció de volums.
+- `src/dem-decoder.js`, `src/dem-browser.js` i `src/terrarium.js`: descodificació binària WebP/PNG i conversió RGB numèrica, separades del DOM i del preview. El WASM s’inclou com a asset estàtic i es carrega quan cal llegir elevacions.
 - `src/worker.js`: càlcul i exportació en segon pla.
 - `src/export.js`: fitxers estàndard amb procedència, unitats i materials.
 - `src/main.js`: controls i previsualització.
@@ -28,6 +29,8 @@ Terrology és un motor Python amb FastAPI, processos i dependències natives. Un
 Des de v0.3, el Worker conserva el terreny, els edificis i el camp d’altitud en un context privat. Els canvis de vegetació només regeneren les capçades i el preview conserva els buffers de les altres capes. Els canvis de material només actualitzen l’aparença; l’agrupació física es fa en exportar. Els canvis de regió, mida, detall o exageració requereixen generar de nou i bloquegen l’exportació del model anterior.
 
 `src/polygon-index.js` accelera les comprovacions d’ancoratge de la vegetació amb una graella de polígons i bandes d’arestes. Manté el test vectorial exacte; no rasteritza ni simplifica els límits.
+
+Des de v0.4.2, els fitxers d’altitud no es llegeixen amb `getImageData`: una petita alteració dels canals RGB pot representar centenars de metres. WebP es descodifica amb libwebp/WASM i PNG amb fast-png, sense fer servir el canvas. El preview continua utilitzant WebGL, però no determina les altituds. Els hashes dels fitxers font i els rangs descodificats queden a la procedència. L’informe [RO-001](work/RO-001-DIAGNOSTIC.md) distingeix la prova de corrupció simulada de la validació encara pendent a Brave.
 
 ## Línies tècniques de referència
 

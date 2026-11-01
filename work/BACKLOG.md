@@ -1,10 +1,10 @@
 # Backlog de Relleu Obert
 
-Actualitzat: **2026-11-01**. Referència del codi: **v0.4.1**.
+Actualitzat: **2026-11-01**. Referència del codi: **v0.4.2**.
 
 Aquest és el registre de prioritats, decisions i comprovacions del projecte. El document [MILLORES-BUGS.md](MILLORES-BUGS.md) conserva les observacions originals de l’usuari, datades l’1 de novembre a les 12:30. La versió exacta del navegador amb què es van recollir aquestes observacions encara no consta: no es pressuposa que siguin totes de la v0.4.1.
 
-Les prioritats següents són una proposta de triatge. **Cap funcionalitat nova d’aquest backlog s’ha implementat durant la seva preparació.** No hi ha cap línia de producte en curs ni versions futures compromeses.
+Les prioritats següents parteixen del triatge inicial. **RO-001 té una correcció candidata a v0.4.2, pendent de validar a Brave.** No hi ha versions futures compromeses.
 
 ## Com es manté
 
@@ -44,7 +44,7 @@ Les prioritats següents són una proposta de triatge. **Cap funcionalitat nova 
 
 | ID | Prioritat | Estat | Línia |
 | --- | --- | --- | --- |
-| [RO-001](#ro-001--pics-de-relleu-i-efectes-sobre-edificis) | P0 | Per reproduir | Pics de relleu i efectes sobre edificis |
+| [RO-001](#ro-001--pics-de-relleu-i-efectes-sobre-edificis) | P0 | Pendent de validar | Pics de relleu i efectes sobre edificis |
 | [RO-002](#ro-002--edificis-contigus-representats-com-a-megablocs) | P1 | Per estudiar | Edificis contigus representats com a megablocs |
 | [RO-003](#ro-003--configuració-inesperada-en-importar-a-bambu) | P1 | Per reproduir | Impressora, broquet i filament inesperats a Bambu |
 | [RO-004](#ro-004--apartats-collapsables-dels-sidebars) | P1 | Preparat | Apartats col·lapsables i menys scroll |
@@ -65,7 +65,7 @@ Les prioritats següents són una proposta de triatge. **Cap funcionalitat nova 
 | [RO-019](#ro-019--internacionalització) | P3 | Ajornat | Català, castellà, gallec, euskera i anglès |
 | [RO-020](#ro-020--unions-arrodonides-dels-camins) | P1 | Validat | Unions arrodonides dels camins |
 | [RO-021](#ro-021--quatre-materials-i-colors-a-bambu) | P1 | Validat | Quatre materials i colors a Bambu |
-| [RO-022](#ro-022--cobertes-horitzontals-dels-edificis) | P1 | Pendent de validar | Cobertes horitzontals de la v0.4.1 |
+| [RO-022](#ro-022--cobertes-horitzontals-dels-edificis) | P1 | Validat | Cobertes horitzontals de la v0.4.1 |
 | [RO-023](#ro-023--relleu-local-i-fonts-vectorials-de-més-precisió) | P2 | Per estudiar | MDT local i cartografia de més precisió |
 | [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió) | P1 | Per estudiar | Unió general de volums i impressió física |
 | [RO-025](#ro-025--vegetació-mesurada-i-paisatges-històrics) | P3 | Ajornat | Vegetació mesurada i paisatges històrics |
@@ -82,6 +82,12 @@ Les prioritats següents són una proposta de triatge. **Cap funcionalitat nova 
 ## Detall de les línies
 
 ### RO-001 — Pics de relleu i efectes sobre edificis
+
+**Correcció candidata (v0.4.2, 2026-11-01):** lectura binària WebP/PNG sense canvas, amb hashes i diagnòstics de tessel·les a la procedència. [Informe i comprovacions pendents](RO-001-DIAGNOSTIC.md).
+
+**Resultats locals:** quatre tessel·les de Tamariu comparades byte a byte amb libvips/sharp; prova de soroll simulat que crea un pic de 256 m i eleva l’edifici; sis generacions de geometria amb tres malles idèntiques per entrades idèntiques i terreny conservat en desactivar arbres/edificis. 44 proves i construcció estàtica superades.
+
+**Pendent de l’usuari:** confirmar a Brave si desapareixen els pics intermitents amb v0.4.2. La protecció de lectura de canvas és una hipòtesi sustentada, no una causa demostrada al seu navegador. L’usuari informa que tres simulacions consecutives amb ampliacions diferents no presentaven deformacions. La comprovació directa del navegador s’ha aturat perquè no se n’ha pogut verificar l’URL; no s’ha substituït per una altra via de control.
 
 **Observació:** l’usuari veu habitualment un pic i de vegades dos, en posicions aparentment variables; poden elevar també els edificis pròxims. La sospita que siguin un càlcul nostre és una hipòtesi, encara no una causa demostrada. Es reobre la línia de fiabilitat del relleu tractada anteriorment: les reparacions de mostres de la v0.2 no tanquen aquest nou avís.
 
@@ -243,7 +249,7 @@ Les prioritats següents són una proposta de triatge. **Cap funcionalitat nova 
 
 **Validació local feta:** 40 proves del projecte, cas de pic interior a la petjada, exageració ×1/×3, Tamariu i 5.355 triangles de coberta comprovats com a horitzontals; sòlids auditats amb Manifold.
 
-**Pendent:** confirmació visual de l’usuari amb la versió correcta i relleu sense els artefactes de RO-001. Els megablocs de RO-002 són un altre problema: una coberta plana no prova que la petjada representi un únic edifici real.
+**Validació d’usuari (2026-11-01):** confirma que els canvis de v0.4.1 són correctes, exceptuant els edificis afectats pels pics incorrectes del terreny. La correcció de cobertes queda validada dins d’aquest abast; les alçàries contaminades pel relleu continuen obertes a RO-001. Els megablocs de RO-002 són un altre problema: una coberta plana no prova que la petjada representi un únic edifici real.
 
 ## Línies tècniques ja identificades
 
@@ -279,6 +285,9 @@ Les prioritats següents són una proposta de triatge. **Cap funcionalitat nova 
 | 2026-11-01 | RO-020, RO-021 | Incorporada la validació expressa de l’usuari sobre camins i quatre materials. Abast de validació limitat al cas confirmat. |
 | 2026-11-01 | RO-022 | Incorporada la correcció local de v0.4.1; continua pendent de validació d’usuari. |
 | 2026-11-01 | RO-023–RO-025 | Incorporades les línies tècniques prèvies per evitar que quedin fora del seguiment. |
+| 2026-11-01 | RO-022 | Pendent de validar → Validat. Confirmació expressa de l’usuari de v0.4.1; s’exclouen els edificis afectats pels pics de RO-001. |
+| 2026-11-01 | RO-001 | Per reproduir → En curs. Diagnòstic amb entrades repetides i comparació entre dades, malla i preview; encara sense causa demostrada. |
+| 2026-11-01 | RO-001 | En curs → Pendent de validar, v0.4.2. Lectura binària exacta, regressió amb soroll simulat i sis generacions locals; falta confirmació del cas intermitent a Brave. Informe RO-001-DIAGNOSTIC.md. |
 
 ### Plantilla d’actualització
 

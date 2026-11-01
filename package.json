@@ -1,9 +1,27 @@
 {
   "name": "relleu-obert",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "private": true,
   "type": "module",
-  "scripts": {"dev": "vite --host 127.0.0.1", "build": "vite build --base=./", "test": "node --test tests/*.test.js"},
-  "dependencies": {"three": "0.180.0", "leaflet": "1.9.4", "manifold-3d": "3.5.4", "polygon-clipping": "0.15.7", "polyclip-ts": "0.16.8", "earcut": "3.0.2", "fflate": "0.8.2", "@mapbox/vector-tile": "2.0.4", "pbf": "4.0.1"},
-  "devDependencies": {"vite": "6.1.0"}
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build --base=./",
+    "test": "node --test tests/*.test.js"
+  },
+  "dependencies": {
+    "@jsquash/webp": "1.5.0",
+    "@mapbox/vector-tile": "2.0.4",
+    "earcut": "3.0.2",
+    "fast-png": "6.4.0",
+    "fflate": "0.8.2",
+    "leaflet": "1.9.4",
+    "manifold-3d": "3.5.4",
+    "pbf": "4.0.1",
+    "polyclip-ts": "0.16.8",
+    "polygon-clipping": "0.15.7",
+    "three": "0.180.0"
+  },
+  "devDependencies": {
+    "vite": "6.1.0"
+  }
 }

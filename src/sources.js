@@ -1,6 +1,5 @@
 import {VectorTile} from '@mapbox/vector-tile';
 import Pbf from 'pbf';
-import {decodeTerrarium} from './elevation.js';
 import {inCatalonia,fetchOfficialBuildings,combineBuildings} from './buildings.js';
 import {loadTerrain,oceanTilePredicate} from './terrain-provider.js';
 
@@ -20,9 +19,7 @@ export function readVector(bytes,{x,y,z}){
 }
 async function get(url){const r=await fetch(url,{signal:AbortSignal.timeout(25000),cache:url.endsWith('/planet')?'no-cache':'default'});if(!r.ok)throw Error(`No s’ha pogut carregar ${url.includes('openfreemap')?'la cartografia d’OpenFreeMap':'la mostra local'} (${r.status}). Torna-ho a provar més tard.`);return r;}
 async function decodeDEM(blob,t){
-  const image=await createImageBitmap(blob,{colorSpaceConversion:'none',premultiplyAlpha:'none'});const c=new OffscreenCanvas(image.width,image.height),ctx=c.getContext('2d',{willReadFrequently:true,colorSpace:'srgb'});ctx.drawImage(image,0,0);image.close();
-  const elev=decodeTerrarium(ctx.getImageData(0,0,c.width,c.height).data);
-  return {...t,size:c.width,elev};
+  const decoder=await import('./dem-browser.js');return decoder.decodeDEM(blob,t);
 }
 export async function loadRegion({sample=true,bbox,buildingSource='auto',decodeElevation=decodeDEM},progress=()=>{}){
   const base=(import.meta.env?.BASE_URL||'./')+'data/';
@@ -37,6 +34,7 @@ export async function loadRegion({sample=true,bbox,buildingSource='auto',decodeE
     if(sample)dem.push(await decodeElevation(await(await get(base+t.dem)).blob(),t));
   }
   if(!sample){const terrain=await loadTerrain(meta.bbox,decodeElevation,fetch,progress,oceanTilePredicate(features,meta.bbox));dem=terrain.tiles;meta.terrain=terrain.metadata;terrainWarnings=terrain.warnings;}
+  meta.elevationDecoding={method:'binary RGB; no canvas readback',tiles:dem.map(t=>({z:t.z,x:t.x,y:t.y,...t.decoding}))};
   meta={...meta,sourceWarnings:terrainWarnings,buildings:{provider:'OpenStreetMap · OpenFreeMap'}};
   if(buildingSource!=='osm'&&(buildingSource==='icgc'||inCatalonia(meta.bbox))){
     progress('Carregant edificacions oficials de l’ICGC…');

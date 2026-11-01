@@ -1,5 +1,13 @@
 # Canvis
 
+## v0.4.2 — 2026-11-01
+
+- RO-001: substituïda la lectura de les altituds amb `createImageBitmap`/canvas per descodificació binària WebP (libwebp WASM) i PNG (JavaScript). Els canals RGB numèrics ja no passen per lectura de píxels del canvas ni conversions de color de visualització.
+- Demostrat amb una prova que alterar una unitat del canal vermell crea un pic de 256 m i eleva la coberta d’un edifici proper. La lectura binària evita aquesta via de corrupció. La vinculació amb el cas intermitent de Brave encara requereix confirmació de l’usuari; no s’han modificat les proteccions del navegador.
+- Procedència ampliada amb format, descodificador, SHA-256 del fitxer font quan Web Crypto està disponible, mida i rang d’altituds. Es desen als 3MF/STL per comparar casos.
+- 44 proves locals, comparació byte a byte de les quatre tessel·les de Tamariu amb una referència independent i sis generacions de geometria, incloses tres malles idèntiques amb entrades idèntiques.
+- RO-022: validació expressa de l’usuari de les cobertes de v0.4.1, exclosos els edificis afectats pels pics. RO-001 es manté pendent de validació a Brave. La verificació visual no s’ha pogut completar perquè el control del navegador s’ha aturat en no poder verificar-ne l’URL.
+
 ## v0.4.1 — 2026-11-01
 
 - Corregida la interpretació del límit d’edificis: la coberta és horitzontal a tota la petjada, no segueix el pendent. L’altura limitada es mesura sobre el punt més alt del terreny dins de la petjada; la façana del costat baix pot ser més alta.

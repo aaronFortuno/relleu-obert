@@ -2,7 +2,7 @@
 
 Prototip educatiu separat de Terrology: generació de maquetes geogràfiques amb JavaScript, íntegrament al navegador, publicable a GitHub Pages. No s’ha copiat codi de Terrology.
 
-**v0.4.1 experimental · 1 de novembre de 2026**
+**v0.4.2 experimental · 1 de novembre de 2026**
 
 - Web: https://aaronFortuno.github.io/relleu-obert/
 - Repositori: https://github.com/aaronFortuno/relleu-obert
@@ -38,6 +38,7 @@ La v0.2 inclou també les edificacions oficials de l’ICGC per a la mostra. En 
 - Volums d’arbres procedimentals dins de zones verdes, evitant edificis i camins.
 - Densitat de vegetació regulable de ×0,25 a ×5 (inicial ×2,5), variació moderada de capçada i arrels incrustades a la malla generada.
 - Altitud comuna per a totes les superfícies i objectes; detecció de mostres invàlides i pics aïllats d’un quilòmetre, amb reparacions documentades.
+- Lectura numèrica directa dels fitxers d’elevació WebP/PNG, sense canvas; preserva els canals RGB originals. Les metadades de descodificació i els hashes de les tessel·les faciliten investigar pics intermitents.
 - Fonts alternatives de relleu (Mapterhorn / Mapzen Terrain Tiles), amb tractament explícit dels 404 marins només quan la cartografia confirma cobertura oceànica completa.
 - Vuit categories: terreny, mar, edificis, camins, sòl de bosc, arbres, prats i aigües interiors; reassignables a 1, 2, 4 o 8 materials sense eliminar geometria.
 - Layout d’escriptori estable, ajuda i changelog en diàlegs i peu amb llicència i V4V.
@@ -77,6 +78,8 @@ Validació local de la v0.3: 34 proves superades, construcció estàtica i compr
 Validació local de la v0.4: 39 proves superades i construcció estàtica. Proves de revolts i amplada dels camins, límit dels edificis sobre pendent amb exageració ×1 i ×3, petjades i mode sense edificis. Tamariu real generat amb límit de 5 m, malles comprovades amb Manifold i retall de prova. Interfície verificada amb indicador de vegetació i bloqueig de traços nous durant el càlcul.
 
 Validació local de la v0.4.1: 40 proves superades, construcció estàtica i previsualització de Tamariu. Comprovats 5.355 triangles de coberta horitzontals a la mostra real i les quatre malles com a sòlids amb Manifold. Les proves cobreixen el límit sobre la cota més alta, amb exageració ×1/×3 i un pic interior a la petjada.
+
+Validació local de la v0.4.2: 44 proves; els quatre WebP coincideixen byte a byte amb libvips/sharp; una tessel·la PNG real de Mapzen es descodifica correctament. Sis generacions de Tamariu amb entrades controlades: tres malles repetides tenen el mateix SHA-256, i desactivar arbres o edificis conserva el terreny. La prova amb soroll de píxel simulat demostra la vulnerabilitat anterior, però la causa concreta al Brave de l’usuari continua pendent de confirmació. Vegeu [l’informe RO-001](work/RO-001-DIAGNOSTIC.md).
 
 ## Direcció del projecte
 

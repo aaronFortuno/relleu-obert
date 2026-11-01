@@ -24,6 +24,10 @@ L’atribut `altura` de les construccions RTT s’expressa en metres: [especific
 
 Three.js (MIT), Leaflet (BSD-2-Clause), Manifold (Apache-2.0), polygon-clipping (MIT), polyclip-ts (MIT), earcut (ISC), @mapbox/vector-tile (BSD-3-Clause), pbf (BSD-3-Clause), fflate (MIT), Vite (MIT). Les versions queden fixades al manifest i al fitxer de dependències.
 
+Lectura d’elevacions: [jSquash WebP](https://github.com/jamsinclair/jSquash/tree/main/packages/webp) (Apache-2.0), amb libwebp (BSD-3-Clause), i [fast-png](https://github.com/image-js/fast-png) (MIT). Les còpies de les llicències es distribueixen a `public/licenses/`. La lectura binària s’utilitza perquè els valors RGB són dades numèriques: les proteccions de [Brave sobre lectures de canvas](https://brave.com/privacy-updates/4-fingerprinting-defenses-2.0/) poden alterar píxels. La incidència concreta de l’usuari encara no s’ha reproduït al seu navegador.
+
+S’hi inclouen també els avisos de les dependències PNG pako i iobuffer.
+
 Es distribueixen les llicències de Leaflet i Manifold a `public/licenses/`. La llicència MIT del projecte es refereix al codi propi.
 
 ## Mapa, cerca i contingut de l’autor

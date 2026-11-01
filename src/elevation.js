@@ -1,13 +1,6 @@
 export const lonLatTile=(lon,lat,z=14)=>[(lon+180)/360*2**z,(1-Math.asinh(Math.tan(lat*Math.PI/180))/Math.PI)/2*2**z];
 
-export function decodeTerrarium(rgba){
-  const result=new Float32Array(rgba.length/4);
-  for(let i=0;i<result.length;i++){
-    const h=rgba[i*4]*256+rgba[i*4+1]+rgba[i*4+2]/256-32768;
-    result[i]=rgba[i*4+3]!==255||h < -12000||h > 9000?NaN:h;
-  }
-  return result;
-}
+export {decodeTerrarium} from './terrarium.js';
 
 // Repairs only invalid samples or isolated kilometre-scale discontinuities.
 // It deliberately leaves normal steep slopes and cliffs unchanged.
