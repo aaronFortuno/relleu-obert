@@ -12,7 +12,7 @@ self.onmessage=async({data})=>{try{
     self.postMessage({type:'imported',kind:data.type,value},value.values?[value.values.buffer]:[]);return;
   }
   if(data.type==='build'||data.type==='vegetation'){
-    if(data.type==='build'&&!api&&(data.region.infrastructure?.items?.length||data.region.features?.some(f=>f.properties?.sourceLayer==='transportation'&&f.properties.brunnel==='bridge'))){progress('Preparant les unions dels viaductes…');api=await Module({locateFile:()=>wasmURL});api.setup();}
+    if(data.type==='build'&&!api&&(data.options.estimatedTunnels||data.region.infrastructure?.items?.length||data.region.features?.some(f=>f.properties?.sourceLayer==='transportation'&&f.properties.brunnel==='bridge'))){progress('Preparant les infraestructures…');api=await Module({locateFile:()=>wasmURL});api.setup();}
     current=data.type==='build'?buildModel(data.region,data.options,progress,api):updateVegetation(current,data.options,progress);self.postMessage({type:'model',model:{...current,parts:undefined,categories:data.type==='vegetation'?current.categories.filter(p=>p.id==='trees'):current.categories},vegetation:data.type==='vegetation'});
   }
   if(data.type==='buildings'){current=updateBuildings(current,data.layer,data.options,progress);self.postMessage({type:'model',model:{...current,parts:undefined,categories:current.categories.filter(p=>['buildings','trees','roads'].includes(p.id))},buildings:true});}

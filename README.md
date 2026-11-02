@@ -2,7 +2,9 @@
 
 Prototip educatiu separat de Terrology: generació de maquetes geogràfiques amb JavaScript, íntegrament al navegador, publicable a GitHub Pages. No s’ha copiat codi de Terrology.
 
-**v0.16.0 experimental · 2 de novembre de 2026**
+**v0.17.0 experimental · 2 de novembre de 2026**
+
+Novetats v0.17: pilars adaptats a l’escala i suports auxiliars per acotar les llums. [Comprovacions](work/RO-033-SUPORTS-ESCALA.md). Túnels estimats amb excavació real en una opció experimental desactivada per defecte; cal revisar portals i laminat. [Abast i límits](work/RO-034-OBERTURES.md). Exemples amb càrrega automàtica, marc negre fix i plaques ajornades. [Backlog reorganitzat](work/BACKLOG.md).
 
 Novetats v0.16: generació procedimental de ponts OSM amb perfils estimats entre cotes DEM dels extrems, pilars i enllaços. Rajadell es conserva com a excepció geogràfica. [Funcionament i límits](work/RO-033-PROCEDURAL-CORE.md).
 

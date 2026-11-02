@@ -31,3 +31,31 @@ test('Rajadell uses the twelve spans of the engineering drawing, not the incompl
  for(const p of result.piers){assert(Math.abs(p.station-p.sourceStationMetres*.1)<1e-8);assert.equal(p.longitudinalAdjustmentMM,0);}
  assert.throws(()=>planPiers({...options,layout:{...layout,spansMetres:[35,50,70,70,100,70,70,70,70,50,35]}}),/projecte/);
 });
+
+test('narrow decks retain a printable body with a tapered head, without placing it on a lower road',()=>{
+ const options={axis:[[10,50],[90,50]],top:()=>14,ground:()=>5,containsDeck:([x,y])=>x>=10&&x<=90&&y>=49.7&&y<=50.3,blocked:[rectangle(38,45,48,55)],scale:.05,widthMM:100,heightMM:100};
+ const result=planPiers(options);assert(result.piers.length>=14);assert(result.omitted>0);
+ for(const p of result.piers){
+  assert.equal(p.acrossMM,.8);assert(p.topRing.every(options.containsDeck));
+  assert(p.ring.some(q=>!options.containsDeck(q)),'the body may extend below the sides of a narrow deck');
+  assert(p.center[0]<=38-.65||p.center[0]>=48+.65);
+  const s=solid(columnSolid(p.ring,options.ground,options.top,p.topRing));
+  try{assert(s.boundingBox().max[2]>14);assert(s.boundingBox().min[2]<5);}finally{s.delete();}
+ }
+});
+
+test('a wide print supplements the surveyed layout with explicit auxiliary piers and a bounded free span',async()=>{
+ const data=JSON.parse(await readFile(new URL('../public/data/eix-diagonal-layouts.json',import.meta.url))),layout=data.items['ifc-127512'];
+ const result=planPiers({axis:[[10,50],[232,50]],top:()=>20,ground:()=>5,containsDeck:([x,y])=>x>=10&&x<=232&&y>=47&&y<=53,blocked:[],scale:.3,widthMM:250,heightMM:100,layout});
+ assert.equal(result.piers.filter(p=>p.sourceStationMetres!=null).length,11);
+ assert(result.auxiliaryPiers>0);assert(result.piers.length>11);
+ assert.equal(result.maxSpanMM,10);assert(result.maxUnsupportedSpanMM<=10);assert.deepEqual(result.unsupportedSpans,[]);
+ for(const p of result.piers.filter(p=>p.auxiliary))assert.equal(p.sourceStationMetres,undefined);
+});
+
+test('a completely obstructed or subminimum deck reports the remaining unsupported span',()=>{
+ for(const [halfWidth,blocked]of [[3,[rectangle(8,45,92,55)]],[.12,[]]]){
+  const r=planPiers({axis:[[10,50],[90,50]],top:()=>14,ground:()=>5,containsDeck:([x,y])=>x>=10&&x<=90&&Math.abs(y-50)<=halfWidth,blocked,scale:.05,widthMM:100,heightMM:100});
+  assert.equal(r.piers.length,0);assert(r.omitted>0);assert(r.maxUnsupportedSpanMM>70);assert(r.unsupportedSpans.length);
+ }
+});

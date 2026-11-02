@@ -48,8 +48,8 @@ export function stripSolid(sections,thickness){
   const end=(sections.length-1)*4;faces.push(3,2,1,3,1,0,end,end+1,end+2,end,end+2,end+3);
   return {vertices:new Float32Array(vertices),faces:new Uint32Array(faces)};
 }
-export function columnSolid(ring,ground,top){
-  const vertices=ring.map(([x,y])=>[x,y,ground(x,y)-.25]).concat(ring.map(([x,y])=>[x,y,top(x,y)+.08])).flat(),faces=[0,2,1,0,3,2,4,5,6,4,6,7];
+export function columnSolid(ring,ground,top,topRing=ring){
+  const vertices=ring.map(([x,y])=>[x,y,ground(x,y)-.25]).concat(topRing.map(([x,y])=>[x,y,top(x,y)+.08])).flat(),faces=[0,2,1,0,3,2,4,5,6,4,6,7];
   for(let i=0;i<4;i++){const j=(i+1)%4;faces.push(i,j,j+4,i,j+4,i+4);}return {vertices:new Float32Array(vertices),faces:new Uint32Array(faces)};
 }
 function footprint(sections){return [[sections.map(s=>s.right.slice(0,2)).concat(sections.slice().reverse().map(s=>s.left.slice(0,2)),[sections[0].right.slice(0,2)])]];}
@@ -90,20 +90,52 @@ export function planApproaches({axis,points,faces,containsDeck,roads,ground,road
 }
 
 export function planPiers({axis,top,containsDeck,ground,blocked=[],scale,widthMM,heightMM,layout}){
-  const spacing=Math.max(6,50*scale),along=Math.max(.8,(layout?.sectionMetres?.along??2.5)*scale),across=Math.max(.8,(layout?.sectionMetres?.across??2.5)*scale),diameter=Math.max(along,across),fullLength=axis.slice(1).reduce((n,p,i)=>n+dist(p,axis[i]),0),samples=resample(axis,Math.max(.25,2*scale),fullLength),length=samples.at(-1)?.s||0,piers=[];let omitted=0;
+  // A physical spacing ceiling is independent of map zoom. It is a modelling
+  // heuristic, not a promise that a particular printer can bridge this span.
+  const maxSpanMM=10,spacing=Math.min(maxSpanMM,Math.max(4,50*scale)),along=Math.max(.8,(layout?.sectionMetres?.along??2.5)*scale),across=Math.max(.8,(layout?.sectionMetres?.across??2.5)*scale),diameter=Math.max(along,across),fullLength=axis.slice(1).reduce((n,p,i)=>n+dist(p,axis[i]),0),samples=resample(axis,Math.max(.25,2*scale,fullLength/20000),fullLength),length=samples.at(-1)?.s||0,piers=[];let omitted=0;
   if(layout&&(!Number.isFinite(layout.lengthMetres)||layout.lengthMetres<=0||!Array.isArray(layout.spansMetres)||layout.spansMetres.some(v=>!Number.isFinite(v)||v<=0)||Math.abs(layout.spansMetres.reduce((a,b)=>a+b,0)-layout.lengthMetres)>.01||!Array.isArray(layout.stationsMetres)||layout.stationsMetres.length!==layout.spansMetres.length-1||layout.stationsMetres.some((v,i,a)=>!Number.isFinite(v)||v<=0||v>=layout.lengthMetres||i&&v<=a[i-1]||Math.abs(v-layout.spansMetres.slice(0,i+1).reduce((a,b)=>a+b,0))>.01)||!Number.isFinite(layout.sectionMetres?.along)||layout.sectionMetres.along<=0||!Number.isFinite(layout.sectionMetres?.across)||layout.sectionMetres.across<=0||Math.abs(length/(scale*layout.lengthMetres)-1)>.05))throw Error('La distribució de pilars no concorda amb la llargada del projecte.');
   const targets=layout?layout.stationsMetres.map(m=>({station:m/layout.lengthMetres*length,sourceMetres:m})):Array.from({length:Math.max(0,Math.ceil((length-spacing/3-spacing/2)/spacing))},(_,i)=>({station:spacing/2+i*spacing}));
   const collision=ring=>blocked.some(mask=>mask.length&&pc.intersection([[ring.concat([ring[0]])]],mask).length);
-  for(const {station,sourceMetres}of targets){let found=false;
-    const maxShift=layout?(layout.maxLongitudinalAdjustmentMetres??3)*scale:2,offsets=layout?[0,.25,-.25,.5,-.5,1,-1].map(v=>v*maxShift):[0,.5,-.5,1,-1,1.5,-1.5,2,-2];
-    search:for(const offset of offsets)for(const lateral of [0,.15,-.15,.3,-.3,.45,-.45,.6,-.6,.8,-.8,1,-1]){
+  function place(station,sourceMetres,auxiliary=false){
+    const maxShift=layout&&!auxiliary?(layout.maxLongitudinalAdjustmentMetres??3)*scale:2,offsets=layout&&!auxiliary?[0,.25,-.25,.5,-.5,1,-1].map(v=>v*maxShift):[0,.5,-.5,1,-1,1.5,-1.5,2,-2];
+    for(const offset of offsets)for(const lateral of [0,.15,-.15,.3,-.3,.45,-.45,.6,-.6,.8,-.8,1,-1]){
       if(station+offset<0||station+offset>length)continue;
       const candidate=atStation(samples,station+offset),index=candidate.index,direction=unit(samples[Math.max(0,index-1)].p,samples[Math.min(samples.length-1,index+1)].p),x=candidate.p[0]-direction[1]*lateral,y=candidate.p[1]+direction[0]*lateral,z=top(x,y);if(z==null||z-ground(x,y)<.8||piers.some(p=>dist(p.center,[x,y])<diameter*2))continue;
-      const rectangle=guard=>[[-1,-1],[1,-1],[1,1],[-1,1]].map(([a,b])=>[x+direction[0]*a*(along/2+guard)-direction[1]*b*(across/2+guard),y+direction[1]*a*(along/2+guard)+direction[0]*b*(across/2+guard)]),ring=rectangle(0),clear=rectangle(.25);
-      if(clear.some(p=>p[0]<=0||p[1]<=0||p[0]>=widthMM||p[1]>=heightMM)||ring.some(p=>!containsDeck(p)||top(...p)==null||top(...p)-ground(...p)<.25)||collision(clear))continue;
-      piers.push({center:[x,y],ring,diameter,alongMM:along,acrossMM:across,station:candidate.s,sourceStationMetres:sourceMetres,longitudinalAdjustmentMM:candidate.s-station,lateralAdjustmentMM:lateral,estimated:true});found=true;break search;
+      const rectangle=(a,b,guard=0)=>[[-1,-1],[1,-1],[1,1],[-1,1]].map(([u,v])=>[x+direction[0]*u*(a/2+guard)-direction[1]*v*(b/2+guard),y+direction[1]*u*(a/2+guard)+direction[0]*v*(b/2+guard)]),ring=rectangle(along,across),clear=rectangle(along,across,.25);
+      if(clear.some(p=>p[0]<=0||p[1]<=0||p[0]>=widthMM||p[1]>=heightMM)||collision(clear))continue;
+      // Keep the printable foundation/body, but taper the head when the real
+      // deck becomes narrower at a smaller model scale. Only the head must
+      // fit the measured surface. The complete body footprint still avoids
+      // all loaded obstacles, including its safety margin.
+      let topRing=null,topAlongMM=along,topAcrossMM=across;
+      for(const factor of [1,.85,.7,.55,.4]){
+        const a=Math.max(.32,along*factor),b=Math.max(.32,across*factor),cap=rectangle(a,b);
+        if(cap.every(p=>containsDeck(p)&&top(...p)!=null&&top(...p)-ground(...p)>=.25)){topRing=cap;topAlongMM=a;topAcrossMM=b;break;}
+      }
+      if(!topRing)continue;
+      piers.push({center:[x,y],ring,topRing,diameter,alongMM:along,acrossMM:across,topAlongMM,topAcrossMM,station:candidate.s,sourceStationMetres:sourceMetres,longitudinalAdjustmentMM:candidate.s-station,lateralAdjustmentMM:lateral,auxiliary,estimated:true});return true;
     }
-    if(!found)omitted++;
+    return false;
   }
-  return {piers,omitted,spacing:layout?null:spacing,diameter};
+  for(const {station,sourceMetres}of targets)if(!place(station,sourceMetres))omitted++;
+  const unsupported=()=>{
+    const runs=[];let start=null,last=null;
+    for(const sample of samples){
+      const [x,y]=sample.p,z=top(x,y),inCrop=x>=0&&y>=0&&x<=widthMM&&y<=heightMM;
+      const free=inCrop&&containsDeck(sample.p)&&z!=null&&z-ground(x,y)>.25&&!piers.some(p=>Math.abs(p.station-sample.s)<=p.topAlongMM/2);
+      if(free){if(start==null)start=sample.s;last=sample.s;}
+      else if(start!=null){runs.push({start,end:last,lengthMM:last-start});start=null;}
+    }
+    if(start!=null)runs.push({start,end:last,lengthMM:last-start});
+    return runs;
+  };
+  // Fill long remaining gaps, including a surveyed layout whose real spans
+  // become too long in a large print. Never move or replace its safe piers.
+  for(const gap of unsupported())if(gap.lengthMM>maxSpanMM){
+    const count=Math.ceil(gap.lengthMM/maxSpanMM)-1;
+    for(let i=1;i<=count;i++)if(!place(gap.start+gap.lengthMM*i/(count+1),undefined,true))omitted++;
+  }
+  const gaps=unsupported(),maxUnsupportedSpanMM=gaps.reduce((n,g)=>Math.max(n,g.lengthMM),0),unsupportedSpans=gaps.filter(g=>g.lengthMM>maxSpanMM);
+  piers.sort((a,b)=>a.station-b.station);
+  return {piers,omitted,spacing:layout?null:spacing,diameter,maxSpanMM,maxUnsupportedSpanMM,unsupportedSpans,auxiliaryPiers:piers.filter(p=>p.auxiliary).length};
 }

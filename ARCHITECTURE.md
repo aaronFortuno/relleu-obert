@@ -37,6 +37,28 @@ absència de DEM produeixen avisos i omissions locals, sense bloquejar tota
 la regió. La interpolació no acredita altures reals: falta contrast en altres
 llocs, possibles interseccions amb relleu i cobertura DEM als extrems externs.
 
+### Suports i obertures experimentals (v0.17)
+
+Els pilars conserven un cos mínim de 0,8 mm i adapten el cap al tauler quan
+l’escala el fa més estret. Es completa el repartiment amb suports auxiliars
+quan hi ha llums mostrejades de més de 10 mm; el diagnòstic només cobreix
+l’eix del tauler i no garanteix imprimibilitat dels enllaços. La petjada del
+cos manté les comprovacions d’obstacles; sense lloc segur, s’omet i s’avisa.
+
+Amb `estimatedTunnels:true`, el worker prepara Manifold i el model genera
+buits a partir del traçat MVT, DEM dels extrems originals i secció estimada.
+L’excavació és anterior a ponts, edificis i arbres, i afecta només substrat,
+camins i cobertes del terra. Conserva la base, evita aigua i retorna totes
+les capes originals si falla una operació. Les boques es prolonguen amb
+el pendent del perfil fins a sortir del relleu, amb límits de 8 mm / 100 m
+(el menor) i avisos de prolongació important. El mode està desactivat per
+defecte: ni les boques ni la secció són dades mesurades. Vegeu [comprovacions
+i criteris](work/RO-034-OBERTURES.md).
+
+La procedència dels túnels i el substrat excavat es conserven amb els
+canvis incrementals. Les particions ometen contactes de volum exactament
+zero, preservant totes les capes de volum positiu, incloses les primes.
+
 ### Altres capes i càlcul incremental
 
 Des de v0.9, `loadBuildingLayer` conserva vectors OSM originals i memòria cau de fonts per regió. Catastre s’importa sota demanda amb `cadastre.js` i fast-xml-parser; es valida XML/GML, EPSG, anells, identificadors i límits abans de generar volums. Les parts d’una família substitueixen la seva envolupant; zero plantes s’omet explícitament. Cap política automàtica de priorització de fonts noves.

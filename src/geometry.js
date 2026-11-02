@@ -17,6 +17,8 @@ import {topSampler,planApproaches,planPiers,stripSolid,columnSolid} from './brid
 import {uniteMaterials} from './solid-operations.js';
 import {auditPart} from './solid-audit.js';
 import {generateProceduralBridgeItems} from './procedural-bridges.js';
+import {generateProceduralTunnelVoids} from './procedural-tunnels.js';
+import {carveTerrainTunnels} from './tunnel-operations.js';
 export {sampleHeight} from './elevation.js';
 const pc=polygonOps();
 
@@ -196,17 +198,27 @@ export function buildModel(data,options={},progress=()=>{},infrastructureApi=nul
   const seaSurf=new Surface();for(const p of oceanPoly)seaSurf.polygon(p,()=>5);add(1,seaSurf.solid(()=>0));
   // A swimming pool or lake on a hillside must not be extruded down to sea level.
   add(7,terrainSolid(inlandWater,(x,y)=>Math.max(3,ground(x,y)-.3),()=>0,width,height,resolution));
+  let staticBase=aggregates.map(p=>({...p,vertices:new Float32Array(p.vertices),faces:new Uint32Array(p.faces)}));
+  const tunnelVoids=generateProceduralTunnelVoids(data.features,(lon,lat)=>localHeight?localHeight(lon,lat):sampleHeight(prepared.tiles,lon,lat),{enabled:options.estimatedTunnels===true,projection:proj,verticalReference,exaggeration,ground,surfaceRiseMM:roadRise,waterMask:waterPoly});
+  warnings.push(...tunnelVoids.warnings);
+  let tunnelMetadata=tunnelVoids.metadata,tunnelMask=[];
+  if(tunnelVoids.items.length){
+    progress('Obrint els túnels estimats…');
+    const carved=carveTerrainTunnels(staticBase,tunnelVoids.items,infrastructureApi);
+    staticBase=carved.parts;warnings.push(...carved.warnings);tunnelMetadata={...tunnelMetadata,...carved.metadata};
+    if(carved.metadata.applied)tunnelMask=merge(tunnelVoids.items.flatMap(t=>t.footprints));
+  }
   warnings.push('Els arbres són una representació procedimental dins de zones verdes, no posicions d’arbres mesurades.');
   warnings.push('Les tessel·les vectorials estan generalitzades. Aquesta prova no substitueix cartografia topogràfica de precisió.');
   const containsGroundRoad=polygonTester(roadPoly),approachMask=merge(bridges.flatMap(b=>b.approaches.plans.map(p=>intersect(p.footprint,rect))).filter(p=>p.length)),containsApproach=polygonTester(approachMask);
-  const context={ground,verticalReference,proj,rect,forest,land,roadPoly,waterPoly,bridges,infrastructureApi,containsForest:polygonTester(forest),containsLand:polygonTester(land),containsRoad:p=>containsDeck(p)||containsApproach(p)||containsGroundRoad(p),width,height,scale,staticWarnings:warnings,options:{...options,size,exaggeration,resolution,roadRise},meta:{...data.meta,infrastructure:deckCount?{...data.infrastructure,provider:knownCount?'Specific source overrides and procedural OSM/DEM bridges':'Procedural OSM/DEM bridges',items:undefined,count:deckCount,knownCount,proceduralCount,deckProfiles:bridges.map(b=>({id:b.id,estimated:b.estimated,elevationMethod:b.elevationMethod,widthMetres:b.widthMetres,sourceFeatureIds:b.sourceFeatureIds})),printableThicknessMM:.6+roadRise}:null},diagnostics:prepared.diagnostics,staticBase:aggregates.map(p=>({...p,vertices:new Float32Array(p.vertices),faces:new Uint32Array(p.faces)}))};
+  const context={ground,verticalReference,proj,rect,forest,land,roadPoly,waterPoly,bridges,tunnelMask,infrastructureApi,containsForest:polygonTester(forest),containsLand:polygonTester(land),containsRoad:p=>containsDeck(p)||containsApproach(p)||containsGroundRoad(p),width,height,scale,staticWarnings:warnings,options:{...options,size,exaggeration,resolution,roadRise},meta:{...data.meta,tunnels:tunnelMetadata,infrastructure:deckCount?{...data.infrastructure,provider:knownCount?'Specific source overrides and procedural OSM/DEM bridges':'Procedural OSM/DEM bridges',items:undefined,count:deckCount,knownCount,proceduralCount,deckProfiles:bridges.map(b=>({id:b.id,estimated:b.estimated,elevationMethod:b.elevationMethod,widthMetres:b.widthMetres,sourceFeatureIds:b.sourceFeatureIds})),printableThicknessMM:.6+roadRise}:null},diagnostics:prepared.diagnostics,staticBase};
   return updateBuildings({context},{features:data.features,meta:context.meta},options,progress);
 }
 
 export function updateBuildings(previous,layer={},changes={},progress=()=>{}){
   if(!previous.context)throw Error('Cal generar primer el terreny.');
   const old=previous.context,options={...old.options,...changes},config=buildingOptions(options),{buildingMode,maxBuildingHeight}=config;
-  const ctx={...old,options:{...options,...config},meta:{...(layer.meta||old.meta),infrastructure:old.meta.infrastructure},buildingFeatures:layer.features||old.buildingFeatures,vegetationCache:null};
+  const ctx={...old,options:{...options,...config},meta:{...(layer.meta||old.meta),infrastructure:old.meta.infrastructure,tunnels:old.meta.tunnels},buildingFeatures:layer.features||old.buildingFeatures,vegetationCache:null};
   const {width,height,ground,scale,rect,land}=ctx,res=options.resolution;
   const mesh={vertices:[],faces:[]},clipped=[],warnings=[...ctx.staticWarnings,...(ctx.meta.sourceWarnings||[])];
   let buildingCount=0,approximate=0,limited=0,shapedRoofs=0,fallbackRoofs=0;const volumes=[];
@@ -241,12 +253,12 @@ export function updateBuildings(previous,layer={},changes={},progress=()=>{}){
       progress('Connectant viaductes i situant pilars…');
       const roads={vertices:[],faces:[]};append(roads,ctx.staticBase[3]);const stats=[];
       for(const bridge of ctx.bridges){
-        const thickness=.6+(ctx.options.roadRise||0),under=(x,y)=>{const z=bridge.top(x,y);return z==null?null:z-thickness;},support=planPiers({axis:bridge.axis,top:under,containsDeck:bridge.contains,ground,blocked:[ctx.roadPoly,pierBuildings,ctx.waterPoly],scale,widthMM:width,heightMM:height,layout:bridge.layout});
-        const pieces=[bridge.mesh,...bridge.approaches.plans.map(p=>stripSolid(p.sections,thickness)),...support.piers.map(p=>columnSolid(p.ring,ground,under))];
+        const thickness=.6+(ctx.options.roadRise||0),under=(x,y)=>{const z=bridge.top(x,y);return z==null?null:z-thickness;},support=planPiers({axis:bridge.axis,top:under,containsDeck:bridge.contains,ground,blocked:[ctx.roadPoly,pierBuildings,ctx.waterPoly,ctx.tunnelMask||[]],scale,widthMM:width,heightMM:height,layout:bridge.layout});
+        const pieces=[bridge.mesh,...bridge.approaches.plans.map(p=>stripSolid(p.sections,thickness)),...support.piers.map(p=>columnSolid(p.ring,ground,under,p.topRing))];
         let connectedComponents=null;
         if(ctx.infrastructureApi){const united=uniteMaterials({parts:pieces.map(p=>({...p,...CATEGORIES[3]}))},ctx.infrastructureApi);connectedComponents=0;for(const part of united.parts){connectedComponents+=auditPart(part).components;append(roads,part);}}
         else for(const part of pieces)append(roads,part);
-        stats.push({id:bridge.id,piers:support.piers,omittedPiers:support.omitted,spacingMM:support.spacing,layoutBasis:bridge.layout?'project span layout, aligned approximately to mapped axis':'procedural print supports',approaches:bridge.approaches.plans.map(p=>({lengthMM:p.length,initialGrade:p.grade,finalGrade:p.endGrade,sections:p.sections})),unconnectedEnds:bridge.approaches.missed,connectedComponents,estimated:true});
+        stats.push({id:bridge.id,piers:support.piers,omittedPiers:support.omitted,spacingMM:support.spacing,maxSpanMM:support.maxSpanMM,maxUnsupportedSpanMM:support.maxUnsupportedSpanMM,unsupportedSpans:support.unsupportedSpans,auxiliaryPiers:support.auxiliaryPiers,layoutBasis:bridge.layout?'project span layout, aligned approximately to mapped axis':'procedural print supports',approaches:bridge.approaches.plans.map(p=>({lengthMM:p.length,initialGrade:p.grade,finalGrade:p.endGrade,sections:p.sections})),unconnectedEnds:bridge.approaches.missed,connectedComponents,estimated:true});
       }
       ctx.bridgeCache={key:bridgeKey,roads:{...CATEGORIES[3],vertices:new Float32Array(roads.vertices),faces:new Uint32Array(roads.faces)},stats};
     }
@@ -254,7 +266,9 @@ export function updateBuildings(previous,layer={},changes={},progress=()=>{}){
     const stats=ctx.bridgeCache.stats,piers=stats.reduce((n,s)=>n+s.piers.length,0),connections=stats.reduce((n,s)=>n+s.approaches.length,0),omitted=stats.reduce((n,s)=>n+s.omittedPiers,0);
     ctx.meta={...ctx.meta,infrastructure:{...ctx.meta.infrastructure,completion:{piers,connections,omitted,estimated:true,union:!!ctx.infrastructureApi,details:stats}}};
     ctx.warnings.push(`${piers} pilars simplificats i ${connections} enllaços suaus amb la carretera. ${ctx.bridges.some(b=>b.layout)?'Rajadell segueix els trams del projecte IDEAM; la col·locació sobre l’eix i els altres suports són aproximats.':'Distribució procedimental de suports, no posicions mesurades.'} S’eviten camins i edificis disponibles.`);
+    const auxiliary=stats.reduce((n,s)=>n+(s.auxiliaryPiers||0),0);if(auxiliary)ctx.warnings.push(`${auxiliary} suports auxiliars afegits per reduir les llums de la maqueta; no són pilars mesurats del projecte.`);
     if(omitted)ctx.warnings.push(`${omitted} posicions de suport omeses per falta d’espai o obstacles. Revisa els trams lliures al laminador.`);
+    const longSpans=stats.reduce((n,s)=>n+(s.unsupportedSpans?.length||0),0);if(longSpans)ctx.warnings.push(`${longSpans} trams elevats superen la separació prevista de suports perquè no hi ha una posició segura disponible. Comprova les llums al laminador.`);
     const unconnected=stats.reduce((n,s)=>n+s.unconnectedEnds.length,0);if(unconnected)ctx.warnings.push(`${unconnected} extrems sense enllaç suau dins del retall. Poden quedar al límit de la peça o sense una continuació cartografiada suficient.`);
     if(stats.some(s=>s.connectedComponents>1))ctx.warnings.push('Alguns ponts contenen fragments separats. Revisa les unions i els extrems al laminador abans d’imprimir.');
   }

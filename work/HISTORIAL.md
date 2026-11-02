@@ -2,6 +2,44 @@
 
 Actualitzat: 2026-11-02. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+
+## v0.17.0 — Suports a escala i obertures experimentals
+
+Treball en tres fronts autoritzat per l’usuari: pilars (RO-033), túnels (RO-034) i reorganització del backlog. Captura de zoom out amb un sol pilar: incidència reproduïda i tractada amb cap adaptat, espaiat físic i diagnòstic de llums. L’opció de túnels és estimada, explícita i desactivada inicialment; no s’atribueixen dades constructives inexistents. Validacions locals i límits als informes [suports](RO-033-SUPORTS-ESCALA.md) i [túnels](RO-034-OBERTURES.md).
+
+262 proves i build correctes; comprovació local de navegador i 3MF real a 3 km: viaducte principal amb 8 pilars i un component. Els túnels d’aquesta regió remota s’ometen amb avís, mentre el cas de control de la mostra en detall ràpid sí que passa: 3MF real llegit i 12 segments del pas central lliures en tres malles. RO-034 continua obert per a generalització; no es pressuposen laminat ni impressió.
+
+Anotacions de l’usuari incorporades: plaques ajornades i menú retirat; selector de color del marc retirat, preview negre; exemples carregats en canviar la selecció. RO-040 arxivat com a validació limitada d’ús, amb casos límit a RO-044. RO-048 i RO-049 validats i arxivats; impressió i laminador continuen a RO-024. El preview fotorealista estàtic es registra com a objectiu posterior de RO-012. Les notes originals no s’han modificat.
+
+## Anotacions de l’usuari sobre v0.16 i reorganització
+
+Es conserven les anotacions abans de resumir el backlog; les validacions d’ús no acrediten encara laminat o impressió.
+
+| ID | Anotació rebuda |
+| --- | --- |
+| RO-011 | Per estudiar |
+| RO-023 | UX implementada; fonts pendents |
+| RO-024 | Fonaments en validació |
+| RO-026 | En estudi |
+| RO-032 | En estudi |
+| RO-033 | Procedimental integrat; en validació |
+| RO-034 | Dades insuficients al cas de prova |
+| RO-035 | Per estudiar |
+| RO-019 | Setup preparat; traduccions pendents |
+| RO-040 | Validat aparentment, no comprovat en moltes possibles situacions |
+| RO-014 | Validat, però eliminar opció de triar color, és absurd, el color serà del material imprès. Al preview ho deixem en negre i ja està. |
+| RO-016 | Validat però molt millorable en molts aspectes. Treiem opció del menú i ajornem aquesta tasca per futures iteracions, per centrar-nos de moment en funcionalitat i qualitat del model. |
+| RO-012 | Més que un objecte que representi una taula a sota, el que busquem és un preview estàtic, una imatge renderitzada fotorealista a partir del model dissenyat, amb textures realistes: una paret de fons, la taula amb estris escolars a sobre, la maqueta com es veuria impresa amb tons mat, etc. |
+| RO-044 | Implementat; pendent de validar |
+| RO-045 | Implementat; pendent de validar |
+| RO-046 | Validat, però que carregui el model en modificar la selecció, no via clic de "carrega l'exemple" o similar. El canvi del dropdown activa la petició |
+| RO-048 | Validat |
+| RO-049 | Validat |
+| RO-003 | Ajornat |
+| RO-025 | Ajornat |
+| RO-017 | Ajornat per l’usuari |
+| RO-047 | Ajornat; proposta |
+
 ## v0.16.0 — Ponts procedimentals integrats
 
 RO-033 incorpora generació de taulers amb perfil estimat entre extrems DEM, pilars i enllaços. Rajadell manté la seva excepció geogràfica. [Implementació i comprovacions](RO-033-PROCEDURAL-CORE.md): proves del nucli, retalls moguts/girats i mides físiques variables, generació sense excepcions i pas inferior obert. 241 proves i build correctes. Navegador i 3MF locals comprovats; laminat, impressió i contrast en altres llocs continuen pendents. L'usuari demana publicar aquest bloc i aturar els processos; no s'obren tasques noves.
@@ -533,3 +571,35 @@ RO-036–039 han passat a [l’historial](HISTORIAL.md), perquè l’usuari els 
 1. Validar les correccions de respostes buides del Catastre i interacció del pinzell (RO-040–RO-042), l’actualització automàtica (RO-043) i les novetats de v0.12.
 2. Comparar fidelitat de parts i cobertes, segona zona i noves fonts (RO-026 / RO-032).
 3. Preparar sòlids i proves de continuïtat per a ponts/túnels/cavitats (RO-024), segons [RO-024-SOLIDS.md](RO-024-SOLIDS.md).
+
+### RO-040 — Catastre sense edificis no ha de bloquejar el model
+
+**Validació d’ús rebuda (2026-11-02):** «Validat aparentment, no comprovat en moltes possibles situacions». S’arxiva el flux ordinari; respostes mixtes, errors de servei i recuperació continuen en seguiment amb RO-044. No és una garantia per a totes les àrees.
+
+**Antecedents de la implementació i proves locals:**
+
+**Implementat i revisat:** [diagnòstic i proves](RO-040-CATASTRE-BUIT.md). Col·leccions buides vàlides, capes mixtes i zero parts sobre rasant acceptades; paginació/recomptes incoherents continuen sent errors. 117 proves de suite i build correctes; AOI real buida/mixta pendent de validar.
+
+**Petició de l’usuari:** Acceptar respostes vàlides buides; distingir-les d’errors de servei.
+
+**Seguiment:** Implementat, pendent de validar. Encàrrecs seqüencials a Kimi i revisió abans de continuar. Proves locals obligatòries; validació d’usuari diferenciada.
+
+
+### RO-048 — Base relativa a la cota mínima del retall
+
+**Validat per l’usuari (2026-11-02).** Laminat i prova física es mantenen a RO-024.
+
+**Antecedents de la implementació i proves locals:**
+
+Petició expressa: corregir i publicar com a v0.13.1 abans de continuar RO-033/034, sense esperar validació. Ara es resta la cota mínima de la mateixa graella que genera el relleu i s’hi afegeixen 5 mm; a la costa es manté nivell marí zero com a origen i superfície a 5 mm. Les altituds d’origen es conserven a les metadades; no és una conversió de datum. Edificis, arbres, camins i aigües interiors comparteixen la transformació.
+
+Mostra real de Manresa: origen 227,2727 m, relleu generat entre 5 i 24,7599 mm amb exageració ×1,5 i escala 1:10.000. Tamariu conserva mar a 5 mm. Regressions de cota absoluta/negativa, desnivell, exageració, escala i aigües interiors; validació de l’usuari pendent.
+
+
+### RO-049 — Camins realçats
+
+**Validat per l’usuari (2026-11-02).** Laminat i prova física es mantenen a RO-024.
+
+**Antecedents de la implementació i proves locals:**
+
+Implementat v0.15.0, pendent de validar: [comprovacions](RO-033-SUPORTS-I-ENLLACOS.md#ro-049--realç-opcional-dels-camins). Petició de l’usuari per ressaltar carreteres a 0,5 o 1 mm sobre el terreny. Opció desactivada per defecte, en mil·límetres de maqueta; afecta també el paviment dels taulers i els enllaços, sense presentar-ho com una cota mesurada. Unions, exportació i càmera comprovades localment; validació d’usuari i laminat pendents.

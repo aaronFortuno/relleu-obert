@@ -1,5 +1,13 @@
 # Canvis
 
+## v0.17.0 — 2026-11-02
+
+- RO-033: cos de pilar imprimible amb cap adaptat al tauler quan es redueix l'escala. Espaiat acotat en mil·límetres de maqueta, suports auxiliars quan cal i diagnòstic dels trams sense suport segur; es conserven les comprovacions d'obstacles.
+- RO-034: opció experimental explícita de túnels estimats a partir dels extrems DEM. Excavació real de substrat i capes de terra abans d'afegir ponts/edificis, amb protecció de la base i retorn atòmic davant errors. No són seccions ni cotes mesurades.
+- Límit pendent de RO-034: la mostra de control passa amb detall ràpid, però hi ha omissions segons el detall i les dades remotes. No es presenta la generalització dels portals com a resolta.
+- RO-014/016/046: marc negre fix sense selector de color; plaques retirades del menú i ajornades; triar un lloc recomanat carrega directament l'exemple.
+- Backlog reorganitzat amb anotacions originals preservades. RO-040 s'arxiva amb l'abast de validació limitat declarat; RO-048 i RO-049 validats. Laminat i impressió continuen oberts a RO-024.
+
 ## v0.16.0 — 2026-11-02
 
 - RO-033: generació procedimental de taulers a partir de trams OSM marcats com a pont, amb perfil estimat entre les cotes DEM dels extrems. Pilars, evitació d'obstacles i connexions al mateix flux de geometria i exportació.
