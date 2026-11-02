@@ -1,5 +1,19 @@
 # Canvis
 
+## v0.11.0 — 2026-11-02
+
+- RO-040: el Catastre accepta respostes buides vàlides; manté errors de servei, truncament i recomptes incoherents. Una mena buida no descarta les parts de l’altra.
+- RO-041/042: densitat de pinzell inicial ×0,5/màxim×2, cobertura per gest sense repopular solapaments i retorn a Navega en plegar Vegetació o canviar de menú.
+- RO-043: font, mode i altura d’edificis amb actualització automàtica després de300ms; cua, cancel·lació i comprovació de vigència abans d’enviar al Worker. Terreny pendent conserva Generar explícit.
+- RO-014: marc imprimible independent, tolerància/amplada/alçada configurables, una peça quan cap o trams només pel perímetre exterior. Guia SVG, manifest i 3MF/STL per peça, amb un sol material.
+- RO-016: placa educativa independent, tipografia de traç simple en MAJÚSCULES amb accents catalans, tres línies, mides i comprovació que el text hi cap. Base i relleu units en un sòlid monocrom; col·locació plana o lateral documentada.
+- RO-017: disc amb fletxa del nord, calculada segons el retall i les escales de projecció; la càmera no afecta la direcció. Complement independent monocrom.
+- RO-032: fonts MDTe territorial/litoral estudiades. Encara sense adapter remot de cobertes: el flux oficial per àrea demana e-mail; no s’ha enviat cap formulari. Retorn Z del polígon RTT de la Perica verificat: continua2D. No s’inventen inclinacions.
+- RO-002 validat per l’usuari a Tamariu i arxivat. Escena de presentació, UX de fonts i sòlids/ponts/cavitats pendents després de la petició de tancar la sessió.
+- Validació local i proves de geometria/exportació; laminador i ajust físic pendents. Sense comprovacions remotes de Pages/CI.
+
+152 proves locals superades i construcció estàtica correcta. Descàrregues dels tres complements comprovades al navegador local.
+
 ## v0.10.0 — 2026-11-01
 
 - RO-039: peticions del Catastre amb 45 s per intent i un reintent limitat, també durant la lectura de la resposta. Errors en català amb alternatives; es conserva el model anterior en fallar. Causa exacta i càrrega real de Tamariu pendents de validar.

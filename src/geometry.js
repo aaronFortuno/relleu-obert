@@ -10,6 +10,7 @@ import {localRasterSampler} from './local-raster.js';
 import {treeDimensions,TREE_CROWN_METRES,MIN_TREE_MM} from './tree-scale.js';
 import {treeSampler,fitTrees,MAX_TREES} from './vegetation-budget.js';
 import {scatterBrush} from './brush-scatter.js';
+import {createGestureCoverage} from './brush-coverage.js';
 import {roofProfile} from './building-roofs.js';
 export {sampleHeight} from './elevation.js';
 const pc=polygonOps();
@@ -217,20 +218,25 @@ export function updateVegetation(previous,changes={},progress=()=>{}){
       ctx.vegetationCache={density,treeType,candidates,eligible,seed};
     }
   }
-  let automatic=candidates.slice(),manual=[],manualDropped=0;
+  let automatic=candidates.slice(),manual=[],manualDropped=0,coverage=null,coverageGesture=null,strokeIndex=-1;
   if(trees&&dimensions.visible)for(const stroke of strokes){
+    strokeIndex+=1;
     if(![stroke.x,stroke.y,stroke.radius].every(Number.isFinite)||stroke.radius<=0||stroke.radius>30)continue;
     if(stroke.mode==='erase'){automatic=automatic.filter(p=>Math.hypot(p.x-stroke.x,p.y-stroke.y)>stroke.radius);manual=manual.filter(p=>Math.hypot(p.x-stroke.x,p.y-stroke.y)>stroke.radius);}
     if(stroke.mode==='add'){
       const strokeDensity=stroke.density??brushDensity;
       if(!Number.isFinite(strokeDensity)||strokeDensity<.25||strokeDensity>5)throw Error('Densitat del traç fora del rang admès.');
       const keyFor=(x,y)=>`${Math.round(x*10)},${Math.round(y*10)}`,occupied=new Set([...automatic,...manual].map(p=>keyFor(p.x,p.y)));
-      let localSeed=(Math.round(stroke.x*1000)^Math.imul(Math.round(stroke.y*1000),73856093)^Math.imul(stroke.gesture??strokes.indexOf(stroke),19349663))>>>0;
+      const gestureId=stroke.gesture??strokeIndex;
+      if(coverageGesture!==gestureId){coverage=createGestureCoverage();coverageGesture=gestureId;}
+      let localSeed=(Math.round(stroke.x*1000)^Math.imul(Math.round(stroke.y*1000),73856093)^Math.imul(gestureId,19349663))>>>0;
       const random=()=>{localSeed=(1664525*localSeed+1013904223)>>>0;return localSeed/4294967296;};
       for(const [x,y]of scatterBrush({x:stroke.x,y:stroke.y,radius:stroke.radius,spacing:Math.max(1.5,dimensions.radius*2.2),density:strokeDensity,seed:localSeed})){
+        if(coverage.covers(x,y))continue;
         const key=keyFor(x,y);if(occupied.has(key))continue;
         const tree=make(x,y,true,random);if(tree){manual.push(tree);occupied.add(key);}
       }
+      coverage.addCircle(stroke.x,stroke.y,stroke.radius);
       if(manual.length>MAX_TREES){manualDropped+=manual.length-MAX_TREES;manual=manual.slice(-MAX_TREES);}
     }
   }

@@ -365,3 +365,24 @@ El generador s’atura en arribar a 12.000 arbres, deixant sense cobrir les file
 La densitat deixa de regenerar automàticament tot el bosc. Es desa per traç perquè canviar-la no modifiqui els traços anteriors. Confirmar en navegador que el control no inicia un càlcul i que el pinzell pinta més/menys arbres.
 
 **Arxivat (2026-11-01):** validació expressa de l’usuari sobre v0.8.0.
+
+## Validació d’edificis amb Catastre · v0.10.0
+
+### RO-002 — Edificis contigus representats com a megablocs
+
+**Diagnòstic completat a v0.5.0; millora pendent (2026-11-01):** el bloc de la captura és `icgc-1074761`, una sola petjada original d’uns 1.723 m² amb 29 coordenades i cap divisió interior. No hi ha petjades OSM intersectants a les tessel·les de la mostra. La combinació conserva la geometria exacta. [Informe reproduïble](RO-002-DIAGNOSTIC.md).
+
+**Decisió:** no inventar divisions. Advertiment de petjades agrupades incorporat a les limitacions i exportacions; regressió de conservació de totes les petjades oficials, adjacències i patis. Torna a `Per estudiar` per buscar una font oberta amb parts d’edificis (RO-023). No es dona el problema visual per corregit.
+
+**Continuació:** la investigació i priorització de fonts s’organitza a RO-026. Aquesta incidència manté l’evidència del megabloc i es validarà quan hi hagi una millora real sobre el mateix cas. A v0.8.0, primer contrast amb parts cadastrals registrat a [PAISATGE-3D.md](PAISATGE-3D.md); el mode automàtic encara no canvia.
+
+**Evidència:** [Google Maps](google-maps.png), [OpenStreetMap](openstreetmap.png) i [Relleu Obert](relleu-obert.png), a la corba del carrer de la Perica / GIV-6542 de Tamariu. La captura OSM mostra absència de diverses petjades; la de Relleu Obert mostra blocs grans. Les imatges no identifiquen per si soles quina operació els ha produït.
+
+**Proper pas:** identificar les geometries d’aquesta ubicació a ICGC i OSM/OpenFreeMap, els seus identificadors, alçàries i fragments després de combinar/retallar. Distingir un polígon de font que ja agrupa edificis, una unió nostra i edificis separats que visualment semblen units perquè comparteixen cota/color. Revisar també polígons amb parts o patis.
+
+**Per validar:** comparació de petjades d’entrada/sortida amb casos de cases contigües sobre pendent, conservant les separacions presents a les dades i una cota de coberta per edifici identificable. No donar per real una divisió inventada només per corregir l’aspecte. Si falten dades de separació, documentar el límit o buscar una font oberta millor. Validació d’alçàries condicionada a RO-001; relacionada amb RO-022 i RO-023.
+
+**Actualització v0.9.0:** Catastre com a font opcional de parts sobre el mateix retall. No se superposen envolupants ni es creen divisions inventades. Procedència de volums i famílies; validació visual de Tamariu pendent.
+
+
+**Validació de l’usuari (2026-11-01):** a la zona de prova de Tamariu, els volums cadastrals representen els edificis de forma molt més fidel i les geometries es renderitzen com s’espera. Es tanca el cas de megablocs de RO-002 per a aquesta mostra; això no valida totes les regions/fonts. Cobertes reals pendents a RO-032.

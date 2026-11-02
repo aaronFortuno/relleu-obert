@@ -13,6 +13,12 @@ self.onmessage=async({data})=>{try{
   }
   if(data.type==='build'||data.type==='vegetation'){current=data.type==='build'?buildModel(data.region,data.options,progress):updateVegetation(current,data.options,progress);self.postMessage({type:'model',model:{...current,parts:undefined,categories:data.type==='vegetation'?current.categories.filter(p=>p.id==='trees'):current.categories},vegetation:data.type==='vegetation'});}
   if(data.type==='buildings'){current=updateBuildings(current,data.layer,data.options,progress);self.postMessage({type:'model',model:{...current,parts:undefined,categories:current.categories.filter(p=>['buildings','trees'].includes(p.id))},buildings:true});}
+  if(data.type==='accessory'){
+    if(!current)throw Error('Genera primer el model.');
+    if(data.kind!=='marc'&&!api){api=await Module({locateFile:()=>wasmURL});api.setup();}
+    const {accessoryArchive}=await import('./accessory-export.js'),{bytes}=accessoryArchive(data.kind,current,data.options,api);
+    self.postMessage({type:'download',format:'accessory',archive:true,accessory:data.kind,filename:'relleu-obert-'+data.kind+'.zip',bytes},[bytes.buffer]);return;
+  }
   if(data.type==='export'){
     if(!current)throw Error('Genera primer el model.');const model=groupMaterials(current,data.materialCount,data.assignments);let bytes,archive=false;
     if(data.split&&(model.width>200||model.height>200)){progress('Preparant els talls de les peces…');if(!api){api=await Module({locateFile:()=>wasmURL});api.setup();}bytes=tileArchive(splitModel(model,api,200,progress),data.format);archive=true;}

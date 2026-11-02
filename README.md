@@ -2,7 +2,9 @@
 
 Prototip educatiu separat de Terrology: generació de maquetes geogràfiques amb JavaScript, íntegrament al navegador, publicable a GitHub Pages. No s’ha copiat codi de Terrology.
 
-**v0.10.0 experimental · 1 de novembre de 2026**
+**v0.11.0 experimental · 2 de novembre de 2026**
+
+Novetats de v0.11: el Catastre pot retornar zero edificis sense aturar la maqueta; pinzell ×0,5 (màxim ×2), cobertura única per gest i navegació recuperada en plegar-lo. Altura/font d’edificis s’actualitzen automàticament sobre terreny vigent. Complements independents en ZIP amb 3MF i STL: marc ajustable, placa en majúscules amb accents i fletxa del nord geogràfic. Comprovar laminat i ajust físic abans d’imprimir. Escena de presentació, simplificació de fonts i sòlids per a infraestructures continuen pendents.
 
 Novetats de v0.10: reintent limitat i errors entenedors en carregar el Catastre; la càrrega real de Tamariu continua pendent de validació. [Sistema d’idiomes preparat](work/RO-019-SETUP.md), amb català com a única llengua disponible i migració de textos parcial. [Propostes d’implementació](work/DELEGACIONS.md) de marc imprimible, etiquetes, rosa dels vents i escena de presentació; aquestes funcions encara no s’han construït.
 

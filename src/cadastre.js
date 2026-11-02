@@ -16,10 +16,19 @@ export function cadastreQuery(bbox){
 export function parseCadastreGML(text,{kind='BuildingPart',epsg=25831}={}){
   if(typeof text!=='string'||text.length>20_000_000||/<!DOCTYPE|<!ENTITY/i.test(text))throw Error('Catastre: resposta XML no admesa o massa gran.');
   if(!['Building','BuildingPart'].includes(kind)||XMLValidator.validate(text)!==true)throw Error('Catastre: XML de geometries invàlid.');
-  const json=new XMLParser({removeNSPrefix:true,ignoreAttributes:false,parseTagValue:false,processEntities:false}).parse(text),collection=json.FeatureCollection;
-  if(!collection||json.ExceptionReport)throw Error('Catastre: el servei no ha retornat geometries. Prova una regió més petita.');
+  const json=new XMLParser({removeNSPrefix:true,ignoreAttributes:false,parseTagValue:false,processEntities:false}).parse(text);
+  if('ExceptionReport' in json)throw Error('Catastre: el servei ha retornat un error (ExceptionReport) en lloc de geometries. Redueix la regió o torna-ho a provar més tard.');
+  if(!('FeatureCollection' in json))throw Error('Catastre: el servei no ha retornat geometries. Prova una regió més petita.');
+  // A valid WFS empty answer can be a bare or self-closing FeatureCollection; the parser then yields '' instead of an object.
+  const raw=json.FeatureCollection;
+  if(Array.isArray(raw)||raw!=null&&typeof raw!=='object'&&String(raw).trim()!=='')throw Error('Catastre: contingut de la col·lecció de geometries no admès.');
+  const collection=raw||{};
+  for(const key of Object.keys(collection))if(!key.startsWith('@_')&&!['featureMember','member','boundedBy'].includes(key))throw Error('Catastre: contenidor de geometries no admès.');
+  if(collection['@_next']!=null||collection['@_previous']!=null||collection['@_truncated']!=null)throw Error('Catastre: resposta incompleta: el servei indica paginació o truncament. Redueix la regió o torna-ho a provar.');
   const members=array(collection.featureMember??collection.member);
   if(members.length>=5000||number(collection['@_numberMatched'])>=5000||number(collection['@_numberOfFeatures'])>=5000)throw Error('Catastre: consulta massa gran. Redueix la regió.');
+  const counts=[collection['@_numberMatched'],collection['@_numberReturned'],collection['@_numberOfFeatures']].map(number);
+  if(counts.some(n=>Number.isFinite(n)&&n!==members.length))throw Error('Catastre: resposta incompleta: el recompte del servei no coincideix amb les geometries rebudes. Redueix la regió o torna-ho a provar.');
   const transform=coordinateTransform(epsg),ids=new Set();let vertices=0;
   return members.map(member=>{
     const f=member[kind];if(!f)throw Error('Catastre: tipus de geometria inesperat.');
@@ -73,7 +82,7 @@ export async function fetchCadastralBuildings(bbox,fetcher=fetch,options={}){
     const params=new URLSearchParams({service:'wfs',version:'2.0.0',request:'getfeature',typenames:'BU.'+kind.toUpperCase(),bbox:query.bbox.join(','),srsname:'EPSG::'+query.epsg});
     datasets.push(parseCadastreGML(await wfsGet(CADASTRE_URL+'?'+params,fetcher,options),{kind,epsg:query.epsg}));
   }
-  const [buildings,parts]=datasets,features=cadastralVolumes(buildings,parts);
-  if(!features.length)throw Error('Catastre: no hi ha edificis sobre rasant disponibles. Tria ICGC o OpenStreetMap.');
-  return {features,metadata:{provider:'Dirección General del Catastro · INSPIRE BU',url:CADASTRE_URL,license:CADASTRE_LICENSE,retrievedAt:new Date().toISOString(),buildingCount:buildings.length,partCount:parts.length,zeroFloorPartsOmitted:parts.filter(p=>p.properties.above_ground_floors===0).length,count:features.length,heightMethod:'floors × 3m or 6m fallback; estimates, not measured heights',roofData:false},warnings:['Catastre: parts de volum, no habitatges identificats. Altures estimades a partir de plantes; no conté formes de coberta. La font substitueix tota la capa d’edificis, sense afegir-hi les envolupants ICGC.']};
+  const [buildings,parts]=datasets,features=cadastralVolumes(buildings,parts),warnings=['Catastre: parts de volum, no habitatges identificats. Altures estimades a partir de plantes; no conté formes de coberta. La font substitueix tota la capa d’edificis, sense afegir-hi les envolupants ICGC.'];
+  if(!features.length)warnings.push('Catastre: el servei no ha retornat volums d’edificis sobre rasant per a aquesta àrea (dada absent, no prova d’absència real). El terreny i la resta del model es generen sense edificis; si l’àrea n’hauria de tenir, tria la font ICGC o OpenStreetMap.');
+  return {features,metadata:{provider:'Dirección General del Catastro · INSPIRE BU',url:CADASTRE_URL,license:CADASTRE_LICENSE,retrievedAt:new Date().toISOString(),buildingCount:buildings.length,partCount:parts.length,zeroFloorPartsOmitted:parts.filter(p=>p.properties.above_ground_floors===0).length,count:features.length,heightMethod:'floors × 3m or 6m fallback; estimates, not measured heights',roofData:false},warnings};
 }
