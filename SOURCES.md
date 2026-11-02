@@ -73,3 +73,11 @@ els quadrants sí que responen. El client subdivideix davant límits reconeguts,
 conserva elements complets, elimina duplicats coherents i rebutja qualsevol
 error o contradicció restant. Una font alternativa usada en recuperar una
 regió queda identificada a la interfície i a les metadades d’exportació.
+
+## Superfícies de pont ICGC (v0.14)
+
+`public/data/eix-diagonal-decks.json`: transformació de les superfícies XYZ `tpn`
+del [full IFC 280110, any 2024](https://datacloud.icgc.cat/datacloud/topografia-territorial/ifc/topografia-territorial-v1r0-full280110-2024.zip),
+ICGC Referencial Topogràfic Territorial, CC BY 4.0. No són dades MIT.
+Extracció, coordenades, atribució, gruix de maqueta i límits documentats a
+[RO-033-IMPLEMENTACIO.md](work/RO-033-IMPLEMENTACIO.md).

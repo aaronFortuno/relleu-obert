@@ -1,11 +1,11 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-02**. Iteració **v0.13.1**: implementació i comprovacions locals; validació d’usuari pendent. Les quatre validacions de v0.8.0 i les anotacions originals són a [HISTORIAL.md](HISTORIAL.md). Identificadors estables, versions 0.x fins a declaració explícita d’estabilitat.
+Actualitzat: **2026-11-02**. Iteració **v0.14.0**: implementació i comprovacions locals; validació d’usuari pendent. Les quatre validacions de v0.8.0 i les anotacions originals són a [HISTORIAL.md](HISTORIAL.md). Identificadors estables, versions 0.x fins a declaració explícita d’estabilitat.
 
 ## Prioritats immediates
 
 1. Validar v0.13: consulta Catastre per quadrants, recuperació de configuracions i estil dels sidebars.
-2. Treballar RO-033/034 sobre el nou exemple del viaducte (RO-046), amb cotes i dades reals suficients. Els sòlids sintètics no reconstrueixen encara infraestructures del mapa.
+2. Treballar RO-033/034 sobre el nou exemple del viaducte (RO-046), amb cotes i dades reals suficients. Tauler real incorporat a la mostra; túnel pendent de dades suficients.
 3. Cobertes reals i noves fonts continuen a RO-026/032; laminador i impressió mantenen validacions separades.
 
 ## Feina pendent
@@ -17,8 +17,8 @@ Actualitzat: **2026-11-02**. Iteració **v0.13.1**: implementació i comprovacio
 | [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió) | P1 | Fonaments en validació | Unió acotada, continuïtat de cavitats i prova física |
 | [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts) | P1 | En estudi | Comparar parts cadastrals i petjades, amb política de fonts explícita |
 | [RO-032](#ro-032--cobertes-i-volums-singulars) | P2 | En estudi | Cobertes reals segons dades disponibles |
-| [RO-033](#ro-033--ponts-i-viaductes) | P2 | Per estudiar | Ponts i viaductes amb cota pròpia |
-| [RO-034](#ro-034--túnels-imprimibles) | P3 | Per estudiar | Túnels com a passos oberts dins del model |
+| [RO-033](#ro-033--ponts-i-viaductes) | P2 | Primer tauler implementat; pendent de validar | Ponts amb cota pròpia; pilars i font automàtica pendents |
+| [RO-034](#ro-034--túnels-imprimibles) | P3 | Dades insuficients al cas de prova | Túnels: motor preparat; calen cotes i secció |
 | [RO-035](#ro-035--cavitats-i-relleus-amb-voladissos) | P3 | Per estudiar | Baumes, coves i arcs naturals amb dades 3D |
 | [RO-019](#ro-019--internacionalització) | P3 | Setup preparat; traduccions pendents | Català, castellà, gallec, euskera i anglès |
 | [RO-040](#ro-040--catastre-sense-edificis-no-ha-de-bloquejar-el-model) | P1 | Pendent de validar | Acceptar respostes vàlides buides; distingir-les d’errors de servei |
@@ -199,11 +199,15 @@ Estudiar roof:shape, roof:height, roof:direction/angle i parts d’OSM original,
 
 ### RO-033 — Ponts i viaductes
 
+**v0.14.0, parcial implementat:** [taulers reals ICGC, proves i límits](RO-033-IMPLEMENTACIO.md). Quatre superfícies XYZ al catàleg de Manresa, amb gruix imprimible simplificat, aire a sota i exportació. Sense pilars mesurats ni càrrega 3D automàtica fora de la mostra. Falta contrast de datum/estreps, laterals `lpn`, laminat i validació d’usuari.
+
 **Actualització de l’usuari:** Incloure taulers viaris i ferroviaris, connexions i cota pròpia. No confondre brunnel/layer amb altitud; dependència de RO-024.
 
 Separar ponts dels camins adherits al terreny; cercar cota del tauler, connexions i suports. brunnel/layer només indiquen tipus/ordre, no metres. Estudiar un viaducte cartografiat amb dades suficients i un cas sense cota. Pla a PAISATGE-3D.md.
 
 ### RO-034 — Túnels imprimibles
+
+**2026-11-02:** [comprovació de dades del full de Manresa](RO-034-DADES-IFC.md). Fonts examinades insuficients: traçat MVT 2D, sense eix XYZ ni secció acreditats. Escombrat numèric amb perfil propi provat, encara sense perforació automàtica d’aquest túnel. Cal localitzar dades constructives o acordar una aproximació explícita abans de modelar-lo com a real.
 
 Escombrar una secció sobre un eix 3D i restar-la dels volums de terreny i capes que travessi. Fan falta portals, traçat, cota, secció i política d’escala. Conservar mar/base, continuïtat entre peces i geometria tancada. No prometre un túnel real a partir d’una línia 2D. Pla a PAISATGE-3D.md; depèn de RO-024.
 
@@ -228,6 +232,8 @@ Comprovació real: 10 consultes, 624 edificis, 2.613 parts, 301 duplicats i 2.44
 
 ### RO-045 — Coherència visual dels sidebars
 
+**v0.14.0:** [llibre d’estil](../DESIGN.md) obligatori també per a Kimi, referenciat a AGENTS.md; tokens de tipografia i controls compartits, sense canviar valors visuals. Criteris d’acceptació inclouen navegador i captures; tests/build no substitueixen revisió visual.
+
 Homogeneïtzats resums, camps, desplegables i sortides de text amb l’estètica existent. Resum de fonts sense caixa fosca ni mida desproporcionada; controls del marc reunits i fletxa del nord retirada. Comprovació visual local completada; validació de l’usuari pendent.
 
 ### RO-046 — Catàleg de llocs recomanats
@@ -240,7 +246,7 @@ títols suggerits de placa prou curts per a la mida inicial. [Inventari 2D
 d’infraestructures](mostres/eix-diagonal-infraestructura.json): sis fragments
 etiquetats com a pont/túnel, amb coordenades XY i sense cota del tauler o eix.
 
-RO-033/034: aquesta ubicació és el següent cas d’estudi; ponts i túnels encara no es reconstrueixen en 3D a partir d’aquestes dades. Cal validar cotes, portals i seccions reals.
+RO-033/034: aquesta ubicació és el següent cas d’estudi; els taulers XYZ s’han incorporat a v0.14; el túnel continua pendent de dades suficients. Cal validar cotes, portals i seccions reals.
 
 ### RO-047 — Precàrrega opcional de fonts alternatives
 

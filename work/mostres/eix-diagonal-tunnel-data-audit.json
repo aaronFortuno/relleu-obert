@@ -1,0 +1,71 @@
+{
+  "date": "2026-11-02",
+  "source": "https://datacloud.icgc.cat/datacloud/topografia-territorial/ifc/topografia-territorial-v1r0-full280110-2024.zip",
+  "license": "ICGC · CC BY 4.0",
+  "ifcSha256": "8b18c31b797972c74da5b015672a93b17522e73e6182f6cf1741bba955cf7fb1",
+  "proxyCategories": {
+    "veg": 22,
+    "ten": 6,
+    "pon": 109,
+    "pis": 34,
+    "mco": 24,
+    "prt": 40,
+    "fut": 3,
+    "ill": 79,
+    "pub": 10,
+    "flu": 4,
+    "fil": 55,
+    "tap": 275,
+    "esr": 30,
+    "ele": 13,
+    "lpn": 23,
+    "ins": 1,
+    "edi": 559,
+    "dip": 33,
+    "pou": 2,
+    "com": 1,
+    "tpl": 17,
+    "esn": 139,
+    "cem": 1,
+    "mon": 1,
+    "tpn": 12,
+    "bsc": 31,
+    "ces": 4,
+    "bas": 67,
+    "cns": 3,
+    "aga": 39,
+    "iel": 1,
+    "esp": 2,
+    "sol": 2,
+    "mcs": 6,
+    "pas": 1,
+    "ind": 58,
+    "dmt": 32
+  },
+  "queries": [
+    {
+      "layer": 22,
+      "features": 6,
+      "points": 34,
+      "dimensions": [
+        2
+      ],
+      "terrain": [
+        "gen",
+        "tun"
+      ]
+    },
+    {
+      "layer": 23,
+      "features": 124,
+      "points": 3600,
+      "dimensions": [
+        2
+      ],
+      "terrain": [
+        null
+      ]
+    }
+  ],
+  "scope": "Only this IFC sheet and these ArcGIS responses were examined; no assertion that other sources cannot contain tunnel data."
+}

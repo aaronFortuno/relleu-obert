@@ -67,7 +67,8 @@ export async function loadRegion({sample=true,bbox,buildingSource,decodeElevatio
   if(localDEM){meta.terrain=localDEM.metadata;terrainWarnings.push('MDT GeoTIFF local: altituds en metres, datum vertical de la font sense transformar. No es completen buits amb relleu inventat.');}
   meta.elevationDecoding=localDEM?{method:'numeric GeoTIFF raster; no canvas readback',file:localDEM.metadata}:{method:'binary RGB; no canvas readback',tiles:dem.map(t=>({z:t.z,x:t.x,y:t.y,...t.decoding}))};
   meta.localSources={dem:localDEM?.metadata||null,buildings:localBuildings?.metadata||null};
-  const region={meta,features,vectorFeatures:features,terrainWarnings,dem,localDEM};
+  const infrastructure=sample&&meta.infrastructureFile?await(await get(base+meta.infrastructureFile)).json():null;
+  const region={meta,features,vectorFeatures:features,terrainWarnings,dem,localDEM,infrastructure};
   const layer=await loadBuildingsRecoverably(source=>loadBuildingLayer(region,{source,localBuildings},progress),buildingSource||defaultBuildingSource(meta.bbox),localBuildings?[]:buildingFallbacks);
   if(layer.recovery){region.recovery=layer.recovery;region.meta={...region.meta,buildingRecovery:layer.recovery};}
   return applyBuildingLayer(region,layer);

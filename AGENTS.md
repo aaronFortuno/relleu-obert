@@ -1,5 +1,7 @@
 # Instruccions del projecte
 
+- Abans de qualsevol canvi d’interfície, llegeix `DESIGN.md` i reutilitza els components i tokens que hi consten. També és obligatori en encàrrecs a Kimi. Cap canvi de font, mida, color, layout o patró de controls fora de l’abast de la tasca. La revisió visual no es substitueix per tests/build.
+
 - Mantén les versions experimentals en `0.x` o `0.x.x`. Després de `0.9` ve `0.10`; no passis a `1.0` sense una petició explícita de l’usuari que declari la versió estable.
 - Prioritza l’ús d’escriptori. Header i footer sempre visibles, dos sidebars amb scroll intern i preview central estable.
 - Tot el càlcul es fa al navegador i l’aplicació es publica estàticament a GitHub Pages.
@@ -12,4 +14,4 @@
 
 - Després de cada entrega de Kimi, consulta de nou la quota real abans d’encarregar res més. Per indicació expressa de l’usuari, en arribar al 85–90% consumit s’atura la delegació a Kimi i continua l’agent principal; no s’aturen les tasques autoritzades només per aquest canvi de responsable. No atribueixis un consum global a aquest projecte si no s’ha mesurat aquesta atribució.
 
-- Reserva marge per al cost de la tasca següent: si el consum de Kimi supera el80%, prefereix continuar localment en lloc d’iniciar una tasca que pugui travessar el llindar85–90%. Una comprovació només al retorn no limita el consum dins de l’encàrrec. No acceptis resultats declarats si no s’han executat les proves, també quan el proveïdor esgota quota abans d’entregar.
+- Reserva marge per al cost de la tasca següent: si el consum de Kimi supera el 80%, prefereix continuar localment en lloc d’iniciar una tasca que pugui travessar el llindar 85–90%. Una comprovació només al retorn no limita el consum dins de l’encàrrec. No acceptis resultats declarats si no s’han executat les proves, també quan el proveïdor esgota quota abans d’entregar.

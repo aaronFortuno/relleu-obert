@@ -39,9 +39,10 @@
     }
   ],
   "officialBuildings": "eix-diagonal-buildings-icgc.geojson",
-  "credits": "© OpenStreetMap contributors (ODbL), OpenMapTiles, OpenFreeMap. Elevations: Mapterhorn. Edificis: ICGC CC BY 4.0.",
+  "infrastructureFile": "eix-diagonal-decks.json",
+  "credits": "© OpenStreetMap contributors (ODbL), OpenMapTiles, OpenFreeMap. Elevations: Mapterhorn. Edificis i superfícies de pont: ICGC CC BY 4.0.",
   "sourceWarnings": [
-    "Els ponts i túnels encara no es reconstrueixen en 3D. Aquesta mostra serveix per preparar-ne el desenvolupament."
+    "Taulers de pont amb superfície 3D de l’ICGC i gruix imprimible simplificat; sense pilars mesurats. Túnels pendents de cotes i seccions suficients."
   ],
   "labelTitle": "Eix Diagonal"
 }

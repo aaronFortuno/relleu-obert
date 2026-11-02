@@ -2,7 +2,9 @@
 
 Prototip educatiu separat de Terrology: generació de maquetes geogràfiques amb JavaScript, íntegrament al navegador, publicable a GitHub Pages. No s’ha copiat codi de Terrology.
 
-**v0.13.1 experimental · 2 de novembre de 2026**
+**v0.14.0 experimental · 2 de novembre de 2026**
+
+Novetats v0.14: primer tauler del viaducte de Manresa amb cotes 3D reals de l’ICGC, separat del terreny i inclòs al 3MF. Gruix imprimible simplificat, sense pilars mesurats; encara només a la mostra. [Implementació i límits](work/RO-033-IMPLEMENTACIO.md). El túnel continua pendent de dades suficients. [Llibre d’estil obligatori](DESIGN.md) per a qualsevol canvi d’interfície, incloses tasques delegades.
 
 Correcció v0.13.1: la cota mínima del retall se situa a 5 mm de la cara inferior, sense convertir l’altitud absoluta en gruix de plàstic. Es mantenen els desnivells i l’exageració; edificis, vegetació i aigua comparteixen la transformació vertical, registrada a la procedència.
 

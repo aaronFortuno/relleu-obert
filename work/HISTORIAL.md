@@ -2,6 +2,16 @@
 
 Actualitzat: 2026-11-02. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.14.0 — Implementació local, sense noves validacions d’usuari
+
+Primer tauler real del viaducte incorporat a la mostra i al 3MF; [dades,
+comprovacions i límits](RO-033-IMPLEMENTACIO.md). Estudi de túnels amb revisió
+de l’agent principal: [fonts insuficients per al buit real](RO-034-DADES-IFC.md).
+[Llibre d’estil](../DESIGN.md) obligatori per a contribucions i delegacions,
+amb tokens compartits i revisió visual. 217 proves, construcció i navegador
+locals correctes. Cap entrada arxivada ni validació física presumida; RO-033,
+RO-034 i RO-045 continuen al backlog. Pages/CI remots els comprova l’usuari.
+
 ## Validacions i observacions de l’usuari sobre v0.6.0
 
 Es conserven aquí les anotacions de totes les cel·les d’estat abans de reorganitzar el backlog. «Validat però…» conserva la millora pendent al backlog actiu; «aparentment» no és una validació completa en tots els escenaris.

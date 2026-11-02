@@ -1,0 +1,9 @@
+:root{
+  --ui-title:12px;
+  --ui-control:11px;
+  --ui-label:10px;
+  --ui-note:9px;
+  --ui-control-border:#d5ddcc;
+  --ui-control-bg:#fcfdf8;
+  --ui-control-text:#425b3b;
+}

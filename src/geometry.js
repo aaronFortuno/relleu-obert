@@ -12,6 +12,7 @@ import {treeSampler,fitTrees,MAX_TREES} from './vegetation-budget.js';
 import {scatterBrush} from './brush-scatter.js';
 import {createGestureCoverage} from './brush-coverage.js';
 import {roofProfile} from './building-roofs.js';
+import {projectInfrastructurePath} from './infrastructure-solids.js';
 export {sampleHeight} from './elevation.js';
 const pc=polygonOps();
 
@@ -101,6 +102,23 @@ export function levelBuildingSolid(polys,rise,ground,width,height,res,profile){
   return {...solidPatches(patches,()=>roof,(x,y)=>ground(x,y)-.3),roof,referenceGround};
 }
 function append(target,mesh){const offset=target.vertices.length/3;for(const v of mesh.vertices)target.vertices.push(v);for(const i of mesh.faces)target.faces.push(i+offset);}
+// The official IFC contains surveyed deck TOP surfaces, despite naming its
+// open shells IFCCLOSEDSHELL. Preserve those Z values and give each clipped
+// surface a documented printable thickness; do not invent engineering piers.
+export function deckSurfaceSolid(item,proj,verticalReference,exaggeration,thickness=.6){
+  const points=projectInfrastructurePath(item.coordinates,proj,verticalReference,exaggeration),surface=new Surface(),rect=box(proj.width,proj.height);
+  if(!Array.isArray(item.faces)||item.faces.length%3||item.faces.some(i=>!Number.isSafeInteger(i)||i<0||i>=points.length)||!Number.isFinite(thickness)||thickness<=0)throw Error('Superfície de pont invàlida.');
+  for(let i=0;i<item.faces.length;i+=3){
+    const p=item.faces.slice(i,i+3).map(j=>points[j]);let [a,b,c]=p;
+    const det=(b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]);if(Math.abs(det)<1e-12)continue;
+    if(det<0){[b,c]=[c,b];p[1]=b;p[2]=c;}
+    if(p.every(([x,y])=>x>=0&&y>=0&&x<=proj.width&&y<=proj.height)){surface.tri(...p);continue;}
+    const clipped=intersect([[p.map(v=>v.slice(0,2)).concat([a.slice(0,2)])]],rect);
+    const dz=(x,y)=>{const u=((x-a[0])*(c[1]-a[1])-(y-a[1])*(c[0]-a[0]))/Math.abs(det),v=((b[0]-a[0])*(y-a[1])-(b[1]-a[1])*(x-a[0]))/Math.abs(det);return a[2]+u*(b[2]-a[2])+v*(c[2]-a[2]);};
+    for(const poly of clipped)surface.polygon(poly,dz);
+  }
+  return surface.solid((x,y,z)=>z-thickness);
+}
 export function treeMesh({x,y,ground,rx,ry,rz,rotation=0,phase=0}){
   const surf=new Surface(),rings=6,segments=8,embed=Math.min(.3,rz*.35),z=ground+rz-embed;
   const p=(i,j)=>{const v=i/rings*Math.PI,u=j/segments*Math.PI*2,w=1+.05*Math.cos(3*u+phase)*Math.sin(v),dx=rx*Math.sin(v)*Math.cos(u)*w,dy=ry*Math.sin(v)*Math.sin(u)*w;return [x+dx*Math.cos(rotation)-dy*Math.sin(rotation),y+dx*Math.sin(rotation)+dy*Math.cos(rotation),z+rz*Math.cos(v)];};
@@ -114,6 +132,7 @@ export function buildModel(data,options={},progress=()=>{}){
   const prepared=data.localDEM?{tiles:[],diagnostics:{invalid:0,spikes:0,repaired:0,source:'local GeoTIFF'}}:prepareElevationTiles(data.dem),localHeight=data.localDEM?localRasterSampler(data.localDEM):null;
   if(prepared.diagnostics.repaired)warnings.push(`S’han reconstruït ${prepared.diagnostics.repaired} mostres d’altitud invàlides o pics aïllats a partir dels veïns.`);
   const water=[],ocean=[],green=[],woods=[],roads=[];
+  const deckItems=data.infrastructure?.items||[],deckFootprints=deckItems.flatMap(item=>item.outlines.map(r=>[r.map(project)])),deckMask=merge(deckFootprints.map(p=>intersect([p],rect)).filter(p=>p.length)),containsDeck=polygonTester(deckMask);
   for(const f of data.features){const p=f.properties,layer=p.sourceLayer,polys=geoPolys(f,project);
     if(layer==='water'){water.push(...polys.map(p=>[p]));if(p.class==='ocean')ocean.push(...polys.map(p=>[p]));}
     if((layer==='landcover'&&['wood','grass','scrub'].includes(p.class))||(layer==='landuse'&&['park','forest','grass','cemetery','recreation_ground'].includes(p.class)))green.push(...polys.map(p=>[p]));
@@ -121,7 +140,10 @@ export function buildModel(data,options={},progress=()=>{}){
     if(layer==='transportation'&&p.brunnel!=='tunnel'&&f.geometry.type.includes('LineString')){
       const lines=f.geometry.type==='LineString'?[f.geometry.coordinates]:f.geometry.coordinates;
       const r=Math.max(.22,(['primary','secondary','tertiary'].includes(p.class)?5:2)*scale);
-      for(const line of lines)roads.push(...lineBuffer(line.map(project),r,[width,height]).map(p=>[p]));
+      for(const line of lines){
+        if(p.brunnel==='bridge'&&line.some(p=>containsDeck(project(p))))continue;
+        roads.push(...lineBuffer(line.map(project),r,[width,height]).map(p=>[p]));
+      }
     }
   }
   progress('Delimitant costa i capes…');
@@ -135,6 +157,9 @@ export function buildModel(data,options={},progress=()=>{}){
   for(let i=0;i<field.values.length;i++)field.values[i]=5+(field.values[i]-originMeters)*scale*exaggeration;
   const ground=field.sample;
   const aggregates=CATEGORIES.map(m=>({...m,vertices:[],faces:[]}));const add=(id,mesh)=>append(aggregates[id],mesh);
+  let deckCount=0;
+  for(const item of deckItems){const mesh=deckSurfaceSolid(item,proj,verticalReference,exaggeration);if(mesh.faces.length){add(3,mesh);deckCount++;}}
+  if(deckCount)warnings.push(`${deckCount} taulers ICGC amb cota pròpia i gruix imprimible de 0,6 mm. Sense pilars mesurats; poden requerir suports al laminador. El datum vertical de l’ICGC no s’ha transformat al del relleu.`);
   progress('Construint superfícies amb límits vectorials…');
   add(0,terrainSolid(land,(x,y)=>ground(x,y)-.65,()=>0,width,height,resolution));
   const forestGround=intersect(forest,merge(cropped(woods))),grassGround=subtract(forest,forestGround);
@@ -145,14 +170,15 @@ export function buildModel(data,options={},progress=()=>{}){
   add(7,terrainSolid(inlandWater,(x,y)=>Math.max(3,ground(x,y)-.3),()=>0,width,height,resolution));
   warnings.push('Els arbres són una representació procedimental dins de zones verdes, no posicions d’arbres mesurades.');
   warnings.push('Les tessel·les vectorials estan generalitzades. Aquesta prova no substitueix cartografia topogràfica de precisió.');
-  const context={ground,verticalReference,proj,rect,forest,land,roadPoly,containsForest:polygonTester(forest),containsLand:polygonTester(land),containsRoad:polygonTester(roadPoly),width,height,scale,staticWarnings:warnings,options:{...options,size,exaggeration,resolution},meta:data.meta,diagnostics:prepared.diagnostics,staticBase:aggregates.map(p=>({...p,vertices:new Float32Array(p.vertices),faces:new Uint32Array(p.faces)}))};
-  return updateBuildings({context},{features:data.features,meta:data.meta},options,progress);
+  const containsGroundRoad=polygonTester(roadPoly);
+  const context={ground,verticalReference,proj,rect,forest,land,roadPoly,containsForest:polygonTester(forest),containsLand:polygonTester(land),containsRoad:p=>containsDeck(p)||containsGroundRoad(p),width,height,scale,staticWarnings:warnings,options:{...options,size,exaggeration,resolution},meta:{...data.meta,infrastructure:deckCount?{...data.infrastructure,items:undefined,count:deckCount,printableThicknessMM:.6}:null},diagnostics:prepared.diagnostics,staticBase:aggregates.map(p=>({...p,vertices:new Float32Array(p.vertices),faces:new Uint32Array(p.faces)}))};
+  return updateBuildings({context},{features:data.features,meta:context.meta},options,progress);
 }
 
 export function updateBuildings(previous,layer={},changes={},progress=()=>{}){
   if(!previous.context)throw Error('Cal generar primer el terreny.');
   const old=previous.context,options={...old.options,...changes},config=buildingOptions(options),{buildingMode,maxBuildingHeight}=config;
-  const ctx={...old,options:{...options,...config},meta:layer.meta||old.meta,buildingFeatures:layer.features||old.buildingFeatures,vegetationCache:null};
+  const ctx={...old,options:{...options,...config},meta:{...(layer.meta||old.meta),infrastructure:old.meta.infrastructure},buildingFeatures:layer.features||old.buildingFeatures,vegetationCache:null};
   const {width,height,ground,scale,rect,land}=ctx,res=options.resolution;
   const mesh={vertices:[],faces:[]},clipped=[],warnings=[...ctx.staticWarnings,...(ctx.meta.sourceWarnings||[])];
   let buildingCount=0,approximate=0,limited=0,shapedRoofs=0,fallbackRoofs=0;const volumes=[];

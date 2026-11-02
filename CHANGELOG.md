@@ -1,5 +1,12 @@
 # Canvis
 
+## v0.14.0 — 2026-11-02
+
+- Mostra de Manresa amb quatre superfícies de pont de l’IFC ICGC, inclòs el viaducte: cotes pròpies, gruix imprimible de 0,6 mm, espai inferior i conservació en edicions de capes i exportació. Sense pilars mesurats ni font 3D automàtica fora de la mostra.
+- RO-034: dades de túnel examinades; traçat 2D disponible però cotes i secció insuficients. Fonaments numèrics provats; no es perfora el relleu amb dades inventades.
+- DESIGN.md obligatori a AGENTS.md: components, tipografia, colors, layout, accessibilitat i revisió visual dels encàrrecs. Tokens compartits sense redissenyar la UI.
+- 217 proves locals, construcció estàtica i revisió de navegador/3MF. Validació d’usuari, suports i laminat pendents. Sense comprovació remota de Pages/CI.
+
 ## v0.13.1 — 2026-11-02
 
 - Base relativa: el punt més baix del relleu queda a 5 mm de la cara inferior. Es resta l’altitud mínima de la graella visible i es conserven desnivells i exageració; totes les capes comparteixen la referència vertical. A la costa, el mar queda a 5 mm.
