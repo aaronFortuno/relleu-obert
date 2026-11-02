@@ -1,12 +1,12 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-02 · v0.19.0 PARCIAL**. Tancament expressament demanat per continuar al portàtil. RO-052 incomplet: compilació correcta; última selecció curta 12/13, amb graó a boca del rectangle girat. [Punt de represa prioritari](REPRESA-RO-052.md), [informe](RO-052-CONTINUITAT.md). Marc exterior retirat de la UI i ajornat. Versions 0.x; les observacions originals es conserven a MILLORES-BUGS.md.
+Actualitzat: **2026-11-02 · v0.19.1**. RO-052: graó girat i plecs d'enllaç corregits; 377 proves ordinàries i sis integrades verificades, controls regenerats. Queden dos extrems sense enllaç suau al control quadrat i la revisió de laminat. RO-053: proposta navegable preparada per a revisió, sense substituir la UI productiva. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md). Marc ajornat. Versions 0.x; observacions originals a MILLORES-BUGS.md.
 
 ## Ordre de treball
 
-**RO-052 — reprendre al portàtil.** Primera tasca: corregir la regressió del rectangle girat abans de més validació o impressions. Hi ha feina transversal desada però incompleta; 370/370 ordinàries passaven abans del darrer refinament, no en acrediten l'estat actual. Cap procés ni agent queda treballant en aquest equip.
+**RO-052 — correcció comprovada localment.** Paviment del mateix material preservat i normals d'enllaç calculades als vèrtexs reals. 377/377 proves ordinàries finals; sis proves pesants verificades (cinc a la primera passada i la sisena després de corregir metadades JSON). Quadrat i rectangle girat de Rajadell regenerats amb auditoria sense errors. Següent: els dos extrems del quadrat sense enllaç suau, revisió d'usuari/laminat i contrast fora de Rajadell; no es dona per tancat.
 
-**RO-053 — prioritat de disseny i arquitectura: flux per etapes.** Petició reiterada de l'usuari: separar terreny, vegetació, vies i edificis per guanyar agilitat i control, començant per la mida d'impressió i la selecció del territori. [Proposta completa, decisions obertes i criteris](#ro-053--flux-de-treball-per-etapes). Cal estudiar l'ordre i les dependències; no és una seqüència ja aprovada ni una millora opcional perduda entre retocs. Preparar el disseny com a següent línia prioritària, coordinada amb les correccions RO-052/051.
+**RO-053 — proposta preparada en paral·lel, autoritzat per l'usuari.** [Inventari, alternatives, invalidacions i pilot proposat](RO-053-UX.md), amb [demostració navegable](https://aaronFortuno.github.io/relleu-obert/prototypes/ro053/). Ordre recomanat: Peça → Territori → Terreny → Vegetació → Vies → Edificis. 36 comprovacions i revisió local a 1280×720 i 1600×900, inclosos traços i recuperació d'errors. La UI productiva es conserva fins a la revisió d'usuari; ni ordre ni arquitectura incremental es donen per aprovats/implementats. Una sola cua pesada alhora.
 
 1. **RO-051 — Primera optimització validada localment.** 3 km: 189,3 → 56,6 s; màscares sota demanda, de 14 unions a 2, amb mateixos perfils/omissions/pilars/llums. 344 proves i build correctes. Següent: component nul d'1,5 km / detall 12 i màscares multipart; prototip desactivat. [Informe i controls](RO-051-RENDIMENT.md).
 2. **RO-034 / RO-050 — Validació del lot.** Revisar túnels arquejats i suports a Rajadell; comparar +0,5 / +1 mm ferroviaris i materials. Distingir control geomètric local de laminat i impressió.
@@ -20,11 +20,11 @@ Actualitzat: **2026-11-02 · v0.19.0 PARCIAL**. Tancament expressament demanat p
 
 | ID                                                                 | Prioritat | Estat                                                                                                                                                                                                                                                                                                                                 | Proper resultat comprovable                             |
 | ------------------------------------------------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| [RO-053](#ro-053--flux-de-treball-per-etapes) | P1 | Proposta prioritària de l'usuari; ordre per estudiar | Flux revisable, dependències de capes i primer pilot incremental |
+| [RO-053](#ro-053--flux-de-treball-per-etapes) | P1 | Proposta navegable i matriu d'impacte preparades | Usuari: revisar flux; després pilot incremental acotat |
 | [RO-033](#ro-033--ponts-i-viaductes) | P1 | Controls de Rajadell corregits; generalització/Millau pendents | Reproduir omissions i angles a Millau segons zoom/retall; contrastar altres ponts |
 | [RO-034](#ro-034--túnels-imprimibles) | P1 | Corregit en controls locals; pendent d'usuari/laminat | Revisar portals amb mode experimental activat |
 | [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | 3 km un 70% més ràpid; 344 proves/build correctes | Component nul a 1,5 km/detall 12; IDs multipart; usuari/laminat |
-| [RO-052](#ro-052--continuïtat-i-amplada-del-traçat-viari) | P1 | Entrega parcial; rectangle girat falla | REPRESA-RO-052.md: corregir graó, suite final, controls i revisió visual |
+| [RO-052](#ro-052--continuïtat-i-amplada-del-traçat-viari) | P1 | Graó i plecs corregits; 383 proves verificades | Dos extrems del quadrat, usuari/laminat i contrast general |
 | [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió) | P1 | Artefactes de materials pendents de diagnòstic | Distingir malla/exportació de configuració del laminador |
 | [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts)     | P1        | Fonts en estudi                                                                                                                                                                                                                                                                                                                       | Comparació de parts i petjades en segona zona           |
 | [RO-032](#ro-032--cobertes-i-volums-singulars) | P1 | Nucli verificat; servei remot pendent de validar | Consulta real reeixida i dades de coberta de Tamariu |
@@ -101,7 +101,7 @@ P1: fidelitat i imprimibilitat; P2: funcionalitat i ús; P3: exploració. Només
 
 ### RO-014 — Marc imprimible independent
 
-**Decisió de l'usuari (2026-11-02), ajornat:** retirar «Marc exterior» del sidebar dret per reduir soroll mental. Eliminats els controls, preview i descàrrega de la UI a v0.19.0; backend i proves es conserven per reprendre un disseny més detallat. Validació visual local de la retirada i validació d'usuari es registraran separadament.
+**Decisió de l'usuari (2026-11-02), ajornat:** retirar «Marc exterior» del sidebar dret per reduir soroll mental. Eliminats els controls, preview i descàrrega de la UI a v0.19.0; backend i proves es conserven per reprendre un disseny més detallat. Revisió visual local de la retirada completada a v0.19.1 en dues mides d'escriptori; validació d'usuari separada.
 
 
 **Validació rebuda (2026-11-02):** marc validat. Es demana retirar el selector de color i fixar el preview en negre; simplificació aplicada en aquest lot. El material físic es tria al laminador. Ajust de toleràncies i impressió continuen a RO-024.
@@ -341,23 +341,24 @@ Primer prototip local: perfil longitudinal regularitzat amb tall/terraplè acota
 
 ### RO-052 — Continuïtat i amplada del traçat viari
 
-**TANCAMENT PARCIAL per petició de l'usuari (2026-11-02):** treball desat i publicat per reprendre al portàtil. No s'ha resolt RO-052. Compilació correcta; última selecció 12/13, falla la boca del rectangle girat (cotes 7,06837 / 7,17250 / 7,35417 mm). Els perfils transversals complets estan integrats però pendents de depuració. Les proves pesants, regeneració final de controls i revisió visual del marc no s'han fet després del darrer refinament. [Instruccions exactes de represa](REPRESA-RO-052.md).
+**v0.19.1, comprovació local completada:** corregit el graó de la boca girada amb la mateixa regressió i toleràncies, plecs dels raccords i paritat de metadades al 3MF. 377/377 proves ordinàries finals i sis integrades verificades; dos controls reals regenerats. Al quadrat, `ifc-114729` i `ifc-132561` conserven un extrem sense enllaç suau cadascun; no s'amaguen els avisos ni es modifica el relleu per forçar-los. [Resultats, models i límits](RO-052-CONTINUITAT.md). Validació d'usuari/laminat/impressió i retalls externs pendents. El 12/13 de v0.19.0 es conserva com a antecedent a l'historial.
 
 
-**P1, implementació autoritzada en curs (2026-11-02), observació expressa de l'usuari:** als 3MF les unions entre carretera, túnel i viaducte tenen formes estranyes, manca continuïtat de la línia i apareixen canvis d'amplada. L'usuari proposa revisar el traçat complet d'una mateixa carretera, en lloc de resoldre segments aïllats. Relacionat amb RO-033/034/051; no queda validat pel rendiment ni per malles tancades.
+**P1, observació expressa de l'usuari:** als 3MF les unions entre carretera, túnel i viaducte tenen formes estranyes, manca continuïtat de la línia i apareixen canvis d'amplada. L'usuari proposa revisar el traçat complet d'una mateixa carretera, en lloc de resoldre segments aïllats. Relacionat amb RO-033/034/051; no queda validat pel rendiment ni per malles tancades.
 
 **Diagnòstic estàtic inicial:** hi ha polítiques diferents per a superfície, tauler i túnel. El paviment del túnel reutilitza l'amplada mínima de la cavitat; les continuacions de pont es trien per proximitat/classe/direcció, sense una identitat comuna de carretera. Cal distingir amplada de calçada, amplada estructural del tauler i secció lliure de túnel: no s'han d'igualar cegament.
 
-- [x] Agents independents: revisar polítiques d'amplada i selecció de continuacions; identificar buits de les proves actuals. Primera correcció implementada en v0.19.0 parcial; manca validar el darrer refinament.
+- [x] Agents independents: revisar polítiques d'amplada i selecció de continuacions; identificar buits de les proves actuals. Refinament verificat localment a v0.19.1.
 - [x] Agent: conservar identificadors i atributs de ruta i construir correspondències fiables entre fragments de superfície/pont/túnel, evitant unir carreteres diferents només perquè es creuen.
 - [x] Agent: definir l'amplada comuna de paviment i transicions quan hi hagi canvis acreditats de carrils/amplada. Separar-la dels mínims d'obertura imprimible i de l'amplada estructural mesurada.
 - [x] Agent: provar una passada conjunta de continuïtat a boques i estreps, amb cotes i dues vores coherents, mantenint el terreny i els buits sota les estructures.
-- [ ] Agent: completar la regressió integrada superfície → pont → superfície → túnel → superfície; mostrejar eix i vores, connexions i material, a diferents escales i retalls. Conservar la geometria a preview i 3MF.
+- [x] Agent: completar la regressió integrada superfície → pont → superfície → túnel → superfície; mostrejar eix i vores al quadrat i rectangle girat, també al 3MF Bambu. Conservar DEM i XYZ mesurats.
+- [ ] Agent: resoldre els dos extrems sense enllaç suau del quadrat real; contrastar altres retalls/escales i Millau sense excepcions noves.
 - [ ] Usuari: revisar els enllaços i les transicions d'amplada dels nous controls abans de validar laminat/impressió. Els fitxers de v0.18.2 documenten el problema i no el donen per resolt.
 
 ### RO-053 — Flux de treball per etapes
 
-**P1, proposta prioritària reiterada per l'usuari el 2026-11-02. Estat: per dissenyar; encara no implementat.** Objectiu: seguir polint la implementació i separar clarament els processos de **terreny, vegetació, vies i edificis**, possiblement en quatre etapes successives de construcció. Guanyar rapidesa, control i comprensió del resultat, evitant una generació monolítica seguida de retocs aïllats. Inclou arquitectura incremental i navegació/sidebars; no és només canviar l'ordre dels menús.
+**P1, proposta prioritària reiterada per l'usuari el 2026-11-02. Estat: proposta de disseny i demostració navegable preparades en paral·lel a RO-052; encara no integrades al producte.** [Informe, matriu d'impacte i pilot](RO-053-UX.md). Objectiu: separar **terreny, vegetació, vies i edificis**, amb mida/territori previs, per guanyar rapidesa, control i comprensió. Inclou arquitectura incremental i navegació/sidebars; canviar menús no substitueix aquesta arquitectura. La demostració és il·lustrativa i no genera models.
 
 **Hipòtesi inicial de l'usuari, pendent d'avaluar i validar:**
 
@@ -384,11 +385,12 @@ La preparació de mida i territori precedeix les quatre capes; el nombre de pant
 
 **Pla de treball i seguiment:**
 
-- [ ] Agent: inventariar el flux actual i les dependències de dades/meshes/edicions, aprofitant el recalculat incremental existent.
-- [ ] Agent: comparar l'ordre proposat amb alternatives justificades; preparar un mapa de passos i estats, incloent tornar enrere, errors i invalidació de capes.
+- [x] Agent: inventariar el flux actual i les dependències de dades/meshes/edicions, aprofitant el recalculat incremental existent.
+- [x] Agent: comparar l'ordre proposat amb alternatives justificades; preparar un mapa de passos i estats, incloent tornar enrere, errors i invalidació de capes. Prototip, 36 comprovacions i revisió visual en dues mides completats.
 - [ ] Usuari: revisar un prototip o proposta visual del flux i dels sidebars abans d'una reorganització general de la UI.
-- [ ] Agent: definir límits de mòduls i un primer pilot petit de construcció per etapes; implementar-lo gradualment, conservant el comportament i les dades verificades.
+- [x] Agent: proposar límits i primer pilot: estat de projecte, revisions i conservació de traços davant error de mida/lloc. Separació de transport posterior, dependent de RO-052.
+- [ ] Agent: implementar el pilot després de revisar el disseny, conservant el comportament i les dades verificades.
 - [ ] Agent: comprovar temps/memòria per etapa, reutilització de capes no afectades, conservació del pinzell i configuració, continuïtat del transport i igualtat preview/exportació. Provar avançar/retrocedir i errors, no només la construcció final.
 - [ ] Usuari: validar claredat, agilitat, control i absència de soroll mental amb un recorregut real complet; després, laminat/impressió dels nous controls quan la geometria estigui estabilitzada.
 
-**Proper resultat revisable:** proposta explícita d'ordre i dependències, amb justificació de la posició de la vegetació i de les decisions de mida/escala. Disseny prioritari coordinat amb les incidències obertes; el registre d'aquesta proposta no tanca RO-052 ni autoritza a donar per acabades les validacions geomètriques pendents.
+**Proper resultat revisable:** recorregut de l'usuari pel prototip (mida, capes, traç afectat, error i recuperació), abans d'integrar la nova navegació i el pilot. La proposta no tanca RO-052 ni les validacions geomètriques pendents.

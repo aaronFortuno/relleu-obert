@@ -2,6 +2,57 @@
 
 Actualitzat: 2026-11-02. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.19.1 — RO-052 corregit en controls i proposta RO-053 (2026-11-02)
+
+Petició expressa de l'usuari: prioritzar el redisseny d'UX RO-053 en
+paral·lel a la geometria RO-052. Proposta i prototip separats de la UI
+productiva fins a revisió; un únic propietari de la integració geomètrica
+i una sola operació pesada alhora en aquest portàtil.
+
+El cas del rectangle girat es reprodueix en menys d'un segon. Les cotes
+de metadades són correctes però el material real presenta el graó. La
+correcció conserva el paviment que ja pertany al mateix material i retira
+només l'obertura i els paviments d'altres categories, evitant restar-lo
+i unir-lo de nou sobre cares gairebé coplanàries abans del Float32 final.
+31 controls passen en 2,52 s, amb almenys 4,94 GiB lliures, sense canviar
+toleràncies ni eliminar la regressió. La suite detecta quatre casos reals
+amb seccions plegades: normals interpolades entre els vèrtexs cartogràfics
+i espai de mitra dins del tauler resolen el primer revolt sense canviar
+traçat, XYZ mesurats ni DEM. La prova del revolt ara construeix el sòlid.
+
+Suite ordinària final **377/377**, 58,565 s, heap 512 MB i mínim 5,18 GiB
+lliures. Dos fitxers integrats seqüencials, heap 1.536 MB: 5/6 inicials en
+225,354 s, mínim 3,77 GiB; la fallada restant era només `undefined` absent
+en JSON. Corregida com a llista buida i repetida la prova afectada: 1/1 en
+0,729 s, mínim 5,42 GiB. **383 casos diferents verificats** entre passades,
+no una única passada final conjunta de sis proves pesants. Una sola cua
+pesada alhora i cap llindar de memòria traspassat.
+
+Controls reals regenerats en 3MF estàndard, sense arbres i RO-051
+desactivat: Rajadell 150×150 mm, 10,238 s, i 150×200 mm / 25°, 6,305 s.
+Un túnel aplicat cadascun i auditoria sense errors. Tauler principal amb
+11/12 pilars i dos enllaços. Al quadrat queden dos extrems `no gentle join`
+(`ifc-114729`, `ifc-132561`), conservats als avisos. [Resultats i models](RO-052-CONTINUITAT.md).
+RO-052 continua obert per a aquests extrems, contrast general i laminat.
+
+RO-053 entrega [proposta i pilot](RO-053-UX.md) amb prototip públic
+independent: Peça → Territori → Terreny → Vegetació → Vies → Edificis.
+36 comprovacions lleugeres correctes; revisió visual principal a 1280×720
+i 1600×900, inclosos traços conservats, arbres ocultats, recuperació
+d'errors i exportació de revisió bloquejada quan cal. Recuperació visible
+al centre encara que el sidebar es desplaci. Sense xarxa, generació real
+ni canvis generals a la UI productiva; ordre i pilot pendents de l'usuari.
+
+Compilació final correcta en 3,72 s (heap 512 MB; mínim 4,95 GiB lliures),
+amb els avisos previs de mida de paquet i `node:module` de Manifold.
+Versió compilada oberta localment: model inicial complet amb 4.747 arbres,
+23 fragments d'edificis, exportacions habilitades i footer v0.19.1. Revisada
+a 1280×720 i 1600×900: quatre menús visibles, scroll intern, absència del
+marc exterior i changelog correcte. Cap comprovació remota de Pages/CI.
+Backlog: 53 identificadors estables, 17 línies obertes, sis ajornades i
+30 arxivades; 216 enllaços/àncores locals verificats. Observacions originals
+de MILLORES-BUGS.md intactes.
+
 ## RO-053 — Prioritat de flux per etapes recollida (2026-11-02)
 
 L'usuari reitera que el flux granular no pot quedar perdut a la conversa:

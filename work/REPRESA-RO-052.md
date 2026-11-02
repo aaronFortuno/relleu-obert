@@ -1,4 +1,31 @@
-# Represa RO-052 · v0.19.0 parcial
+# Represa RO-052 / RO-053 · v0.19.1
+
+**Estat actual al portàtil, 2026-11-02:** regressió del portal girat
+corregida sense rebaixar toleràncies. Corregits també els plecs d'enllaços
+reals i la serialització d'identificadors absents. 377/377 proves ordinàries
+finals i sis integrades verificades (cinc inicials i una repetida després
+de corregir només metadades). Dos controls reals regenerats amb auditoria
+sense errors; al quadrat queden dos extrems sense enllaç suau. [Informe
+actual i fitxers](RO-052-CONTINUITAT.md). No donar per resolt RO-052 ni
+substituir la revisió de laminat/impressió per aquestes proves.
+
+**RO-053 avança en paral·lel:** [disseny, invalidacions i pilot proposat](RO-053-UX.md),
+amb [demostració navegable](https://aaronFortuno.github.io/relleu-obert/prototypes/ro053/)
+revisada localment a 1280×720 i 1600×900. Ordre recomanat: Peça → Territori →
+Terreny → Vegetació → Vies → Edificis. Esperar la revisió d'aquest flux
+abans de reorganitzar la UI productiva. Primer pilot acotat proposat:
+preservar traços i model vàlid davant error de mida/lloc. No és una
+implementació del motor per capes ni un generador real en el prototip.
+
+**Pròxims passos:** dos extrems del quadrat; usuari/laminat dels controls;
+revisió del flux RO-053; després pilot incremental i contrast general
+de RO-033/052, inclòs Millau. RO-051 continua desactivat. Conservar els
+pressupostos de memòria i una única cua pesada. Pages/CI els revisa l'usuari.
+
+## Punt de tancament històric · v0.19.0 parcial
+
+El text següent descriu l'estat anterior a v0.19.1; el 12/13 i les tasques
+de verificació pendents d'aquell moment no són el resultat actual.
 
 **Tancament del 2026-11-02 per petició expressa de l'usuari:** cal tancar
 l'ordinador i continuar al portàtil durant la nit. Es publica el treball

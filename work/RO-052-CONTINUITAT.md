@@ -1,11 +1,77 @@
 # RO-052 — Continuïtat i amplada de la calçada
 
-**ESTAT FINAL: v0.19.0 PARCIAL, tancada per petició expressa de l'usuari.** Compilació correcta (2,85 s), però la selecció final RO-052 és **12/13**: falla `rotated rectangle/live/portal start` amb un graó (7,06837 / 7,17250 / 7,35417 mm). La suite ordinària de 370 casos passava abans del darrer refinament transversal i no acredita aquest estat final. No s'han repetit els blocs pesants ni regenerat models després del canvi. [Punt de represa complet](REPRESA-RO-052.md).
+**Estat actual: v0.19.1, correccions comprovades localment.** La regressió
+del portal girat passa sense rebaixar toleràncies. També s'han corregit
+plecs dels enllaços en revolts i metadades absents al JSON. **377/377 proves
+ordinàries finals i sis proves integrades verificades.** Dos controls reals
+regenerats amb túnels i auditoria sense errors. RO-052 continua obert:
+dos extrems sense enllaç suau al quadrat, contrast general i revisió de
+laminat/impressió pendents. [Represa actualitzada](REPRESA-RO-052.md).
 
-S'han desat `transport-sections.js`, perfils `across`, `surfaceBreaks` i caps retriangulats; la integració encara s'ha de depurar. Els [diagnòstics conservats](repro/ro052/README.md) són previs a aquest refinament, no models finals. La retirada del marc necessita encara la revisió visual local i d'usuari.
+## Correcció i verificació v0.19.1
 
+El cas fallit de v0.19.0 tenia cotes de metadades correctes, però el
+material real de la boca presentava el graó. `tunnel-pavement.js` conserva
+el paviment que ja pertany a cada categoria i hi retira només el buit i
+els paviments d'altres materials. Evita restar i tornar a unir la mateixa
+regió sobre cares gairebé coplanàries abans de convertir a Float32.
+La regressió comprova de nou eix/vores del model i del 3MF Bambu real.
+No s'eliminen fragments positius ni es relaxa cap tolerància.
 
-Lot v0.19.0 en validació, 2026-11-02. Seguiment al
+La suite ordinària va detectar quatre casos reals amb seccions plegades.
+`bridge-completion.js` calcula les normals de vora als vèrtexs cartogràfics
+i les interpola dins de cada segment, en lloc de girar cada secció
+remostrejada cap al revolt veí. El primer angle reserva dins del tauler
+la distància exigida per la mitra; els enllaços rectes mantenen el solapament
+curt anterior. La regressió del primer revolt ara també construeix i
+comprova el sòlid. No es desplaça el traçat ni es modifiquen XYZ mesurats.
+
+La primera passada integrada va ser 5/6: el cas restant només perdia
+`targetFeatureIds: undefined` en serialitzar. Ara la manca d'identificadors
+és `[]`; la prova integrada afectada s'ha repetit i passa. No és una
+nova passada conjunta de sis casos després d'aquesta correcció de metadades.
+
+| Comprovació local al portàtil | Resultat | Temps | RAM lliure mínima |
+| --- | --- | ---: | ---: |
+| Selecció inicial de continuïtat/capes/3MF | 31/31 | 2,52 s | 4,94 GiB |
+| Regressions reals i d'enllaços després de corregir plecs | 31/31 | 31,95 s | 4,61 GiB |
+| Suite ordinària final, heap 512 MB | 377/377 | 58,57 s | 5,18 GiB |
+| Dos fitxers integrats seqüencials, heap 1.536 MB | 5/6 inicials | 225,35 s | 3,77 GiB |
+| Repetició integrada de paritat JSON corregida | 1/1 | 0,73 s | 5,42 GiB |
+
+Una sola operació pesada alhora, llindars d'AGENTS.md vigilats i cap
+interrupció per memòria. Compilació correcta en 3,72 s i revisió de la
+versió compilada a 1280×720 i 1600×900: model inicial complet, exportacions
+habilitades, quatre menús visibles i marc exterior absent. Detall a
+l'historial de v0.19.1. Les comprovacions d'UX de RO-053 són independents.
+
+## Controls reals regenerats
+
+Edificis ICGC, sense arbres, exageració ×1,5, realç viari 0 mm,
+ferrocarril +1 mm, detall 36 i RO-051 desactivat (`--surface-roads`),
+igual que a la UI publicada. **3MF estàndard**, no projectes nadius Bambu.
+
+| Control | Resultat i límits |
+| --- | --- |
+| [Rajadell 150×150 mm](../public/controls/ro-052/RO-052-Rajadell-150mm.3mf), 1,5 km, 1:10.000 | 10,24 s; mínim 4,46 GiB; un túnel i auditoria sense errors. Viaducte principal: 11 pilars, dos enllaços i llum màxima 8,919 mm. |
+| [Rajadell 150×200 mm, 25°](../public/controls/ro-052/RO-052-Rajadell-150x200mm-gir25.3mf), 1,2×1,6 km, 1:8.000 | 6,31 s; mínim 5,30 GiB; un túnel i auditoria sense errors. Viaducte principal: 12 pilars, dos enllaços i llum màxima 7,879 mm. Tots els taulers acceptats tenen dos enllaços. |
+
+Al quadrat queden dos avisos `no gentle join`: un extrem d'`ifc-114729`
+(longitud disponible 0,755 mm; desnivell 0,283 mm) i un d'`ifc-132561`
+(longitud disponible zero; desnivell 0,283 mm). Es conserven als diagnòstics;
+no es força una rampa abrupta ni s'aplana el relleu per ocultar-los.
+El rectangle no els reprodueix. Una auditoria de malles correcta no
+converteix aquests extrems en unions validades.
+
+Els informes detallats locals són `output/ro052-rajadell-final.json` i
+`output/ro052-rectangle-final.json`. Es van generar des d'a72d787 amb
+aquestes correccions encara sense commit; aquest és l'origen registrat,
+no una prova feta després del commit final. Els controls PRE de
+[repro/ro052](repro/ro052/README.md) es conserven com a evidència històrica.
+
+## Fonaments incorporats a v0.19.0
+
+Lot v0.19.0 iniciat el 2026-11-02. Seguiment al
 [backlog](BACKLOG.md#ro-052--continuïtat-i-amplada-del-traçat-viari).
 L'usuari observa salts del traçat i canvis d'amplada en les unions entre
 carretera, viaducte i túnel dels controls 3MF de v0.18.2.
@@ -211,21 +277,19 @@ el comportament per defecte de l'aplicació. Les opcions `--rotation=25`
 i `--height-mm=200` permeten demanar un retall girat o rectangular
 separadament, mantenint l'escala horitzontal de les dimensions triades.
 
-Aquest comandament és una reproducció proposada; **aquesta nota encara
-no acredita un resultat real de Rajadell per al lot RO-052**. Si el model
-recupera les vies anteriors en una prova amb RO-051 activat, no és un
-control amb aquells perfils aplicats. Cal comprovar igualment l'aplicació
-dels túnels, els enllaços no resolts, l'auditoria i la procedència.
+Els resultats v0.19.1 d'aquesta reproducció consten al principi de
+l'informe. Si el model recupera les vies anteriors en una prova amb
+RO-051 activat, no és un control amb aquells perfils aplicats. Cal
+comprovar túnels, enllaços no resolts, auditoria i procedència.
 
-Pendents d'incorporar després de l'execució principal:
+Pròximes comprovacions:
 
-1. Resultat de la suite ordinària, dels dos blocs exigents seqüencials i
-   de la compilació. No es donen per superats en aquesta nota provisional.
-2. Control real de Rajadell i altres retalls/escales, amb omissions,
-   enllaços no resolts, amplades i procedència registrats. Els controls
-   sintètics no acrediten tots els enllaços de cartografia generalitzada.
-3. Revisió visual local a 1280 × 720 i una segona mida d'escriptori.
-4. Revisió de l'usuari dels nous models, laminat i cupó físic abans de
+1. Resoldre els dos extrems del quadrat amb longitud insuficient sense
+   canviar els XYZ mesurats ni crear falses connexions.
+2. Altres retalls/escales i Millau com a regressió general, registrant
+   omissions, amplades i procedència. Els controls sintètics no acrediten
+   tots els enllaços de cartografia generalitzada.
+3. Revisió de l'usuari dels nous models, laminat i cupó físic abans de
    maquetes llargues. No s'ha comprovat Pages ni CI remotament.
 
 ## Marc exterior ajornat

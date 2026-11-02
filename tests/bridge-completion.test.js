@@ -48,6 +48,7 @@ test('an identified approach keeps the mapped endpoint bend and avoids a nearer 
  const result=planApproaches({axis,points,faces,roads,ground:()=>10.5,containsDeck:([x,y])=>x>=40&&x<=60&&y>=49.7&&y<=50.3,widthMM:100,heightMM:100,roadWidth:.6,scale:.1});
  assert.equal(result.plans.length,1);const p=result.plans[0];assert.equal(p.endWidthMM,.6);
  const centres=p.sections.map(s=>s.left.map((v,k)=>(v+s.right[k])/2));assert(centres.some(q=>Math.hypot(q[0]-60,q[1]-50)<1e-6),'the endpoint was shortcut');assert(centres.at(-1)[1]>50.9,'another route absorbed the join');
+ const pavement=solid(stripSolid(p.sections,.6));try{assert(pavement.volume()>0,'the retained first bend must form a printable solid');}finally{pavement.delete();}
 });
 test('Rajadell uses the twelve spans of the engineering drawing, not the incomplete prose summary',async()=>{
  const data=JSON.parse(await readFile(new URL('../public/data/eix-diagonal-layouts.json',import.meta.url))),layout=data.items['ifc-127512'];

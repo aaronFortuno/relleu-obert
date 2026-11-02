@@ -58,6 +58,26 @@ export function columnSolid(ring,ground,top,topRing=ring){
 }
 function footprint(sections){return [[sections.map(s=>s.right.slice(0,2)).concat(sections.slice().reverse().map(s=>s.left.slice(0,2)),[sections[0].right.slice(0,2)])]];}
 
+// Resampling a straight segment must not independently rotate its crosscuts
+// towards a nearby corner. Interpolate the actual offset boundaries between
+// mapped vertices; the miter at each vertex preserves the original bend.
+function approachNormals(samples){
+  const nodes=[0];for(let i=1;i<samples.length-1;i++)if(samples[i].segment!==samples[i+1].segment)nodes.push(i);
+  nodes.push(samples.length-1);
+  const normals=nodes.map((index,i)=>{
+    const before=unit(samples[nodes[Math.max(0,i-1)]].p,samples[index].p),after=unit(samples[index].p,samples[nodes[Math.min(nodes.length-1,i+1)]].p);
+    const a=i?before:after,b=i<nodes.length-1?after:before,denominator=1+dot(a,b);
+    if(denominator<.5)throw Error('Corba massa tancada per a l’enllaç.');
+    return [-(a[1]+b[1])/denominator,(a[0]+b[0])/denominator];
+  });
+  let interval=1;
+  return samples.map((sample,i)=>{
+    while(interval<nodes.length-1&&nodes[interval]<i)interval++;
+    const a=nodes[interval-1],b=nodes[interval],t=(sample.s-samples[a].s)/(samples[b].s-samples[a].s);
+    return mix(normals[interval-1],normals[interval],t);
+  });
+}
+
 // Geometry is an explicitly estimated PRINT adaptation. The surveyed deck
 // surface is unchanged; connections follow mapped roads, with C1 Hermite Z.
 export function planApproaches({axis,points,faces,containsDeck,roads,ground,roadRise=0,widthMM,heightMM,roadWidth=.44,scale=.1,destinationSurface=null,destinationBreaks=null,forceConnections=false}){
@@ -66,6 +86,7 @@ export function planApproaches({axis,points,faces,containsDeck,roads,ground,road
     const path=reverse?axis.slice().reverse():axis,dir=unit(path[1],path[0]);
     let inside=null;for(const {p}of resample(path,.05,Math.max(widthMM,heightMM)*2))if(containsDeck(p)){inside=p;break;}
     if(!inside){missed.push('no interior');continue;}
+    const continuationPath=continuation(path[0],dir,roads,axis.roadClass,maxLength,axis.identity);if(continuationPath.length<2){missed.push('no compatible mapped road');continue;}
     // Move from the mapped endpoint into the measured deck until a full width
     // transverse section exists, then overlap it by a small distance.
     let start=null,width=0,startZ=0;
@@ -74,11 +95,17 @@ export function planApproaches({axis,points,faces,containsDeck,roads,ground,road
       while(right<limit&&containsDeck([p[0]-n[0]*(right+.025),p[1]-n[1]*(right+.025)]))right+=.025;
       const refine=(low,sign)=>{let high=low+.025;for(let i=0;i<16;i++){const mid=(low+high)/2;if(containsDeck([p[0]+sign*n[0]*mid,p[1]+sign*n[1]*mid]))low=mid;else high=mid;}return low;};
       if(left<limit)left=refine(left,1);if(right<limit)right=refine(right,-1);
-      if(left+right>=.28&&Math.min(left,right)>.12){width=left+right;start=[p[0]+n[0]*(left-right)/2,p[1]+n[1]*(left-right)/2];startZ=top(...start);break;}
+      if(left+right>=.28&&Math.min(left,right)>.12){
+        const capWidth=left+right,cap=[p[0]+n[0]*(left-right)/2,p[1]+n[1]*(left-right)/2],incoming=unit(cap,continuationPath[0]),outgoing=unit(continuationPath[0],continuationPath[1]),cosine=dot(incoming,outgoing);
+        // The inside offset of a miter extends backwards by r*tan(angle/2).
+        // Leave that corner room on the measured deck instead of folding the
+        // first strip, while straight joins retain their original overlap.
+        if(cosine<.999999&&(cosine<=-.5||dist(cap,continuationPath[0])<capWidth/2*Math.sqrt((1-cosine)/(1+cosine))+.1))continue;
+        width=capWidth;start=cap;startZ=top(...start);break;
+      }
     }
     if(!start||startZ==null||start[0]<0||start[1]<0||start[0]>widthMM||start[1]>heightMM){missed.push('outside or no cap');continue;}
     const inward=[start[0]-dir[0]*Math.max(width,1),start[1]-dir[1]*Math.max(width,1)],innerZ=top(...inward),grade=innerZ==null?0:(startZ-innerZ)/dist(start,inward);
-    const continuationPath=continuation(path[0],dir,roads,axis.roadClass,maxLength,axis.identity);if(continuationPath.length<2){missed.push('no compatible mapped road');continue;}
     // Keep the mapped endpoint: dropping it shortcuts the first bend of a join.
     const route=[start,...continuationPath],samples=[];for(const sample of resample(route,.2,maxLength)){const [x,y]=sample.p;if(x<0||y<0||x>widthMM||y>heightMM)break;samples.push(sample);}
     const lineAt=sample=>continuationPath.segments?.[sample.segment-1]?.line;
@@ -95,10 +122,11 @@ export function planApproaches({axis,points,faces,containsDeck,roads,ground,road
     if(destinationBreaks)fractions.push(...destinationBreaks({centre:last.p,normal:[-endDirection[1],endDirection[0]],widthMM:endWidth,line:terminal?.line}));
     const normalized=fractions.map(v=>Math.abs(v)<1e-9?0:Math.abs(v-.5)<1e-9?.5:Math.abs(v+.5)<1e-9?-.5:v);
     const acrossFractions=normalized.filter((v,i,a)=>a.findIndex(q=>Math.abs(q-v)<1e-9)===i).sort((a,b)=>b-a);
-    const sections=selected.map(({p,s},i)=>{const t=s/length,z=(2*t**3-3*t*t+1)*startZ+(t**3-2*t*t+t)*length*grade+(-2*t**3+3*t*t)*endZ+(t**3-t*t)*length*endGrade,direction=unit(selected[Math.max(0,i-1)].p,selected[Math.min(selected.length-1,i+1)].p);
+    let normals;try{normals=approachNormals(selected);}catch{missed.push('no safe approach bend');continue;}
+    const sections=selected.map(({p,s},i)=>{const t=s/length,z=(2*t**3-3*t*t+1)*startZ+(t**3-2*t*t+t)*length*grade+(-2*t**3+3*t*t)*endZ+(t**3-t*t)*length*endGrade,n=normals[i];
       const widthAt=width+(endWidth-width)*(t*t*(3-2*t));
       const across=acrossFractions.map(f=>{
-        const q=[p[0]-direction[1]*widthAt*f,p[1]+direction[0]*widthAt*f,z],own=top(q[0],q[1]);
+        const q=[p[0]+n[0]*widthAt*f,p[1]+n[1]*widthAt*f,z],own=top(q[0],q[1]);
         q[2]+=(own==null?0:own-startZ)*(1-t)**3+(landing(selected[i],q[0],q[1])-landing(selected[i]))*t**3;return q;
       });
       return {left:across[0],right:across.at(-1),centre:across[acrossFractions.indexOf(0)],across};

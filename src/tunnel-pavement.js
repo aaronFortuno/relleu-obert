@@ -42,8 +42,8 @@ function fromSolid(template,solid){
 }
 
 // Clip to the ORIGINAL excavatable substrate, including the model boundary.
-// The caller subtracts these same closed solids from every substrate material
-// before appending them to roads/railways, within its atomic transaction.
+// These same closed solids replace other substrate materials before being
+// appended to roads/railways, within the caller's atomic transaction.
 function checked(solid){
   const status=solid.status(),volume=solid.volume();
   if(status!=='NoError'||!Number.isFinite(volume)||volume<0)throw Error(`Operació de túnels invàlida (${status}; volum ${volume}).`);
@@ -131,7 +131,12 @@ export function carveTunnelMaterials(substrate,openings,pavements,api,limits={})
     for(const id of ids){
       const input=source.get(id),floor=clipped.get(id),template=input?.part??floor.part;
       let solid=input?.solid??null;
-      if(solid&&voidSolid){const before=solid.volume();solid=checked(own(solid.subtract(voidSolid)));removed[id]=before-solid.volume();}
+      // The same colour already owns its existing pavement. Subtracting that
+      // floor and immediately adding it back creates a needless, nearly
+      // coplanar portal seam before the final Float32 conversion. Remove
+      // the bore and OTHER floors only; their material replacement is real.
+      const cutter=floor?union([bore,...floors.filter(g=>g.part.id!==id).map(g=>g.solid)].filter(Boolean)):voidSolid;
+      if(solid&&cutter){const before=solid.volume();solid=checked(own(solid.subtract(cutter)));removed[id]=before-solid.volume();}
       if(floor?.solid.numTri())solid=union([solid,floor.solid].filter(Boolean));
       parts.push(solid?fromSolid(template,solid):{...template,vertices:new Float32Array(0),faces:new Uint32Array(0)});
     }

@@ -1,5 +1,12 @@
 # Canvis
 
+## v0.19.1 — 2026-11-02
+
+- RO-052: corregit el graó del portal en el rectangle girat. El material viari conserva el paviment que ja li pertany, evitant un retall i una reunió redundants sobre cares gairebé coplanàries. Comprovació de les cotes reals al model i al 3MF Bambu, sense relaxar toleràncies.
+- Enllaços de pont amb vores calculades als vèrtexs reals del revolt i espai suficient dins del tauler per al primer angle. S'eviten seccions plegades detectades en quatre controls reals, conservant el traçat i els XYZ mesurats. Identificadors absents de portals serialitzats com a llista buida.
+- 377 proves ordinàries i sis proves integrades de ponts/túnels verificades. Regenerats dos controls reals de Rajadell, quadrat i rectangle girat, amb túnel i auditoria sense errors. Al quadrat continuen dos extrems sense enllaç suau; RO-052 continua obert per a aquests casos i per al laminat/impressió.
+- RO-053: proposta navegable independent a `prototypes/ro053/`: Peça → Territori → Terreny → Vegetació → Vies → Edificis, dependències, retorn, errors i conservació de traços. 36 comprovacions i revisió visual en dues mides d'escriptori. Demostració il·lustrativa per revisar; la UI productiva encara no adopta aquest flux.
+
 ## v0.19.0 — 2026-11-02 · ENTREGA PARCIAL
 
 Tancament per canvi d'ordinador, demanat per l'usuari. Compilació correcta; **12/13 proves curtes finals**, amb un graó pendent al portal del rectangle girat. La passada ordinària anterior de 370 casos és prèvia al darrer refinament. No es dona RO-052 per resolt. Vegeu `work/REPRESA-RO-052.md`.

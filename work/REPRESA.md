@@ -1,5 +1,10 @@
 # Represa en un altre ordinador — v0.18.1
 
+**Estat vigent: v0.19.1 al portàtil.** Continuar des de
+[REPRESA-RO-052.md](REPRESA-RO-052.md): correccions geomètriques comprovades,
+dos extrems del quadrat encara pendents i proposta navegable RO-053 per
+revisar. Aquest document conserva l'antecedent v0.18.1; no és la cua actual.
+
 **Actualització en l'equip nou (2026-11-02):** el control de 3 km ja acaba
 en 189,274 s amb el codi original i en 56,638 s amb màscares d'obstacles
 diferides, conservant els 14 perfils i els resums de suports. Prototip
