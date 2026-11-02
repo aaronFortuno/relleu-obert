@@ -2,7 +2,9 @@
 
 Prototip educatiu separat de Terrology: generació de maquetes geogràfiques amb JavaScript, íntegrament al navegador, publicable a GitHub Pages. No s’ha copiat codi de Terrology.
 
-**v0.13.0 experimental · 2 de novembre de 2026**
+**v0.13.1 experimental · 2 de novembre de 2026**
+
+Correcció v0.13.1: la cota mínima del retall se situa a 5 mm de la cara inferior, sense convertir l’altitud absoluta en gruix de plàstic. Es mantenen els desnivells i l’exageració; edificis, vegetació i aigua comparteixen la transformació vertical, registrada a la procedència.
 
 Novetats de v0.13: Catastre dividit per seccions quan el servei rebutja la regió, amb duplicats eliminats i sense acceptar resultats parcials. Els canvis d’edificis fallits restauren els ajustos anteriors; una regió nova pot usar una altra font amb avís explícit. Sidebars homogenis i controls del marc units a una previsualització fidel, sense canviar el zoom. Inici al viaducte de l’Eix Diagonal (41.71792, 1.78391), amb Tamariu conservat al catàleg de llocs recomanats. Rosa dels vents ajornada i fletxa independent retirada del menú.
 

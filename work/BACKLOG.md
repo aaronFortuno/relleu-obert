@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-02**. Iteració **v0.13.0**: implementació i comprovacions locals; validació d’usuari pendent. Les quatre validacions de v0.8.0 i les anotacions originals són a [HISTORIAL.md](HISTORIAL.md). Identificadors estables, versions 0.x fins a declaració explícita d’estabilitat.
+Actualitzat: **2026-11-02**. Iteració **v0.13.1**: implementació i comprovacions locals; validació d’usuari pendent. Les quatre validacions de v0.8.0 i les anotacions originals són a [HISTORIAL.md](HISTORIAL.md). Identificadors estables, versions 0.x fins a declaració explícita d’estabilitat.
 
 ## Prioritats immediates
 
@@ -28,6 +28,8 @@ Actualitzat: **2026-11-02**. Iteració **v0.13.0**: implementació i comprovacio
 | [RO-044](#ro-044--catastre-per-seccions-i-recuperació-de-configuracions) | P1 | Implementat; pendent de validar | Consultes acotades i retorn a la capa vàlida |
 | [RO-045](#ro-045--coherència-visual-dels-sidebars) | P2 | Implementat; pendent de validar | Tipografia, controls i textos discrets |
 | [RO-046](#ro-046--catàleg-de-llocs-recomanats) | P2 | Implementat; pendent de validar | Viaducte inicial i badia de Tamariu conservada |
+
+| [RO-048](#ro-048--base-relativa-a-la-cota-mínima-del-retall) | P1 | Implementat; pendent de validar | Cota mínima a 5 mm i desnivells conservats |
 
 ## Ajornats
 
@@ -245,3 +247,9 @@ RO-033/034: aquesta ubicació és el següent cas d’estudi; ponts i túnels en
 Proposta de l’usuari: opció a Com funciona per carregar altres capes en segon pla, explicant el consum addicional de dades. No activada en aquesta iteració. Primer es corregeixen les consultes i la recuperació d’errors.
 
 Abans d’implementar: cua limitada, cancel·lació per canvi de regió, memòria cau amb caducitat i estat per àrea/font; un error temporal no demostra manca de cobertura ni ha de desactivar permanentment un proveïdor. Sense peticions ocultes addicionals ara.
+
+### RO-048 — Base relativa a la cota mínima del retall
+
+Petició expressa: corregir i publicar com a v0.13.1 abans de continuar RO-033/034, sense esperar validació. Ara es resta la cota mínima de la mateixa graella que genera el relleu i s’hi afegeixen 5 mm; a la costa es manté nivell marí zero com a origen i superfície a 5 mm. Les altituds d’origen es conserven a les metadades; no és una conversió de datum. Edificis, arbres, camins i aigües interiors comparteixen la transformació.
+
+Mostra real de Manresa: origen 227,2727 m, relleu generat entre 5 i 24,7599 mm amb exageració ×1,5 i escala 1:10.000. Tamariu conserva mar a 5 mm. Regressions de cota absoluta/negativa, desnivell, exageració, escala i aigües interiors; validació de l’usuari pendent.

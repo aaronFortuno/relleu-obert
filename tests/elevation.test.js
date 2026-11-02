@@ -28,5 +28,24 @@ test('generated terrain uses triangle planes rather than the original nonlinear 
 });
 test('inland water keeps its local altitude rather than becoming a sea-level pit',()=>{
   const f={type:'Feature',properties:{sourceLayer:'water',class:'swimming_pool'},geometry:{type:'Polygon',coordinates:[[[.002,.002],[.004,.002],[.004,.004],[.002,.004],[.002,.002]]]}},m=buildModel({meta:{bbox:[0,0,.01,.01]},features:[f],dem:[{z:0,x:0,y:0,size:2,elev:new Float32Array(4).fill(100)}]},{size:50,resolution:2,trees:false});
-  const water=m.parts.find(p=>p.id==='water');let max=0;for(let i=2;i<water.vertices.length;i+=3)max=Math.max(max,water.vertices[i]);assert(max>8);
+  const water=m.parts.find(p=>p.id==='water');let max=0;for(let i=2;i<water.vertices.length;i+=3)max=Math.max(max,water.vertices[i]);assert(Math.abs(max-(m.context.ground(15,15)-.3))<1e-5);
+});
+
+test('inland absolute elevation is removed while relief differences and negative elevations remain',()=>{
+ const region=h=>({meta:{bbox:[0,0,.001,.001]},features:[],dem:[{z:0,x:0,y:0,size:2,elev:new Float32Array(4).fill(h)}]});
+ for(const h of [0,350,-400])for(const exaggeration of [1,3]){
+  const model=buildModel(region(h),{size:150,resolution:2,trees:false,exaggeration});
+  assert.equal(model.context.ground(0,0),5);assert.equal(model.context.ground(150,150),5);
+  assert.equal(model.context.verticalReference.originMeters,h);
+ }
+});
+
+test('vertical exaggeration affects relative relief, with one common origin recorded in provenance',()=>{
+ for(const shift of [0,350])for(const exaggeration of [1,3]){
+  const localDEM={epsg:4326,width:2,height:2,affine:[.001,0,0,0,-.001,.001],pixelIsArea:false,values:new Float32Array([100,120,140,160].map(h=>h+shift)),metadata:{provider:'synthetic'}};
+  const m=buildModel({meta:{bbox:[0,0,.001,.001]},features:[],dem:[],localDEM},{size:100,resolution:2,trees:false,exaggeration});
+  assert(Math.abs(m.context.ground(0,100)-5)<1e-6);
+  assert(Math.abs(m.context.ground(100,0)-(5+60*m.context.scale*exaggeration))<1e-6);
+  assert.equal(m.provenance.verticalReference.originMeters,100+shift);
+ }
 });

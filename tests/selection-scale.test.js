@@ -27,7 +27,7 @@ test('rectangular model and 3MF retain target scale independently of vertical ex
     const model=buildModel(data,{size:200,widthMM:150,heightMM:200,targetScale:1000,exaggeration,resolution:3,trees:false});
     assert.equal(model.scale,1000);assert.equal(model.provenance.options.targetScale,1000);assert.equal(model.provenance.verticalExaggeration,exaggeration);
     const vertices=model.categories[0].vertices;let maxX=0,maxY=0,maxZ=0;for(let i=0;i<vertices.length;i+=3){maxX=Math.max(maxX,vertices[i]);maxY=Math.max(maxY,vertices[i+1]);maxZ=Math.max(maxZ,vertices[i+2]);}
-    close(maxX,150);close(maxY,200);close(maxZ,3.6+50*exaggeration,1e-4);
+    close(maxX,150);close(maxY,200);close(maxZ,5,1e-4); // flat terrain is normalized regardless of its absolute altitude
     const archive=unzipSync(threeMF(model));const xml=strFromU8(archive['3D/3dmodel.model']);assert.match(xml,/unit="millimeter"/);assert.match(xml,/x="150/);assert.match(xml,/y="200/);
   }
   assert.throws(()=>buildModel(data,{size:200,widthMM:150,heightMM:200,targetScale:2000,resolution:3,trees:false}),/escala demanada/);

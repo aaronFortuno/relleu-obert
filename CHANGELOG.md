@@ -1,5 +1,11 @@
 # Canvis
 
+## v0.13.1 — 2026-11-02
+
+- Base relativa: el punt més baix del relleu queda a 5 mm de la cara inferior. Es resta l’altitud mínima de la graella visible i es conserven desnivells i exageració; totes les capes comparteixen la referència vertical. A la costa, el mar queda a 5 mm.
+- Origen en metres i base en mil·límetres registrats a la procedència, sense alterar dades originals ni datum vertical. Regió real de Manresa: relleu entre 5 i 24,76 mm.
+- 211 proves locals, comprovació numèrica de les dues mostres i construcció estàtica. Sense comprovació remota de Pages/CI.
+
 ## v0.13.0 — 2026-11-02
 
 - Catastre: diagnòstic real de `Area of extension out of limits` a la vista inicial de Tamariu. Consulta per quadrants davant límits reconeguts, amb concurrència i recursió acotades, deduplicació i rebuig de resultats parcials. La consulta real recupera 2.447 volums sobre rasant.
