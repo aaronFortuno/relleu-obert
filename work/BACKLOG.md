@@ -1,16 +1,18 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-02**. Punt **v0.18.1**: túnels arquejats; prototip viari desactivat pendent d'optimitzar. [Represa en un altre ordinador](REPRESA.md). Versions 0.x fins a declaració explícita d’estabilitat. Historial i anotacions literals a [HISTORIAL.md](HISTORIAL.md); notes originals conservades a [MILLORES-BUGS.md](MILLORES-BUGS.md).
+Actualitzat: **2026-11-02 · v0.18.2**. Primera optimització de RO-051: 3 km de 189,3 a 56,6 s, conservant els 14 perfils. Prototip encara desactivat. Controls 3MF incorporats al repositori i a la publicació estàtica. [Mesures i comprovacions](RO-051-RENDIMENT.md), [controls](../public/controls/ro-051/README.md), [represa](REPRESA.md). Versions 0.x fins a declaració explícita d’estabilitat. Historial i anotacions literals a [HISTORIAL.md](HISTORIAL.md); notes originals conservades a [MILLORES-BUGS.md](MILLORES-BUGS.md).
 
 ## Ordre de treball
 
-1. **RO-051 — Optimització abans d'activar.** Prototip guardat; retall de 3 km amb cost excessiu d'integració. Diagnòstic, captura i següents passos a REPRESA.md. No activar automàticament encara.
+**Prioritat nova — RO-052:** l'usuari observa discontinuïtats i canvis d'amplada als enllaços carretera/pont/túnel dels 3MF. Diagnòstic de geometria i regressions en paral·lel; encara sense correcció. Els controls no estan validats visualment per l'usuari.
+
+1. **RO-051 — Primera optimització validada localment.** 3 km: 189,3 → 56,6 s; màscares sota demanda, de 14 unions a 2, amb mateixos perfils/omissions/pilars/llums. 344 proves i build correctes. Següent: component nul d'1,5 km / detall 12 i màscares multipart; prototip desactivat. [Informe i controls](RO-051-RENDIMENT.md).
 2. **RO-034 / RO-050 — Validació del lot.** Revisar túnels arquejats i suports a Rajadell; comparar +0,5 / +1 mm ferroviaris i materials. Distingir control geomètric local de laminat i impressió.
 3. **RO-024 — Qualitat abans d'impressions llargues.** Analitzar els canvis de material observats en algunes capes al laminador; no atribuir-ne encara la causa al programa. Cupó reduït abans de maquetes de 2–3 dies.
 4. **RO-032 — Cobertes i singulars, P1.** Acreditar accés remot reeixit i obtenir dades de coberta de Tamariu. Nucli de sis formes i fixture Torre Glòries verificats; cobertura general i altres singulars encara oberts.
 5. **RO-033 — Contrast fora de Rajadell.** Tres llocs reals amb pont recte, corbat i pas inferior; revisar connexions, obstacles i suports dels enllaços.
 
-**Seguiment:** 16 línies obertes, 5 ajornades i 30 arxivades. «Implementat» vol dir disponible; la validació local, la d’usuari, el laminat i la impressió es registren per separat.
+**Seguiment:** 17 línies obertes, 5 ajornades i 30 arxivades. «Implementat» vol dir disponible; la validació local, la d’usuari, el laminat i la impressió es registren per separat.
 
 ## Desenvolupament prioritari
 
@@ -18,7 +20,8 @@ Actualitzat: **2026-11-02**. Punt **v0.18.1**: túnels arquejats; prototip viari
 | ------------------------------------------------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
 | [RO-033](#ro-033--ponts-i-viaductes)                               | P1        | Corregit; pendent d’usuari/laminat                                                                                                                                                                                                                                                                                                    | Pilars consistents a zoom in/out i llums diagnosticades |
 | [RO-034](#ro-034--túnels-imprimibles) | P1 | Corregit en controls locals; pendent d'usuari/laminat | Revisar portals amb mode experimental activat |
-| [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | Prototip desactivat; cost excessiu als 3 km | Optimitzar màscares/suports i repetir les escales |
+| [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | 3 km un 70% més ràpid; 344 proves/build correctes | Component nul a 1,5 km/detall 12; IDs multipart; usuari/laminat |
+| [RO-052](#ro-052--continuïtat-i-amplada-del-traçat-viari) | P1 | Observació d'usuari; diagnòstic en curs | Traçat coherent a boques/estreps; amplades i transicions justificades |
 | [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió) | P1 | Artefactes de materials pendents de diagnòstic | Distingir malla/exportació de configuració del laminador |
 | [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts)     | P1        | Fonts en estudi                                                                                                                                                                                                                                                                                                                       | Comparació de parts i petjades en segona zona           |
 | [RO-032](#ro-032--cobertes-i-volums-singulars) | P1 | Nucli verificat; servei remot pendent de validar | Consulta real reeixida i dades de coberta de Tamariu |
@@ -302,6 +305,20 @@ Abans d’implementar: cua limitada, cancel·lació per canvi de regió, memòri
 
 ### RO-051 — Perfils de carreteres principals
 
+**Represa autoritzada (2026-11-02), primer lot completat localment:** diagnòstic i optimització seqüencial en l'equip de 64 GB. El prototip continua sense activar-se a la UI. Ordre i responsables:
+
+- [x] Agent: instrumentar màscares, diferències, cobertura, obstacles/suports i sòlids; mesurar el cas de 3 km / 150 mm / detall 12 amb límit de temps i vigilància de memòria.
+- [x] Agent: evitar unions d'obstacles no utilitzades. Mateix equip: 189,274 → 56,638 s, 14 perfils, mateixos resums d'omissions/pilars/llums, auditoria sense errors i 3MF generat. [Mètode i límits](RO-051-RENDIMENT.md).
+- [x] Agent: controls de 1,5 / 2,4 / 3 km i ICGC/túnels en detall 36; regressions i suite en blocs seqüencials: **344/344**, build correcte. 2,4 km aplica sis perfils en 18,907 s; ICGC/túnels aplica quatre perfils en 10,625 s. El control d'1,5 km / detall 12 recupera els camins previs, no es considera resolt.
+- [ ] Agent, següent: aïllar el component de **volum nul a 1,5 km / detall 12 / OSM**. Reproduït també amb `c74e992`, mateix error i resultat recuperat. Guardar el component mínim i corregir-lo conservant volums positius i recuperació atòmica.
+- [ ] Agent, després: màscares per ID/multipart i fragments estrets. Els intents han canviat el resultat i s'han retirat; no s'han eliminat components petits ni rebaixat les comprovacions per donar-los per bons. El filtratge espacial d'obstacles també queda retirat del lot actual; la causa numèrica de la divergència encara no està acreditada.
+- [ ] Usuari, disponible al repositori: obrir el [3MF de 3 km](../public/controls/ro-051/RO-051-3km-150mm.3mf) al laminador i revisar perfils, connexions, pilars i passos inferiors del retall ampliat. Aquest fitxer no inclou túnels ni arbres.
+- [ ] Usuari, disponible al repositori: obrir el [3MF de Rajadell amb túnels](../public/controls/ro-051/RO-051-Rajadell-tunels-150mm.3mf) i revisar portals, paviment del túnel, materials i passos lliures. Control ICGC, detall 36: onze pilars al viaducte, dos nous i túnel principal excavat; segon túnel omès per manca de coberta. El prototip encara no té selector a la UI.
+- [ ] Usuari: imprimir un cupó petit després de revisar el laminat, abans d'impressions llargues. Les malles correctes no acrediten encara la impressió física.
+- [ ] Agent: un cop resoltes les incidències i contrastats els controls, decidir l'activació i mesurar cobertura/unions residuals abans de plantejar paral·lelització. Si es reprèn el filtratge espacial, capturar la primera col·lisió divergent i el motor/tolerància emprats.
+
+**Després d'aquest diagnòstic:** refactorització/modularització segons els límits del motor; proposta de flux per etapes i auditoria de sidebars; contrast general de ponts (incloent Millau amb retalls/escales diferents); depuració de backlog i documents redundants conservant observacions originals i evidència pendent. Són passos previstos, encara sense implementació ni validació.
+
 **P1, en curs (v0.18.1):** l'usuari observa ondulacions desproporcionades a l'Eix Transversal, al costat de Rajadell. Cal una estratègia general per a motorway/trunk i enllaços, preservant camins secundaris i fonts/procedència.
 
 **Tancament parcial per canvi d'ordinador:** `majorRoads:true` queda com a opt-in només de codi, desactivat a l'aplicació publicada. El retall de 3 km s'ha interromput als 416 s amb CPU activa i memòria disponible; no s'ha validat. [Diagnòstic i següents passos](REPRESA.md). Els resultats del control inicial següent corresponen al prototip activat explícitament, no al comportament per defecte de la UI.
@@ -313,3 +330,16 @@ Primer prototip local: perfil longitudinal regularitzat amb tall/terraplè acota
 **Control local inicial del prototip correcte:** quatre perfils viaris, dos pilars nous, llum mostrejada màxima de 3,681 mm i túnel principal aplicat. El viaducte conserva onze pilars i dues connexions. El creuament que descartava el tram llarg era un altre camí-pont a uns 418 m fora de la maqueta, sense font IFC; la comprovació ara respecta el retall físic. El punt publicable amb prototip desactivat supera 342 proves, build i controls locals; no acredita el cas ampliat interromput. Els creuaments interiors sense cota coneguda continuen omesos amb avís. [Decisió i límits](RO-051-PERFILS-VIARIS.md).
 
 **Criteris:** perfil menys ondulat, continuïtat amb ponts/túnels i extrems, malles tancades, absència de col·lisions amb vies/edificis carregats, escala i retall coherents, avisos quan no hi ha una solució segura, mateixa geometria en preview i fitxer, laminat pendent d'usuari. La simplificació no és un aixecament real de la carretera.
+
+### RO-052 — Continuïtat i amplada del traçat viari
+
+**P1, diagnòstic en curs (2026-11-02), observació expressa de l'usuari:** als 3MF les unions entre carretera, túnel i viaducte tenen formes estranyes, manca continuïtat de la línia i apareixen canvis d'amplada. L'usuari proposa revisar el traçat complet d'una mateixa carretera, en lloc de resoldre segments aïllats. Relacionat amb RO-033/034/051; no queda validat pel rendiment ni per malles tancades.
+
+**Diagnòstic estàtic inicial:** hi ha polítiques diferents per a superfície, tauler i túnel. El paviment del túnel reutilitza l'amplada mínima de la cavitat; les continuacions de pont es trien per proximitat/classe/direcció, sense una identitat comuna de carretera. Cal distingir amplada de calçada, amplada estructural del tauler i secció lliure de túnel: no s'han d'igualar cegament.
+
+- [x] Agents independents: revisar polítiques d'amplada i selecció de continuacions; identificar buits de les proves actuals. Cap correcció geomètrica aplicada encara en v0.18.2.
+- [ ] Agent: conservar identificadors i atributs de ruta i construir correspondències fiables entre fragments de superfície/pont/túnel, evitant unir carreteres diferents només perquè es creuen.
+- [ ] Agent: definir l'amplada comuna de paviment i transicions quan hi hagi canvis acreditats de carrils/amplada. Separar-la dels mínims d'obertura imprimible i de l'amplada estructural mesurada.
+- [ ] Agent: provar una passada conjunta de continuïtat a boques i estreps, amb cotes i dues vores coherents, mantenint el terreny i els buits sota les estructures.
+- [ ] Agent: regressió integrada superfície → pont → superfície → túnel → superfície; mostrejar eix i vores, connexions i material, a diferents escales i retalls. Conservar la geometria a preview i 3MF.
+- [ ] Usuari: revisar els enllaços i les transicions d'amplada dels nous controls abans de validar laminat/impressió. Els fitxers de v0.18.2 documenten el problema i no el donen per resolt.

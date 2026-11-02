@@ -6,9 +6,11 @@ estimats. El prototip anterior de tall/terraplè s'ha retirat abans de
 publicar. El DEM original i el camp d'altures de la maqueta es conserven.
 
 **Estat de publicació: prototip DESACTIVAT per defecte, sense opció a la
-UI.** Requereix `majorRoads:true` explícit al codi. El retall de 3 km té
-cost excessiu i no es considera validat. L'usuari demana tancar el punt
-actual per reprendre'l en un altre ordinador. [Represa i reproducció](REPRESA.md).
+UI.** Requereix `majorRoads:true` explícit al codi. La represa en l'equip
+de 64 GB redueix el retall de 3 km de 189,274 a 56,638 s amb màscares
+d'obstacles sota demanda, sense canviar les unions ni els seus operands.
+Conserva els 14 perfils i els resums de suports. [Mesures i validacions
+pendents](RO-051-RENDIMENT.md); [punt de partida i reproducció](REPRESA.md).
 Els resultats viaris d'aquest informe són del prototip, no del valor per
 defecte de l'aplicació publicada.
 

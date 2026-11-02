@@ -14,7 +14,7 @@ import {scatterBrush} from './brush-scatter.js';
 import {createGestureCoverage} from './brush-coverage.js';
 import {roofProfile} from './building-roofs.js';
 import {projectInfrastructurePath} from './infrastructure-solids.js';
-import {topSampler,planApproaches,planPiers,stripSolid,columnSolid} from './bridge-completion.js';
+import {topSampler,planApproaches,planPiers,stripSolid,columnSolid,deferredObstacleMask} from './bridge-completion.js';
 import {uniteMaterials} from './solid-operations.js';
 import {auditPart} from './solid-audit.js';
 import {generateProceduralBridgeItems} from './procedural-bridges.js';
@@ -137,7 +137,13 @@ export function treeMesh({x,y,ground,rx,ry,rz,rotation=0,phase=0}){
   for(let i=0;i<rings;i++)for(let j=0;j<segments;j++){surf.tri(p(i,j),p(i+1,j),p(i+1,j+1));surf.tri(p(i,j),p(i+1,j+1),p(i,j+1));}
   return {vertices:surf.vertices,faces:surf.faces};
 }
-export function buildModel(data,options={},progress=()=>{},infrastructureApi=null){
+export function buildModel(data,options={},progress=()=>{},infrastructureApi=null,diagnostics=null){
+  // Optional synchronous diagnostics stay out of worker options/provenance.
+  const measure=(phase,run,details={})=>{
+    if(!diagnostics)return run();
+    const start=performance.now();diagnostics({phase,event:'start',...details});
+    try{return run();}finally{diagnostics({phase,event:'end',milliseconds:performance.now()-start,...details});}
+  };
   const {size=160,exaggeration=1.5,density=2.5,resolution=36}=options,proj=makeProjection(data.meta.bbox,size,options),{width,height,project,scale}=proj,rect=box(width,height),warnings=[];
   const roadRise=options.roadRise??0;if(![0,.5,1].includes(roadRise))throw Error('Relleu dels camins invàlid.');
   const {railRise}=railwayOptions(options);
@@ -210,14 +216,14 @@ export function buildModel(data,options={},progress=()=>{},infrastructureApi=nul
   warnings.push(...majorPlan.warnings,...majorOmissions.map(p=>'Perfil principal omès: '+p.reason));
   if(acceptedMajor.length){
     progress('Integrant les vies principals amb les capes…');
-    const majorMask=merge(acceptedMajor.flatMap(item=>item.outlines.map(r=>intersect([[r.map(project)]],land))).filter(p=>p.length)),ids=new Set(acceptedMajor.flatMap(item=>item.sourceFeatureIds));
-    const remaining=roadPieces.flatMap(p=>ids.has(p.id)?subtract(p.polys,majorMask):p.polys);
-    roadOnlyPoly=subtract(intersect(merge(remaining.map(p=>[p])),land),railPoly);roadPoly=merge([roadOnlyPoly,railPoly].filter(p=>p.length));
-    forest=subtract(intersect(merge(cropped(green)),land),roadPoly);bare=subtract(subtract(land,roadPoly),forest);
+    const majorMask=measure('major.masks',()=>merge(acceptedMajor.flatMap(item=>item.outlines.map(r=>intersect([[r.map(project)]],land))).filter(p=>p.length))),ids=new Set(acceptedMajor.flatMap(item=>item.sourceFeatureIds));
+    const remaining=measure('major.road-differences',()=>roadPieces.flatMap(p=>ids.has(p.id)?subtract(p.polys,majorMask):p.polys),{pieces:roadPieces.length,profiles:acceptedMajor.length});
+    measure('major.road-coverage',()=>{roadOnlyPoly=subtract(intersect(merge(remaining.map(p=>[p])),land),railPoly);roadPoly=merge([roadOnlyPoly,railPoly].filter(p=>p.length));});
+    measure('major.land-coverage',()=>{forest=subtract(intersect(merge(cropped(green)),land),roadPoly);bare=subtract(subtract(land,roadPoly),forest);});
     deckItems.push(...acceptedMajor);deckMask=merge([deckMask,majorMask].filter(p=>p.length));containsDeck=polygonTester(deckMask);
   }
   const fallbackMajor=message=>{
-    const restored=buildModel(data,{...options,majorRoads:false},progress,infrastructureApi);restored.warnings.unshift(message);
+    const restored=measure('major.fallback',()=>buildModel(data,{...options,majorRoads:false},progress,infrastructureApi,diagnostics),{reason:message});restored.warnings.unshift(message);
     restored.provenance.majorRoads={...majorMetadata,attempted:majorMetadata.count,count:0,applied:false,error:message};restored.context.meta.majorRoads=restored.provenance.majorRoads;return restored;
   };
   const majorTargets=acceptedMajor.map(item=>({contains:polygonTester(intersect(item.outlines.map(r=>[r.map(project)]),land)),top:topSampler(projectInfrastructurePath(item.coordinates,proj,verticalReference,exaggeration).map(([x,y,z])=>[x,y,z+item.generatedSurfaceAdjustmentMM]),item.faces)}));
@@ -245,8 +251,10 @@ export function buildModel(data,options={},progress=()=>{},infrastructureApi=nul
   }
   for(const bridge of bridges){
     if(!bridge.mainRoad){bridge.supportRoadPoly=sourceRoadPoly;continue;}
-    const own=new Set(bridge.sourceFeatureIds),other=roadPieces.flatMap(p=>own.has(p.id)?subtract(p.polys,bridge.mask):p.polys);
-    bridge.supportRoadPoly=merge([...other.map(p=>[p]),railPoly,mappedDeckMask].filter(p=>p.length));
+    bridge.supportRoadPoly=deferredObstacleMask(()=>measure('major.support-obstacles',()=>{
+      const own=new Set(bridge.sourceFeatureIds),other=roadPieces.flatMap(p=>own.has(p.id)?subtract(p.polys,bridge.mask):p.polys);
+      return merge([...other.map(p=>[p]),railPoly,mappedDeckMask].filter(p=>p.length));
+    },{id:bridge.id}));
   }
   const deckCount=bridges.length;
   const proceduralCount=bridges.filter(b=>b.estimated&&!b.mainRoad).length,knownCount=bridges.filter(b=>!b.estimated).length;
@@ -265,7 +273,7 @@ export function buildModel(data,options={},progress=()=>{},infrastructureApi=nul
   let staticBase=aggregates.map(p=>({...p,vertices:new Float32Array(p.vertices),faces:new Uint32Array(p.faces)}));
   const majorDecks=bridges.filter(b=>b.mainRoad);
   if(majorDecks.length){
-    progress('Assignant el paviment de les vies principals…');const carved=carveTransportDecks(staticBase,majorDecks,infrastructureApi);
+    progress('Assignant el paviment de les vies principals…');const carved=measure('major.material-replacement',()=>carveTransportDecks(staticBase,majorDecks,infrastructureApi));
     if(!carved.metadata.applied)return fallbackMajor(carved.warnings.join(' '));
     warnings.push(...carved.warnings);
     staticBase=carved.parts;majorMetadata={...majorMetadata,applied:true,materialReplacement:carved.metadata,profiles:acceptedMajor.map(({coordinates,faces,outlines,axis,...p})=>p)};
@@ -291,7 +299,7 @@ export function buildModel(data,options={},progress=()=>{},infrastructureApi=nul
   const context={ground,verticalReference,proj,rect,forest,land,roadPoly,roadOnlyPoly,railPoly,waterPoly,bridges,tunnelMask,infrastructureApi,containsForest:polygonTester(forest),containsLand:polygonTester(land),containsRoad:p=>containsDeck(p)||containsApproach(p)||containsGroundRoad(p),width,height,scale,staticWarnings:warnings,options:{...options,size,exaggeration,resolution,roadRise,railRise},meta:{...data.meta,tunnels:tunnelMetadata,railways:{incrementMM:railRise,surfaceRiseMM:roadRise+railRise,method:'cartographic railway platform; physical millimetres, no vertical exaggeration',groundPresent:railPoly.length>0,bridges:bridges.filter(b=>b.railway).length},infrastructure:deckCount?{...data.infrastructure,provider:knownCount?'Specific overrides and estimated transport platforms':'Estimated transport platforms from OSM/DEM',items:undefined,count:deckCount,knownCount,proceduralCount,deckProfiles:bridges.map(b=>({id:b.id,mainRoad:b.mainRoad,generatedSurfaceAdjustmentMM:b.generatedSurfaceAdjustmentMM,estimated:b.estimated,elevationMethod:b.elevationMethod,widthMetres:b.widthMetres,sourceFeatureIds:b.sourceFeatureIds,railway:b.railway,surfaceRiseMM:b.surfaceRise,printableThicknessMM:b.thickness})),printableThicknessMM:.6+roadRise,railwayPrintableThicknessMM:bridges.some(b=>b.railway)?.6+roadRise+railRise:undefined}:null},diagnostics:prepared.diagnostics,staticBase};
   context.meta.majorRoads=majorMetadata;
   if(context.meta.infrastructure)context.meta.infrastructure.mainRoadCount=majorDecks.length;
-  const model=updateBuildings({context},{features:data.features,meta:context.meta},options,progress);
+  const model=measure('model.buildings-supports',()=>updateBuildings({context},{features:data.features,meta:context.meta},options,progress));
   if(model.provenance.majorRoads?.completion?.some(p=>p.unsupportedSpans?.length))return fallbackMajor('Algunes vies principals no tenen espai segur per als suports; es recuperen els camins sobre el terreny.');
   return model;
 }

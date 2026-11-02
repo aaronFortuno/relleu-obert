@@ -1,5 +1,11 @@
 # Represa en un altre ordinador — v0.18.1
 
+**Actualització en l'equip nou (2026-11-02):** el control de 3 km ja acaba
+en 189,274 s amb el codi original i en 56,638 s amb màscares d'obstacles
+diferides, conservant els 14 perfils i els resums de suports. Prototip
+encara desactivat. [Resultats, reproducció i passos pendents](RO-051-RENDIMENT.md).
+El text següent conserva el punt de partida del portàtil.
+
 Punt de tancament del 2026-11-02, a petició de l'usuari per passar a un
 equip amb 64 GB de RAM. Llegir primer AGENTS.md, DESIGN.md i BACKLOG.md.
 Les anotacions originals de MILLORES-BUGS.md s'han conservat intactes.

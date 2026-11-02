@@ -167,12 +167,13 @@ test('regressió: registerLocale canonicalitza etiquetes vàlides (majúscules)'
 });
 
 test('fallback explícit: clau absent del catàleg actiu cau al català sense canviar l’idioma', () => {
+  registerLocale('en-GB', {});
   const previous = getLocale();
   try {
-    assert.equal(setLocale('zz'), true);
+    assert.equal(setLocale('en-GB'), true);
     assert.equal(t('footer.tagline'), 'Un tros del món, a les teves mans.');
-    assert.equal(getLocale(), 'zz');
-    assert.equal(formatNumber(1234.5), '1.234,5');
+    assert.equal(getLocale(), 'en-GB');
+    assert.equal(formatNumber(1234.5), '1,234.5');
   } finally {
     setLocale(previous);
   }

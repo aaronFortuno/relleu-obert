@@ -1,10 +1,19 @@
 import test from 'node:test';import assert from 'node:assert/strict';import Module from 'manifold-3d';
-import {topSampler,continuation,planApproaches,planPiers,stripSolid,columnSolid} from '../src/bridge-completion.js';
+import {topSampler,continuation,planApproaches,planPiers,stripSolid,columnSolid,deferredObstacleMask} from '../src/bridge-completion.js';
 import {auditPart} from '../src/solid-audit.js';
 import {readFile} from 'node:fs/promises';
 const api=await Module();api.setup();
 function solid(p){assert.deepEqual(auditPart(p).errors,[]);const m=new api.Manifold(new api.Mesh({numProp:3,vertProperties:p.vertices,triVerts:p.faces}));assert.equal(m.status(),'NoError');return m;}
 const rectangle=(x0,y0,x1,y1)=>[[[[x0,y0],[x1,y0],[x1,y1],[x0,y1],[x0,y0]]]];
+
+test('road masks are deferred for ground-level platforms and reused for elevated piers and later edits',()=>{
+ const mask=rectangle(38,45,48,55),options={axis:[[10,50],[90,50]],ground:()=>5,containsDeck:([x,y])=>x>=10&&x<=90&&y>=49.5&&y<=50.5,scale:.05,widthMM:100,heightMM:100};let calls=0;
+ const deferred=deferredObstacleMask(()=>{calls++;return mask;});
+ const resting=planPiers({...options,top:()=>5,blocked:[deferred]});assert.equal(resting.piers.length,0);assert.equal(calls,0,'ground-level platforms constructed an unused mask');
+ const elevated={...options,top:()=>14},expected=planPiers({...elevated,blocked:[mask]});assert(expected.piers.length>0);
+ assert.deepEqual(planPiers({...elevated,blocked:[deferred]}),expected);assert.equal(calls,1);
+ assert.deepEqual(planPiers({...elevated,blocked:[deferred,rectangle(0,0,1,1)]}),expected);assert.equal(calls,1,'a later edit reconstructed the unchanged road mask');
+});
 test('piers embed in sloping ground, touch the deck and avoid complete road/building footprints',()=>{
  const axis=[[10,50],[90,50]],top=()=>14,ground=(x,y)=>5+x*.01,containsDeck=([x,y])=>x>=10&&x<=90&&y>=47&&y<=53;
  const blocked=[rectangle(26,47,37,53),rectangle(56,47,67,53)];

@@ -1,5 +1,12 @@
 # Canvis
 
+## v0.18.2 — 2026-11-02
+
+- RO-051: màscares d’obstacles dels pilars calculades sota demanda i reutilitzades. El control local de 3 km / 150 mm / detall 12 passa de 189,274 a 56,638 s (70,1% menys), amb 2 unions en lloc de 14 i els mateixos resums de perfils, omissions, pilars i llums. Sense paral·lelitzar ni canviar operands o precisió de les unions.
+- Prototip viari encara desactivat per defecte i sense selector a la UI. El cas d’1,5 km / detall 12 conserva una recuperació preexistent per component de volum nul; pendent d’aïllar i corregir abans d’activar-lo. Màscares multipart i validació d’usuari/laminador/impressió també pendents.
+- Dos controls 3MF disponibles a `public/controls/ro-051/`: retall de 3 km sense túnels ni arbres, i Rajadell amb ICGC/túnels i sense arbres. Són models de revisió, no una garantia d’impressió. Mesures i reproducció a `work/RO-051-RENDIMENT.md`; seguiment al backlog.
+- 344 proves locals correctes, incloent càlcul diferit, reutilització en editar edificis, regressions de ponts i túnels, i compilació local correcta. Fixture de format numèric amb idioma real per evitar dependència de la configuració del sistema, sense canviar el nucli d’idiomes.
+
 ## v0.18.1 — 2026-11-02
 
 - RO-034: túnels estimats activats inicialment, parets i sostre parabòlic, i paviment de 0,3 mm de material camí o ferrocarril. Excavació i assignació de material en una transacció de sòlids, sense conversions intermèdies ni pèrdua de closques interiors.

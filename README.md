@@ -2,7 +2,11 @@
 
 Prototip educatiu separat de Terrology: generació de maquetes geogràfiques amb JavaScript, íntegrament al navegador, publicable a GitHub Pages. No s’ha copiat codi de Terrology.
 
-**v0.18.1 experimental · 2 de novembre de 2026**
+**v0.18.2 experimental · 2 de novembre de 2026**
+
+Novetats v0.18.2: primera optimització de RO-051. Les màscares d’obstacles dels pilars es calculen només quan fan falta i es reutilitzen: el control de 3 km passa de 189,274 a 56,638 s, amb 2 unions en lloc de 14 i els mateixos resums de perfils, omissions, pilars i llums. [Mesures i reproducció](work/RO-051-RENDIMENT.md), [passos següents i validacions](work/BACKLOG.md#ro-051--perfils-de-carreteres-principals). 344 proves locals i compilació correctes. El prototip continua desactivat a la UI; el cas d’1,5 km amb detall 12 encara recupera els camins previs per un component de volum nul.
+
+Controls descarregables per revisar al laminador: [retall de 3 km, sense túnels ni arbres](public/controls/ro-051/RO-051-3km-150mm.3mf) i [Rajadell amb ICGC i túnels, sense arbres](public/controls/ro-051/RO-051-Rajadell-tunels-150mm.3mf). La revisió d’usuari, el laminat i un cupó físic continuen pendents; les infraestructures estimades no són cotes constructives mesurades.
 
 Novetats v0.18.1: túnels estimats activats inicialment, amb sostre parabòlic i paviment del material dels camins o del ferrocarril. L'envolupant de punts alts per a vies principals es conserva com a prototip desactivat, pendent d'optimitzar els retalls grans. [Punt de represa en un altre ordinador](work/REPRESA.md), [estat viari](work/RO-051-PERFILS-VIARIS.md) i [obertures](work/RO-034-OBERTURES.md). Cal revisar el laminat; les geometries estimades no són cotes constructives mesurades.
 

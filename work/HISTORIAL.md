@@ -2,6 +2,57 @@
 
 Actualitzat: 2026-11-02. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.18.2 — RO-051, diagnòstic i primera optimització (2026-11-02)
+
+Repositori reprès en l'equip de 64 GB des de `c74e992` / v0.18.1.
+L'usuari autoritza mesurar el retall de 3 km i optimitzar abans de
+plantejar paral·lelització; després autoritza agents per a revisió i
+documentació. Els càlculs pesants es mantenen seqüencials.
+
+Referència original completa al mateix equip: 189,274 s. La construcció
+diferida i memoïtzada de les màscares d'obstacles redueix el model a
+56,638 s (**70,1% menys; 3,34×**), sense paral·lelitzar. Només es calculen
+dues de les catorze unions; operands i ordre originals conservats.
+Catorze perfils aplicats i igualtat exacta dels resums d'omissions,
+identificadors, recomptes de pilars i llums; set categories auditades
+sense errors. La comparació de resums no és una comparació de tots els
+buffers. [Mesures, variants rebutjades i reproducció](RO-051-RENDIMENT.md).
+
+Controls: 2,4 km / detall 12 aplica sis perfils en 18,907 s; Rajadell
+ICGC / detall 36 amb túnels aplica quatre perfils en 10,625 s, amb onze
+pilars del viaducte, dos nous i un túnel excavat. Els 3MF de control són
+a `output/`; revisió d'usuari, laminat i cupó físic pendents. El cas
+d'1,5 km / detall 12 recupera els camins previs per un component de volum
+nul: mateix error i resultat amb `c74e992`, encara pendent de corregir.
+Els intents de màscares per ID i filtratge espacial s'han retirat perquè
+alteraven el resultat; no s'han rebaixat criteris ni eliminat fragments
+petits per acceptar-los. El prototip continua desactivat a la UI.
+
+Validació final: **344/344 proves úniques correctes**. Bloc ordinari:
+338 casos en 37,883 s, heap 512 MB i mínim 43,89 GiB lliures. Blocs
+integrats, sols i seqüencials: ponts 2/2 en 45,649 s (mínim 43,43 GiB),
+túnels 4/4 en 76,270 s (mínim 43,05 GiB), heap 1.536 MB. Nova regressió
+de diferiment/reutilització i edició incremental d'edificis. S'ha corregit
+només una fixture preexistent d'idiomes que depenia del locale del sistema
+(`zz` → `en-GB`); cap canvi al nucli d'idiomes. Build correcte en 2,86 s,
+amb els avisos previs d'empaquetat. No s'han comprovat Pages/CI remots.
+Backlog actualitzat amb passos tècnics i comprovacions concretes d'usuari.
+
+Petició de l'usuari posterior a la validació: publicar cada iteració amb
+commit i push i repartir tasques independents entre agents. Pauta afegida
+a AGENTS.md. Metadades, peu i historial actualitzats a v0.18.2; els dos
+3MF verificats s'inclouen a `public/controls/ro-051/`, amb descripció i
+enllaços al README/backlog, perquè no depenguin dels fitxers locals ignorats.
+Les còpies són idèntiques als controls validats (SHA-256 comprovat).
+Build de l'entrega v0.18.2 correcte en 2,82 s; peu i historial revisats
+al navegador local a 1280 × 720, amb captures abans/després a `output/`.
+
+L'usuari revisa els controls i observa discontinuïtats del traçat i canvis
+d'amplada en unions de superfície, pont i túnel. S'obre RO-052, P1, amb
+diagnòstic independent de geometria i buits de regressió. Els fitxers de
+control no es donen per validats visualment; v0.18.2 publica l'optimització
+de rendiment i registra aquest problema pendent, sense presentar-lo resolt.
+
 ## v0.18.1 — Túnels arquejats i punt de represa
 
 Tancament parcial demanat per l'usuari per continuar en un ordinador de

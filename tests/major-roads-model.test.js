@@ -29,3 +29,16 @@ test('a failed platform material replacement restores terrain-following roads at
   const broken={Mesh:api.Mesh,Manifold:class{constructor(){throw Error('injected material failure');}}};
   const fallback=buildModel(region(),options,()=>{},broken);assert.equal(fallback.provenance.majorRoads.applied,false);assert(fallback.warnings.some(w=>w.includes('injected material failure')));assert(fallback.categories.find(p=>p.id==='roads')?.faces.length);
 });
+
+test('building footprint edits reuse the exact deferred road masks while rechecking new obstacles',()=>{
+  const data=region(),events=[],model=buildModel(data,options,()=>{},api,event=>events.push(event));
+  const computed=()=>events.filter(e=>e.phase==='major.support-obstacles'&&e.event==='end').length;
+  assert.equal(model.provenance.majorRoads.applied,true);assert.equal(computed(),1);
+  const bridge=model.context.bridges.find(b=>b.mainRoad),originalMask=bridge.supportRoadPoly();
+  const building={id:'new-building',properties:{sourceLayer:'building',render_height:6},geometry:{type:'Polygon',coordinates:[[[.001,.001],[.002,.001],[.002,.002],[.001,.002],[.001,.001]]]}};
+  const changed=updateBuildings(model,{features:[...data.features,building],meta:data.meta},{});
+  assert.equal(changed.buildingCount,1);assert.notEqual(changed.context.bridgeCache.key,model.context.bridgeCache.key);
+  assert.strictEqual(changed.context.bridges.find(b=>b.mainRoad).supportRoadPoly(),originalMask);
+  assert.equal(computed(),1,'building edits recomputed the unchanged road union');
+  assert.equal(changed.provenance.majorRoads.applied,true);assert.strictEqual(changed.context.ground,model.context.ground);
+});
