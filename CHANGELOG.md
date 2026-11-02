@@ -1,5 +1,12 @@
 # Canvis
 
+## v0.16.0 — 2026-11-02
+
+- RO-033: generació procedimental de taulers a partir de trams OSM marcats com a pont, amb perfil estimat entre les cotes DEM dels extrems. Pilars, evitació d'obstacles i connexions al mateix flux de geometria i exportació.
+- Unió de fragments contigus, deduplicació per grup i límits explícits de processament. Les cotes estimades consten als avisos i a la procedència; `layer` no es converteix en metres.
+- Rajadell manté la font específica quan el retall hi intersecta; el generador evita duplicar aquests taulers. Sense una excepció, funciona amb les dades de la regió.
+- Continuen pendents el contrast en altres ubicacions reals, la validació del laminador i la impressió; els perfils DEM són una aproximació.
+
 ## v0.15.1 — 2026-11-02
 
 - Punt estable parcial: els detalls de Rajadell es carreguen per la ubicació del retall, també en generar una regió fora de la mostra inicial. Ampliar, reduir o desplaçar el mapa conserva les superfícies i el repartiment documentat mentre l’estructura interseca la peça.

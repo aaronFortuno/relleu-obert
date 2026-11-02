@@ -1,10 +1,10 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-02**. Iteració **v0.15.1**: pilars, enllaços del viaducte i camins realçats. Les quatre validacions de v0.8.0 i les anotacions originals són a [HISTORIAL.md](HISTORIAL.md). Identificadors estables, versions 0.x fins a declaració explícita d’estabilitat.
+Actualitzat: **2026-11-02**. Iteració **v0.16.0**: ponts procedimentals i continuïtat geogràfica de Rajadell. Les quatre validacions de v0.8.0 i les anotacions originals són a [HISTORIAL.md](HISTORIAL.md). Identificadors estables, versions 0.x fins a declaració explícita d’estabilitat.
 
 ## Prioritats immediates
 
-1. **RO-033: generalitzar ponts i trams elevats sense dades preparades per lloc.** El motor de suports/enllaços és reutilitzable; la càrrega i construcció general de taulers encara falten. Rajadell queda com a excepció, no com a estratègia de cobertura mundial.
+1. **RO-033: generalitzar ponts i trams elevats sense dades preparades per lloc.** La generació procedimental ja està integrada; falta contrast en més ubicacions reals i al laminador. Rajadell queda com a excepció, no com a estratègia de cobertura mundial.
 2. **RO-024/033/049: validar al laminador** les unions, els pilars, els extrems i els realços de 0/0,5/1 mm; després, un control físic petit. Revisar fragments dels ponts petits al límit del retall i continuïtat en peces de 40 cm.
 3. **RO-023/026/032: qualitat de les fonts**, relleu, petjades i cobertes, amb contrast en més d’una zona. La fidelitat no queda acreditada només pel nom del proveïdor.
 4. Comprovacions curtes del que ja està implementat: Catastre buit/per seccions i recuperació (040/044), càmera/scroll (045), marc/plaques (014/016), exemples/base (046/048) i presentació (012). Arxivar només validacions explícites.
@@ -24,7 +24,7 @@ generalització ni substitueix el laminat o la impressió.
 | [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió) | P1 | Fonaments en validació | Unió acotada, continuïtat de cavitats i prova física |
 | [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts) | P1 | En estudi | Comparar parts cadastrals i petjades, amb política de fonts explícita |
 | [RO-032](#ro-032--cobertes-i-volums-singulars) | P2 | En estudi | Cobertes reals segons dades disponibles |
-| [RO-033](#ro-033--ponts-i-viaductes) | P1 | Parcial; generalització pendent | Flux procedimental general; Rajadell com a excepció |
+| [RO-033](#ro-033--ponts-i-viaductes) | P1 | Procedimental integrat; en validació | Contrast de perfils i continuïtat; Rajadell com a excepció |
 | [RO-034](#ro-034--túnels-imprimibles) | P3 | Dades insuficients al cas de prova | Túnels: motor preparat; calen cotes i secció |
 | [RO-035](#ro-035--cavitats-i-relleus-amb-voladissos) | P3 | Per estudiar | Baumes, coves i arcs naturals amb dades 3D |
 | [RO-019](#ro-019--internacionalització) | P3 | Setup preparat; traduccions pendents | Català, castellà, gallec, euskera i anglès |
@@ -207,13 +207,11 @@ Estudiar roof:shape, roof:height, roof:direction/angle i parts d’OSM original,
 
 ### RO-033 — Ponts i viaductes
 
-**En curs, primer punt estable v0.15.1:** excepció de Rajadell per intersecció geogràfica, independent del botó d’exemple. Proves de retalls ampliats/desplaçats i càrrega de regió no mostra correctes. El generador procedimental general està delegat a Kimi en una tasca acotada; aquest punt no el considera implementat.
+**v0.16.0, implementat i pendent de validar per l’usuari:** flux procedimental integrat de taulers MVT amb perfil lineal entre cotes DEM dels extrems, pilars, enllaços i unions. Avisos i procedència separen estimacions de dades específiques. [Nucli i límits](RO-033-PROCEDURAL-CORE.md). 241 proves, build i 3MF del retall mogut correctes en local. La v0.15.1 es va publicar primer com a punt estable parcial de càrrega geogràfica.
 
 **Decisió de l’usuari després de v0.15.0:** prioritzar construcció procedimental general; evitar acumular fitxers per a desenes de milers de ponts. Conservar Rajadell com a cas especial ja disponible. Altres excepcions, només sota demanda concreta, amb àmbit geogràfic i font explícits. No s’obre ara una tasca de Millau.
 
-**Estat verificat al codi:** pilars procedimentals quan no hi ha `layout` i enllaços calculats al navegador. Però els taulers 3D només es carreguen des dels fitxers de mostra; fora d’aquest flux els ponts MVT encara es projecten sobre el terreny. No donar per implementada la reconstrucció general.
-
-**Proper bloc, P1:** detectar i separar trams elevats a qualsevol regió carregada; usar cotes disponibles o una estimació explícita del perfil; generar taulers, connexions i suports amb evitació d’obstacles. Sense lloc segur, ometre/avisar. Provar almenys tres casos aliens a Rajadell (recte, corbat i creuament inferior), incloent canvi de font d’edificis i límit del retall. Comprovar que el camí inferior continua obert, no només que el peu del pilar en queda fora.
+**Pendent, P1:** contrastar almenys tres ubicacions reals alienes a Rajadell (recte, corbat i creuament inferior), incloent canvi de font d’edificis i límit del retall. Revisar que els DEM dels extrems i la interpolació no enfonsen els taulers en relleus intermedis. Les proves sintètiques no substitueixen aquesta comprovació. Validar laminat, suports omesos i fragments separats. El camí inferior ha de continuar obert, no només el peu del pilar en queda fora.
 
 **Validació rebuda:** l’usuari aprova l’aspecte visual de la reconstrucció de Rajadell. Continuen pendents la impressió, els fragments petits tallats i la cobertura general; l’evitació es limita als obstacles presents a les dades.
 

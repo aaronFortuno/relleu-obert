@@ -21,18 +21,21 @@ a la impressió. No es mantindrà un catàleg global de projectes constructius.
 Una futura excepció demanada per l’usuari haurà de tenir àmbit geogràfic,
 identitat de l’estructura, font i alternativa procedimental explícits.
 
-**Punt parcial v0.15.1:** `loadRegion` carrega l’excepció de Rajadell per
-intersecció geogràfica, independent del botó d’exemple, amb memòria cau i
-reintent de lectures fallides. `buildModel` crea ponts elevats a partir
-d’aquests taulers; sense una excepció disponible, els trams MVT encara entren
-al flux de camins sobre el terreny. Per tant, el motor no és encara un flux
-de reconstrucció 3D general per a qualsevol ubicació. RO-033 ha de connectar
-la detecció de trams elevats, el perfil vertical conegut o estimat, els taulers,
-els enllaços i els suports sense exigir fitxers preparats per lloc.
+**Integració v0.16:** `loadRegion` carrega les excepcions per intersecció
+geogràfica, amb memòria cau i reintent. `buildModel` detecta els trams MVT
+`brunnel=bridge` no coberts per aquestes superfícies. El generador pur de
+[taulers procedimentals](src/procedural-bridges.js) uneix fragments del mateix
+grup, conserva els extrems originals i interpola les seves cotes DEM per
+distància acumulada. No segueix el fons de la vall ni converteix `layer` en
+metres. La superfície es retalla després, amb el mateix origen vertical del
+terreny. El worker inicialitza les unions de sòlids també fora de les mostres.
 
-Les cotes estimades es distingiran de les mesurades; `layer` no es convertirà
-en metres. Primer es validarà aquesta via general en ubicacions independents
-de Rajadell; les dades específiques quedaran com a millora opcional.
+Taulers coneguts i estimats comparteixen suports, enllaços, comprovació de
+petjades d'obstacles i unions abans de preview/exportació. La procedència
+inclou recomptes separats i mètode d'estimació per tauler. Límits explícits i
+absència de DEM produeixen avisos i omissions locals, sense bloquejar tota
+la regió. La interpolació no acredita altures reals: falta contrast en altres
+llocs, possibles interseccions amb relleu i cobertura DEM als extrems externs.
 
 ### Altres capes i càlcul incremental
 

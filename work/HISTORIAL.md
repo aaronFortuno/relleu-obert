@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-02. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.16.0 — Ponts procedimentals integrats
+
+RO-033 incorpora generació de taulers amb perfil estimat entre extrems DEM, pilars i enllaços. Rajadell manté la seva excepció geogràfica. [Implementació i comprovacions](RO-033-PROCEDURAL-CORE.md): proves del nucli, retalls moguts/girats i mides físiques variables, generació sense excepcions i pas inferior obert. 241 proves i build correctes. Navegador i 3MF locals comprovats; laminat, impressió i contrast en altres llocs continuen pendents. L'usuari demana publicar aquest bloc i aturar els processos; no s'obren tasques noves.
+
 ## v0.15.1 — Punt estable de continuïtat geogràfica
 
 Rajadell es carrega per ubicació també en moure o ampliar el retall fora de la mostra. Proves locals de càrrega/regressió i build. Punt parcial publicat per petició de l’usuari mentre es prepara el motor procedimental general; RO-033 segueix obert.
