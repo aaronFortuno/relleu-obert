@@ -1,5 +1,17 @@
 # Canvis
 
+## v0.12.0 — 2026-11-02
+
+- RO-012: vista «Presentació» amb taula i llum locals, sense duplicar ni modificar les malles exportables. Restableix càmera/controls/qualitat en sortir; segueix els canvis incrementals i de dimensions. Llegenda il·lustrativa permanent.
+- Render a demanda dins de Presentació, amb amortiment fins al repòs i límit de cua. Reducció d’ombres/resolució quan es detecten intervals actius lents; gestió de pèrdua/restabliment de context, encara pendent de forçar al navegador. Sense afirmar millores de rendiment mesurades.
+- RO-023: resum de fonts seleccionades i pendents, flux principal remot i fitxers propis dins d’un apartat avançat plegat. Tornar de només edificis locals usa la via incremental; un DEM local continua exigint generar el terreny. Sense proveïdors nous ficticis.
+- RO-024: auditoria i unió sobre còpies dins de cada material, amb límits, errors explícits i neteja de recursos. Cas real de la Perica: quatre materials, malles tancades i 34.624 → 15.398 triangles després d’unir. Fonament experimental separat de les exportacions normals.
+- RO-024: resta del mateix buit de totes les capes, amb control sintètic de 400 × 120 × 12 mm; pas de 4 × 4 mm obert entre dues peces de 20 cm, base intacta i raigs lliures sense tapes al tall. Generador reproduïble i control petit de 40 × 24 mm per a validació manual.
+- Backlog: RO-036–039 arxivats segons les validacions anotades per l’usuari. Petició completa de rosa dels vents incrustada (RO-017) conservada; la fletxa independent actual no la dona per resolta.
+- Comprovació local del navegador sota el subdirectori de Pages i exportacions invariants entre vistes. Validació de l’usuari, laminador i impressió física separades; cap comprovació remota de Pages/CI.
+
+201 proves locals superades, construcció estàtica i generadors de control correctes. Últim encàrrec de Kimi aturat pel límit temporal al 81,99% de quota; revisió, correccions i comprovació final completades per l’agent principal.
+
 ## v0.11.0 — 2026-11-02
 
 - RO-040: el Catastre accepta respostes buides vàlides; manté errors de servei, truncament i recomptes incoherents. Una mena buida no descarta les parts de l’altra.

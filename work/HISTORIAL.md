@@ -1,6 +1,6 @@
 # Historial i validacions de Relleu Obert
 
-Actualitzat: 2026-11-01. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
+Actualitzat: 2026-11-02. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
 ## Validacions i observacions de l’usuari sobre v0.6.0
 
@@ -386,3 +386,36 @@ La densitat deixa de regenerar automàticament tot el bosc. Es desa per traç pe
 
 
 **Validació de l’usuari (2026-11-01):** a la zona de prova de Tamariu, els volums cadastrals representen els edificis de forma molt més fidel i les geometries es renderitzen com s’espera. Es tanca el cas de megablocs de RO-002 per a aquesta mostra; això no valida totes les regions/fonts. Cobertes reals pendents a RO-032.
+
+
+## Validacions anotades per l’usuari i arxivades a v0.12
+
+### RO-036 — Pinzell de vegetació sense quadrícula
+
+**Estat de l’usuari al backlog: «Validat». Arxivat el 2026-11-02.** Es conserva el registre anterior a continuació; les noves funcionalitats RO-040–043 i la impressió física mantenen validacions separades.
+
+**Implementat, pendent de validar:** Mostreig uniforme dins del disc amb distància mínima, llavor determinista per traç i intents acotats. Cap malla de col·locació; els contenidors espacials només serveixen per comprovar veïns. Variació de capçades independent del recorregut automàtic. Canviar densitat no altera traços antics.
+
+### RO-037 — Selecció explícita de fonts d’edificis
+
+**Estat de l’usuari al backlog: «Validat». Arxivat el 2026-11-02.** Es conserva el registre anterior a continuació; les noves funcionalitats RO-040–043 i la impressió física mantenen validacions separades.
+
+**Implementat, pendent de validar:** Retirat Automàtic · ICGC. ICGC per defecte dins de l’àmbit configurat i OSM fora; ICGC desactivat fora de l’àmbit, sense confondre’l amb cobertura comprovada de cada edifici. Catastre opcional a península/Balears, límit de 4 km² i errors sense canvi silenciós de font. Fonts noves només quan es validin.
+
+### RO-038 — Capa d’edificis incremental
+
+**Estat de l’usuari al backlog: «Validat». Arxivat el 2026-11-02.** Es conserva el registre anterior a continuació; les noves funcionalitats RO-040–043 i la impressió física mantenen validacions separades.
+
+**Implementat, pendent de validar:** Càrrega i memòria cau de la capa d’edificis sense redescàrrega de vectors/DEM. Worker reutilitza terreny, aigua, camins i cobertes del sòl; conserva les capçades que no xoquen amb petjades noves. Canvis d’altura no mouen arbres. Missatges parcials al preview, càmera conservada i botó Actualitzar els edificis. Una regió, mida, gir, font de relleu o exageració nous sí que necessiten reconstrucció general.
+
+### RO-039 — Timeout de la font Catastre
+
+**Estat de l’usuari al backlog: «Validat». Arxivat el 2026-11-02.** Es conserva el registre anterior a continuació; les noves funcionalitats RO-040–043 i la impressió física mantenen validacions separades.
+
+**Actualització de l’usuari:** L’usuari ha obtingut dades cadastrals correctes en ampliar el mapa. La nova fallada de resposta sense dades es registra a RO-040; no es dona per provada una causa de timeout a partir d’una resposta buida.
+
+**Observació de l’usuari:** carregar edificis del Catastre sobre la mateixa zona retorna «signal timed out». No es dona per reproduïda la causa només per aquest text.
+
+**Encàrrec completat:** Kimi ha rebut diagnòstic acotat del WFS, gestió de temps límit/reintents limitats, errors entenedors i regressions. Ha de conservar model/font explícita en fallar i evitar resultats parcials a la memòria cau. Entrega només amb totes les proves i construcció passades, o informe de bloqueig després de tres intents.
+
+**RO-039 · entrega revisada:** [diagnòstic i correcció](RO-039-CATASTRE-TIMEOUT.md), 45 s per intent i un reintent, inclosa la lectura del cos. 89 proves de suite i build correctes; proves específiques repetides pel revisor. Causa exacta del cas real i càrrega satisfactòria de Tamariu pendents de validar.

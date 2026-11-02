@@ -1,55 +1,42 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-01**. Iteració **v0.11.0**: implementació i comprovacions locals; validació d’usuari pendent. Les quatre validacions de v0.8.0 i les anotacions originals són a [HISTORIAL.md](HISTORIAL.md). Identificadors estables, versions 0.x fins a declaració explícita d’estabilitat.
+Actualitzat: **2026-11-02**. Iteració **v0.12.0**: implementació i comprovacions locals; validació d’usuari pendent. Les quatre validacions de v0.8.0 i les anotacions originals són a [HISTORIAL.md](HISTORIAL.md). Identificadors estables, versions 0.x fins a declaració explícita d’estabilitat.
 
 ## Prioritats immediates
 
-**Tancament de sessió demanat per l’usuari:** publicar les correccions i els tres complements ja integrats. RO-012(escena), RO-023(UX de fonts) i RO-024(sòlids per a infraestructures) continuen pendents; les cobertes reals depenen de dades/accés de RO-032. No es dona cap línia pendent per completada.
+**Reprès el2026-11-02:** [lot v0.12](DELEGACIONS-012.md). RO-012 ja té nucli i integració local en validació; RO-023 reprèn UX de fonts i RO-024 els fonaments de sòlids. Quota real comprovada abans de delegar i vigilant actiu durant cada encàrrec.
 
-**Lot nou autoritzat:** [DELEGACIONS-011.md](DELEGACIONS-011.md), Kimi 100% disponible comunicat ara. Acceptar Catastre buit, millorar pinzell/navegació i actualització d’edificis, investigar dades de cobertes i implementar propostes. RO-023 prioritza fonts remotes entenedores; RO-033 inclou viaductes ferroviaris. RO-024 s’executa com a fonament de ponts/cavitats, sense atribuir dades 3D inexistents.
+**Antecedent v0.11:** publicar les correccions i els tres complements ja integrats. RO-012(escena), RO-023(UX de fonts) i RO-024(sòlids per a infraestructures) continuen pendents; les cobertes reals depenen de dades/accés de RO-032. No es dona cap línia pendent per completada.
+
+**Antecedent del lot v0.11:** [DELEGACIONS-011.md](DELEGACIONS-011.md), Kimi 100% disponible comunicat ara. Acceptar Catastre buit, millorar pinzell/navegació i actualització d’edificis, investigar dades de cobertes i implementar propostes. RO-023 prioritza fonts remotes entenedores; RO-033 inclou viaductes ferroviaris. RO-024 s’executa com a fonament de ponts/cavitats, sense atribuir dades 3D inexistents.
 
 **Lot anterior completat:** execució seqüencial delegada a Kimi, amb revisió i proves obligatòries; cua i abast a [DELEGACIONS.md](DELEGACIONS.md). Primer RO-039, després setup de RO-019 i propostes de RO-014/016/017/012. RO-033–035 mantenen la dependència de RO-024.
 
-1. Corregir respostes buides del Catastre i interacció del pinzell (RO-040–RO-042); validar actualització automàtica (RO-043).
+1. Validar les correccions de respostes buides del Catastre i interacció del pinzell (RO-040–RO-042), l’actualització automàtica (RO-043) i les novetats de v0.12.
 2. Comparar fidelitat de parts i cobertes, segona zona i noves fonts (RO-026 / RO-032).
 3. Preparar sòlids i proves de continuïtat per a ponts/túnels/cavitats (RO-024), segons [RO-024-SOLIDS.md](RO-024-SOLIDS.md).
 
 ## Feina pendent
 
-| ID                                                                 | Prioritat | Estat                                                           | Feina                                                                 |
-| ------------------------------------------------------------------ | --------- | --------------------------------------------------------------- | --------------------------------------------------------------------- |
-| [RO-011](#ro-011--comptador-dexportacions-i-umami)                 | P3        | Per estudiar                                                    | Comptador públic i futura integració Umami                            |
-| [RO-023](#ro-023--relleu-local-i-fonts-vectorials-de-més-precisió) | P2        | Per millorar                                                    | Simplificar la importació local i estudiar fonts GeoJSON accessibles  |
-| [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió)           | P1        | Per estudiar                                                    | Unió general de volums i impressió física                             |
-| [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts)     | P1        | En estudi                                                       | Comparar parts cadastrals i petjades, amb política de fonts explícita |
-| [RO-032](#ro-032--cobertes-i-volums-singulars)                     | P2        | En estudi                                                       | Cobertes reals segons dades disponibles                               |
-| [RO-033](#ro-033--ponts-i-viaductes)                               | P2        | Per estudiar                                                    | Ponts i viaductes amb cota pròpia                                     |
-| [RO-034](#ro-034--túnels-imprimibles)                              | P3        | Per estudiar                                                    | Túnels com a passos oberts dins del model                             |
-| [RO-035](#ro-035--cavitats-i-relleus-amb-voladissos)               | P3        | Per estudiar                                                    | Baumes, coves i arcs naturals amb dades 3D                            |
-| [RO-036](#ro-036--pinzell-de-vegetació-sense-quadrícula)           | P2        | Validat                                                         | Dispersió aleatòria dins del pinzell                                  |
-| [RO-037](#ro-037--selecció-explícita-de-fonts-dedificis)           | P1        | Validat                                                         | Fonts explícites i Catastre opcional                                  |
-| [RO-038](#ro-038--capa-dedificis-incremental)                      | P1        | Validat                                                         | Actualització de només edificis                                       |
-| [RO-039](#ro-039--timeout-de-la-font-catastre)                     | P1        | Validat                                                         | Timeout del Catastre: reintent fitat i missatge accionable            |
-| [RO-019](#ro-019--internacionalització)                            | P3        | Setup preparat; traduccions pendents                            | Català, castellà, gallec, euskera i anglès                            |
-
+| ID                                                                 | Prioritat | Estat                                | Feina                                                                 |
+| ------------------------------------------------------------------ | --------- | ------------------------------------ | --------------------------------------------------------------------- |
+| [RO-011](#ro-011--comptador-dexportacions-i-umami)                 | P3        | Per estudiar                         | Comptador públic i futura integració Umami                            |
+| [RO-023](#ro-023--relleu-local-i-fonts-vectorials-de-més-precisió) | P2 | UX implementada; fonts pendents | Validar el flux remot i incorporar fonts precises accessibles |
+| [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió) | P1 | Fonaments en validació | Unió acotada, continuïtat de cavitats i prova física |
+| [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts)     | P1        | En estudi                            | Comparar parts cadastrals i petjades, amb política de fonts explícita |
+| [RO-032](#ro-032--cobertes-i-volums-singulars)                     | P2        | En estudi                            | Cobertes reals segons dades disponibles                               |
+| [RO-033](#ro-033--ponts-i-viaductes)                               | P2        | Per estudiar                         | Ponts i viaductes amb cota pròpia                                     |
+| [RO-034](#ro-034--túnels-imprimibles)                              | P3        | Per estudiar                         | Túnels com a passos oberts dins del model                             |
+| [RO-035](#ro-035--cavitats-i-relleus-amb-voladissos)               | P3        | Per estudiar                         | Baumes, coves i arcs naturals amb dades 3D                            |
+| [RO-019](#ro-019--internacionalització)                            | P3        | Setup preparat; traduccions pendents | Català, castellà, gallec, euskera i anglès                            |
 | [RO-040](#ro-040--catastre-sense-edificis-no-ha-de-bloquejar-el-model) | P1 | Pendent de validar | Acceptar respostes vàlides buides; distingir-les d’errors de servei |
 | [RO-041](#ro-041--recuperar-la-navegació-en-tancar-vegetació) | P1 | Pendent de validar | Tancar el panell o canviar de menú desactiva el pinzell |
 | [RO-042](#ro-042--densitat-i-cobertura-única-de-cada-traç) | P2 | Pendent de validar | Defecte ×0,5, màxim ×2 i evitar sobrepintar la mateixa zona en un gest |
 | [RO-043](#ro-043--actualització-automàtica-dedificis) | P2 | Pendent de validar | Canvis d’edificis amb espera breu, cua i conservació del terreny |
-
 | [RO-014](#ro-014--marc-imprimible-independent)           | P2        | Pendent de validar | Marc imprimible amb marge configurable          |
-
 | [RO-016](#ro-016--plaques-i-etiquetes-educatives)        | P2        | Pendent de validar | Nom, coordenades i textos educatius imprimibles |
-
-| [RO-017](#ro-017--rosa-dels-vents-i-altres-complements)  | P3        | Pendent de validar | Rosa dels vents i altres accessoris             |
-
-## Dissenys preparats
-
-Propostes revisades, encara sense funcionalitat implementada. Les proves específiques de geometria i les validacions físiques són criteris futurs.
-
-| ID                                                       | Prioritat | Estat                                     | Feina                                           |
-| -------------------------------------------------------- | --------- | ----------------------------------------- | ----------------------------------------------- |
-| [RO-012](#ro-012--presentació-realista-del-model-imprès) | P3        | Proposta preparada; implementació pendent | Escena de presentació sobre una taula           |
+| [RO-017](#ro-017--rosa-dels-vents-i-altres-complements) | P3 | Replantejar segons validació | Rosa incrustada, ubicació amb ratolí i elevació configurable |
+| [RO-012](#ro-012--presentació-realista-del-model-imprès) | P3        | Implementat; pendent de validar | Escena de presentació sobre una taula |
 
 ## Ajornats
 
@@ -86,7 +73,9 @@ P1: fidelitat/fiabilitat; P2: funcionalitat/interfície; P3: exploració. Proves
 
 ### RO-012 — Presentació realista del model imprès
 
-**Disseny preparat:** [proposta d’escena de presentació](RO-012-PROPOSTA.md), revisada per reutilitzar malles, gestionar canvis de model, restaurar càmera/recursos i renderitzar amb amortiment sense bucle permanent en repòs. 106 proves existents i build correctes; escena i comprovacions visuals/rendiment pendents.
+**Implementat a v0.12:** [resultats](RO-012-IMPLEMENTACIO.md). Mateixa geometria/colors, taula/llum, restauració de vista i render a demanda. Navegador local: entrada/sortida, òrbita, edificis incrementals i llegenda correctes; exportacions STL i 3MF Bambu idèntiques amb el mode activat/desactivat. Validació d’usuari, lector de pantalla i mesures instrumentals de rendiment pendents.
+
+**Antecedent:** [proposta d’escena de presentació](RO-012-PROPOSTA.md), revisada per reutilitzar malles, gestionar canvis i restaurar càmera/recursos. L’estat actual és el de l’informe d’implementació enllaçat a dalt.
 
 **Proposta:** escena sobre una taula d’escola, amb perspectiva, llum, ombres i colors que ajudin a imaginar la peça impresa.
 
@@ -120,6 +109,8 @@ P1: fidelitat/fiabilitat; P2: funcionalitat/interfície; P3: exploració. Proves
 
 ### RO-017 — Rosa dels vents i altres complements
 
+**Validació i petició de l’usuari (conservada literalment):** No vàlid. Una fletxa grossa sobre un cercle no és una rosa dels vents. Pot ser una opció, però no la única, de model. La rosa del vent la prepararem com una entitat incrustable sobre el model, visible al previsualitzador i impresa com a part del conjunt. L'usuari podrà ubicar-la mitjançant ratolí (mateixa estratègia que el pinzell que hem fet per la vegetació?). Només hi podrà haver una rosa al model. Si fem clic a una altra banda desapareix l'anterior. L'orientació ha de correspondre a la real, evidentment. L'elevació de la rosa haurà de ser configurable 1-3 mil·limetres sobre la cota més alta de la zona on estigui posicionada (això vol dir que en una zona on hi hagi pendent, veurem la rosa sencera, plana horitzontal, aixecada 1-3 mil·limetres a la part més alta i més a la part més baixa)
+
 **Implementat a v0.11.0:** [resultats](RO-017-IMPLEMENTACIO.md), geometria i exportació independents comprovades localment. Laminador i prova física pendents; la proposta anterior queda com a antecedent.
 
 **Disseny preparat:** [proposta de fletxa del nord](RO-017-PROPOSTA.md), revisada i fórmula comprovada contra la projecció real (0° i ±30°, escales iguals/desiguals). 106 proves existents i build correctes; accessori, exportació i validació física pendents.
@@ -144,6 +135,8 @@ P1: fidelitat/fiabilitat; P2: funcionalitat/interfície; P3: exploració. Proves
 
 ### RO-023 — Relleu local i fonts vectorials de més precisió
 
+**UX v0.12 implementada:** [resultats i comprovacions locals](RO-023-FONTS-UX.md). Fonts remotes com a flux principal, resum de font seleccionada/pendent, importació avançada plegada i retorn a fonts remotes. Cap proveïdor nou inventat; COG/MDT remot d’alta precisió i validació d’usuari continuen pendents.
+
 **Actualització de l’usuari:** Prioritzar fonts remotes seleccionables i llenguatge educatiu; importació GeoTIFF/GeoJSON queda com a opció avançada plegada, amb ajuda clara. No esperar que docents aportin fitxers especialitzats.
 
 **Primera implementació v0.6.0:** importació local GeoTIFF numèric i GeoJSON d’edificis, reprojecció WGS84/Web Mercator/UTM i límits explícits. Es comprova cobertura i NoData; es rebutgen RGB, compressió inadequada i CRS desconegut. MDT en metres, sense transformar datum vertical ni convertir DSM en terreny nu. El GeoJSON substitueix tota la capa d’edificis, conservant parts i patis disponibles. Proves numèriques i de càrrega de fonts; al navegador, importació d’un MDT sintètic identificat com a prova i del GeoJSON oficial inclòs, seguida de generació girada. Pendent de validar amb MDT oficial d’alta resolució i dades de l’usuari. L’accés automàtic COG/serveis i la comparació/priorització de proveïdors no queden resolts: continuen amb RO-026.
@@ -157,6 +150,8 @@ P1: fidelitat/fiabilitat; P2: funcionalitat/interfície; P3: exploració. Proves
 **Decisió de l’usuari després de v0.7.0:** Comprovat que l'eina existeix, però poc intuïtiva i massa text. Valorar si podem carregar GeoJSON d'alguna font oberta, potser no com a opció principal però si com una opció d'usuari en cas que vulgui major detall per als edificis.
 
 ### RO-024 — Unió de volums i validació d’impressió
+
+**Fonaments v0.12:** [auditoria i unions](RO-024-RESULTATS.md) sobre còpies, material a material, amb regressions i retall real de la Perica. [Túnel sintètic i partició](RO-024-TUNEL-CONTROL.md) comprovats: dos portals, base intacta i pas lliure entre peces. 201 proves/build i controls petit/gran generats. Sense activar unions generals en l’exportació; laminador, impressió física i infraestructures reals pendents.
 
 **Origen:** [ARCHITECTURE.md](../ARCHITECTURE.md). La comprovació de sòlids i els talls amb Manifold ja existeixen; falta concretar la unió/reparació general dels volums i una validació física. No marcar aquesta línia resolta només perquè es pot exportar o tancar un tall.
 
@@ -223,18 +218,6 @@ Escombrar una secció sobre un eix 3D i restar-la dels volums de terreny i capes
 
 Un MDT d’una altura per XY no descriu cavitats ni voladissos. Investigar núvols de punts o malles d’aixecaments amb cobertura de la cavitat; LiDAR aeri no garanteix veure’n l’interior. Començar per un arc petit amb malla oberta i llicència comprovada. Pla a PAISATGE-3D.md.
 
-### RO-036 — Pinzell de vegetació sense quadrícula
-
-**Implementat, pendent de validar:** Mostreig uniforme dins del disc amb distància mínima, llavor determinista per traç i intents acotats. Cap malla de col·locació; els contenidors espacials només serveixen per comprovar veïns. Variació de capçades independent del recorregut automàtic. Canviar densitat no altera traços antics.
-
-### RO-037 — Selecció explícita de fonts d’edificis
-
-**Implementat, pendent de validar:** Retirat Automàtic · ICGC. ICGC per defecte dins de l’àmbit configurat i OSM fora; ICGC desactivat fora de l’àmbit, sense confondre’l amb cobertura comprovada de cada edifici. Catastre opcional a península/Balears, límit de 4 km² i errors sense canvi silenciós de font. Fonts noves només quan es validin.
-
-### RO-038 — Capa d’edificis incremental
-
-**Implementat, pendent de validar:** Càrrega i memòria cau de la capa d’edificis sense redescàrrega de vectors/DEM. Worker reutilitza terreny, aigua, camins i cobertes del sòl; conserva les capçades que no xoquen amb petjades noves. Canvis d’altura no mouen arbres. Missatges parcials al preview, càmera conservada i botó Actualitzar els edificis. Una regió, mida, gir, font de relleu o exageració nous sí que necessiten reconstrucció general.
-
 ## Historial de v0.9.0
 
 - RO-009, RO-015, RO-030 i RO-031: validats → historial.
@@ -244,16 +227,6 @@ Un MDT d’una altura per XY no descriu cavitats ni voladissos. Investigar núvo
 - Delegació acotada a un únic Kimi k3-256k per al repartiment del pinzell, després que l’usuari confirmés consum inicial del 0%. Dos fitxers revisats i vuit proves pròpies superades; cap altre agent simultani. No es declara un percentatge final de consum que no s’hagi mesurat.
 
 **Comprovació local de v0.9.0:** 82 proves superades i construcció estàtica correcta. Al navegador, retall de 150 × 150 mm a 1:1.000 centrat a 41.91814, 3.20528: 18 fragments amb ICGC i 117 volums retallats amb Catastre. Exportacions STL amb vuit assignacions: material-1 (terreny), material-4 (camins), material-5 (bosc), material-6 (arbres) i material-8 (aigua interior) idèntics byte a byte abans/després; només material-3 (edificis) canvia. Les categories absents continuen absents. El canvi de font manté la càmera i el mapa ocult conserva la selecció. Falta la validació de l’usuari, laminador i impressió; no s’han comprovat Pages/CI remots.
-
-### RO-039 — Timeout de la font Catastre
-
-**Actualització de l’usuari:** L’usuari ha obtingut dades cadastrals correctes en ampliar el mapa. La nova fallada de resposta sense dades es registra a RO-040; no es dona per provada una causa de timeout a partir d’una resposta buida.
-
-**Observació de l’usuari:** carregar edificis del Catastre sobre la mateixa zona retorna «signal timed out». No es dona per reproduïda la causa només per aquest text.
-
-**Encàrrec completat:** Kimi ha rebut diagnòstic acotat del WFS, gestió de temps límit/reintents limitats, errors entenedors i regressions. Ha de conservar model/font explícita en fallar i evitar resultats parcials a la memòria cau. Entrega només amb totes les proves i construcció passades, o informe de bloqueig després de tres intents.
-
-**RO-039 · entrega revisada:** [diagnòstic i correcció](RO-039-CATASTRE-TIMEOUT.md), 45 s per intent i un reintent, inclosa la lectura del cos. 89 proves de suite i build correctes; proves específiques repetides pel revisor. Causa exacta del cas real i càrrega satisfactòria de Tamariu pendents de validar.
 
 ### RO-040 — Catastre sense edificis no ha de bloquejar el model
 
@@ -286,3 +259,7 @@ Un MDT d’una altura per XY no descriu cavitats ni voladissos. Investigar núvo
 **Petició de l’usuari:** Canvis d’edificis amb espera breu, cua i conservació del terreny.
 
 **Seguiment:** Implementat, pendent de validar. Encàrrecs seqüencials a Kimi i revisió abans de continuar. Proves locals obligatòries; validació d’usuari diferenciada.
+
+## Seguiment v0.12
+
+RO-036–039 han passat a [l’historial](HISTORIAL.md), perquè l’usuari els havia marcat «Validat» a la taula. Es preserven totes les observacions i no es trasllada aquesta validació a les novetats de v0.11/v0.12 ni a proves físiques. La petició completa de replantejament de RO-017 es conserva dins de la seva entrada.

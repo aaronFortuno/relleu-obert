@@ -1,0 +1,326 @@
+{
+  "fixture": "Perica, cached cadastral parts + original terrain/vector sample; no network",
+  "bbox": [
+    3.2043745661649443,
+    41.91746626661876,
+    3.206185433835056,
+    41.91881373338124
+  ],
+  "options": {
+    "size": 150,
+    "widthMM": 150,
+    "heightMM": 150,
+    "targetScale": 1000,
+    "resolution": 24,
+    "exaggeration": 1.5,
+    "trees": false,
+    "buildingMode": "limited",
+    "maxBuildingHeight": 5
+  },
+  "buildings": 80,
+  "raw": {
+    "parts": [
+      {
+        "id": "terrain",
+        "name": "Terreny",
+        "errors": [],
+        "empty": false,
+        "finite": true,
+        "vertices": 13966,
+        "triangles": 19192,
+        "bbox": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            150,
+            150,
+            63.74094009399414
+          ]
+        },
+        "dimensions": [
+          150,
+          150,
+          63.74094009399414
+        ],
+        "signedVolume": 667693.2580624829,
+        "orientation": "positiva",
+        "edges": {
+          "total": 28788,
+          "boundary": 0,
+          "nonManifold": 0,
+          "orientationConflicts": 0
+        },
+        "closed": true,
+        "components": 2185
+      },
+      {
+        "id": "water",
+        "name": "Aigües interiors",
+        "errors": [],
+        "empty": false,
+        "finite": true,
+        "vertices": 264,
+        "triangles": 380,
+        "bbox": {
+          "min": [
+            9.902899742126465,
+            20.55419921875,
+            0
+          ],
+          "max": [
+            122.76830291748047,
+            140.0847930908203,
+            52.49697494506836
+          ]
+        },
+        "dimensions": [
+          112.865403175354,
+          119.53059387207031,
+          52.49697494506836
+        ],
+        "signedVolume": 6135.940467956923,
+        "orientation": "positiva",
+        "edges": {
+          "total": 570,
+          "boundary": 0,
+          "nonManifold": 0,
+          "orientationConflicts": 0
+        },
+        "closed": true,
+        "components": 37
+      },
+      {
+        "id": "built",
+        "name": "Edificis · Camins i carreteres",
+        "errors": [],
+        "empty": false,
+        "finite": true,
+        "vertices": 8604,
+        "triangles": 12940,
+        "bbox": {
+          "min": [
+            0,
+            0,
+            9.132769584655762
+          ],
+          "max": [
+            150,
+            150,
+            64.39093780517578
+          ]
+        },
+        "dimensions": [
+          150,
+          150,
+          55.25816822052002
+        ],
+        "signedVolume": 35929.36302830162,
+        "orientation": "positiva",
+        "edges": {
+          "total": 19410,
+          "boundary": 0,
+          "nonManifold": 0,
+          "orientationConflicts": 0
+        },
+        "closed": true,
+        "components": 1067
+      },
+      {
+        "id": "green",
+        "name": "Sòl de bosc",
+        "errors": [],
+        "empty": false,
+        "finite": true,
+        "vertices": 1516,
+        "triangles": 2112,
+        "bbox": {
+          "min": [
+            0,
+            67.91919708251953,
+            9.77376651763916
+          ],
+          "max": [
+            150,
+            142.7509002685547,
+            44.201454162597656
+          ]
+        },
+        "dimensions": [
+          150,
+          74.83170318603516,
+          34.427687644958496
+        ],
+        "signedVolume": 2133.683817949261,
+        "orientation": "positiva",
+        "edges": {
+          "total": 3168,
+          "boundary": 0,
+          "nonManifold": 0,
+          "orientationConflicts": 0
+        },
+        "closed": true,
+        "components": 230
+      }
+    ],
+    "valid": true,
+    "materials": 4,
+    "triangles": 34624
+  },
+  "union": {
+    "valid": true,
+    "audit": {
+      "parts": [
+        {
+          "id": "terrain",
+          "name": "Terreny",
+          "errors": [],
+          "empty": false,
+          "finite": true,
+          "vertices": 3210,
+          "triangles": 6488,
+          "bbox": {
+            "min": [
+              0,
+              0,
+              0
+            ],
+            "max": [
+              150,
+              150,
+              63.74094009399414
+            ]
+          },
+          "dimensions": [
+            150,
+            150,
+            63.74094009399414
+          ],
+          "signedVolume": 667693.2569939716,
+          "orientation": "positiva",
+          "edges": {
+            "total": 9732,
+            "boundary": 0,
+            "nonManifold": 0,
+            "orientationConflicts": 0
+          },
+          "closed": true,
+          "components": 3
+        },
+        {
+          "id": "water",
+          "name": "Aigües interiors",
+          "errors": [],
+          "empty": false,
+          "finite": true,
+          "vertices": 108,
+          "triangles": 208,
+          "bbox": {
+            "min": [
+              9.902899742126465,
+              20.55419921875,
+              0
+            ],
+            "max": [
+              122.76830291748047,
+              140.0847930908203,
+              52.49697494506836
+            ]
+          },
+          "dimensions": [
+            112.865403175354,
+            119.53059387207031,
+            52.49697494506836
+          ],
+          "signedVolume": 6135.940467956939,
+          "orientation": "positiva",
+          "edges": {
+            "total": 312,
+            "boundary": 0,
+            "nonManifold": 0,
+            "orientationConflicts": 0
+          },
+          "closed": true,
+          "components": 2
+        },
+        {
+          "id": "built",
+          "name": "Edificis · Camins i carreteres",
+          "errors": [],
+          "empty": false,
+          "finite": true,
+          "vertices": 3951,
+          "triangles": 7814,
+          "bbox": {
+            "min": [
+              0,
+              0,
+              9.132769584655762
+            ],
+            "max": [
+              150,
+              150,
+              64.39093780517578
+            ]
+          },
+          "dimensions": [
+            150,
+            150,
+            55.25816822052002
+          ],
+          "signedVolume": 35927.20425174457,
+          "orientation": "positiva",
+          "edges": {
+            "total": 11721,
+            "boundary": 0,
+            "nonManifold": 0,
+            "orientationConflicts": 0
+          },
+          "closed": true,
+          "components": 23
+        },
+        {
+          "id": "green",
+          "name": "Sòl de bosc",
+          "errors": [],
+          "empty": false,
+          "finite": true,
+          "vertices": 448,
+          "triangles": 888,
+          "bbox": {
+            "min": [
+              0,
+              67.91919708251953,
+              9.77376651763916
+            ],
+            "max": [
+              150,
+              142.7509002685547,
+              44.201454162597656
+            ]
+          },
+          "dimensions": [
+            150,
+            74.83170318603516,
+            34.427687644958496
+          ],
+          "signedVolume": 2133.6838179492606,
+          "orientation": "positiva",
+          "edges": {
+            "total": 1332,
+            "boundary": 0,
+            "nonManifold": 0,
+            "orientationConflicts": 0
+          },
+          "closed": true,
+          "components": 2
+        }
+      ],
+      "valid": true,
+      "materials": 4,
+      "triangles": 15398
+    }
+  }
+}

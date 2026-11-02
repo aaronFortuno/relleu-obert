@@ -1,5 +1,7 @@
 // Catàleg català (idioma base i de reserva). Claus planes amb prefixos per àmbit.
 export default {
+  'preview.presentation': 'Presentació',
+  'preview.presentationNote': 'Escena il·lustrativa · els acabats de la impressió poden variar.',
   'app.tagline': 'Geografia que pots tocar.',
   'header.help': 'Com funciona',
   'header.language': 'Idioma',

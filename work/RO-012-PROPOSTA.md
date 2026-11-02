@@ -1,5 +1,7 @@
 # RO-012 — Proposta d’implementació: escena de presentació realista
 
+**Antecedent de disseny:** el registre d’implementació i proves de v0.12 és a [RO-012-IMPLEMENTACIO.md](RO-012-IMPLEMENTACIO.md). Les referències a proves futures d’aquest document corresponen al moment de redactar la proposta.
+
 2026-11-01 · Proposta per a una futura iteració 0.x; **no és codi implementat ni validat**. Relació amb [BACKLOG.md](BACKLOG.md#ro-012--presentació-realista-del-model-imprès), [RO-014-PROPOSTA.md](RO-014-PROPOSTA.md), [RO-016-PROPOSTA.md](RO-016-PROPOSTA.md) i [RO-017-PROPOSTA.md](RO-017-PROPOSTA.md). L’escena usa la **malla real del preview i els colors seleccionats**; cap imatge generada per IA ni fotografia substitueix la geometria.
 
 ## 1. Propòsit i abast
