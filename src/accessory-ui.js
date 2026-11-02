@@ -2,7 +2,9 @@ import {frameSegments} from './printable-frame.js';
 
 export function initAccessoryUI({onDownload,onFrameChange=()=>{}}){
   const root=document.getElementById('accessories'),container=document.getElementById('frame-settings'),$=id=>document.getElementById(id);
-  // Labels are deferred; keep their geometry/export modules available for later.
+  // Frame/label controls are deferred. Their geometry/export modules remain
+  // available, and initializing this optional UI without its DOM is harmless.
+  if(!root||!container)return {refresh(){},frameOptions:()=>null};
   root.hidden=true;
   container.innerHTML=`<div class="accessory-fields">
   <label for="accessory-bed">Mida útil del llit <span class="unit">mm</span></label><input id="accessory-bed" type="number" min="50" max="450" value="180">

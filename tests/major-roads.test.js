@@ -87,6 +87,14 @@ test('shared width helper and rendered section edges match actual visible road w
   for(let i=0;i<r.stations.length;i++){close(Math.abs(r.coordinates[i*2][1]-r.coordinates[i*2+1][1])*M,22);close(r.sourceFloors[i],r.sourceElevations[i]+.66);}
 });
 
+test('major-road fragments retain explicit width changes instead of inheriting the first segment width',()=>{
+  const a=feature([[0,0],[300,0]],{name:'Same',ref:'C-1',width:6},'six');
+  const b=feature([[300,0],[600,0]],{name:'Same',ref:'C-1',width:10},'ten');
+  const direct=generateMajorRoadItems([a,b],()=>100,options).items;
+  assert.equal(direct.length,2);assert.deepEqual(direct.map(p=>p.sourceWidthMetres),[6,10]);
+  assert.deepEqual(generateMajorRoadItems([b,a],()=>100,options).items,direct);
+});
+
 test('deep valleys and over-steep endpoints are omitted with an explicit reason; links use 16 percent',()=>{
   const valley=(lon)=>Math.abs(lon*M-300)<40?50:100;
   const a=generateMajorRoadItems([road],valley,options);assert.equal(a.items.length,0);assert.match(a.metadata.omissions[0].reason,/vall profunda/);

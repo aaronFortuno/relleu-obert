@@ -2,6 +2,7 @@ import test from 'node:test';import assert from 'node:assert/strict';import Modu
 import {topSampler,continuation,planApproaches,planPiers,stripSolid,columnSolid,deferredObstacleMask} from '../src/bridge-completion.js';
 import {auditPart} from '../src/solid-audit.js';
 import {readFile} from 'node:fs/promises';
+import {transportIdentity} from '../src/transport-network.js';
 const api=await Module();api.setup();
 function solid(p){assert.deepEqual(auditPart(p).errors,[]);const m=new api.Manifold(new api.Mesh({numProp:3,vertProperties:p.vertices,triVerts:p.faces}));assert.equal(m.status(),'NoError');return m;}
 const rectangle=(x0,y0,x1,y1)=>[[[[x0,y0],[x1,y0],[x1,y1],[x0,y1],[x0,y0]]]];
@@ -31,6 +32,22 @@ test('road continuation preserves the main route at a branch and does not use a 
  const lines=[{points:[[10,10],[20,10]],class:'trunk'},{points:[[20,10],[30,10]],class:'trunk'},{points:[[20,10],[20,20]],class:'path'},{points:[[30,10],[40,10]],class:'trunk',brunnel:'tunnel'}];
  assert.deepEqual(continuation([10,10],[1,0],lines,'trunk',50),[[10,10],[20,10],[30,10]]);
  const sample=topSampler([[0,0,10],[10,0,20],[0,10,10]],[0,1,2]);assert.equal(sample(2,2),12);assert.equal(sample(20,20),null);
+});
+
+test('a coplanar surveyed deck tapers continuously into its mapped carriageway without a width jump',()=>{
+ const points=[[40,49,10],[60,49,10],[60,51,10],[40,51,10]],faces=[0,1,2,0,2,3],axis=[[40,50],[60,50]];axis.roadClass='trunk';axis.identity=transportIdentity({class:'trunk',ref:'C-1'});
+ const roads=[{points:[[40,50],[10,50]],class:'trunk',ref:'C-1',width:.6},{points:[[60,50],[90,50]],class:'trunk',ref:'C-1',width:.6}];
+ const result=planApproaches({axis,points,faces,roads,ground:()=>10,containsDeck:([x,y])=>x>=40&&x<=60&&y>=49&&y<=51,widthMM:100,heightMM:100,roadWidth:.6,scale:.1});
+ assert.equal(result.plans.length,2);
+ for(const p of result.plans){const first=p.sections[0],last=p.sections.at(-1),w=s=>Math.hypot(s.left[0]-s.right[0],s.left[1]-s.right[1]);assert(Math.abs(w(first)-2)<1e-5);assert(Math.abs(w(last)-.6)<1e-6);assert.equal(last.left[2],10);assert.equal(last.right[2],10);assert(p.sections.every(s=>w(s)>=.6-1e-6&&w(s)<=2+1e-5));const mesh=solid(stripSolid(p.sections,.6));mesh.delete();}
+});
+
+test('an identified approach keeps the mapped endpoint bend and avoids a nearer road with another reference',()=>{
+ const points=[[40,49.7,12],[60,49.7,12],[60,50.3,12],[40,50.3,12]],faces=[0,1,2,0,2,3],axis=[[40,50],[60,50]];axis.roadClass='trunk';axis.identity=transportIdentity({class:'trunk',ref:'C-1'});
+ const roads=[{points:[[60,50],[61,51],[90,51]],class:'trunk',ref:'C-1',width:.6},{points:[[60.01,50],[90,50]],class:'trunk',ref:'C-2',width:1.2}];
+ const result=planApproaches({axis,points,faces,roads,ground:()=>10.5,containsDeck:([x,y])=>x>=40&&x<=60&&y>=49.7&&y<=50.3,widthMM:100,heightMM:100,roadWidth:.6,scale:.1});
+ assert.equal(result.plans.length,1);const p=result.plans[0];assert.equal(p.endWidthMM,.6);
+ const centres=p.sections.map(s=>s.left.map((v,k)=>(v+s.right[k])/2));assert(centres.some(q=>Math.hypot(q[0]-60,q[1]-50)<1e-6),'the endpoint was shortcut');assert(centres.at(-1)[1]>50.9,'another route absorbed the join');
 });
 test('Rajadell uses the twelve spans of the engineering drawing, not the incomplete prose summary',async()=>{
  const data=JSON.parse(await readFile(new URL('../public/data/eix-diagonal-layouts.json',import.meta.url))),layout=data.items['ifc-127512'];

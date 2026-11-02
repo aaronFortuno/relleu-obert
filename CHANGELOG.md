@@ -1,5 +1,15 @@
 # Canvis
 
+## v0.19.0 — 2026-11-02 · ENTREGA PARCIAL
+
+Tancament per canvi d'ordinador, demanat per l'usuari. Compilació correcta; **12/13 proves curtes finals**, amb un graó pendent al portal del rectangle girat. La passada ordinària anterior de 370 casos és prèvia al darrer refinament. No es dona RO-052 per resolt. Vegeu `work/REPRESA-RO-052.md`.
+
+- RO-052: política comuna d'amplada de calçada per a superfície, ponts procedimentals i paviment de túnels; amplada explícita, carrils i classe amb un mínim físic compartit. Les obertures dels túnels i els contorns estructurals mesurats es conserven separats.
+- Connexions escollides per identitat i extrems del traçat; passada final d'encaix amb les cotes del segment real connectat, sense saltar a ponts que només es creuen amb la carretera. Transicions d'amplada suaus als taulers mesurats i conservació del primer revolt de l'enllaç.
+- Boques amb paviment i excavació coincidents a les dues vores, també amb pendent transversal; ruta cartogràfica quan hi ha dades compatibles i alternativa estimada identificada. Petjades reals dels revolts per comprovar interseccions amb aigua.
+- Marc exterior retirat del sidebar dret i ajornat per petició de l'usuari; configuració, preview i botó de descàrrega fora de la UI, amb mòduls i proves geomètriques conservats per a més endavant.
+- Regressions de calçada contínua en una cadena superfície/pont/túnel, també al 3MF, i en retall rectangular girat. Seguiment i límits a `work/RO-052-CONTINUITAT.md` i al backlog; validació d'usuari, laminat i impressió continuen separades.
+
 ## v0.18.2 — 2026-11-02
 
 - RO-051: màscares d’obstacles dels pilars calculades sota demanda i reutilitzades. El control local de 3 km / 150 mm / detall 12 passa de 189,274 a 56,638 s (70,1% menys), amb 2 unions en lloc de 14 i els mateixos resums de perfils, omissions, pilars i llums. Sense paral·lelitzar ni canviar operands o precisió de les unions.

@@ -6,8 +6,8 @@
 // retalla el perfil: el mateix pont té les mateixes cotes en qualsevol retall.
 
 import {isRailway,isInactiveRailway,railwayWidthMetres} from './railways.js';
+import {roadWidthMetres} from './transport-width.js';
 const LAT_METRES=111320;
-const CLASS_WIDTH_METRES={motorway:14,trunk:10,primary:8,secondary:7,tertiary:6,residential:5,path:2,track:2,rail:5};
 const MAX_FEATURES=50000,MAX_BRIDGES=200,MAX_AXIS_POINTS=1000;
 const MAX_FRAGMENTS=1000,MAX_TOTAL_POINTS=20000,MAX_LINE_POINTS=2000;
 
@@ -36,26 +36,26 @@ function endKey(p){
 function widthFromProperties(props,warnings,label){
   if(props.width!==undefined&&props.width!==null&&props.width!==''){
     const raw=Number(props.width);
-    if(Number.isFinite(raw)&&raw>=.5&&raw<=60)return raw;
-    warnings.push(`Pont ${label}: amplada «${props.width}» rebutjada; s'usa l'amplada de classe.`);
+    if(!Number.isFinite(raw)||raw<.5||raw>60)
+      warnings.push(`Pont ${label}: amplada «${props.width}» rebutjada; s'usa una estimació de carrils o classe.`);
   }
-  const lanes=Number.parseInt(props.lanes,10);
-  if(Number.isFinite(lanes)&&lanes>=1&&lanes<=12)return Math.min(lanes*3.2,38.4);
-  return isRailway(props)?railwayWidthMetres(props):CLASS_WIDTH_METRES[props.class]??5;
+  return isRailway(props)?railwayWidthMetres(props):roadWidthMetres(props);
 }
 
-// Uneix fragments del mateix grup (classe/layer/name) només per extrems
-// inequívocs de grau 2 dins d'~1 m. No barreja nivells ni bifurcacions.
+const groupOf=props=>JSON.stringify([String(props.class??''),String(props.layer??0),String(props.name??''),String(props.ref??''),String(props.oneway??''),props.railway??'',props.subclass??'',isRailway(props)?railwayWidthMetres(props):roadWidthMetres(props)]);
+
+// Join only compatible route/level/width fragments at unambiguous degree-2
+// endpoints. A width change stays explicit instead of inheriting A.props.
 function joinFragments(fragments){
   const groups=new Map();
   for(const f of fragments){
-    const key=`${f.class}|${f.layer}|${f.name}`;
+    const key=f.group;
     if(!groups.has(key))groups.set(key,[]);
     groups.get(key).push(f);
   }
   const merged=[];
   for(const group of groups.values()){
-    const frags=group.map(f=>({points:f.points.slice(),ids:[f.id],props:f.props}));
+    const frags=group.map(f=>({points:f.points.slice(),ids:[f.id],props:f.props,group:f.group}));
     let changed=true;
     while(changed){
       changed=false;
@@ -75,7 +75,7 @@ function joinFragments(fragments){
         else if(a[1]===0&&b[1]===0){const r=A.points.slice().reverse();points=r.concat(B.points.slice(1));ids=A.ids.slice().reverse().concat(B.ids);}
         else{points=B.points.concat(A.points.slice(1));ids=B.ids.concat(A.ids);}
         const keep=frags.filter((_,i)=>i!==a[0]&&i!==b[0]);
-        keep.push({points:cleanLine(points)||points,ids,props:A.props});
+        keep.push({points:cleanLine(points)||points,ids,props:A.props,group:A.group});
         frags.length=0;frags.push(...keep);
         changed=true;
         break;
@@ -114,12 +114,12 @@ export function generateProceduralBridgeItems(features,elevationAt,{scale=.1,min
       const points=cleanLine(line);
       if(!points){if(Array.isArray(line)&&line.length)warnings.push(`Geometria de pont invàlida o massa curta (${f.id??index}).`);continue;}
       if(totalPoints+points.length>MAX_TOTAL_POINTS){droppedFragments++;continue;}
-      const group=`${props.class??''}|${props.layer??null}|${props.name??''}`; // identitat de grup abans de deduplicar
+      const group=groupOf(props); // route/width identity before deduplicating
       const key=group+'|'+lineKey(points),reverse=group+'|'+lineKey(points.slice().reverse());
       if(seen.has(key)||seen.has(reverse))continue; // duplicat del mateix grup, també en ordre invers
       seen.add(key);
       totalPoints+=points.length;
-      fragments.push({points,class:String(props.class??''),layer:props.layer??null,name:String(props.name??''),id:f.id??props['@id']??`f${index}`,props});
+      fragments.push({points,class:String(props.class??''),layer:props.layer??null,name:String(props.name??''),id:f.id??props['@id']??`f${index}`,props,group});
     }
   });
   if(droppedFragments)warnings.push(`Pressupost d'unió aplicat: ${droppedFragments} fragments omesos (límits de ${MAX_FRAGMENTS} fragments i ${MAX_TOTAL_POINTS} punts).`);
@@ -137,7 +137,7 @@ export function generateProceduralBridgeItems(features,elevationAt,{scale=.1,min
     for(const [lon,lat] of axis.points){if(lon<w)w=lon;if(lon>e)e=lon;if(lat<s)s=lat;if(lat>n)n=lat;}
     return!(e<bbox[0]||w>bbox[2]||n<bbox[1]||s>bbox[3]);
   }):axes;
-  inBBox.sort((a,b)=>a.points[0][0]-b.points[0][0]||a.points[0][1]-b.points[0][1]||a.points.length-b.points.length);
+  inBBox.sort((a,b)=>a.points[0][0]-b.points[0][0]||a.points[0][1]-b.points[0][1]||a.points.length-b.points.length||a.group.localeCompare(b.group));
   if(inBBox.length>MAX_BRIDGES){
     warnings.push(`Pressupost de ${MAX_BRIDGES} ponts aplicat: ${inBBox.length-MAX_BRIDGES} eixos omesos.`);
     inBBox.length=MAX_BRIDGES;
@@ -159,7 +159,7 @@ export function generateProceduralBridgeItems(features,elevationAt,{scale=.1,min
       warnings.push(`Pont ${id} omès: elevació d’extrem no vàlida (${z0}, ${z1}).`);
       return;
     }
-    const widthMetres=Math.max(widthFromProperties(axis.props,warnings,id),minWidthMetres);
+    const sourceWidthMetres=widthFromProperties(axis.props,warnings,id),widthMetres=Math.max(sourceWidthMetres,minWidthMetres);
     const latRef=points[0][1],kx=LAT_METRES*Math.cos(latRef*Math.PI/180);
     const xy=points.map(([lon,lat])=>[lon*kx,lat*LAT_METRES]);
     const distance=[0];
@@ -194,6 +194,11 @@ export function generateProceduralBridgeItems(features,elevationAt,{scale=.1,min
       axis:points,
       estimated:true,
       widthMetres,
+      sourceWidthMetres,
+      roadClass:axis.props.class,
+      ref:axis.props.ref,
+      name:axis.props.name,
+      oneway:axis.props.oneway,
       railway:isRailway(axis.props),
       elevationMethod:'linear-dem-endpoints',
       sourceFeatureIds:axis.ids,

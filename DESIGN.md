@@ -41,8 +41,11 @@ classes existents. `output` de formulari no ha de flotar a la dreta.
 - Header de 58 px i footer de 32 px sempre visibles. Cap scroll de pàgina.
 - Sidebar esquerre: lloc/orientació, mida/escala, relleu/edificis i vegetació.
   Les quatre capçaleres es veuen sempre; scroll només al contingut obert.
-- Sidebar dret: mètriques, marc, materials, descàrrega i complements. Scroll
+- Sidebar dret: mètriques, materials i descàrrega. Scroll
   intern. Els ajustos d’un mateix objecte van junts, amb el seu resultat.
+- «Marc exterior» i els complements ajornats no apareixen al sidebar;
+  retirada demanada per l'usuari el 2026-11-02. El codi reutilitzable es
+  conserva per a un desenvolupament futur, sense controls buits a la UI.
 - Centre: maqueta i controls flotants discrets. No duplicar dades laterals.
 - Els canvis d’aparença o d’una capa conserven càmera/zoom. Restablir és una
   acció explícita; una regió o mida noves poden requerir enquadrament.

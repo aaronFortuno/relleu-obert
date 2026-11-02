@@ -48,6 +48,49 @@ test('parabolic cutter keeps the analytical rectangular API and a closed rising 
   for(const segments of [7,9,34])assert.throws(()=>parabolicTunnelSection(8,6,{segments}),/invàlida/);
 });
 
+test('RO-052 road pavement keeps its own width inside a larger printable opening',()=>{
+  const t={...tunnel('roads',[[10,40,5],[90,40,5]]),carriagewayWidthMM:.6},floor=tunnelPavements([t])[0];
+  const y=[];for(let i=1;i<floor.vertices.length;i+=3)y.push(floor.vertices[i]);
+  assert(Math.abs(Math.max(...y)-Math.min(...y)-.6)<1e-5);assert.equal(t.widthMM,8);assert.equal(floor.carriagewayWidthMM,.6);
+  const s=solid(floor);try{assert.equal(s.status(),'NoError');assert(Math.abs(s.volume()-80*.6*.3)<1e-4);}finally{s.delete();}
+  assert.throws(()=>tunnelPavements([{...t,carriagewayWidthMM:9}]),/Amplada/);
+});
+
+test('RO-052 per-edge portal sections meet the exterior road without filling the free bore',()=>{
+  const projection={width:100,height:80,scale:.1,project:([x,y])=>[x*10000,y*10000]},ground=(x,y)=>(x>25&&x<75?20:5)+.2*(y-40);
+  const f={id:'road',properties:{sourceLayer:'transportation',brunnel:'tunnel',class:'trunk',width:6},geometry:{type:'LineString',coordinates:[[.002,.004],[.008,.004]]}};
+  const generated=generateProceduralTunnelVoids([f],()=>100,{enabled:true,projection,ground,verticalReference:{originMeters:100,minimumSurfaceMM:5}});
+  assert.equal(generated.items.length,1,generated.warnings.join(' '));const t=generated.items[0],floor=tunnelPavements([t])[0];
+  assert.deepEqual(auditPart(floor).errors,[]);assert(overlap(floor,t)<1e-6);
+  const opening=solid(t);try{
+    const {left,right}=t.pavementSections[1],p=left.map((v,k)=>v*.1+right[k]*.9);
+    assert.equal(opening.rayCast([p[0],p[1],p[2]+.01],[p[0],p[1],p[2]+.1]).length,0,'a flat bore bottom would leave terrain over the lower road edge');
+  }finally{opening.delete();}
+  for(const section of [t.pavementSections[0],t.pavementSections.at(-1)]){
+    for(const point of section.across){let found=false;
+      for(let i=0;i<floor.vertices.length;i+=3)if(Math.hypot(floor.vertices[i]-point[0],floor.vertices[i+1]-point[1])<1e-5&&Math.abs(floor.vertices[i+2]-ground(...point))<1e-5){found=true;break;}
+      assert(found,'serialized section does not meet the road');
+    }
+  }
+});
+
+test('RO-052 nonlinear portal profile retains its centre and exact transverse terrain break',()=>{
+  const projection={width:100,height:80,scale:.1,project:([x,y])=>[x*10000,y*10000]},ground=(x,y)=>(x>25&&x<75?20:5)+.3*Math.abs(y-40.07);
+  const f={id:'road',properties:{sourceLayer:'transportation',brunnel:'tunnel',class:'trunk',width:6},geometry:{type:'LineString',coordinates:[[.002,.004],[.008,.004]]}};
+  const r=generateProceduralTunnelVoids([f],()=>100,{enabled:true,projection,ground,verticalReference:{originMeters:100,minimumSurfaceMM:5},surfaceBreaks:({centre,normal,widthMM})=>[-.5,0,.5,(40.07-centre[1])/(normal[1]*widthMM)]});
+  assert.equal(r.items.length,1,r.warnings.join(' '));const t=r.items[0],floor=tunnelPavements([t])[0];
+  assert.deepEqual(auditPart(t).errors,[]);assert.deepEqual(auditPart(floor).errors,[]);assert(overlap(floor,t)<1e-6);
+  assert(t.pavementSections.every(s=>s.across.length===t.pavementFractions.length));
+  for(const [index,portal]of t.portalConnections.entries()){
+    assert(Math.abs(portal.centre[2]-ground(...portal.centre))<1e-10);assert(Math.abs(portal.centre[2]-t.path[index?t.path.length-1:0][2])<1e-10);
+    assert(Math.abs((portal.left[2]+portal.right[2])/2-portal.centre[2])>.05,'control must expose the old two-edge approximation');
+    assert(portal.across.some(p=>Math.abs(p[1]-40.07)<1e-10));
+    for(const p of portal.across)assert(Math.abs(p[2]-ground(...p))<1e-10,'terrain breakpoint was approximated by the two edge heights');
+  }
+  const section=t.pavementSections[1],opening=solid(t),road=solid(floor);
+  try{for(const p of section.across){assert.equal(opening.rayCast([p[0],p[1],p[2]+.01],[p[0],p[1],p[2]+.1]).length,0);assert(road.volume()>0);}}finally{opening.delete();road.delete();}
+});
+
 test('raycasts verify crown, lower lateral clearance and rising road pavement without colour overlaps',()=>{
   const source=[box('terrain',0,50),box('forest',50,100),{...box('roads',150,160),color:'#987654'}],before=structuredClone(source),t=tunnel();
   const result=carveTerrainTunnels(source,[t],api);assert.equal(result.metadata.applied,true,result.warnings.join(' '));assert.deepEqual(source,before);

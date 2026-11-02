@@ -1,4 +1,6 @@
 import {polygonOps} from './polygon-ops.js';
+import {continuationRoute} from './transport-network.js';
+import {crossSectionFractions,stripSectionSolid} from './transport-sections.js';
 const pc=polygonOps(),dist=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
 const unit=(a,b)=>{const d=dist(a,b);return d>1e-8?[(b[0]-a[0])/d,(b[1]-a[1])/d]:[0,0];};
 const dot=(a,b)=>a[0]*b[0]+a[1]*b[1];
@@ -11,7 +13,8 @@ export function topSampler(points,faces){
 
 // Walk the actual continuation network. A tunnel is deliberately not a surface
 // approach; at branches prefer the same road class and the smoothest turn.
-export function continuation(end,outward,lines,roadClass,maxLength){
+export function continuation(end,outward,lines,roadClass,maxLength,identity=null){
+  if(identity){const route=continuationRoute(end,outward,lines,identity,maxLength,{allowStructures:true});const points=route.points;Object.defineProperty(points,'segments',{value:route.segments});return points;}
   const nodes=new Map();for(const line of lines)if(!line.brunnel)for(let i=1;i<line.points.length;i++)for(const [a,b]of [[line.points[i-1],line.points[i]],[line.points[i],line.points[i-1]]]){
     const k=key(a);if(!nodes.has(k))nodes.set(k,[]);nodes.get(k).push({from:a,to:b,class:line.class});
   }
@@ -33,16 +36,17 @@ export function continuation(end,outward,lines,roadClass,maxLength){
 }
 
 function resample(path,step,maxLength){
-  const result=[{p:path[0],s:0}];let total=0;
+  const result=[{p:path[0],s:0,segment:0}];let total=0;
   for(let i=1;i<path.length&&total<maxLength;i++){
     const length=dist(path[i-1],path[i]);if(length<1e-6)continue;
     const usable=Math.min(length,maxLength-total),count=Math.ceil(usable/step);
-    for(let j=1;j<=count;j++)result.push({p:mix(path[i-1],path[i],usable/length*j/count),s:total+usable*j/count});total+=usable;
+    for(let j=1;j<=count;j++)result.push({p:mix(path[i-1],path[i],usable/length*j/count),s:total+usable*j/count,segment:i-1});total+=usable;
   }return result;
 }
 function atStation(samples,s){let lo=0,hi=samples.length-1;while(hi-lo>1){const mid=(lo+hi)>>1;if(samples[mid].s<s)lo=mid;else hi=mid;}const a=samples[lo],b=samples[hi];return {p:mix(a.p,b.p,(s-a.s)/(b.s-a.s)),s,index:lo};}
 function section(p,direction,width,z){const n=[-direction[1],direction[0]];return {left:[p[0]+n[0]*width/2,p[1]+n[1]*width/2,z],right:[p[0]-n[0]*width/2,p[1]-n[1]*width/2,z]};}
 export function stripSolid(sections,thickness){
+  if(sections[0]?.across)return stripSectionSolid(sections,thickness);
   const vertices=[],faces=[];for(const {left:l,right:r}of sections)vertices.push(r[0],r[1],r[2]-thickness,l[0],l[1],l[2]-thickness,...l,...r);
   for(let i=0;i<sections.length-1;i++)for(let k=0;k<4;k++){const a=i*4+k,b=i*4+(k+1)%4;faces.push(a,b,b+4,a,b+4,a+4);}
   const end=(sections.length-1)*4;faces.push(3,2,1,3,1,0,end,end+1,end+2,end,end+2,end+3);
@@ -56,7 +60,7 @@ function footprint(sections){return [[sections.map(s=>s.right.slice(0,2)).concat
 
 // Geometry is an explicitly estimated PRINT adaptation. The surveyed deck
 // surface is unchanged; connections follow mapped roads, with C1 Hermite Z.
-export function planApproaches({axis,points,faces,containsDeck,roads,ground,roadRise=0,widthMM,heightMM,roadWidth=.44,scale=.1}){
+export function planApproaches({axis,points,faces,containsDeck,roads,ground,roadRise=0,widthMM,heightMM,roadWidth=.44,scale=.1,destinationSurface=null,destinationBreaks=null,forceConnections=false}){
   const top=topSampler(points,faces),plans=[],missed=[],maxLength=Math.max(40,400*scale);
   for(const reverse of [false,true]){
     const path=reverse?axis.slice().reverse():axis,dir=unit(path[1],path[0]);
@@ -65,26 +69,43 @@ export function planApproaches({axis,points,faces,containsDeck,roads,ground,road
     // Move from the mapped endpoint into the measured deck until a full width
     // transverse section exists, then overlap it by a small distance.
     let start=null,width=0,startZ=0;
-    for(let d=.1;d<4;d+=.025){const p=[inside[0]-dir[0]*d,inside[1]-dir[1]*d],z=top(...p);if(z==null)continue;const n=[-dir[1],dir[0]];let left=0,right=0;
-      while(left<4&&containsDeck([p[0]+n[0]*(left+.025),p[1]+n[1]*(left+.025)]))left+=.025;
-      while(right<4&&containsDeck([p[0]-n[0]*(right+.025),p[1]-n[1]*(right+.025)]))right+=.025;
-      if(left+right>=roadWidth*.9&&Math.min(left,right)>.12){width=left+right;start=[p[0]+n[0]*(left-right)/2,p[1]+n[1]*(left-right)/2];startZ=top(...start);break;}
+    for(let d=.1;d<4;d+=.025){const p=[inside[0]-dir[0]*d,inside[1]-dir[1]*d],z=top(...p);if(z==null)continue;const n=[-dir[1],dir[0]],limit=Math.max(4,roadWidth);let left=0,right=0;
+      while(left<limit&&containsDeck([p[0]+n[0]*(left+.025),p[1]+n[1]*(left+.025)]))left+=.025;
+      while(right<limit&&containsDeck([p[0]-n[0]*(right+.025),p[1]-n[1]*(right+.025)]))right+=.025;
+      const refine=(low,sign)=>{let high=low+.025;for(let i=0;i<16;i++){const mid=(low+high)/2;if(containsDeck([p[0]+sign*n[0]*mid,p[1]+sign*n[1]*mid]))low=mid;else high=mid;}return low;};
+      if(left<limit)left=refine(left,1);if(right<limit)right=refine(right,-1);
+      if(left+right>=.28&&Math.min(left,right)>.12){width=left+right;start=[p[0]+n[0]*(left-right)/2,p[1]+n[1]*(left-right)/2];startZ=top(...start);break;}
     }
     if(!start||startZ==null||start[0]<0||start[1]<0||start[0]>widthMM||start[1]>heightMM){missed.push('outside or no cap');continue;}
-    if(startZ<=ground(...start)+roadRise+.03)continue;
     const inward=[start[0]-dir[0]*Math.max(width,1),start[1]-dir[1]*Math.max(width,1)],innerZ=top(...inward),grade=innerZ==null?0:(startZ-innerZ)/dist(start,inward);
-    const continuationPath=continuation(path[0],dir,roads,axis.roadClass,maxLength);if(continuationPath.length<2){missed.push('no mapped road');continue;}
-    const route=[start,...continuationPath.slice(1)],samples=[];for(const sample of resample(route,.2,maxLength)){const [x,y]=sample.p;if(x<0||y<0||x>widthMM||y>heightMM)break;samples.push(sample);}
-    const gap=Math.abs(startZ-ground(...start)-roadRise),minimum=Math.max(width*2,2,gap/.12);let end=-1;
-    for(let i=1;i<samples.length;i++){const {p,s}=samples[i],delta=ground(...p)+roadRise-(startZ+grade*s);if(s>=Math.max(width*2,2)&&(delta>=0||s>=minimum&&Math.abs(delta)/s<.15)){end=i;break;}}
-    if(end<0){const last=samples.at(-1);missed.push({reason:'no gentle join',gap,grade,minimum,available:last?.s??0,finalDelta:last?ground(...last.p)+roadRise-(startZ+grade*last.s):null});continue;}
-    const selected=samples.slice(0,end+1),last=selected.at(-1),before=selected.at(-2),length=last.s,endZ=ground(...last.p)+roadRise,endGrade=(ground(...last.p)-ground(...before.p))/(last.s-before.s);
-    const sections=selected.map(({p,s},i)=>{const t=s/length,z=(2*t**3-3*t*t+1)*startZ+(t**3-2*t*t+t)*length*grade+(-2*t**3+3*t*t)*endZ+(t**3-t*t)*length*endGrade,direction=unit(selected[Math.max(0,i-1)].p,selected[Math.min(selected.length-1,i+1)].p),cross=section(p,direction,width+(roadWidth-width)*(t*t*(3-2*t)),z);
-      for(const q of [cross.left,cross.right])q[2]+=(top(...q.slice(0,2))==null?0:top(...q.slice(0,2))-startZ)*(1-t)**3+(ground(...q.slice(0,2))-ground(...p))*t**3;
-      return cross;
+    const continuationPath=continuation(path[0],dir,roads,axis.roadClass,maxLength,axis.identity);if(continuationPath.length<2){missed.push('no compatible mapped road');continue;}
+    // Keep the mapped endpoint: dropping it shortcuts the first bend of a join.
+    const route=[start,...continuationPath],samples=[];for(const sample of resample(route,.2,maxLength)){const [x,y]=sample.p;if(x<0||y<0||x>widthMM||y>heightMM)break;samples.push(sample);}
+    const lineAt=sample=>continuationPath.segments?.[sample.segment-1]?.line;
+    const landing=(sample,x=sample.p[0],y=sample.p[1])=>destinationSurface?destinationSurface(x,y,lineAt(sample)):ground(x,y);
+    const firstExternal=samples.find(s=>s.segment>0)||samples[0];
+    if(!forceConnections&&startZ<=landing(firstExternal)+roadRise+.03&&Math.abs(width-roadWidth)<.05)continue;
+    const gap=Math.abs(startZ-landing(firstExternal)-roadRise),minimum=Math.max(width*2,2,gap/.12);let end=-1;
+    for(let i=1;i<samples.length;i++){const sample=samples[i],{s}=sample,delta=landing(sample)+roadRise-(startZ+grade*s);if(s>=Math.max(width*2,2)&&(delta>=0||s>=minimum&&Math.abs(delta)/s<.15)){end=i;break;}}
+    if(end<0){const last=samples.at(-1);missed.push({reason:'no gentle join',gap,grade,minimum,available:last?.s??0,finalDelta:last?landing(last)+roadRise-(startZ+grade*last.s):null});continue;}
+    const selected=samples.slice(0,end+1),last=selected.at(-1),before=selected.at(-2),length=last.s,endZ=landing(last)+roadRise,endGrade=(landing(last)-landing(before))/(last.s-before.s);
+    const terminal=continuationPath.segments?.[last.segment-1],endWidth=terminal?.line.width??roadWidth;
+    const startDirection=unit(selected[0].p,selected[1].p),endDirection=unit(before.p,last.p);
+    const fractions=crossSectionFractions({centre:start,normal:[-startDirection[1],startDirection[0]],widthMM:width},{points,faces});
+    if(destinationBreaks)fractions.push(...destinationBreaks({centre:last.p,normal:[-endDirection[1],endDirection[0]],widthMM:endWidth,line:terminal?.line}));
+    const normalized=fractions.map(v=>Math.abs(v)<1e-9?0:Math.abs(v-.5)<1e-9?.5:Math.abs(v+.5)<1e-9?-.5:v);
+    const acrossFractions=normalized.filter((v,i,a)=>a.findIndex(q=>Math.abs(q-v)<1e-9)===i).sort((a,b)=>b-a);
+    const sections=selected.map(({p,s},i)=>{const t=s/length,z=(2*t**3-3*t*t+1)*startZ+(t**3-2*t*t+t)*length*grade+(-2*t**3+3*t*t)*endZ+(t**3-t*t)*length*endGrade,direction=unit(selected[Math.max(0,i-1)].p,selected[Math.min(selected.length-1,i+1)].p);
+      const widthAt=width+(endWidth-width)*(t*t*(3-2*t));
+      const across=acrossFractions.map(f=>{
+        const q=[p[0]-direction[1]*widthAt*f,p[1]+direction[0]*widthAt*f,z],own=top(q[0],q[1]);
+        q[2]+=(own==null?0:own-startZ)*(1-t)**3+(landing(selected[i],q[0],q[1])-landing(selected[i]))*t**3;return q;
+      });
+      return {left:across[0],right:across.at(-1),centre:across[acrossFractions.indexOf(0)],across};
     });
     if(sections.some(s=>[s.left,s.right].some(([x,y])=>x<0||y<0||x>widthMM||y>heightMM))){missed.push('approach outside crop');continue;}
-    plans.push({sections,footprint:footprint(sections),length,grade,endGrade,startZ,endZ,estimated:true});
+    const routingRepairs=continuationPath.segments?.slice(0,last.segment).filter(e=>e.estimatedRepair).map(e=>({from:e.from,to:e.to,sourceFeatureIds:e.line.sourceFeatureIds}))||[];
+    plans.push({sections,footprint:footprint(sections),length,grade,endGrade,startZ,endZ,startWidthMM:width,endWidthMM:endWidth,targetFeatureIds:terminal?.line.sourceFeatureIds,routingRepairs,estimated:true});
   }
   return {plans,missed};
 }

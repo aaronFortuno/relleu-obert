@@ -1,0 +1,1040 @@
+{
+  "date": "2026-11-02T20:48:23.904Z",
+  "commit": "c0c6e9e085db1a2e77ecbb4cac35bec65b7cb726",
+  "dirty": true,
+  "node": "v24.14.0",
+  "cpu": "AMD Ryzen 9 7900X 12-Core Processor            ",
+  "totalGB": 63.1030158996582,
+  "arguments": [
+    "1.2",
+    "150",
+    "36",
+    "--height-mm=200",
+    "--rotation=25",
+    "--centre=41.71792,1.78391",
+    "--surface-roads",
+    "--icgc",
+    "--tunnels",
+    "--verify",
+    "--export=output/RO-052-Rajadell-150x200mm-gir25.3mf"
+  ],
+  "heapMB": 1536,
+  "timeoutSeconds": 120,
+  "minimumFreeGB": 43.86449432373047,
+  "events": [
+    {
+      "phase": "model.buildings-supports",
+      "event": "start",
+      "elapsedMS": 3144,
+      "rssMB": 277.98046875
+    },
+    {
+      "phase": "model.buildings-supports",
+      "event": "end",
+      "milliseconds": 178.89750000000004,
+      "elapsedMS": 3323,
+      "rssMB": 317.3671875
+    }
+  ],
+  "progress": [
+    {
+      "elapsedMS": 676,
+      "message": "0s Delimitant costa i capes…"
+    },
+    {
+      "elapsedMS": 1305,
+      "message": "1s Calculant el camp d’altures…"
+    },
+    {
+      "elapsedMS": 1384,
+      "message": "1s Construint superfícies amb límits vectorials…"
+    },
+    {
+      "elapsedMS": 1520,
+      "message": "1s Construint terreny…"
+    },
+    {
+      "elapsedMS": 1890,
+      "message": "2s Construint camins i carreteres…"
+    },
+    {
+      "elapsedMS": 2405,
+      "message": "2s Construint ferrocarrils…"
+    },
+    {
+      "elapsedMS": 2411,
+      "message": "2s Construint sòl de bosc…"
+    },
+    {
+      "elapsedMS": 3142,
+      "message": "3s Construint prats i zones verdes…"
+    },
+    {
+      "elapsedMS": 3218,
+      "message": "3s Obrint els túnels estimats…"
+    },
+    {
+      "elapsedMS": 3366,
+      "message": "3s Actualitzant la capa d’edificis…"
+    },
+    {
+      "elapsedMS": 3377,
+      "message": "3s Connectant viaductes i situant pilars…"
+    },
+    {
+      "elapsedMS": 3531,
+      "message": "3s Actualitzant la capa de vegetació…"
+    }
+  ],
+  "result": {
+    "seconds": 3.323,
+    "dimensions": [
+      150,
+      200
+    ],
+    "scale": 8000,
+    "buildingSource": "icgc",
+    "estimatedTunnels": true,
+    "major": {
+      "enabled": false,
+      "applied": false,
+      "count": 0,
+      "omissions": []
+    },
+    "completion": [
+      {
+        "id": "ifc-114334",
+        "piers": 0,
+        "unsupported": 0,
+        "connections": 2,
+        "unconnectedEnds": []
+      },
+      {
+        "id": "ifc-114729",
+        "piers": 0,
+        "unsupported": 0,
+        "connections": 2,
+        "unconnectedEnds": []
+      },
+      {
+        "id": "ifc-127512",
+        "piers": 12,
+        "unsupported": 7.879108958048398,
+        "connections": 2,
+        "unconnectedEnds": []
+      },
+      {
+        "id": "ifc-132561",
+        "piers": 1,
+        "unsupported": 3.1816029892826583,
+        "connections": 2,
+        "unconnectedEnds": []
+      },
+      {
+        "id": "proc-bridge-0001",
+        "piers": 0,
+        "unsupported": 0.9802018531810641,
+        "connections": 2,
+        "unconnectedEnds": []
+      }
+    ],
+    "continuity": {
+      "widthPolicy": "shared width, then lanes, then road class; carriageway independent of structural deck and bore",
+      "minimumCarriagewayMM": 0.44,
+      "connections": [
+        {
+          "id": "ifc-114334",
+          "identity": {
+            "sourceFeatureIds": [
+              1580861062
+            ],
+            "ref": "",
+            "name": "",
+            "class": "minor",
+            "layer": 1,
+            "railway": false,
+            "oneway": 0
+          },
+          "carriagewayWidthMM": 0.49999999999999367,
+          "joins": [
+            {
+              "startWidthMM": 0.8658451080322267,
+              "endWidthMM": 0.49999999999999367,
+              "targetFeatureIds": [
+                1580861100
+              ],
+              "routingRepairs": []
+            },
+            {
+              "startWidthMM": 0.8639923095703128,
+              "endWidthMM": 0.49999999999999367,
+              "targetFeatureIds": [
+                457518890
+              ],
+              "routingRepairs": []
+            }
+          ],
+          "unconnectedEnds": []
+        },
+        {
+          "id": "ifc-114729",
+          "identity": {
+            "sourceFeatureIds": [
+              1580996772
+            ],
+            "ref": "",
+            "name": "",
+            "class": "track",
+            "layer": 1,
+            "railway": false,
+            "oneway": 0
+          },
+          "carriagewayWidthMM": 0.49999999999999367,
+          "joins": [
+            {
+              "startWidthMM": 0.7499015808105469,
+              "endWidthMM": 0.49999999999999367,
+              "targetFeatureIds": [
+                1427482180
+              ],
+              "routingRepairs": []
+            },
+            {
+              "startWidthMM": 0.7794818878173828,
+              "endWidthMM": 0.49999999999999367,
+              "targetFeatureIds": [
+                1427482180
+              ],
+              "routingRepairs": []
+            }
+          ],
+          "unconnectedEnds": []
+        },
+        {
+          "id": "ifc-127512",
+          "identity": {
+            "sourceFeatureIds": [
+              1820330482
+            ],
+            "ref": "",
+            "name": "",
+            "class": "trunk",
+            "layer": 5,
+            "railway": false,
+            "oneway": 0
+          },
+          "carriagewayWidthMM": 1.2499999999999842,
+          "joins": [
+            {
+              "startWidthMM": 1.4266384124755866,
+              "endWidthMM": 1.2499999999999842,
+              "targetFeatureIds": [
+                1820330450
+              ],
+              "routingRepairs": []
+            },
+            {
+              "startWidthMM": 1.425633621215821,
+              "endWidthMM": 1.2499999999999842,
+              "targetFeatureIds": [
+                1556025770
+              ],
+              "routingRepairs": [
+                {
+                  "from": [
+                    28.7889,
+                    147.03297
+                  ],
+                  "to": [
+                    28.79327445082935,
+                    147.03645849241082
+                  ],
+                  "sourceFeatureIds": [
+                    1556025770
+                  ]
+                },
+                {
+                  "from": [
+                    28.79327445082935,
+                    147.03645849241082
+                  ],
+                  "to": [
+                    28.18663,
+                    147.79717
+                  ],
+                  "sourceFeatureIds": [
+                    1556025770
+                  ]
+                },
+                {
+                  "from": [
+                    28.18663,
+                    147.79717
+                  ],
+                  "to": [
+                    25.80792,
+                    151.05258
+                  ],
+                  "sourceFeatureIds": [
+                    1556025770
+                  ]
+                }
+              ]
+            }
+          ],
+          "unconnectedEnds": []
+        },
+        {
+          "id": "ifc-132561",
+          "identity": {
+            "sourceFeatureIds": [
+              1820330422
+            ],
+            "ref": "",
+            "name": "",
+            "class": "trunk",
+            "layer": 1,
+            "railway": false,
+            "oneway": 0
+          },
+          "carriagewayWidthMM": 1.2499999999999842,
+          "joins": [
+            {
+              "startWidthMM": 1.588048171997071,
+              "endWidthMM": 1.2499999999999842,
+              "targetFeatureIds": [
+                1556025770
+              ],
+              "routingRepairs": []
+            },
+            {
+              "startWidthMM": 1.414252090454102,
+              "endWidthMM": 1.2499999999999842,
+              "targetFeatureIds": [
+                1556025770
+              ],
+              "routingRepairs": []
+            }
+          ],
+          "unconnectedEnds": []
+        },
+        {
+          "id": "proc-bridge-0001",
+          "identity": {
+            "sourceFeatureIds": [
+              3522318132
+            ],
+            "ref": "",
+            "name": "",
+            "class": "track",
+            "layer": null,
+            "railway": false,
+            "oneway": 0
+          },
+          "carriagewayWidthMM": 0.49999999999999367,
+          "joins": [
+            {
+              "startWidthMM": 0.49999008178710935,
+              "endWidthMM": 0.49999999999999367,
+              "targetFeatureIds": [
+                1820330500
+              ],
+              "routingRepairs": []
+            },
+            {
+              "startWidthMM": 0.49999008178710935,
+              "endWidthMM": 0.49999999999999367,
+              "targetFeatureIds": [
+                1820330500
+              ],
+              "routingRepairs": []
+            }
+          ],
+          "unconnectedEnds": []
+        }
+      ],
+      "portals": [
+        {
+          "end": "start",
+          "routing": "mapped",
+          "left": [
+            112.471046352104,
+            39.61880869304901,
+            19.22061424045176
+          ],
+          "right": [
+            113.65482806455665,
+            40.0202571421214,
+            19.611365096836984
+          ],
+          "centre": [
+            113.06293720833033,
+            39.81953291758521,
+            19.41598966864437
+          ],
+          "widthMM": 1.2499999999999842,
+          "targetFeatureIds": [
+            1820330450
+          ]
+        },
+        {
+          "end": "end",
+          "routing": "mapped",
+          "left": [
+            106.69005901572048,
+            54.03874255609187,
+            18.044386523483688
+          ],
+          "right": [
+            107.8229433372207,
+            54.567016267437545,
+            18.18352233356128
+          ],
+          "centre": [
+            107.2565011764706,
+            54.30287941176471,
+            18.113954428522483
+          ],
+          "widthMM": 1.2499999999999842,
+          "targetFeatureIds": [
+            1820330450
+          ]
+        }
+      ]
+    },
+    "tunnels": {
+      "enabled": true,
+      "estimated": true,
+      "method": "linear-dem-with-generated-surface-portal-ramps",
+      "section": "estimated-parabolic-arch",
+      "sectionWallHeightRatio": 0.55,
+      "sectionRoofSegments": 16,
+      "pavementThicknessMM": 0.3,
+      "minimumBaseMM": 2.5,
+      "minimumOpeningMM": 1.2,
+      "count": 1,
+      "omitted": 1,
+      "omissions": [
+        {
+          "id": "estimated-tunnel-2348018902",
+          "reason": "no es poden obrir tots dos portals amb una prolongació curta del perfil."
+        }
+      ],
+      "applied": true,
+      "consideredComponents": 8480,
+      "excavatedCandidateComponents": 41,
+      "materialization": "single-final-float32-per-material",
+      "discardedZeroVolumeComponents": 0,
+      "discardedZeroVolumeBeforeCutComponents": 0,
+      "discardedZeroVolumeAfterCutComponents": 0,
+      "discardedZeroVolumeByCategory": {},
+      "removedMM3": {
+        "terrain": 20.842639434060402,
+        "roads": 2.5178836862163463,
+        "forest": 0.14830121955574072,
+        "grass": 0.09504260420435529
+      },
+      "pavements": [
+        {
+          "category": "roads",
+          "thicknessMM": 0.3
+        }
+      ],
+      "profiles": [
+        {
+          "id": "estimated-tunnel-1820235140",
+          "sourceFeatureIds": [
+            1820235140
+          ],
+          "sourceEndpoints": [
+            [
+              1.784806251525879,
+              41.71300504763633,
+              302.6015625
+            ],
+            [
+              1.7848652601242065,
+              41.713878015999455,
+              298.3125
+            ]
+          ],
+          "pathMM": [
+            [
+              113.06293720833033,
+              39.81953291758521,
+              19.324889442289276
+            ],
+            [
+              112.98264751851585,
+              40.05628926007574,
+              19.27877411540157
+            ],
+            [
+              112.90235782870137,
+              40.293045602566266,
+              19.232658788513866
+            ],
+            [
+              112.82206813888688,
+              40.5298019450568,
+              19.18654346162616
+            ],
+            [
+              112.7417784490724,
+              40.76655828754733,
+              19.140428134738457
+            ],
+            [
+              112.66148875925792,
+              41.00331463003787,
+              19.094312807850752
+            ],
+            [
+              112.58119906944344,
+              41.2400709725284,
+              19.048197480963047
+            ],
+            [
+              112.50090937962895,
+              41.47682731501893,
+              19.002082154075342
+            ],
+            [
+              112.42061968981447,
+              41.71358365750947,
+              18.955966827187638
+            ],
+            [
+              112.34033,
+              41.95034,
+              18.909851500299933
+            ],
+            [
+              110.03616,
+              47.94637,
+              18.485217436415304
+            ],
+            [
+              107.76211,
+              53.2186,
+              18.105652281549943
+            ],
+            [
+              107.66098823529413,
+              53.43545588235294,
+              18.097475017764403
+            ],
+            [
+              107.55986647058825,
+              53.652311764705885,
+              18.089297753978865
+            ],
+            [
+              107.45874470588235,
+              53.86916764705882,
+              18.081120490193324
+            ],
+            [
+              107.35762294117647,
+              54.08602352941177,
+              18.072943226407787
+            ],
+            [
+              107.2565011764706,
+              54.30287941176471,
+              18.064765962622246
+            ]
+          ],
+          "estimated": true,
+          "elevationMethod": "linear-dem-with-generated-surface-portal-ramps",
+          "sectionProfile": "estimated-parabolic-arch",
+          "sectionMM": [
+            [
+              -0.6249999999999921,
+              0
+            ],
+            [
+              0.6249999999999921,
+              0
+            ],
+            [
+              0.6249999999999921,
+              0.66
+            ],
+            [
+              0.5468749999999931,
+              0.7865625
+            ],
+            [
+              0.4687499999999941,
+              0.8962500000000001
+            ],
+            [
+              0.39062499999999506,
+              0.9890625
+            ],
+            [
+              0.31249999999999606,
+              1.065
+            ],
+            [
+              0.23437499999999706,
+              1.1240625
+            ],
+            [
+              0.15624999999999803,
+              1.16625
+            ],
+            [
+              0.07812499999999901,
+              1.1915625
+            ],
+            [
+              0,
+              1.2
+            ],
+            [
+              -0.07812499999999901,
+              1.1915625
+            ],
+            [
+              -0.15624999999999803,
+              1.16625
+            ],
+            [
+              -0.23437499999999706,
+              1.1240625
+            ],
+            [
+              -0.31249999999999606,
+              1.065
+            ],
+            [
+              -0.39062499999999506,
+              0.9890625
+            ],
+            [
+              -0.4687499999999941,
+              0.8962500000000001
+            ],
+            [
+              -0.5468749999999931,
+              0.7865625
+            ],
+            [
+              -0.6249999999999921,
+              0.66
+            ]
+          ],
+          "pavementCategory": "roads",
+          "pavementThicknessMM": 0.3,
+          "minimumBaseMM": 2.5,
+          "widthMM": 1.2499999999999842,
+          "carriagewayWidthMM": 1.2499999999999842,
+          "pavementSections": [
+            {
+              "left": [
+                112.471046352104,
+                39.61880869304901,
+                19.22061424045176
+              ],
+              "right": [
+                113.65482806455665,
+                40.0202571421214,
+                19.611365096836984
+              ]
+            },
+            {
+              "left": [
+                112.39075666228952,
+                39.85556503553954,
+                19.17807488070526
+              ],
+              "right": [
+                113.57453837474218,
+                40.25701348461193,
+                19.555425501960674
+              ]
+            },
+            {
+              "left": [
+                112.31046697247504,
+                40.09232137803006,
+                19.141543145755982
+              ],
+              "right": [
+                113.4942486849277,
+                40.493769827102476,
+                19.48298113686351
+              ]
+            },
+            {
+              "left": [
+                112.23017728266055,
+                40.329077720520594,
+                19.109302571376148
+              ],
+              "right": [
+                113.4139589951132,
+                40.73052616959301,
+                19.39874765018002
+              ]
+            },
+            {
+              "left": [
+                112.14988759284607,
+                40.56583406301114,
+                19.079636693337985
+              ],
+              "right": [
+                113.33366930529873,
+                40.96728251208353,
+                19.307440690544734
+              ]
+            },
+            {
+              "left": [
+                112.06959790303159,
+                40.802590405501675,
+                19.050829047413707
+              ],
+              "right": [
+                113.25337961548425,
+                41.204038854574065,
+                19.213775906592183
+              ]
+            },
+            {
+              "left": [
+                111.98930821321713,
+                41.03934674799219,
+                19.021163169375544
+              ],
+              "right": [
+                113.17308992566976,
+                41.44079519706461,
+                19.122468946956896
+              ]
+            },
+            {
+              "left": [
+                111.90901852340262,
+                41.27610309048272,
+                18.98892259499571
+              ],
+              "right": [
+                113.09280023585528,
+                41.67755153955514,
+                19.038235460273405
+              ]
+            },
+            {
+              "left": [
+                111.82872883358814,
+                41.51285943297327,
+                18.95239086004643
+              ],
+              "right": [
+                113.0125105460408,
+                41.91430788204566,
+                18.965791095176243
+              ]
+            },
+            {
+              "left": [
+                111.7524472449082,
+                41.737796781429395,
+                18.909851500299933
+              ],
+              "right": [
+                112.92821275509179,
+                42.1628832185706,
+                18.909851500299933
+              ]
+            },
+            {
+              "left": [
+                109.45727573627036,
+                47.71041044315474,
+                18.485217436415304
+              ],
+              "right": [
+                110.61504426372963,
+                48.18232955684526,
+                18.485217436415304
+              ]
+            },
+            {
+              "left": [
+                107.19182220082727,
+                52.96271012573392,
+                18.105652281549943
+              ],
+              "right": [
+                108.33239779917274,
+                53.474489874266084,
+                18.105652281549943
+              ]
+            },
+            {
+              "left": [
+                107.09454607454401,
+                53.17131902668011,
+                18.095355556093992
+              ],
+              "right": [
+                108.22743039604424,
+                53.69959273802577,
+                18.109825680342063
+              ]
+            },
+            {
+              "left": [
+                106.99342430983813,
+                53.38817490903304,
+                18.08212419140209
+              ],
+              "right": [
+                108.12630863133836,
+                53.91644862037873,
+                18.131099996549406
+              ]
+            },
+            {
+              "left": [
+                106.89230254513224,
+                53.60503079138598,
+                18.06791461363154
+              ],
+              "right": [
+                108.02518686663247,
+                54.13330450273167,
+                18.15807461856182
+              ]
+            },
+            {
+              "left": [
+                106.79118078042636,
+                53.82188667373894,
+                18.05468324893964
+              ],
+              "right": [
+                107.92406510192659,
+                54.3501603850846,
+                18.179348934769163
+              ]
+            },
+            {
+              "left": [
+                106.69005901572048,
+                54.03874255609187,
+                18.044386523483688
+              ],
+              "right": [
+                107.8229433372207,
+                54.567016267437545,
+                18.18352233356128
+              ]
+            }
+          ],
+          "boreSectionMM": [
+            [
+              -0.6249999999999921,
+              0
+            ],
+            [
+              0.6249999999999921,
+              0
+            ],
+            [
+              0.6249999999999921,
+              0.66
+            ],
+            [
+              0.5468749999999931,
+              0.7865625
+            ],
+            [
+              0.4687499999999941,
+              0.8962500000000001
+            ],
+            [
+              0.39062499999999506,
+              0.9890625
+            ],
+            [
+              0.31249999999999606,
+              1.065
+            ],
+            [
+              0.23437499999999706,
+              1.1240625
+            ],
+            [
+              0.15624999999999803,
+              1.16625
+            ],
+            [
+              0.07812499999999901,
+              1.1915625
+            ],
+            [
+              0,
+              1.2
+            ],
+            [
+              -0.07812499999999901,
+              1.1915625
+            ],
+            [
+              -0.15624999999999803,
+              1.16625
+            ],
+            [
+              -0.23437499999999706,
+              1.1240625
+            ],
+            [
+              -0.31249999999999606,
+              1.065
+            ],
+            [
+              -0.39062499999999506,
+              0.9890625
+            ],
+            [
+              -0.4687499999999941,
+              0.8962500000000001
+            ],
+            [
+              -0.5468749999999931,
+              0.7865625
+            ],
+            [
+              -0.6249999999999921,
+              0.66
+            ]
+          ],
+          "portalRouting": [
+            "mapped",
+            "mapped"
+          ],
+          "portalConnections": [
+            {
+              "end": "start",
+              "routing": "mapped",
+              "left": [
+                112.471046352104,
+                39.61880869304901,
+                19.22061424045176
+              ],
+              "right": [
+                113.65482806455665,
+                40.0202571421214,
+                19.611365096836984
+              ],
+              "centre": [
+                113.06293720833033,
+                39.81953291758521,
+                19.41598966864437
+              ],
+              "widthMM": 1.2499999999999842,
+              "targetFeatureIds": [
+                1820330450
+              ]
+            },
+            {
+              "end": "end",
+              "routing": "mapped",
+              "left": [
+                106.69005901572048,
+                54.03874255609187,
+                18.044386523483688
+              ],
+              "right": [
+                107.8229433372207,
+                54.567016267437545,
+                18.18352233356128
+              ],
+              "centre": [
+                107.2565011764706,
+                54.30287941176471,
+                18.113954428522483
+              ],
+              "widthMM": 1.2499999999999842,
+              "targetFeatureIds": [
+                1820330450
+              ]
+            }
+          ],
+          "heightMM": 1.2,
+          "portalAdjustmentMM": [
+            0.2662990826331786,
+            0.038201133568819046
+          ],
+          "portalAdjustmentMetres": [
+            1.4202617740436372,
+            0.20373937903370418
+          ],
+          "maximumPortalAdjustmentMetres": 25,
+          "portalRampGrades": [
+            0.18446130755081924,
+            -0.0341753014394398
+          ],
+          "maximumPortalRampGrade": 0.25,
+          "portalExtensionMM": [
+            2.25,
+            1.196370396326995
+          ],
+          "portalExtensionMetres": [
+            18.000000000000227,
+            9.57096317061608
+          ]
+        }
+      ]
+    },
+    "audit": [
+      {
+        "id": "terrain",
+        "errors": [],
+        "triangles": 46714
+      },
+      {
+        "id": "buildings",
+        "errors": [],
+        "triangles": 812
+      },
+      {
+        "id": "roads",
+        "errors": [],
+        "triangles": 46548
+      },
+      {
+        "id": "forest",
+        "errors": [],
+        "triangles": 40588
+      },
+      {
+        "id": "grass",
+        "errors": [],
+        "triangles": 6310
+      },
+      {
+        "id": "inland-water",
+        "errors": [],
+        "triangles": 8
+      },
+      {
+        "id": "railways",
+        "errors": [],
+        "triangles": 696
+      }
+    ],
+    "exportPath": "output/RO-052-Rajadell-150x200mm-gir25.3mf"
+  },
+  "wallSeconds": 4.016,
+  "exitCode": 0,
+  "signal": null,
+  "stopReason": null,
+  "stderr": ""
+}

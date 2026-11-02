@@ -41,7 +41,7 @@ test('width: attribute, lanes or class table, with physical minimum and absurd v
   assert.equal(byId.a.widthMetres,10);
   assert(Math.abs(byId.b.widthMetres-4.4)<1e-9); // minWidthMM/scale = .44/.1
   assert(Math.abs(byId.c.widthMetres-9.6)<1e-9); // 3 carrils * 3.2
-  assert.equal(byId.d.widthMetres,8); // amplada absurda rebutjada → classe primary
+  assert.equal(byId.d.widthMetres,10); // amplada absurda rebutjada → política comuna primary
   assert.equal(warnings.length,1);assert.match(warnings[0],/rebutjada/);
   // amplada geomètrica del tauler ≈ widthMetres en pla mètric local
   const [L,R]=byId.a.coordinates;
@@ -75,6 +75,33 @@ test('duplicate and reversed fragments dedupe; contiguous fragments of one road 
   assert.equal(items.length,1);assert.deepEqual(warnings,[]);
   assert.deepEqual(items[0].axis,[[0,0],[0.001,0],[0.002,0]]);
   assert.deepEqual([...items[0].sourceFeatureIds].sort(),['a','b']);
+});
+
+test('connected fragments keep real width changes and route identities independent of input order',()=>{
+  const a=bridge([[0,0],[.002,0]],{name:'Same road',ref:'C-1',width:6},'narrow');
+  const b=bridge([[.002,0],[.004,0]],{name:'Same road',ref:'C-1',width:10},'wide');
+  const direct=generateProceduralBridgeItems([a,b],flat,{scale:.1}).items;
+  assert.equal(direct.length,2,'different measured widths were merged into one arbitrary width');
+  assert.deepEqual(direct.map(p=>p.widthMetres),[6,10]);
+  assert.deepEqual(generateProceduralBridgeItems([b,a],flat,{scale:.1}).items,direct);
+  const other={...b,properties:{...b.properties,width:6,ref:'C-2'}};
+  assert.equal(generateProceduralBridgeItems([a,other],flat).items.length,2,'different route refs were joined');
+});
+
+test('overlapping bridge axes with different lane widths are not deduplicated',()=>{
+  const a=bridge([[0,0],[.002,0]],{name:'Lane change',lanes:2},'two');
+  const b=bridge([[.002,0],[0,0]],{name:'Lane change',lanes:3},'three');
+  const direct=generateProceduralBridgeItems([a,b],flat).items;
+  assert.equal(direct.length,2);assert.deepEqual(direct.map(p=>p.sourceWidthMetres).sort((x,y)=>x-y),[6.4,9.6]);
+  assert.deepEqual(generateProceduralBridgeItems([b,a],flat).items,direct);
+});
+
+test('equivalent explicit and lane widths join without a floating-point width boundary',()=>{
+  const a=bridge([[0,0],[.002,0]],{name:'Same',ref:'C-1',width:9.6},'explicit');
+  const b=bridge([[.002,0],[.004,0]],{name:'Same',ref:'C-1',lanes:3},'lanes');
+  const items=generateProceduralBridgeItems([a,b],flat).items;
+  assert.equal(items.length,1);assert.equal(items[0].sourceWidthMetres,9.6);
+  assert.deepEqual(items[0].sourceFeatureIds,['explicit','lanes']);
 });
 
 test('identical XY with different layer/class/name are kept as separate bridges; a reversed duplicate in the same group is still removed',()=>{

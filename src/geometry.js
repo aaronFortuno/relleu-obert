@@ -20,7 +20,10 @@ import {auditPart} from './solid-audit.js';
 import {generateProceduralBridgeItems} from './procedural-bridges.js';
 import {generateProceduralTunnelVoids} from './procedural-tunnels.js';
 import {carveTerrainTunnels} from './tunnel-operations.js';
-import {generateMajorRoadItems,majorRoadWidthMetres} from './major-roads.js';
+import {generateMajorRoadItems} from './major-roads.js';
+import {roadWidthMM} from './transport-width.js';
+import {transportIdentity,compatibleTransport,continuationRoute} from './transport-network.js';
+import {crossSectionFractions} from './transport-sections.js';
 import {fitMajorRoadItem,knownBridgeClearance} from './major-road-fit.js';
 import {carveTransportDecks} from './transport-carving.js';
 export {sampleHeight} from './elevation.js';
@@ -168,11 +171,13 @@ export function buildModel(data,options={},progress=()=>{},infrastructureApi=nul
     if(layer==='water'){water.push(...polys.map(p=>[p]));if(p.class==='ocean')ocean.push(...polys.map(p=>[p]));}
     if((layer==='landcover'&&['wood','grass','scrub'].includes(p.class))||(layer==='landuse'&&['park','forest','grass','cemetery','recreation_ground'].includes(p.class)))green.push(...polys.map(p=>[p]));
     if(['wood','forest','scrub'].includes(p.class))woods.push(...polys.map(p=>[p]));
-    if(layer==='transportation'&&!isInactiveRailway(p)&&p.brunnel!=='tunnel'&&f.geometry.type.includes('LineString')){
+    if(layer==='transportation'&&!isInactiveRailway(p)&&f.geometry.type.includes('LineString')){
       const lines=f.geometry.type==='LineString'?[f.geometry.coordinates]:f.geometry.coordinates;
-      const railway=isRailway(p),majorWidth=options.majorRoads===true?majorRoadWidthMetres(p):null,r=Math.max(.22,(railway?railwayWidthMetres(p)/2:majorWidth?majorWidth/2:['primary','secondary','tertiary'].includes(p.class)?5:2)*scale);
+      const railway=isRailway(p),r=railway?Math.max(.22,railwayWidthMetres(p)*scale/2):roadWidthMM(p,scale)/2;
       for(const line of lines){
-        transport.push({points:line.map(project),class:railway?'rail':p.class,brunnel:p.brunnel,width:r*2,railway});
+        const identity=transportIdentity(p,f.id??featureIndex);
+        transport.push({...identity,identity,properties:p,points:line.map(project),class:railway?'rail':p.class,brunnel:p.brunnel,width:r*2,railway});
+        if(p.brunnel==='tunnel')continue;
         if(p.brunnel==='bridge'&&intersect(lineBuffer(line.map(project),.05,[width,height]),deckMask).length)continue;
         const buffers=lineBuffer(line.map(project),r,[width,height]);
         if(railway)rails.push(...buffers.map(p=>[p]));
@@ -226,11 +231,6 @@ export function buildModel(data,options={},progress=()=>{},infrastructureApi=nul
     const restored=measure('major.fallback',()=>buildModel(data,{...options,majorRoads:false},progress,infrastructureApi,diagnostics),{reason:message});restored.warnings.unshift(message);
     restored.provenance.majorRoads={...majorMetadata,attempted:majorMetadata.count,count:0,applied:false,error:message};restored.context.meta.majorRoads=restored.provenance.majorRoads;return restored;
   };
-  const majorTargets=acceptedMajor.map(item=>({contains:polygonTester(intersect(item.outlines.map(r=>[r.map(project)]),land)),top:topSampler(projectInfrastructurePath(item.coordinates,proj,verticalReference,exaggeration).map(([x,y,z])=>[x,y,z+item.generatedSurfaceAdjustmentMM]),item.faces)}));
-  const roadSurfaceGround=(x,y)=>{
-    for(const item of majorTargets)if(item.contains([x,y])){const z=item.top(x,y);if(z!=null)return Math.max(ground(x,y),z);}
-    return ground(x,y);
-  };
   const aggregates=CATEGORIES.map(m=>({...m,vertices:[],faces:[]}));const add=(id,mesh)=>append(aggregates[id],mesh);
   const bridges=[];
   for(const item of deckItems){
@@ -245,9 +245,12 @@ export function buildModel(data,options={},progress=()=>{},infrastructureApi=nul
     let axis=item.axis?.map(project)||(matches[0]?.score>0?matches[0].t.points:null);
     if(!axis){const center=points.reduce((a,p)=>[a[0]+p[0]/points.length,a[1]+p[1]/points.length],[0,0]),xx=points.reduce((n,p)=>n+(p[0]-center[0])**2,0),yy=points.reduce((n,p)=>n+(p[1]-center[1])**2,0),xy=points.reduce((n,p)=>n+(p[0]-center[0])*(p[1]-center[1]),0),angle=Math.atan2(2*xy,xx-yy)/2,d=[Math.cos(angle),Math.sin(angle)],positions=points.map(p=>(p[0]-center[0])*d[0]+(p[1]-center[1])*d[1]);axis=[Math.min(...positions),Math.max(...positions)].map(s=>[center[0]+s*d[0],center[1]+s*d[1]]);}
     axis=axis.slice();axis.roadClass=item.roadClass||matches[0]?.t.class;
-    const approaches=planApproaches({axis,points,faces:item.faces,containsDeck:contains,roads:transport.filter(t=>t.railway===railway),ground:item.mainRoad||railway?ground:roadSurfaceGround,roadRise:surfaceRise,scale,widthMM:width,heightMM:height,roadWidth:item.mainRoad?item.widthMetres*scale:matches[0]?.t.width||.44});
+    const identity=!item.sourceFeatureIds?.length&&matches[0]?.score>0?{...matches[0].t.identity}:transportIdentity({class:item.roadClass,ref:item.ref,name:item.name,oneway:item.oneway,layer:item.layer,railway},null);
+    if(item.sourceFeatureIds?.length)identity.sourceFeatureIds=item.sourceFeatureIds;
+    const roadWidth=item.mainRoad?item.widthMetres*scale:matches[0]?.t.width||.44;
     const layout=data.infrastructure?.layouts?.items?.[item.id],pierAxis=layout?.start==='south'&&proj.unproject(axis[0])[1]>proj.unproject(axis.at(-1))[1]?axis.slice().reverse():axis;
-    bridges.push({id:item.id,mesh,axis:pierAxis,top,mask,contains,approaches,layout,railway,category,thickness,surfaceRise,mainRoad:!!item.mainRoad,generatedSurfaceAdjustmentMM:item.generatedSurfaceAdjustmentMM||0,maximumPrintedLiftMetres:item.maximumPrintedLiftMetres,estimated:!!item.estimated,elevationMethod:item.elevationMethod,widthMetres:item.widthMetres,sourceFeatureIds:item.sourceFeatureIds});
+    pierAxis.identity=identity;pierAxis.roadClass=axis.roadClass;
+    bridges.push({id:item.id,mesh,axis:pierAxis,points,sourceFaces:item.faces,identity,roadWidth,top,mask,contains,approaches:{plans:[],missed:[]},layout,railway,category,thickness,surfaceRise,mainRoad:!!item.mainRoad,generatedSurfaceAdjustmentMM:item.generatedSurfaceAdjustmentMM||0,maximumPrintedLiftMetres:item.maximumPrintedLiftMetres,estimated:!!item.estimated,elevationMethod:item.elevationMethod,widthMetres:item.widthMetres,sourceFeatureIds:item.sourceFeatureIds});
   }
   for(const bridge of bridges){
     if(!bridge.mainRoad){bridge.supportRoadPoly=sourceRoadPoly;continue;}
@@ -256,6 +259,26 @@ export function buildModel(data,options={},progress=()=>{},infrastructureApi=nul
       return merge([...other.map(p=>[p]),railPoly,mappedDeckMask].filter(p=>p.length));
     },{id:bridge.id}));
   }
+  const matchesLine=(structure,line)=>{
+    if(!line)return false;
+    const ids=new Set((structure.sourceFeatureIds||structure.identity?.sourceFeatureIds||[]).map(String));
+    return (line.sourceFeatureIds||line.identity?.sourceFeatureIds||[]).some(id=>ids.has(String(id)));
+  };
+  const exteriorSurface=(x,y,railway,properties={},routeLine=null,excludedID=null)=>{
+    const identity=transportIdentity(properties);
+    for(const bridge of bridges)if(bridge.id!==excludedID&&bridge.railway===railway&&matchesLine(bridge,routeLine)&&compatibleTransport(identity,bridge.identity)){const z=bridge.top(x,y);if(z!=null)return z;}
+    return ground(x,y)+roadRise+(railway?railRise:0);
+  };
+  const exteriorBreaks=section=>{
+    const fractions=crossSectionFractions(section,{fieldWidth:width,fieldHeight:height,resolution});
+    for(const bridge of bridges)if(matchesLine(bridge,section.line))fractions.push(...crossSectionFractions(section,{points:bridge.points,faces:bridge.sourceFaces}));
+    return fractions;
+  };
+  const tunnelVoids=generateProceduralTunnelVoids(data.features,elevationAt,{enabled:options.estimatedTunnels===true,projection:proj,verticalReference,exaggeration,ground,surfaceRiseMM:roadRise,railSurfaceRiseMM:roadRise+railRise,waterMask:waterPoly,surfaceAt:exteriorSurface,surfaceBreaks:exteriorBreaks,portalRoute:({point,outward,properties,sourceFeatureIds,maxLengthMM})=>{
+    const own=new Set(sourceFeatureIds),lines=transport.filter(t=>t.brunnel!=='tunnel'&&!t.sourceFeatureIds?.some(id=>own.has(id)));
+    const route=continuationRoute(point,outward,lines,transportIdentity(properties),maxLengthMM,{allowStructures:true});return route.segments.length?route:null;
+  }});
+  warnings.push(...tunnelVoids.warnings);
   const deckCount=bridges.length;
   const proceduralCount=bridges.filter(b=>b.estimated&&!b.mainRoad).length,knownCount=bridges.filter(b=>!b.estimated).length;
   if(knownCount)warnings.push(`${knownCount} taulers amb cota de la font específica. Pilars i enllaços simplificats per imprimir. El datum vertical de l’ICGC no s’ha transformat al del relleu.`);
@@ -278,8 +301,6 @@ export function buildModel(data,options={},progress=()=>{},infrastructureApi=nul
     warnings.push(...carved.warnings);
     staticBase=carved.parts;majorMetadata={...majorMetadata,applied:true,materialReplacement:carved.metadata,profiles:acceptedMajor.map(({coordinates,faces,outlines,axis,...p})=>p)};
   }
-  const tunnelVoids=generateProceduralTunnelVoids(data.features,(lon,lat)=>localHeight?localHeight(lon,lat):sampleHeight(prepared.tiles,lon,lat),{enabled:options.estimatedTunnels===true,projection:proj,verticalReference,exaggeration,ground,surfaceRiseMM:roadRise,railSurfaceRiseMM:roadRise+railRise,waterMask:waterPoly});
-  warnings.push(...tunnelVoids.warnings);
   let tunnelMetadata=tunnelVoids.metadata,tunnelMask=[];
   if(tunnelVoids.items.length){
     progress('Obrint els túnels estimats…');
@@ -293,11 +314,32 @@ export function buildModel(data,options={},progress=()=>{},infrastructureApi=nul
       bridge.mesh=opened.parts[0];
     }
   }
+  // A final connection pass sees every accepted structure and opened portal,
+  // independent of feature order. It does not alter surveyed deck coordinates.
+  const floorTargets=tunnelMetadata.applied?tunnelVoids.items.map(t=>{
+    const rows=t.pavementSections.map(s=>s.across||[s.left,s.right]),n=rows[0].length,points=rows.flat(),faces=[];
+    for(let i=0;i<rows.length-1;i++)for(let j=0;j<n-1;j++){const a=i*n+j;faces.push(a,a+1,a+n,a+1,a+n+1,a+n);}
+    return {top:topSampler(points,faces),points,faces,identity:t.roadIdentity||transportIdentity(data.features.find((f,i)=>t.sourceFeatureIds.includes(f.id??i))?.properties),sourceFeatureIds:t.sourceFeatureIds,railway:t.pavementCategory==='railways'};
+  }):[];
+  for(const bridge of bridges){
+    const destination=(x,y,line)=>{
+      for(const floor of floorTargets)if(floor.railway===bridge.railway&&matchesLine(floor,line)&&compatibleTransport(bridge.identity,floor.identity)){const z=floor.top(x,y);if(z!=null)return z-bridge.surfaceRise;}
+      return exteriorSurface(x,y,bridge.railway,bridge.identity,line,bridge.id)-bridge.surfaceRise;
+    };
+    const own=new Set(bridge.sourceFeatureIds||bridge.identity.sourceFeatureIds),lines=transport.filter(t=>t.railway===bridge.railway&&!t.sourceFeatureIds?.some(id=>own.has(id))&&(t.brunnel!=='tunnel'||floorTargets.some(f=>matchesLine(f,t))));
+    const destinationBreaks=section=>{
+      const fractions=exteriorBreaks(section);
+      for(const floor of floorTargets)if(matchesLine(floor,section.line))fractions.push(...crossSectionFractions(section,{points:floor.points,faces:floor.faces}));
+      return fractions;
+    };
+    bridge.approaches=planApproaches({axis:bridge.axis,points:bridge.points,faces:bridge.sourceFaces,containsDeck:bridge.contains,roads:lines,ground,destinationSurface:destination,destinationBreaks,forceConnections:true,roadRise:bridge.surfaceRise,scale,widthMM:width,heightMM:height,roadWidth:bridge.roadWidth});
+  }
   warnings.push('Els arbres són una representació procedimental dins de zones verdes, no posicions d’arbres mesurades.');
   warnings.push('Les tessel·les vectorials estan generalitzades. Aquesta prova no substitueix cartografia topogràfica de precisió.');
   const containsGroundRoad=polygonTester(roadPoly),approachMask=merge(bridges.flatMap(b=>b.approaches.plans.map(p=>intersect(p.footprint,rect))).filter(p=>p.length)),containsApproach=polygonTester(approachMask);
   const context={ground,verticalReference,proj,rect,forest,land,roadPoly,roadOnlyPoly,railPoly,waterPoly,bridges,tunnelMask,infrastructureApi,containsForest:polygonTester(forest),containsLand:polygonTester(land),containsRoad:p=>containsDeck(p)||containsApproach(p)||containsGroundRoad(p),width,height,scale,staticWarnings:warnings,options:{...options,size,exaggeration,resolution,roadRise,railRise},meta:{...data.meta,tunnels:tunnelMetadata,railways:{incrementMM:railRise,surfaceRiseMM:roadRise+railRise,method:'cartographic railway platform; physical millimetres, no vertical exaggeration',groundPresent:railPoly.length>0,bridges:bridges.filter(b=>b.railway).length},infrastructure:deckCount?{...data.infrastructure,provider:knownCount?'Specific overrides and estimated transport platforms':'Estimated transport platforms from OSM/DEM',items:undefined,count:deckCount,knownCount,proceduralCount,deckProfiles:bridges.map(b=>({id:b.id,mainRoad:b.mainRoad,generatedSurfaceAdjustmentMM:b.generatedSurfaceAdjustmentMM,estimated:b.estimated,elevationMethod:b.elevationMethod,widthMetres:b.widthMetres,sourceFeatureIds:b.sourceFeatureIds,railway:b.railway,surfaceRiseMM:b.surfaceRise,printableThicknessMM:b.thickness})),printableThicknessMM:.6+roadRise,railwayPrintableThicknessMM:bridges.some(b=>b.railway)?.6+roadRise+railRise:undefined}:null},diagnostics:prepared.diagnostics,staticBase};
   context.meta.majorRoads=majorMetadata;
+  context.meta.transportContinuity={widthPolicy:'shared width, then lanes, then road class; carriageway independent of structural deck and bore',minimumCarriagewayMM:.44,connections:bridges.map(b=>({id:b.id,identity:b.identity,carriagewayWidthMM:b.roadWidth,joins:b.approaches.plans.map(p=>({startWidthMM:p.startWidthMM,endWidthMM:p.endWidthMM,targetFeatureIds:p.targetFeatureIds,routingRepairs:p.routingRepairs})),unconnectedEnds:b.approaches.missed})),portals:tunnelMetadata.applied?tunnelVoids.items.flatMap(t=>t.portalConnections||[]):[]};
   if(context.meta.infrastructure)context.meta.infrastructure.mainRoadCount=majorDecks.length;
   const model=measure('model.buildings-supports',()=>updateBuildings({context},{features:data.features,meta:context.meta},options,progress));
   if(model.provenance.majorRoads?.completion?.some(p=>p.unsupportedSpans?.length))return fallbackMajor('Algunes vies principals no tenen espai segur per als suports; es recuperen els camins sobre el terreny.');
@@ -307,7 +349,7 @@ export function buildModel(data,options={},progress=()=>{},infrastructureApi=nul
 export function updateBuildings(previous,layer={},changes={},progress=()=>{}){
   if(!previous.context)throw Error('Cal generar primer el terreny.');
   const old=previous.context,options={...old.options,...changes},config=buildingOptions(options),{buildingMode,maxBuildingHeight}=config;
-  const ctx={...old,options:{...options,...config},meta:{...(layer.meta||old.meta),infrastructure:old.meta.infrastructure,tunnels:old.meta.tunnels,railways:old.meta.railways,majorRoads:old.meta.majorRoads},buildingFeatures:layer.features||old.buildingFeatures,vegetationCache:null};
+  const ctx={...old,options:{...options,...config},meta:{...(layer.meta||old.meta),infrastructure:old.meta.infrastructure,tunnels:old.meta.tunnels,railways:old.meta.railways,majorRoads:old.meta.majorRoads,transportContinuity:old.meta.transportContinuity},buildingFeatures:layer.features||old.buildingFeatures,vegetationCache:null};
   const {width,height,ground,scale,rect,land}=ctx,res=options.resolution;
   const mesh={vertices:[],faces:[]},clipped=[],warnings=[...ctx.staticWarnings,...(ctx.meta.sourceWarnings||[])];
   let buildingCount=0,approximate=0,limited=0,shapedRoofs=0,fallbackRoofs=0;const volumes=[];
@@ -347,7 +389,7 @@ export function updateBuildings(previous,layer={},changes={},progress=()=>{}){
         let connectedComponents=null;
         if(ctx.infrastructureApi){const united=uniteMaterials({parts:pieces.map(p=>({...p,...CATEGORIES[bridge.category]}))},ctx.infrastructureApi);connectedComponents=0;for(const part of united.parts){connectedComponents+=auditPart(part).components;append(bridge.railway?rails:roads,part);}}
         else for(const part of pieces)append(bridge.railway?rails:roads,part);
-        stats.push({id:bridge.id,mainRoad:bridge.mainRoad,kind:bridge.mainRoad?'major-road-envelope':'mapped-bridge',generatedSurfaceAdjustmentMM:bridge.generatedSurfaceAdjustmentMM,railway:bridge.railway,surfaceRiseMM:bridge.surfaceRise,piers:support.piers,omittedPiers:support.omitted,spacingMM:support.spacing,maxSpanMM:support.maxSpanMM,maxUnsupportedSpanMM:support.maxUnsupportedSpanMM,unsupportedSpans:support.unsupportedSpans,auxiliaryPiers:support.auxiliaryPiers,layoutBasis:bridge.layout?'project span layout, aligned approximately to mapped axis':'procedural print supports',approaches:bridge.approaches.plans.map(p=>({lengthMM:p.length,initialGrade:p.grade,finalGrade:p.endGrade,sections:p.sections})),unconnectedEnds:bridge.approaches.missed,connectedComponents,estimated:true});
+        stats.push({id:bridge.id,mainRoad:bridge.mainRoad,kind:bridge.mainRoad?'major-road-envelope':'mapped-bridge',generatedSurfaceAdjustmentMM:bridge.generatedSurfaceAdjustmentMM,railway:bridge.railway,surfaceRiseMM:bridge.surfaceRise,piers:support.piers,omittedPiers:support.omitted,spacingMM:support.spacing,maxSpanMM:support.maxSpanMM,maxUnsupportedSpanMM:support.maxUnsupportedSpanMM,unsupportedSpans:support.unsupportedSpans,auxiliaryPiers:support.auxiliaryPiers,layoutBasis:bridge.layout?'project span layout, aligned approximately to mapped axis':'procedural print supports',approaches:bridge.approaches.plans.map(p=>({lengthMM:p.length,initialGrade:p.grade,finalGrade:p.endGrade,startWidthMM:p.startWidthMM,endWidthMM:p.endWidthMM,targetFeatureIds:p.targetFeatureIds,routingRepairs:p.routingRepairs,sections:p.sections})),unconnectedEnds:bridge.approaches.missed,connectedComponents,estimated:true});
       }
       ctx.bridgeCache={key:bridgeKey,roads:{...CATEGORIES[3],vertices:new Float32Array(roads.vertices),faces:new Uint32Array(roads.faces)},railways:{...CATEGORIES[8],vertices:new Float32Array(rails.vertices),faces:new Uint32Array(rails.faces)},stats};
     }

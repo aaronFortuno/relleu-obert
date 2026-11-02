@@ -78,6 +78,70 @@ test('processing budgets are explicit and invalid options fail before geometry',
   for(const bad of [{maxTunnels:25},{minBaseMM:0},{minOpeningMM:.1},{exaggeration:NaN}])assert.throws(()=>generateProceduralTunnelVoids(features,flat,{...options,...bad}),/invàlida/);
 });
 
+test('RO-052 keeps carriageway width separate from the printable opening and matches both portal edges',()=>{
+  const projection={width:100,height:80,scale:.1,project:([x,y])=>[x*10000,y*10000]},ground=(x,y)=>(x>25&&x<75?20:5)+.2*(y-40);
+  const r=generateProceduralTunnelVoids([feature([[.002,.004],[.008,.004]],{width:6,ref:'C-1'})],()=>100,{enabled:true,projection,ground,verticalReference:{originMeters:100,minimumSurfaceMM:5},surfaceAt:(x,y)=>ground(x,y)});
+  assert.equal(r.items.length,1,r.warnings.join(' '));const t=r.items[0];
+  assert.equal(t.widthMM,1.2);assert(Math.abs(t.carriagewayWidthMM-.6)<1e-12);
+  for(const section of [t.pavementSections[0],t.pavementSections.at(-1)]){
+    assert(Math.abs(Math.hypot(section.left[0]-section.right[0],section.left[1]-section.right[1])-.6)<1e-10);
+    for(const side of ['left','right'])assert(Math.abs(section[side][2]-ground(section[side][0],section[side][1]))<1e-10,'portal pavement edge does not meet the exterior road');
+  }
+  for(const s of t.pavementSections)for(const side of ['left','right'])assert(s[side][2]-.3>=2.5,'pavement crossed the protected base');
+  assert(t.portalRouting.every(p=>p==='estimated-axis-extension'));assert(t.portalRampGrades.every(g=>Math.abs(g)<=.25));
+});
+
+test('RO-052 follows a mapped curved continuation and reports its actual pavement sections',()=>{
+  const projection={width:100,height:80,scale:.1,project:([x,y])=>[x*10000,y*10000]},ground=(x,y)=>(x>25&&x<75?20:5)+.1*(y-40);
+  const routes=[];
+  const r=generateProceduralTunnelVoids([feature([[.002,.004],[.008,.004]],{width:6,ref:'C-1'})],()=>100,{enabled:true,projection,ground,verticalReference:{originMeters:100,minimumSurfaceMM:5},portalRoute:({point,outward,properties,sourceFeatureIds,maxLengthMM})=>{
+    routes.push({properties,sourceFeatureIds});return [point,[point[0]+outward[0]*.5,point[1]],[point[0]+outward[0]*maxLengthMM,point[1]+maxLengthMM*.1]];
+  }});
+  assert.equal(r.items.length,1,r.warnings.join(' '));const t=r.items[0];
+  assert.equal(routes.length,2);assert(routes.every(p=>p.properties.ref==='C-1'&&p.sourceFeatureIds[0]==='a'));
+  assert.deepEqual(t.portalRouting,['mapped','mapped']);assert(t.path.some(p=>p[1]>40.01),'portal ignored the mapped curve');
+  assert.deepEqual(auditPart(t).errors,[]);
+  for(const [index,connection]of t.portalConnections.entries()){
+    const section=t.pavementSections[index?t.pavementSections.length-1:0];assert.deepEqual(connection.left,section.left);assert.deepEqual(connection.right,section.right);
+    for(const side of ['left','right'])assert(Math.abs(section[side][2]-ground(section[side][0],section[side][1]))<1e-10);
+  }
+});
+
+test('RO-052 incompatible source widths remain separate and never inherit the first input width',()=>{
+  const projection={width:100,height:80,scale:.1,project:([x,y])=>[x*10000,y*10000]},ground=x=>x>25&&x<45||x>55&&x<75?20:5;
+  const a=feature([[.002,.004],[.005,.004]],{width:6,name:'Same road',ref:'C-1'},'narrow'),b=feature([[.005,.004],[.008,.004]],{width:10,name:'Same road',ref:'C-1'},'wide');
+  const config={enabled:true,projection,ground,verticalReference:{originMeters:100,minimumSurfaceMM:5}};
+  const summary=features=>generateProceduralTunnelVoids(features,()=>100,config).items.map(t=>({ids:t.sourceFeatureIds.slice().sort(),width:t.carriagewayWidthMM})).sort((a,b)=>a.width-b.width);
+  const result=summary([a,b]);assert.deepEqual(result.map(t=>t.ids),[['narrow'],['wide']]);assert(Math.abs(result[0].width-.6)<1e-12);assert.equal(result[1].width,1);assert.deepEqual(summary([b,a]),result);
+});
+
+test('RO-052 portal surface sampling keeps the exact routed segment, including both final edges',()=>{
+  const projection={width:100,height:80,scale:.1,project:([x,y])=>[x*10000,y*10000]},ground=(x,y)=>(x>25&&x<75?20:5)+.1*(y-40),observed=[];
+  const r=generateProceduralTunnelVoids([feature([[.002,.004],[.008,.004]],{width:6,ref:'C-1'})],()=>100,{enabled:true,projection,ground,verticalReference:{originMeters:100,minimumSurfaceMM:5},
+    portalRoute:({point,outward,maxLengthMM})=>{
+      const to=[point[0]+outward[0]*maxLengthMM,point[1]],line={sourceFeatureIds:[outward[0]<0?'surface-before':'surface-after'],ref:'C-1'};
+      return {points:[point,to],segments:[{from:point,to,line}]};
+    },surfaceAt:(x,y,railway,properties,line)=>{observed.push(line?.sourceFeatureIds?.[0]);return line?ground(x,y):30;}
+  });
+  assert.equal(r.items.length,1,r.warnings.join(' '));const t=r.items[0];
+  assert(observed.length>10);assert(observed.every(id=>id==='surface-before'||id==='surface-after'),'routed context was lost during a surface query');
+  assert.deepEqual(t.portalConnections.map(p=>p.targetFeatureIds),[['surface-before'],['surface-after']]);
+  assert.equal(t.roadIdentity.ref,'C-1');assert.deepEqual(t.roadIdentity.sourceFeatureIds,['a']);
+  for(const portal of t.portalConnections)for(const side of ['left','right'])assert(Math.abs(portal[side][2]-ground(portal[side][0],portal[side][1]))<1e-10);
+});
+
+test('RO-052 water rejection includes the actual outer miter corner of a curved opening',()=>{
+  const projection={width:100,height:80,scale:.1,project:([x,y])=>[x*10000,y*10000]},ground=(x,y)=>x>15&&y<45?20:5;
+  const f=feature([[.001,.004],[.002,.004],[.002,.005]],{width:6});
+  const config={enabled:true,projection,ground,verticalReference:{originMeters:100,minimumSurfaceMM:5}};
+  assert.equal(generateProceduralTunnelVoids([f],()=>100,config).items.length,1,'dry control should generate the curved opening');
+  // Outside both segment rectangles and the radius-0.6 round bend, but inside
+  // the swept section's outer miter at [20.6,39.4]. No AABB approximation.
+  const waterMask=[[[[20.5,39.42],[20.56,39.42],[20.56,39.48],[20.5,39.48],[20.5,39.42]]]];
+  const wet=generateProceduralTunnelVoids([f],()=>100,{...config,waterMask});
+  assert.equal(wet.items.length,0);assert.match(wet.warnings[0],/aigua/);
+});
+
 test('real Rajadell MVT/DEM fixture generates an explicitly estimated main tunnel, without remote data',async()=>{
   await init(await WebAssembly.compile(await readFile('node_modules/@jsquash/webp/codec/dec/webp_dec.wasm')));
   const api=await Module();api.setup();const prior=globalThis.fetch;

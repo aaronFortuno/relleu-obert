@@ -1,6 +1,19 @@
 import {bridgeDeck} from './infrastructure-solids.js';
 import {auditPart,partComponents} from './solid-audit.js';
 import {CATEGORIES} from './materials.js';
+import {stripSolid} from './bridge-completion.js';
+
+function sectionPavement(sections,thickness){
+  const mesh=stripSolid(sections,thickness);
+  if(sections[0]?.across)return mesh;
+  // Use the same diagonal as the bore's bottom strip. Crossfall varies along
+  // a curved portal, so the opposite diagonal could leave a tiny terrain film.
+  for(let i=0;i<sections.length-1;i++){
+    const left=i*4+2,right=i*4+3,nextLeft=left+4,nextRight=right+4;
+    mesh.faces.set([left,right,nextLeft,right,nextRight,nextLeft],i*24+12);
+  }
+  return mesh;
+}
 
 // The useful tunnel floor is path.z. Material is placed entirely BELOW it;
 // neither the opening nor the protected minimum base becomes thinner.
@@ -10,7 +23,10 @@ export function tunnelPavements(tunnels){
     if(!['roads','railways'].includes(t.pavementCategory)||!Number.isFinite(thickness)||thickness<.1||thickness>1||!Number.isFinite(base)||base<1||!Array.isArray(t.path)||t.path.some(p=>p[2]-thickness<base-1e-6))
       throw Error('El paviment del túnel tallaria la base mínima o té una configuració invàlida.');
     const category=CATEGORIES.find(p=>p.id===t.pavementCategory);
-    return {...category,...bridgeDeck(t.path,t.widthMM,thickness),tunnelId:t.id,thicknessMM:thickness};
+    const width=t.carriagewayWidthMM??t.widthMM;
+    if(!Number.isFinite(width)||width<=0||width>t.widthMM+1e-6)throw Error('Amplada de calçada del túnel invàlida.');
+    if(t.pavementSections&&(!Array.isArray(t.pavementSections)||t.pavementSections.length!==t.path.length||t.pavementSections.some(s=>(s.across||[s.left,s.right]).some(p=>!Array.isArray(p)||p.length!==3||!p.every(Number.isFinite)||p[2]-thickness<base-1e-6))))throw Error('Seccions de paviment del túnel invàlides.');
+    return {...category,...(t.pavementSections?sectionPavement(t.pavementSections,thickness):bridgeDeck(t.path,width,thickness)),tunnelId:t.id,thicknessMM:thickness,carriagewayWidthMM:width};
   });
 }
 

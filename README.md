@@ -2,7 +2,11 @@
 
 Prototip educatiu separat de Terrology: generació de maquetes geogràfiques amb JavaScript, íntegrament al navegador, publicable a GitHub Pages. No s’ha copiat codi de Terrology.
 
-**v0.18.2 experimental · 2 de novembre de 2026**
+**v0.19.0 experimental · entrega parcial · 2 de novembre de 2026**
+
+**Punt de represa:** [RO-052 al portàtil](work/REPRESA-RO-052.md). Compila, però queda una regressió de continuïtat a la boca del túnel en un rectangle girat (12/13 proves curtes finals). Els models nous encara no es donen per validats per imprimir. El tancament parcial és expressament demanat per l'usuari.
+
+Novetats v0.19.0: amplada comuna de calçada i passada de continuïtat als enllaços de ponts i túnels. El paviment del túnel es distingeix de l'obertura mínima imprimible; boques i carretera exterior comparteixen les cotes de les dues vores. Les connexions segueixen la identitat del traçat i la cota del segment real connectat. Els taulers mesurats conserven el contorn estructural amb transicions cap a la calçada. «Marc exterior» retirat del sidebar i ajornat. [Implementació i validacions](work/RO-052-CONTINUITAT.md), [seguiment RO-052](work/BACKLOG.md#ro-052--continuïtat-i-amplada-del-traçat-viari).
 
 Novetats v0.18.2: primera optimització de RO-051. Les màscares d’obstacles dels pilars es calculen només quan fan falta i es reutilitzen: el control de 3 km passa de 189,274 a 56,638 s, amb 2 unions en lloc de 14 i els mateixos resums de perfils, omissions, pilars i llums. [Mesures i reproducció](work/RO-051-RENDIMENT.md), [passos següents i validacions](work/BACKLOG.md#ro-051--perfils-de-carreteres-principals). 344 proves locals i compilació correctes. El prototip continua desactivat a la UI; el cas d’1,5 km amb detall 12 encara recupera els camins previs per un component de volum nul.
 

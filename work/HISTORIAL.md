@@ -2,6 +2,36 @@
 
 Actualitzat: 2026-11-02. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.19.0 PARCIAL — RO-052 i retirada del marc (2026-11-02)
+
+Tancament expressament demanat per l'usuari per apagar l'equip i reprendre
+al portàtil: s'ha de publicar l'estat actual encara que hi hagi feina a
+mitges. **RO-052 continua obert.** [Represa exacta](REPRESA-RO-052.md).
+
+Política comuna d'amplada, identitat del traçat, encaixos amb cota del
+segment real, boques/paviments i retirada del marc implementats. La suite
+ordinària va passar 370/370 en 39,086 s, heap 512 MB, mínim 43,78 GiB,
+abans del darrer refinament transversal. Els controls previs es van generar
+en 7,602 s (150×150 mm) i 3,323 s (150×200 mm, 25°), amb auditoria sense
+errors; van revelar una discrepància de centre fins a 0,0911 mm.
+
+Refinament de perfils complets desat (`transport-sections`, `across`,
+`surfaceBreaks`, caps re-triangulats), però última selecció final **12/13**:
+falla la boca inicial del rectangle girat amb cotes 7,06837 / 7,17250 /
+7,35417 mm. No s'ha afluixat ni eliminat la regressió. Compilació final
+correcta en 2,85 s. Blocs pesants, suite final, models regenerats i revisió
+visual pendents. Cap procés o agent queda en marxa. Diagnòstics i 3MF
+anteriors preservats a `work/repro/ro052/` com a evidència, no com a models
+finals per imprimir. No s'han comprovat Pages/CI remotament.
+
+L'usuari autoritza corregir la continuïtat i l'amplada del traçat en
+unions de ponts i túnels, amb agents en paral·lel, validar nous models,
+actualitzar el backlog i publicar l'entrega amb commit i push. També
+demana retirar «Marc exterior» del sidebar dret i ajornar-lo. Es reparteix
+política d'amplada, boques/paviments, UI i integració de corredors entre
+fitxers diferents; els càlculs pesants continuen seqüencials. Resultats
+pendents de validar abans de publicar.
+
 ## v0.18.2 — RO-051, diagnòstic i primera optimització (2026-11-02)
 
 Repositori reprès en l'equip de 64 GB des de `c74e992` / v0.18.1.

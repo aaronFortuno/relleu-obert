@@ -2,8 +2,9 @@ import earcut from 'earcut';
 
 // Sweep a vertical section along an XY path with a Z profile. Width stays in
 // the horizontal plane; heights use the same vertical reference as terrain.
-export function sweepSection(path,section){
-  if(!Array.isArray(path)||path.length<2||path.length>5000||!Array.isArray(section)||section.length<3||section.length>64)
+export function sweepSection(path,section,{maxSectionPoints=64}={}){
+  if(!Number.isSafeInteger(maxSectionPoints)||maxSectionPoints<3||maxSectionPoints>2048)throw Error('Pressupost de secció invàlid.');
+  if(!Array.isArray(path)||path.length<2||path.length>5000||!Array.isArray(section)||section.length<3||section.length>maxSectionPoints)
     throw Error('Traçat o secció d’infraestructura invàlids.');
   if(!path.every(p=>p.length===3&&p.every(Number.isFinite))||!section.every(p=>p.length===2&&p.every(Number.isFinite)))throw Error('Coordenades d’infraestructura invàlides.');
   const area=section.reduce((sum,p,i)=>{const q=section[(i+1)%section.length];return sum+p[0]*q[1]-q[0]*p[1];},0)/2;
