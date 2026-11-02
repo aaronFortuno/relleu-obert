@@ -4,7 +4,7 @@ import Module from 'manifold-3d';
 import {generateProceduralTunnelVoids} from '../src/procedural-tunnels.js';
 import {carveTerrainTunnels} from '../src/tunnel-operations.js';
 import {makeProjection} from '../src/geometry.js';
-import {auditPart} from '../src/solid-audit.js';
+import {auditPart,signedVolume} from '../src/solid-audit.js';
 import {splitModel} from '../src/mesh-tiles.js';
 const api=await Module();api.setup();
 function box(id,x0,x1,z0,z1){return {id,name:id,color:'#123456',vertices:new Float32Array([x0,0,z0,x1,0,z0,x1,120,z0,x0,120,z0,x0,0,z1,x1,0,z1,x1,120,z1,x0,120,z1]),faces:new Uint32Array([0,2,1,0,3,2,4,5,6,4,6,7,0,1,5,0,5,4,2,3,7,2,7,6,0,4,7,0,7,3,1,2,6,1,6,5])};}
@@ -44,8 +44,38 @@ test('protected buildings, trees, water and arbitrary other categories are never
   for(const p of protectedParts)assert.strictEqual(r.parts.find(q=>q.id===p.id),p);
 });
 
+test('surface railway material is excavated too, while building buffers remain protected',()=>{
+  const railway=box('railways',0,400,0,20),building=box('buildings',0,400,0,20),r=carveTerrainTunnels([railway,building],tunnels(),api);
+  assert.equal(r.metadata.applied,true);assert.strictEqual(r.parts[1],building);
+  assert.equal(hits([r.parts[0]],[-2,60,8],[402,60,8]),0);assert.deepEqual(auditPart(r.parts[0]).errors,[]);
+  assert(r.metadata.removedMM3.railways>0);
+});
+
 test('no-op avoids unions; a failure rolls back every layer atomically and reports it',()=>{
   const source=parts();assert.strictEqual(carveTerrainTunnels(source,[],null).parts,source);
   const bad=carveTerrainTunnels(source,tunnels(),null);assert.strictEqual(bad.parts,source);assert.equal(bad.metadata.applied,false);assert.match(bad.warnings[0],/conserva el terreny/);
   const capped=carveTerrainTunnels(source,tunnels(),api,{maxVoidTriangles:1});assert.strictEqual(capped.parts,source);assert.equal(capped.metadata.applied,false);
+});
+
+test('only components beside a cutter enter booleans; over ten thousand distant prisms remain exact',()=>{
+  const near=box('terrain',0,400,0,20),count=10001,farVertices=new Float32Array(count*24),farFaces=new Uint32Array(count*36);
+  for(let i=0;i<count;i++){
+    const p=box('terrain',1000+i*2,1001+i*2,0,20);farVertices.set(p.vertices,i*24);
+    for(let j=0;j<p.faces.length;j++)farFaces[i*36+j]=p.faces[j]+i*8;
+  }
+  const vertices=new Float32Array(near.vertices.length+farVertices.length),faces=new Uint32Array(near.faces.length+farFaces.length);
+  vertices.set(near.vertices);vertices.set(farVertices,near.vertices.length);faces.set(near.faces);
+  for(let i=0;i<farFaces.length;i++)faces[near.faces.length+i]=farFaces[i]+8;
+  const source={...near,vertices,faces},before=structuredClone(source),r=carveTerrainTunnels([source],tunnels(),api);
+  assert.equal(r.metadata.applied,true);assert.equal(r.metadata.consideredComponents,count+1);assert.equal(r.metadata.excavatedCandidateComponents,1);
+  assert.deepEqual({...source,vertices:null,faces:null},{...before,vertices:null,faces:null});
+  assert(source.vertices.length===before.vertices.length&&source.vertices.every((v,i)=>v===before.vertices[i]),'source vertex buffers changed');
+  assert(source.faces.length===before.faces.length&&source.faces.every((v,i)=>v===before.faces[i]),'source face buffers changed');
+  // Report a compact failure; rendering a diff of 600k numbers can itself
+  // exhaust the test process before it reports the actual regression.
+  assert(r.parts[0].vertices.length>=farVertices.length&&r.parts[0].vertices.subarray(0,farVertices.length).every((v,i)=>v===farVertices[i]),'distant vertex buffers changed');
+  assert(r.parts[0].faces.length>=farFaces.length&&r.parts[0].faces.subarray(0,farFaces.length).every((v,i)=>v===farFaces[i]),'distant face buffers changed');
+  const removed=signedVolume(source.vertices,source.faces)-signedVolume(r.parts[0].vertices,r.parts[0].faces);
+  assert(Math.abs(removed-r.metadata.removedMM3.terrain)<.01);
+  assert.equal(hits(r.parts,[-2,60,8],[402,60,8]),0);
 });

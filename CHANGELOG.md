@@ -1,5 +1,12 @@
 # Canvis
 
+## v0.18.0 — 2026-11-02
+
+- RO-050: ferrocarrils com a capa pròpia, amb increment de 0, +0,5 o +1 mm sobre els camins. Materials independents sense exigir un novè filament; compatibilitat amb assignacions anteriors. Plataformes i ponts respecten la cota inferior i els suports; vies subterrànies no es dibuixen a la superfície.
+- RO-034: revisió dels portals contra la superfície real de la maqueta i processament acotat de les capes que poden intersectar l’obertura. El perfil continua estimat i l’opció experimental, amb límits i omissions explícits.
+- RO-032: font «OpenStreetMap · cobertes i parts» sota demanda, que conserva geometries i atributs originals. Més formes paramètriques quan les dades les descriuen, incloent una mostra real de la Torre Glòries. El mode limitat continua pla. Sense dades suficients es conserva una coberta plana, amb procedència i avisos.
+- Backlog: ferrocarrils registrats com RO-050; cobertes/singulars passen a P1. Anotacions de túnels i artefactes de materials preservades, sense atribuir encara aquests últims al laminador.
+
 ## v0.17.0 — 2026-11-02
 
 - RO-033: cos de pilar imprimible amb cap adaptat al tauler quan es redueix l'escala. Espaiat acotat en mil·límetres de maqueta, suports auxiliars quan cal i diagnòstic dels trams sense suport segur; es conserven les comprovacions d'obstacles.

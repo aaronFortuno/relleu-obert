@@ -61,6 +61,32 @@ zero, preservant totes les capes de volum positiu, incloses les primes.
 
 ### Altres capes i càlcul incremental
 
+Des de v0.18, `railways.js` diferencia semànticament vies ferroviàries i
+camins. La categoria `railways` té un realç físic addicional de 0, 0,5 o
+1 mm sobre els camins, també als taulers ferroviaris, sense alterar-ne la
+cara inferior ni els pilars. Hi ha nou categories i fins a vuit materials;
+les assignacions antigues hereten el material dels camins per als trens.
+Les actualitzacions parcials conserven aquesta capa i la seva procedència.
+
+`roof-sources.js` consulta sota demanda les petjades, parts i atributs OSM
+originals via Overpass, amb dos proveïdors seqüencials, pressupost de temps,
+resposta i entitats, i memòria cau acotada. Una fallada conserva els edificis
+OSM vectorials, amb avís i possibilitat de reintent. No es transfereixen
+cobertes de cases petites a petjades agrupades d'un altre proveïdor.
+`building-roofs.js` admet sis formes paramètriques quan hi ha atributs
+suficients, amb criteris de compatibilitat de petjada i procedència de les
+derivacions. Una cúpula el·líptica es divideix en anells i sectors; no es
+confon amb una malla aixecada. `min_height` s'aplica només al mode de la font.
+El mode limitat continua amb coberta horitzontal.
+
+Els portals experimentals conserven el perfil DEM interior. Si la superfície
+generada els enterra, poden connectar-s'hi amb una rampa estimada de fins al
+25% de pendent físic i 25 m de correcció vertical, sempre dins de l'extensió
+màxima de 8 mm / 100 m (el menor). Ajustos, omissions i recorregut final es
+registren al 3MF. L'excavació selecciona només components propers als
+talladors; els altres conserven la geometria original. Això evita unir tots
+els prismes de detall alt sense augmentar els límits globals de sòlids.
+
 Des de v0.9, `loadBuildingLayer` conserva vectors OSM originals i memòria cau de fonts per regió. Catastre s’importa sota demanda amb `cadastre.js` i fast-xml-parser; es valida XML/GML, EPSG, anells, identificadors i límits abans de generar volums. Les parts d’una família substitueixen la seva envolupant; zero plantes s’omet explícitament. Cap política automàtica de priorització de fonts noves.
 
 `updateBuildings` reconstrueix els edificis compartint els buffers estàtics i el camp de relleu amb el model anterior. Des de v0.15, si canvien les petjades també recomprova els pilars i pot actualitzar la categoria de carreteres; si només canvien altures, reutilitza aquesta geometria. Conserva posicions de capçades supervivents i retira col·lisions amb la nova petjada; no replanta automàticament espais que un edifici deixa lliures. Actualitza la màscara per a edicions posteriors. Canvis d’altura conserven fins i tot el buffer d’arbres. El Worker envia les categories de l’actualització i el client manté la càmera. Els errors no substitueixen el model per un resultat incomplet.
@@ -102,7 +128,7 @@ El zoom en mode fix només canvia el context visible del mapa; el marc es projec
 - `src/export.js`: fitxers estàndard amb procedència, unitats i materials.
 - `src/main.js`: controls i previsualització.
 - `src/place-map.js` i `src/selection.js`: mapa Leaflet, cerca Photon, coordenades, proporcions i pla de peces.
-- `src/materials.js`: vuit categories semàntiques, paletes i agrupació de geometries segons els materials disponibles.
+- `src/materials.js`: nou categories semàntiques, paletes d'1/2/4/8 materials i agrupació de geometries segons els materials disponibles.
 - `src/mesh-tiles.js`: retalls de sòlids amb Manifold/WASM, tancament de talls i exportació del conjunt de peces.
 
 Des de v0.3, el Worker conserva el terreny, els edificis i el camp d’altitud en un context privat. Els canvis de vegetació només regeneren les capçades i el preview conserva els buffers de les altres capes. Els canvis de material només actualitzen l’aparença; l’agrupació física es fa en exportar. Els canvis de regió, mida, detall o exageració requereixen generar de nou i bloquegen l’exportació del model anterior.

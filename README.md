@@ -2,7 +2,9 @@
 
 Prototip educatiu separat de Terrology: generació de maquetes geogràfiques amb JavaScript, íntegrament al navegador, publicable a GitHub Pages. No s’ha copiat codi de Terrology.
 
-**v0.17.0 experimental · 2 de novembre de 2026**
+**v0.18.0 experimental · 2 de novembre de 2026**
+
+Novetats v0.18: ferrocarrils amb realç seleccionable i material propi; [comprovacions](work/RO-050-FERROCARRILS.md). Revisió dels portals dels túnels experimentals. Font nova «OpenStreetMap · cobertes i parts», per mostrar paràmetres de coberta i parts originals en el mode «Altura i coberta de les dades». [Abast, mostra Torre Glòries i accés remot pendent de validar](work/RO-032-INTEGRACIO.md). El mode limitat continua pla. No es prometen cobertes on no hi ha atributs ni geometries mesurades a partir d’una parametrització.
 
 Novetats v0.17: pilars adaptats a l’escala i suports auxiliars per acotar les llums. [Comprovacions](work/RO-033-SUPORTS-ESCALA.md). Túnels estimats amb excavació real en una opció experimental desactivada per defecte; cal revisar portals i laminat. [Abast i límits](work/RO-034-OBERTURES.md). Exemples amb càrrega automàtica, marc negre fix i plaques ajornades. [Backlog reorganitzat](work/BACKLOG.md).
 

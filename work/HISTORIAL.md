@@ -3,6 +3,57 @@
 Actualitzat: 2026-11-02. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
 
+## v0.18.0 — Ferrocarrils, portals i cobertes de la font
+
+Tres fronts autoritzats en paral·lel: categoria ferroviària i realç independent RO-050; túnel sud de Rajadell RO-034; cobertes i volums singulars RO-032. S’incorporen dades OSM originals amb selecció explícita i es conserva el mode limitat pla. Les dades paramètriques no s’etiqueten com a malles mesurades. Les proves locals, validació de l’usuari, laminat i impressió continuen diferenciades; resultats detallats als informes de cada línia.
+
+**Verificació final:** 284 casos únics correctes, executats en blocs. A
+512 MB de heap passen 281 casos i dos fitxers integrats excedeixen aquest
+pressupost; executats sols i seqüencialment a 1.536 MB, els sis casos dels
+dos fitxers passen (tres ja constaven al primer bloc). Cap fallada pendent.
+El bloc exigent dura 175 s i manté un mínim de 4,24 GB de RAM lliure. La
+revisió final dels missatges compactes repeteix les set proves d'excavació:
+7/7 en 0,5 s. Build final correcte en 4,15 s, amb avisos habituals de mida.
+157 enllaços/ancoratges locals i 50 identificadors estables comprovats.
+
+Controls i llegenda revisats a 1280×720 abans dels reinicis. La revisió
+visual final del túnel, laminador i impressió queden explícitament pendents
+d'usuari; no es torna a automatitzar el navegador després dels bloquejos.
+RO-032 continua obert per disponibilitat remota i cobertes de Tamariu;
+els errors reals d'Overpass i l'alternativa simplificada estan documentats.
+No es fan comprovacions remotes de Pages ni CI.
+
+Durant els reinicis, els canvis van quedar desats abans de publicar.
+Controls/llegenda revisats localment a 1280×720 i build correcte. Els
+serveis Overpass esgoten el temps d'espera; l'alternativa conserva els
+edificis amb avís i no s'afirma que la càrrega remota de cobertes funcioni.
+El control integrat de quatre casos de túnel i 3MF ha passat; la suite
+completa ha quedat interrompuda pels talls de l'entorn. La lectura XML de
+les proves s'ha canviat a iteradors i arrays tipats per evitar còpies
+massives de captures. En reprendre s'han mesurat només 0,83 GB de RAM
+lliure de 15,49 GB; no s'atribueix una causa definitiva als tancaments.
+La verificació pendent es completa posteriorment amb una única operació
+pesada i consum acotat, tal com consta al resum final.
+
+Diagnòstic posterior: la nova regressió dels prismes llunyans fallava pel
+reordenament de vèrtexs en compactar-los. L'informe intentava expandir una
+comparació numèrica massiva. Amb una asserció compacta, el problema es
+reprodueix en 0,4 s; corregit l'ordre dels buffers, les set proves del
+fitxer passen en 0,6 s. No s'ha eliminat ni rebaixat la igualtat exacta.
+L'usuari ha alliberat memòria i s'han mesurat 5,7 GB disponibles. La suite
+es reprèn sola amb heap de 512 MB i aturada sota 1,6 GB lliures; 256 MB
+era insuficient per al cas integrat de Rajadell.
+
+## Anotacions rebudes per al lot v0.18
+
+| ID | Observació de l’usuari abans de resumir-la |
+| --- | --- |
+| RO-034 | Experimental integrat; pendent d’usuari. Comprovat al model default de Rajadell, a la banda sud hi ha un túnel al món real però a la maqueta no s'hi aprecia cap obertura, simplement la carretera "acaba" a una banda de la muntanya i continua a la següent |
+| RO-024 | Al laminador hi ha alguns artefactes estranys (per exemple, algunes regions de vegetació i arbres on en una capa determinada es renderitza tota en marró-terra, o alguns edificis que també tenen alguna capa en particular amb un altre color). Sembla més un problema de laminador que del nostre projecte, però hem d'estar atents |
+| RO-032 | Cal pujar de prioritat i abordar-ho si podem. Caldria incloure aquí les geometries més reals d'edificis singulars (allà on existeixin les parametritzacions): torre Agbar, Sagrada Família, etc., com a llocs amb perfil reconeixible i que caldria conservar si és possible. |
+
+Ferrocarrils: capa pròpia amb increment seleccionable de +0,5 o +1 mm sobre el realç dels camins. Treball en tres fronts en paral·lel autoritzat; RO-032 puja a P1 i inclou singulars amb dades accessibles. Les cobertes planes del mode limitat continuen sent una decisió d’usuari.
+
 ## v0.17.0 — Suports a escala i obertures experimentals
 
 Treball en tres fronts autoritzat per l’usuari: pilars (RO-033), túnels (RO-034) i reorganització del backlog. Captura de zoom out amb un sol pilar: incidència reproduïda i tractada amb cap adaptat, espaiat físic i diagnòstic de llums. L’opció de túnels és estimada, explícita i desactivada inicialment; no s’atribueixen dades constructives inexistents. Validacions locals i límits als informes [suports](RO-033-SUPORTS-ESCALA.md) i [túnels](RO-034-OBERTURES.md).

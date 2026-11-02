@@ -1,4 +1,4 @@
-const BUILDING_PROVIDERS={icgc:'ICGC',osm:'OpenStreetMap',catastre:'Catastre · parts (Espanya)'};
+const BUILDING_PROVIDERS={icgc:'ICGC',osm:'OpenStreetMap',osm3d:'OpenStreetMap · cobertes i parts',catastre:'Catastre · parts (Espanya)'};
 export const TERRAIN_REMOTE='Mapterhorn / Mapzen';
 export function buildingProviderLabel(source){return Object.hasOwn(BUILDING_PROVIDERS,source)?BUILDING_PROVIDERS[source]:'Font desconeguda';}
 export function describeSources({terrainProvider=null,terrainWasLocal=false,buildingSource='osm',localDEM=null,localBuildings=null,pendingTerrain=false,pendingBuildings=false}){

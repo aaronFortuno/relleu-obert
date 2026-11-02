@@ -4,6 +4,7 @@
 import {tunnelVoid} from './infrastructure-solids.js';
 import {lineBuffer} from './roads.js';
 import {polygonOps} from './polygon-ops.js';
+import {isRailway} from './railways.js';
 
 const MAX_FEATURES=50000,MAX_FRAGMENTS=256,MAX_POINTS=10000,MAX_LINE_POINTS=1000;
 const WIDTHS={motorway:14,trunk:10,primary:8,secondary:7,tertiary:6,rail:6,path:2,track:3};
@@ -41,13 +42,13 @@ function join(fragments){
  * Items contain a closed Float32/Uint32 cutter plus path/section/source IDs.
  */
 export function generateProceduralTunnelVoids(features,elevationAt,options={}){
-  const {enabled=false,projection,verticalReference,exaggeration=1.5,ground,waterMask=[],minBaseMM=2.5,minOpeningMM=1.2,maxTunnels=24,surfaceRiseMM=0}=options;
-  const warnings=[],metadata={enabled:enabled===true,estimated:true,method:'linear-dem-original-endpoints',section:'estimated rectangular print opening',minimumBaseMM:minBaseMM,minimumOpeningMM:minOpeningMM,count:0,omitted:0};
+  const {enabled=false,projection,verticalReference,exaggeration=1.5,ground,waterMask=[],minBaseMM=2.5,minOpeningMM=1.2,maxTunnels=24,surfaceRiseMM=0,railSurfaceRiseMM=surfaceRiseMM}=options;
+  const warnings=[],metadata={enabled:enabled===true,estimated:true,method:'linear-dem-with-generated-surface-portal-ramps',section:'estimated rectangular print opening',minimumBaseMM:minBaseMM,minimumOpeningMM:minOpeningMM,count:0,omitted:0,omissions:[]};
   if(!enabled)return {items:[],warnings,metadata};
-  if(enabled!==true||!Array.isArray(features)||typeof elevationAt!=='function'||typeof ground!=='function'||typeof projection?.project!=='function'||![projection?.scale,projection?.width,projection?.height,verticalReference?.originMeters,verticalReference?.minimumSurfaceMM,exaggeration,minBaseMM,minOpeningMM,surfaceRiseMM].every(Number.isFinite)||projection.scale<=0||projection.width<=0||projection.height<=0||exaggeration<=0||minBaseMM<1||minOpeningMM<.8||minOpeningMM>5||surfaceRiseMM<0||surfaceRiseMM>1||!Number.isSafeInteger(maxTunnels)||maxTunnels<1||maxTunnels>24)
+  if(enabled!==true||!Array.isArray(features)||typeof elevationAt!=='function'||typeof ground!=='function'||typeof projection?.project!=='function'||![projection?.scale,projection?.width,projection?.height,verticalReference?.originMeters,verticalReference?.minimumSurfaceMM,exaggeration,minBaseMM,minOpeningMM,surfaceRiseMM,railSurfaceRiseMM].every(Number.isFinite)||projection.scale<=0||projection.width<=0||projection.height<=0||exaggeration<=0||minBaseMM<1||minOpeningMM<.8||minOpeningMM>5||surfaceRiseMM<0||surfaceRiseMM>1||railSurfaceRiseMM<0||railSurfaceRiseMM>2||!Number.isSafeInteger(maxTunnels)||maxTunnels<1||maxTunnels>24)
     throw Error('Configuració de túnels experimentals invàlida.');
   const fragments=[],seen=new Set();let totalPoints=0,dropped=0;
-  const fail=(id,why)=>{metadata.omitted++;warnings.push(`Túnel ${id} omès: ${why}`);};
+  const fail=(id,why)=>{metadata.omitted++;metadata.omissions.push({id,reason:why});warnings.push(`Túnel ${id} omès: ${why}`);};
   if(features.length>MAX_FEATURES)warnings.push(`Túnels: entrada limitada a ${MAX_FEATURES} entitats.`);
   for(const [index,f]of features.slice(0,MAX_FEATURES).entries()){
     const props=f?.properties||{},g=f?.geometry;if(props.sourceLayer!=='transportation'||props.brunnel!=='tunnel')continue;
@@ -85,26 +86,38 @@ export function generateProceduralTunnelVoids(features,elevationAt,options={}){
     if(![z0,z1].every(z=>Number.isFinite(z)&&z>=-500&&z<=9000)){fail(id,'cota DEM invàlida.');continue;}
     const modelZ=z=>verticalReference.minimumSurfaceMM+(z-verticalReference.originMeters)*projection.scale*exaggeration-.15;
     const startZ=modelZ(z0),endZ=modelZ(z1),path=xy.map(([x,y],i)=>[x,y,startZ+(endZ-startZ)*distances[i]/length]);
+    const surfaceRise=isRailway(f.props)?railSurfaceRiseMM:surfaceRiseMM;
     // Explicit experimental policy: generalized MVT endpoints need not match
     // the DEM's portal. Allow at most 8 printed mm AND 100 real metres.
     const maxExtension=Math.min(8,100*projection.scale);
     const extend=(a,b)=>{
       const dx=b[0]-a[0],dy=b[1]-a[1],d=Math.hypot(dx,dy);
+      let ramp=null;
       for(let distance=.25;distance<=maxExtension+.001;distance+=.25){
         const p=[a[0]-dx/d*distance,a[1]-dy/d*distance,a[2]-(b[2]-a[2])/d*distance];
-        if(!inside(p,projection))return {p,distance};
+        if(!inside(p,projection))return {p,distance,adjustment:0,grade:(p[2]-a[2])/distance};
         let surface=-Infinity;
-        try{for(const offset of [0,-widthMM/2,widthMM/2]){const q=[p[0]-dy/d*offset,p[1]+dx/d*offset];if(inside(q,projection))surface=Math.max(surface,ground(...q)+surfaceRiseMM);}}
+        try{for(const offset of [0,-widthMM/2,widthMM/2]){const q=[p[0]-dy/d*offset,p[1]+dx/d*offset];if(inside(q,projection))surface=Math.max(surface,ground(...q)+surfaceRise);}}
         catch{return null;}
-        // Leave at most 0.05 mm at the floor (surface/mesh interpolation
-        // tolerance); the remaining full-height cap must be outside ground.
-        if(Number.isFinite(surface)&&surface<p[2]+.05)return {p,distance};
+        if(!Number.isFinite(surface))return null;
+        if(surface<p[2]+.05)return {p,distance,adjustment:0,grade:(p[2]-a[2])/distance};
+        // The coarse generated road can sit above the original DEM portal.
+        // Preserve the bore profile, and connect its short entrance to the
+        // rendered surface with an explicit estimated ramp. A 25% physical
+        // grade / 25 m vertical correction ceiling avoids drilling arbitrarily
+        // deep or cutting a long trench merely to force an opening.
+        const capZ=surface-.015,adjustment=capZ-p[2],grade=(capZ-a[2])/distance;
+        if(!ramp&&Math.abs(grade)<=.25&&Math.abs(adjustment)/(projection.scale*exaggeration)<=25)
+          ramp={p:[p[0],p[1],capZ],distance,adjustment,grade};
       }
-      return null;
+      // Prefer the original constant-grade profile whenever it can reach
+      // daylight within the budget. The ramp is only a fallback for a mesh
+      // portal buried by interpolation, not a reason to move every entrance.
+      return ramp;
     };
     const first=extend(path[0],path[1]),last=extend(path.at(-1),path.at(-2));
     if(!first||!last){fail(id,'no es poden obrir tots dos portals amb una prolongació curta del perfil.');continue;}
-    const extended=[first.p,...path,last.p],extension=[first.distance,last.distance];
+    const extended=[first.p,...path,last.p],extension=[first.distance,last.distance],portalAdjustmentMM=[first.adjustment,last.adjustment],portalRampGrades=[first.grade,last.grade];
     footprints=lineBuffer(extended,widthMM/2,[projection.width,projection.height]);
     if(waterMask.length&&footprints.some(p=>polygonOps().intersection([p],waterMask).length)){fail(id,'la prolongació del portal coincideix amb aigua.');continue;}
     if(extended.some(p=>p[2]<minBaseMM)){fail(id,'la cota tallaria el gruix mínim de base.');continue;}
@@ -129,7 +142,9 @@ export function generateProceduralTunnelVoids(features,elevationAt,options={}){
     try{
       const mesh=tunnelVoid(extended,widthMM,heightMM);
       const extensionMetres=extension.map(d=>d/projection.scale);
-      items.push({id,...mesh,path:extended,originalPath:path,sourceFeatureIds:f.ids,sourceEndpoints:[[...f.points[0],z0],[...f.points.at(-1),z1]],estimated:true,elevationMethod:metadata.method,widthMM,heightMM,widthMetres,heightMetres,portalExtensionMM:extension,portalExtensionMetres:extensionMetres,maximumRoofCoverMM:cover,minimumCoveredRoofMM:Math.min(...interior.map(s=>s.roof)),footprints});
+      const portalAdjustmentMetres=portalAdjustmentMM.map(d=>d/(projection.scale*exaggeration));
+      items.push({id,...mesh,path:extended,originalPath:path,sourceFeatureIds:[...new Set(f.ids)],sourceEndpoints:[[...f.points[0],z0],[...f.points.at(-1),z1]],estimated:true,elevationMethod:metadata.method,widthMM,heightMM,widthMetres,heightMetres,portalAdjustmentMM,portalAdjustmentMetres,maximumPortalAdjustmentMetres:25,portalRampGrades,maximumPortalRampGrade:.25,portalExtensionMM:extension,portalExtensionMetres:extensionMetres,maximumRoofCoverMM:cover,minimumCoveredRoofMM:Math.min(...interior.map(s=>s.roof)),footprints});
+      if(portalAdjustmentMM.some(d=>Math.abs(d)>.05))warnings.push(`Túnel ${id}: cotes dels portals ajustades ${portalAdjustmentMetres.map(m=>m.toFixed(1)).join(' / ')} m al terreny de la maqueta; perfil estimat, no mesurat.`);
       if(extension.some((d,i)=>extensionMetres[i]>25||d>length*.4))warnings.push(`Túnel ${id}: portals prolongats ${extensionMetres.map(m=>m.toFixed(0)).join(' / ')} m de manera estimada per arribar a superfície. No són boques mesurades; comprova aquesta aproximació.`);
     }catch(error){fail(id,error.message);}
   }

@@ -6,6 +6,7 @@ import {regionTileCount,MAX_REGION_TILES} from './region-limits.js';
 import {loadBuildingsRecoverably} from './building-recovery.js';
 import {recommendedPlace} from './recommended-places.js';
 import {loadInfrastructureOverrides} from './infrastructure-registry.js';
+import {fetchOSMBuildings} from './roof-sources.js';
 
 export {lonLatTile} from './elevation.js';
 import {lonLatTile} from './elevation.js';
@@ -35,7 +36,10 @@ export async function loadBuildingLayer(region,{source=defaultBuildingSource(reg
   let cache=buildingLayers.get(region);if(!cache){cache=new Map();buildingLayers.set(region,cache);}if(cache.has(source))return cache.get(source);
   const vectors=region.vectorFeatures||region.features,osm=vectors.filter(f=>f.properties.sourceLayer==='building');let result;
   if(source==='osm')result={features:osm,metadata:{provider:'OpenStreetMap · OpenFreeMap',count:osm.length},warnings:[]};
-  else if(source==='icgc'){
+  else if(source==='osm3d'){
+    try{result=await fetchOSMBuildings(region.meta.bbox,fetch,{onProgress:progress});}
+    catch(error){result={features:osm,metadata:{provider:'OpenStreetMap · OpenFreeMap (alternativa sense cobertes originals)',count:osm.length,roofSourceUnavailable:true},warnings:[error.message+' Es conserven els edificis OSM disponibles; les cobertes sense atributs es mostren planes.']};}
+  }else if(source==='icgc'){
     if(!inCatalonia(region.meta.bbox))throw Error('ICGC: font disponible només dins de l’àmbit català. Tria OpenStreetMap.');
     progress('Carregant la capa d’edificis de l’ICGC…');
     const base=(import.meta.env?.BASE_URL||'./')+'data/',official=region.meta.officialBuildings?await(await get(base+region.meta.officialBuildings)).json():await fetchOfficialBuildings(region.meta.bbox);
@@ -44,7 +48,7 @@ export async function loadBuildingLayer(region,{source=defaultBuildingSource(reg
   }else if(source==='catastre'){
     progress('Carregant edificis i parts del Catastre…');const {fetchCadastralBuildings}=await import('./cadastre.js');result=await fetchCadastralBuildings(region.meta.bbox,fetch,{onProgress:progress});
   }else throw Error('Font d’edificis desconeguda.');
-  result={...result,source};cache.set(source,result);return result;
+  result={...result,source};if(!result.metadata?.roofSourceUnavailable)cache.set(source,result);return result;
 }
 export function applyBuildingLayer(region,layer){
   region.features=[...(region.vectorFeatures||region.features).filter(f=>f.properties.sourceLayer!=='building'),...layer.features];

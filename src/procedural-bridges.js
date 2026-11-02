@@ -5,6 +5,7 @@
 // pura i síncrona: sense xarxa ni DOM. El bbox filtra per intersecció i mai
 // retalla el perfil: el mateix pont té les mateixes cotes en qualsevol retall.
 
+import {isRailway,isInactiveRailway,railwayWidthMetres} from './railways.js';
 const LAT_METRES=111320;
 const CLASS_WIDTH_METRES={motorway:14,trunk:10,primary:8,secondary:7,tertiary:6,residential:5,path:2,track:2,rail:5};
 const MAX_FEATURES=50000,MAX_BRIDGES=200,MAX_AXIS_POINTS=1000;
@@ -40,7 +41,7 @@ function widthFromProperties(props,warnings,label){
   }
   const lanes=Number.parseInt(props.lanes,10);
   if(Number.isFinite(lanes)&&lanes>=1&&lanes<=12)return Math.min(lanes*3.2,38.4);
-  return CLASS_WIDTH_METRES[props.class]??5;
+  return isRailway(props)?railwayWidthMetres(props):CLASS_WIDTH_METRES[props.class]??5;
 }
 
 // Uneix fragments del mateix grup (classe/layer/name) només per extrems
@@ -101,7 +102,7 @@ export function generateProceduralBridgeItems(features,elevationAt,{scale=.1,min
   let totalPoints=0,droppedFragments=0;
   input.forEach((f,index)=>{
     const props=f?.properties||{};
-    if(props.sourceLayer!=='transportation'||props.brunnel!=='bridge')return;
+    if(props.sourceLayer!=='transportation'||props.brunnel!=='bridge'||isInactiveRailway(props))return;
     const g=f?.geometry||{};
     const lines=g.type==='LineString'?[g.coordinates]:g.type==='MultiLineString'&&Array.isArray(g.coordinates)?g.coordinates:[];
     for(const line of lines){
@@ -193,6 +194,7 @@ export function generateProceduralBridgeItems(features,elevationAt,{scale=.1,min
       axis:points,
       estimated:true,
       widthMetres,
+      railway:isRailway(axis.props),
       elevationMethod:'linear-dem-endpoints',
       sourceFeatureIds:axis.ids,
     });

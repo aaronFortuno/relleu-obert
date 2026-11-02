@@ -131,3 +131,44 @@ Les tres malles llegides del fitxer accepten els 12 segments de comprovació
 sense impactes al recorregut central. Prolongacions registrades: 77,5 i
 25 m. Aquesta comprovació és geomètrica; el laminador i la impressió física
 encara s'han de validar.
+
+## v0.18 — Portals contra la superfície generada
+
+El diagnòstic de detall 36/56 mostra que el portal original DEM queda
+entre 0,65 i 1,84 mm sota la carretera generada. Moure linealment tot el
+perfil als portals feia perdre cobertura interior; s'ha descartat aquest
+criteri. Ara es conserva el perfil interior original i es prefereix la
+prolongació amb el pendent original quan permet sortir a superfície.
+
+Només si aquesta prolongació falla, es pot connectar cada entrada amb
+una rampa estimada fins a la superfície generada. Límits explícits:
+pendent físic màxim del 25%, correcció vertical màxima de 25 m reals i
+la mateixa extensió màxima de 8 mm / 100 m (el menor). No s'amplien
+silenciosament les distàncies. Cotes originals, ajustos verticals, pendents,
+extensions i recorregut final `pathMM` queden a la procedència, amb avís.
+No es presenta aquesta rampa com la cota mesurada de la carretera real.
+
+El cas de control prova 1,5 km / 150 mm a resolucions 24, 36 i 56 i un
+retall desplaçat de 3 km / 300 mm a resolució 36. Comprova el pas central
+lliure a totes les malles i al 3MF serialitzat. A 3 km / 150 mm el turó
+no té cobertura física suficient per a l'obertura mínima: s'omet amb
+motiu explícit, en lloc de forçar-la. La base i l'aigua continuen protegides.
+
+El detall alt superava el pressupost de 10.000 components abans de la
+resta perquè intentava unir tota la regió. Ara es comproven les envolupants
+dels components i només entren a booleans els propers als talladors.
+Els altres es recombinen sense alterar coordenades ni triangles. No s'ha
+pujat el límit global. Una regressió amb 10.001 prismes llunyans i un de
+proper comprova buffers, volums i pas lliure; també s'excava la nova
+categoria ferroviària, mantenint protegits els edificis i els arbres.
+
+La primera comprovació d'aquests buffers va revelar un reordenament de
+vèrtexs en compactar components. Corregit conservant l'ordre original de
+vèrtexs i triangles. El test manté la igualtat exacta dels buffers, però
+informa d'un error compacte si falla: el diff numèric massiu consumia
+memòria sense ajudar al diagnòstic. Les set proves d'excavació passen
+després d'aquesta correcció, inclòs el cas de 10.001 prismes llunyans.
+
+Validació final de suite, navegador i fitxer descarregat a l'historial
+v0.18. Les cavitats naturals RO-035 i la geometria interior mesurada no
+queden resoltes per aquesta aproximació experimental.

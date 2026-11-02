@@ -1,0 +1,555 @@
+{
+  "version": "0.6",
+  "generator": "OSM API source fixture; Relleu Obert subset",
+  "source": {
+    "url": "https://api.openstreetmap.org/api/0.6/map.json?bbox=2.1892,41.4020,2.1907,41.4037",
+    "retrievedAt": "2026-11-02",
+    "license": "ODbL 1.0",
+    "attribution": "© OpenStreetMap contributors",
+    "scope": "Torre Glòries way 44213122 and its referenced nodes; exact mapped coordinates and roof parameters, not surveyed mesh"
+  },
+  "elements": [
+    {
+      "type": "node",
+      "id": 561529834,
+      "lat": 41.4036805,
+      "lon": 2.1894727,
+      "version": 9,
+      "timestamp": "2014-10-06T12:17:45Z"
+    },
+    {
+      "type": "node",
+      "id": 561529835,
+      "lat": 41.4036161,
+      "lon": 2.1893235,
+      "version": 9,
+      "timestamp": "2014-10-06T12:17:45Z"
+    },
+    {
+      "type": "node",
+      "id": 561529836,
+      "lat": 41.4035505,
+      "lon": 2.1892854,
+      "version": 9,
+      "timestamp": "2014-10-06T12:17:45Z"
+    },
+    {
+      "type": "node",
+      "id": 561529837,
+      "lat": 41.4034124,
+      "lon": 2.189338,
+      "version": 9,
+      "timestamp": "2014-10-06T12:17:45Z"
+    },
+    {
+      "type": "node",
+      "id": 561529838,
+      "lat": 41.4033723,
+      "lon": 2.1894058,
+      "version": 9,
+      "timestamp": "2014-10-06T12:17:45Z"
+    },
+    {
+      "type": "node",
+      "id": 561529840,
+      "lat": 41.4033486,
+      "lon": 2.1895353,
+      "version": 9,
+      "timestamp": "2014-10-06T12:17:46Z"
+    },
+    {
+      "type": "node",
+      "id": 561529841,
+      "lat": 41.4033779,
+      "lon": 2.1896632,
+      "version": 9,
+      "timestamp": "2014-10-06T12:17:46Z"
+    },
+    {
+      "type": "node",
+      "id": 561529842,
+      "lat": 41.4035692,
+      "lon": 2.1897438,
+      "version": 9,
+      "timestamp": "2014-10-06T12:17:46Z"
+    },
+    {
+      "type": "node",
+      "id": 561530624,
+      "lat": 41.4036602,
+      "lon": 2.1893939,
+      "version": 8,
+      "timestamp": "2014-10-06T12:17:46Z"
+    },
+    {
+      "type": "node",
+      "id": 561530626,
+      "lat": 41.4036447,
+      "lon": 2.1896642,
+      "version": 8,
+      "timestamp": "2014-10-06T12:17:46Z"
+    },
+    {
+      "type": "node",
+      "id": 561530627,
+      "lat": 41.4034778,
+      "lon": 2.18929,
+      "version": 8,
+      "timestamp": "2014-10-06T12:17:46Z"
+    },
+    {
+      "type": "node",
+      "id": 2265819846,
+      "lat": 41.4033865,
+      "lon": 2.1893755,
+      "version": 4,
+      "timestamp": "2014-10-06T12:17:45Z"
+    },
+    {
+      "type": "node",
+      "id": 2265819847,
+      "lat": 41.4033588,
+      "lon": 2.189447,
+      "version": 4,
+      "timestamp": "2014-10-06T12:17:45Z"
+    },
+    {
+      "type": "node",
+      "id": 2265819848,
+      "lat": 41.4033498,
+      "lon": 2.1894889,
+      "version": 4,
+      "timestamp": "2014-10-06T12:17:45Z"
+    },
+    {
+      "type": "node",
+      "id": 2265819849,
+      "lat": 41.4034461,
+      "lon": 2.1893071,
+      "version": 4,
+      "timestamp": "2014-10-06T12:17:45Z"
+    },
+    {
+      "type": "node",
+      "id": 2265819850,
+      "lat": 41.4033528,
+      "lon": 2.1895825,
+      "version": 4,
+      "timestamp": "2014-10-06T12:17:45Z"
+    },
+    {
+      "type": "node",
+      "id": 2265819851,
+      "lat": 41.4033603,
+      "lon": 2.1896191,
+      "version": 4,
+      "timestamp": "2014-10-06T12:17:45Z"
+    },
+    {
+      "type": "node",
+      "id": 2265819852,
+      "lat": 41.4035148,
+      "lon": 2.1892807,
+      "version": 4,
+      "timestamp": "2014-10-06T12:17:45Z"
+    },
+    {
+      "type": "node",
+      "id": 2265819853,
+      "lat": 41.4034083,
+      "lon": 2.1897103,
+      "version": 4,
+      "timestamp": "2014-10-06T12:17:45Z"
+    },
+    {
+      "type": "node",
+      "id": 2265819854,
+      "lat": 41.4034381,
+      "lon": 2.1897375,
+      "version": 4,
+      "timestamp": "2014-10-06T12:17:45Z"
+    },
+    {
+      "type": "node",
+      "id": 2265819855,
+      "lat": 41.4035848,
+      "lon": 2.1892999,
+      "version": 4,
+      "timestamp": "2014-10-06T12:17:45Z"
+    },
+    {
+      "type": "node",
+      "id": 2265819856,
+      "lat": 41.4034865,
+      "lon": 2.1897582,
+      "version": 4,
+      "timestamp": "2014-10-06T12:17:45Z"
+    },
+    {
+      "type": "node",
+      "id": 2265819857,
+      "lat": 41.4035064,
+      "lon": 2.1897601,
+      "version": 4,
+      "timestamp": "2014-10-06T12:17:45Z"
+    },
+    {
+      "type": "node",
+      "id": 2265819858,
+      "lat": 41.4035898,
+      "lon": 2.1897306,
+      "version": 4,
+      "timestamp": "2014-10-06T12:17:45Z"
+    },
+    {
+      "type": "node",
+      "id": 2265819859,
+      "lat": 41.4036412,
+      "lon": 2.1893561,
+      "version": 4,
+      "timestamp": "2014-10-06T12:17:45Z"
+    },
+    {
+      "type": "node",
+      "id": 2265819860,
+      "lat": 41.4036225,
+      "lon": 2.1896989,
+      "version": 4,
+      "timestamp": "2014-10-06T12:17:45Z"
+    },
+    {
+      "type": "node",
+      "id": 2265819861,
+      "lat": 41.4036742,
+      "lon": 2.1894399,
+      "version": 4,
+      "timestamp": "2014-10-06T12:17:45Z"
+    },
+    {
+      "type": "node",
+      "id": 2265819862,
+      "lat": 41.4036641,
+      "lon": 2.1896221,
+      "version": 4,
+      "timestamp": "2014-10-06T12:17:45Z"
+    },
+    {
+      "type": "node",
+      "id": 2265819863,
+      "lat": 41.4036768,
+      "lon": 2.1895758,
+      "version": 4,
+      "timestamp": "2014-10-06T12:17:45Z"
+    },
+    {
+      "type": "node",
+      "id": 2265819864,
+      "lat": 41.4036825,
+      "lon": 2.1895045,
+      "version": 4,
+      "timestamp": "2014-10-06T12:17:45Z"
+    },
+    {
+      "type": "node",
+      "id": 3114697334,
+      "lat": 41.4033489,
+      "lon": 2.1895108,
+      "version": 1,
+      "timestamp": "2014-10-06T12:17:44Z"
+    },
+    {
+      "type": "node",
+      "id": 3114697335,
+      "lat": 41.4033495,
+      "lon": 2.1895594,
+      "version": 1,
+      "timestamp": "2014-10-06T12:17:44Z"
+    },
+    {
+      "type": "node",
+      "id": 3114697336,
+      "lat": 41.4033542,
+      "lon": 2.1894646,
+      "version": 1,
+      "timestamp": "2014-10-06T12:17:44Z"
+    },
+    {
+      "type": "node",
+      "id": 3114697337,
+      "lat": 41.4033548,
+      "lon": 2.1895993,
+      "version": 1,
+      "timestamp": "2014-10-06T12:17:44Z"
+    },
+    {
+      "type": "node",
+      "id": 3114697338,
+      "lat": 41.4033648,
+      "lon": 2.1894238,
+      "version": 1,
+      "timestamp": "2014-10-06T12:17:44Z"
+    },
+    {
+      "type": "node",
+      "id": 3114697339,
+      "lat": 41.4033686,
+      "lon": 2.189644,
+      "version": 1,
+      "timestamp": "2014-10-06T12:17:44Z"
+    },
+    {
+      "type": "node",
+      "id": 3114697340,
+      "lat": 41.4033792,
+      "lon": 2.1893905,
+      "version": 1,
+      "timestamp": "2014-10-06T12:17:44Z"
+    },
+    {
+      "type": "node",
+      "id": 3114697341,
+      "lat": 41.4033854,
+      "lon": 2.1896792,
+      "version": 1,
+      "timestamp": "2014-10-06T12:17:44Z"
+    },
+    {
+      "type": "node",
+      "id": 3114697342,
+      "lat": 41.4033936,
+      "lon": 2.1896906,
+      "version": 1,
+      "timestamp": "2014-10-06T12:17:44Z"
+    },
+    {
+      "type": "node",
+      "id": 3114697343,
+      "lat": 41.4033992,
+      "lon": 2.1893557,
+      "version": 1,
+      "timestamp": "2014-10-06T12:17:44Z"
+    },
+    {
+      "type": "node",
+      "id": 3114697344,
+      "lat": 41.4034221,
+      "lon": 2.1897247,
+      "version": 1,
+      "timestamp": "2014-10-06T12:17:44Z"
+    },
+    {
+      "type": "node",
+      "id": 3114697345,
+      "lat": 41.4034297,
+      "lon": 2.18932,
+      "version": 1,
+      "timestamp": "2014-10-06T12:17:44Z"
+    },
+    {
+      "type": "node",
+      "id": 3114697346,
+      "lat": 41.403453,
+      "lon": 2.1897458,
+      "version": 1,
+      "timestamp": "2014-10-06T12:17:44Z"
+    },
+    {
+      "type": "node",
+      "id": 3114697347,
+      "lat": 41.4034627,
+      "lon": 2.1892969,
+      "version": 1,
+      "timestamp": "2014-10-06T12:17:44Z"
+    },
+    {
+      "type": "node",
+      "id": 3114697348,
+      "lat": 41.4034676,
+      "lon": 2.1897525,
+      "version": 1,
+      "timestamp": "2014-10-06T12:17:44Z"
+    },
+    {
+      "type": "node",
+      "id": 3114697349,
+      "lat": 41.403497,
+      "lon": 2.1892836,
+      "version": 1,
+      "timestamp": "2014-10-06T12:17:44Z"
+    },
+    {
+      "type": "node",
+      "id": 3114697350,
+      "lat": 41.4035246,
+      "lon": 2.1897595,
+      "version": 1,
+      "timestamp": "2014-10-06T12:17:44Z"
+    },
+    {
+      "type": "node",
+      "id": 3114697351,
+      "lat": 41.4035335,
+      "lon": 2.189282,
+      "version": 1,
+      "timestamp": "2014-10-06T12:17:44Z"
+    },
+    {
+      "type": "node",
+      "id": 3114697352,
+      "lat": 41.403544,
+      "lon": 2.1897545,
+      "version": 1,
+      "timestamp": "2014-10-06T12:17:44Z"
+    },
+    {
+      "type": "node",
+      "id": 3114697353,
+      "lat": 41.4035675,
+      "lon": 2.1892914,
+      "version": 1,
+      "timestamp": "2014-10-06T12:17:44Z"
+    },
+    {
+      "type": "node",
+      "id": 3114697354,
+      "lat": 41.4036075,
+      "lon": 2.1897153,
+      "version": 1,
+      "timestamp": "2014-10-06T12:17:44Z"
+    },
+    {
+      "type": "node",
+      "id": 3114697355,
+      "lat": 41.4036357,
+      "lon": 2.1896808,
+      "version": 1,
+      "timestamp": "2014-10-06T12:17:44Z"
+    },
+    {
+      "type": "node",
+      "id": 3114697356,
+      "lat": 41.4036545,
+      "lon": 2.1896444,
+      "version": 1,
+      "timestamp": "2014-10-06T12:17:44Z"
+    },
+    {
+      "type": "node",
+      "id": 3114697357,
+      "lat": 41.4036677,
+      "lon": 2.189416,
+      "version": 1,
+      "timestamp": "2014-10-06T12:17:44Z"
+    },
+    {
+      "type": "node",
+      "id": 3114697358,
+      "lat": 41.4036821,
+      "lon": 2.189532,
+      "version": 1,
+      "timestamp": "2014-10-06T12:17:44Z"
+    },
+    {
+      "type": "way",
+      "id": 44213122,
+      "nodes": [
+        561529834,
+        2265819861,
+        3114697357,
+        561530624,
+        2265819859,
+        561529835,
+        2265819855,
+        3114697353,
+        561529836,
+        3114697351,
+        2265819852,
+        3114697349,
+        561530627,
+        3114697347,
+        2265819849,
+        3114697345,
+        561529837,
+        3114697343,
+        2265819846,
+        3114697340,
+        561529838,
+        3114697338,
+        2265819847,
+        3114697336,
+        2265819848,
+        3114697334,
+        561529840,
+        3114697335,
+        2265819850,
+        3114697337,
+        2265819851,
+        3114697339,
+        561529841,
+        3114697341,
+        3114697342,
+        2265819853,
+        3114697344,
+        2265819854,
+        3114697346,
+        3114697348,
+        2265819856,
+        2265819857,
+        3114697350,
+        3114697352,
+        561529842,
+        2265819858,
+        3114697354,
+        2265819860,
+        3114697355,
+        561530626,
+        3114697356,
+        2265819862,
+        2265819863,
+        3114697358,
+        2265819864,
+        561529834
+      ],
+      "tags": {
+        "addr:housename": "Torre Glòries",
+        "addr:street": "Diagonal 209-211",
+        "architect": "Jean Nouvel",
+        "attraction": "yes",
+        "building": "office",
+        "building:colour": "#7AA7BA",
+        "building:facade:material": "glass",
+        "building:levels": "34",
+        "building:levels:underground": "4",
+        "building:shape": "cylinder",
+        "height": "144.4",
+        "lit": "yes",
+        "name": "Torre Glòries",
+        "name:ar": "توري أغبار",
+        "name:ca": "Torre Glòries",
+        "name:de": "Turm Glòries",
+        "name:en": "Glòries Tower",
+        "name:fr": "Tour Glòries",
+        "name:he": "טורה אגבר",
+        "name:ja": "トーレ・アグバール",
+        "name:ko": "아그바 타워",
+        "name:ru": "башня Агбар",
+        "name:zh": "荣耀大厦",
+        "old_name": "Torre Agbar",
+        "old_name:zh": "阿格巴塔",
+        "roof:colour": "#7AA7BA",
+        "roof:height": "68",
+        "roof:levels": "1",
+        "roof:material": "glass",
+        "roof:shape": "dome",
+        "start_date": "2004",
+        "toilets:wheelchair": "yes",
+        "wheelchair": "yes",
+        "wikidata": "Q336246",
+        "wikimedia_commons": "Category:Torre Glòries",
+        "wikipedia": "ca:Torre Glòries"
+      },
+      "version": 43,
+      "timestamp": "2025-12-17T18:15:55Z"
+    }
+  ]
+}

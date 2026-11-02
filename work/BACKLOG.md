@@ -1,54 +1,55 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-02**. Iteració **v0.17.0**. Versions 0.x fins a declaració explícita d’estabilitat. Historial i anotacions literals a [HISTORIAL.md](HISTORIAL.md); notes originals conservades a [MILLORES-BUGS.md](MILLORES-BUGS.md).
+Actualitzat: **2026-11-02**. Lot **v0.18 implementat i comprovat localment**; validació d'usuari pendent. Versions 0.x fins a declaració explícita d’estabilitat. Historial i anotacions literals a [HISTORIAL.md](HISTORIAL.md); notes originals conservades a [MILLORES-BUGS.md](MILLORES-BUGS.md).
 
 ## Ordre de treball
 
-1. **RO-033 — Suports a totes les escales.** Corregir els pilars que desapareixen amb zoom out; controlar les distàncies en mil·límetres de maqueta i mantenir lliures camins i edificis.
-2. **RO-034 / RO-024 — Obrir túnels de manera explícita.** Mode experimental estimat quan només tenim traçat 2D; perforació real de capes, base conservada i mateixa geometria a preview/exportació. Cap dada estimada presentada com a mesurada.
-3. **RO-024 — Preparar el primer laminat útil.** Cupó petit amb un tram elevat, pilars i un pas inferior; comprovar unions, llums i capes al laminador abans d’ocupar la màquina 2–3 dies amb una maqueta completa. Després, prova física i model complet.
-4. **RO-023 / RO-026 / RO-032 — Fidelitat cartogràfica.** Comparar fonts i cobertes en una segona zona un cop el nucli de geometria sigui consistent.
+1. **RO-034 / RO-050 — Validació del lot.** Activar els túnels estimats a Rajadell, revisar portals i laminat; comparar +0,5 / +1 mm ferroviaris i materials. Controls i geometria/exportació comprovats localment.
+2. **RO-024 — Qualitat abans d'impressions llargues.** Analitzar els canvis de material observats en algunes capes al laminador; no atribuir-ne encara la causa al programa. Cupó reduït abans de maquetes de 2–3 dies.
+3. **RO-032 — Cobertes i singulars, P1.** Acreditar accés remot reeixit i obtenir dades de coberta de Tamariu. Nucli de sis formes i fixture Torre Glòries verificats; cobertura general i altres singulars encara oberts.
+4. **RO-033 — Contrast fora de Rajadell.** Tres llocs reals amb pont recte, corbat i pas inferior; revisar connexions, obstacles i suports dels enllaços.
 
-**Seguiment:** 14 línies obertes, 5 ajornades i 30 arxivades. «Implementat» vol dir disponible; la validació local, la d’usuari, el laminat i la impressió es registren per separat.
+**Seguiment:** 15 línies obertes, 5 ajornades i 30 arxivades. «Implementat» vol dir disponible; la validació local, la d’usuari, el laminat i la impressió es registren per separat.
 
 ## Desenvolupament prioritari
 
-| ID | Prioritat | Estat | Proper resultat comprovable |
-| --- | --- | --- | --- |
-| [RO-033](#ro-033--ponts-i-viaductes) | P1 | Corregit; pendent d’usuari/laminat | Pilars consistents a zoom in/out i llums diagnosticades |
-| [RO-034](#ro-034--túnels-imprimibles) | P1 | Experimental integrat; pendent d’usuari | Buit real estimat, portals oberts i base intacta |
-| [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió) | P1 | Laminat i prova física pendents | Cupó reduït abans de models de 2–3 dies |
-| [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts) | P1 | Fonts en estudi | Comparació de parts i petjades en segona zona |
-| [RO-032](#ro-032--cobertes-i-volums-singulars) | P2 | Dades pendents | Cobertes de la font; cap inclinació inventada |
-| [RO-023](#ro-023--relleu-local-i-fonts-vectorials-de-més-precisió) | P2 | Fonts remotes pendents | MDT més precís accessible al navegador |
+| ID                                                                 | Prioritat | Estat                                                                                                                                                                                                                                                                                                                                 | Proper resultat comprovable                             |
+| ------------------------------------------------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| [RO-033](#ro-033--ponts-i-viaductes)                               | P1        | Corregit; pendent d’usuari/laminat                                                                                                                                                                                                                                                                                                    | Pilars consistents a zoom in/out i llums diagnosticades |
+| [RO-034](#ro-034--túnels-imprimibles) | P1 | Corregit en controls locals; pendent d'usuari/laminat | Revisar portals amb mode experimental activat |
+| [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió) | P1 | Artefactes de materials pendents de diagnòstic | Distingir malla/exportació de configuració del laminador |
+| [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts)     | P1        | Fonts en estudi                                                                                                                                                                                                                                                                                                                       | Comparació de parts i petjades en segona zona           |
+| [RO-032](#ro-032--cobertes-i-volums-singulars) | P1 | Nucli verificat; servei remot pendent de validar | Consulta real reeixida i dades de coberta de Tamariu |
+| [RO-023](#ro-023--relleu-local-i-fonts-vectorials-de-més-precisió) | P2        | Fonts remotes pendents                                                                                                                                                                                                                                                                                                                | MDT més precís accessible al navegador                  |
 
 ## Validació i retocs acotats
 
-| ID | Prioritat | Estat | Què falta |
-| --- | --- | --- | --- |
-| [RO-014](#ro-014--marc-imprimible-independent) | P2 | Marc validat; simplificació aplicada | Preview negre fix, sense selector de color; revisar ajust físic |
-| [RO-046](#ro-046--catàleg-de-llocs-recomanats) | P2 | Catàleg validat; canvi aplicat | Càrrega en seleccionar exemple; comprovar transició |
-| [RO-044](#ro-044--catastre-per-seccions-i-recuperació-de-configuracions) | P1 | Implementat; casos límit pendents | Buit/mixt, subdivisions i recuperació després d’error |
-| [RO-045](#ro-045--coherència-visual-dels-sidebars) | P2 | Implementat; pendent d’usuari | Coherència de controls i scroll a escriptori |
+| ID                                                                       | Prioritat | Estat                                | Què falta                                                       |
+| ------------------------------------------------------------------------ | --------- | ------------------------------------ | --------------------------------------------------------------- |
+| [RO-050](#ro-050--ferrocarrils-diferenciats) | P2 | Implementat i comprovat localment | Usuari: realç ferroviari i assignació de material; laminat |
+| [RO-014](#ro-014--marc-imprimible-independent)                           | P2        | Marc validat; simplificació aplicada | Preview negre fix, sense selector de color; revisar ajust físic |
+| [RO-046](#ro-046--catàleg-de-llocs-recomanats)                           | P2        | Catàleg validat; canvi aplicat       | Càrrega en seleccionar exemple; comprovar transició             |
+| [RO-044](#ro-044--catastre-per-seccions-i-recuperació-de-configuracions) | P1        | Implementat; casos límit pendents    | Buit/mixt, subdivisions i recuperació després d’error           |
+| [RO-045](#ro-045--coherència-visual-dels-sidebars)                       | P2        | Implementat; pendent d’usuari        | Coherència de controls i scroll a escriptori                    |
 
 ## Després del nucli imprimible
 
-| ID | Prioritat | Estat | Abast |
-| --- | --- | --- | --- |
-| [RO-035](#ro-035--cavitats-i-relleus-amb-voladissos) | P3 | Dades 3D pendents | Coves, baumes i arcs naturals; un MDT no en descriu l’interior |
-| [RO-012](#ro-012--presentació-realista-del-model-imprès) | P3 | Objectiu redefinit | Imatge estàtica fotorealista del model amb entorn escolar |
-| [RO-019](#ro-019--internacionalització) | P3 | Setup fet | Migració/traduccions quan s’estabilitzi el flux |
-| [RO-011](#ro-011--comptador-dexportacions-i-umami) | P3 | Per estudiar | Definir recompte i font real abans de publicar una xifra |
+| ID                                                       | Prioritat | Estat              | Abast                                                          |
+| -------------------------------------------------------- | --------- | ------------------ | -------------------------------------------------------------- |
+| [RO-035](#ro-035--cavitats-i-relleus-amb-voladissos)     | P3        | Dades 3D pendents  | Coves, baumes i arcs naturals; un MDT no en descriu l’interior |
+| [RO-012](#ro-012--presentació-realista-del-model-imprès) | P3        | Objectiu redefinit | Imatge estàtica fotorealista del model amb entorn escolar      |
+| [RO-019](#ro-019--internacionalització)                  | P3        | Setup fet          | Migració/traduccions quan s’estabilitzi el flux                |
+| [RO-011](#ro-011--comptador-dexportacions-i-umami)       | P3        | Per estudiar       | Definir recompte i font real abans de publicar una xifra       |
 
 ## Ajornats
 
-| ID | Prioritat | Estat | Motiu / condició de retorn |
-| --- | --- | --- | --- |
-| [RO-016](#ro-016--plaques-i-etiquetes-educatives) | P2 | Ajornat per l’usuari; menú retirat | Prioritzar funcionalitat i qualitat del model |
-| [RO-017](#ro-017--rosa-dels-vents-i-altres-complements) | P3 | Ajornat; menú retirat | Reprendre amb disseny de rosa incrustada |
-| [RO-003](#ro-003--configuració-inesperada-en-importar-a-bambu) | P2 | Ajornat | Perfils d’impressora/filament secundaris |
-| [RO-025](#ro-025--vegetació-mesurada-i-paisatges-històrics) | P3 | Ajornat | Fonts adequades després del nucli |
-| [RO-047](#ro-047--precàrrega-opcional-de-fonts-alternatives) | P3 | Ajornat | Primer consultes i recuperació fiables |
+| ID                                                             | Prioritat | Estat                              | Motiu / condició de retorn                    |
+| -------------------------------------------------------------- | --------- | ---------------------------------- | --------------------------------------------- |
+| [RO-016](#ro-016--plaques-i-etiquetes-educatives)              | P2        | Ajornat per l’usuari; menú retirat | Prioritzar funcionalitat i qualitat del model |
+| [RO-017](#ro-017--rosa-dels-vents-i-altres-complements)        | P3        | Ajornat; menú retirat              | Reprendre amb disseny de rosa incrustada      |
+| [RO-003](#ro-003--configuració-inesperada-en-importar-a-bambu) | P2        | Ajornat                            | Perfils d’impressora/filament secundaris      |
+| [RO-025](#ro-025--vegetació-mesurada-i-paisatges-històrics)    | P3        | Ajornat                            | Fonts adequades després del nucli             |
+| [RO-047](#ro-047--precàrrega-opcional-de-fonts-alternatives)   | P3        | Ajornat                            | Primer consultes i recuperació fiables        |
 
 ## Criteris de seguiment
 
@@ -66,7 +67,6 @@ P1: fidelitat i imprimibilitat; P2: funcionalitat i ús; P3: exploració. Només
 
 **Per validar:** comparar 3MF compatible i estàndard amb una configuració d’importació coneguda; entendre d’on surten els valors i corregir/documentar el comportament. Conservar l’assignació correcta dels quatre colors (RO-021), les mides i els materials. No confondre diàmetre del broquet, altura de capa i detall de la malla. Aquesta investigació precedeix RO-015; la comprovació al Bambu de l’usuari continua sent explícita.
 
-
 ### RO-011 — Comptador d’exportacions i Umami
 
 **Proposta, encara no aprovada ni operativa:** una estadística real al footer pot mostrar ús de l’eina. El nombre «4 923» de les notes és un exemple, no una dada del projecte.
@@ -76,7 +76,6 @@ P1: fidelitat i imprimibilitat; P2: funcionalitat i ús; P3: exploració. Només
 **Opció a estudiar:** publicar periòdicament una xifra agregada com a fitxer estàtic, si una automatització pot obtenir-la. No incloure credencials privades al client ni convertir el comptador en una dependència per generar models.
 
 **Per validar:** recompte amb definició, font i data d’actualització; errors d’analítica no trenquen l’eina i no es mostren nombres inventats. Reconsiderar quan hi hagi desplegament estable i s’acordin els esdeveniments a mesurar.
-
 
 ### RO-012 — Presentació realista del model imprès
 
@@ -92,7 +91,6 @@ P1: fidelitat i imprimibilitat; P2: funcionalitat i ús; P3: exploració. Només
 
 **Per validar:** la representació usa la geometria, escala i colors seleccionats; es diferencia una escena il·lustrativa d’un resultat físic garantit. El model i la descàrrega continuen operatius si es desactiva aquesta vista.
 
-
 ### RO-014 — Marc imprimible independent
 
 **Validació rebuda (2026-11-02):** marc validat. Es demana retirar el selector de color i fixar el preview en negre; simplificació aplicada en aquest lot. El material físic es tria al laminador. Ajust de toleràncies i impressió continuen a RO-024.
@@ -102,7 +100,6 @@ P1: fidelitat i imprimibilitat; P2: funcionalitat i ús; P3: exploració. Només
 **Observació de l’usuari conservada:** Validat però modifica el zoom del model, quan en realitat el preview del marc hauria de ser un afegit exterior al model, és a dir, no hauria de fer zoom in-out al conjunt. Les configuracions del marc no afecten el preview i estan al sidebar en zones diferents: allà on indiquem si volem marc o no hauríem de poder indicar la configuració i veure-la previsualitzada, no imaginar-nos-la i que estiguin en llocs diferents.
 
 **Pendent:** confirmació del canvi de color fix, laminat i ajust físic de toleràncies. [Antecedent i comprovacions](RO-014-IMPLEMENTACIO.md).
-
 
 ### RO-016 — Plaques i etiquetes educatives
 
@@ -117,7 +114,6 @@ P1: fidelitat i imprimibilitat; P2: funcionalitat i ús; P3: exploració. Només
 **Ajornament:** després del flux principal i de definir les superfícies d’ubicació; coordinació amb RO-013/RO-014.
 
 **Per validar:** text personalitzat amb accents, dimensions i llegibilitat a l’escala d’impressió, ubicació que no tapi geometria important i exportació separada/integrada segons l’opció. L’etiqueta no modifica les coordenades geogràfiques del model.
-
 
 ### RO-017 — Rosa dels vents i altres complements
 
@@ -135,7 +131,6 @@ P1: fidelitat i imprimibilitat; P2: funcionalitat i ús; P3: exploració. Només
 
 **Per validar:** nord real coherent amb l’angle del retall, dimensions imprimibles i peça separada quan es demani. Girar la càmera no ha de modificar la direcció geogràfica indicada.
 
-
 ### RO-019 — Internacionalització
 
 **Setup v0.10.0 implementat:** [arquitectura i migració](RO-019-SETUP.md). Catàleg català, selector amb altres llengües desactivades, formats i persistència amb alternativa segura. 106 proves de suite i build correctes després de revisió; selector i Enter/Escape comprovats al navegador local. Migració de textos parcial, traduccions pendents per petició de l’usuari; lectors de pantalla i validació d’usuari pendents.
@@ -147,7 +142,6 @@ P1: fidelitat i imprimibilitat; P2: funcionalitat i ús; P3: exploració. Només
 **Per validar:** textos visibles i missatges en la llengua triada, formats coherents, alternativa per a textos absents i cap identificador de capa/material dependent de la traducció.
 
 ## Seguiment de canvis anteriors
-
 
 ### RO-023 — Relleu local i fonts vectorials de més precisió
 
@@ -165,8 +159,9 @@ P1: fidelitat i imprimibilitat; P2: funcionalitat i ús; P3: exploració. Només
 
 **Decisió de l’usuari després de v0.7.0:** Comprovat que l'eina existeix, però poc intuïtiva i massa text. Valorar si podem carregar GeoJSON d'alguna font oberta, potser no com a opció principal però si com una opció d'usuari en cas que vulgui major detall per als edificis.
 
-
 ### RO-024 — Unió de volums i validació d’impressió
+
+**Observació rebuda, 2026-11-02:** al laminador apareixen capes puntuals amb color terra dins de vegetació/arbres i alguns edificis. La causa no està establerta: comprovar encavalcaments, topologia i assignació de materials del 3MF, i després configuració/reparació del laminador. Cal un fitxer i tall concrets abans d’atribuir responsabilitat. Es conserva l’anotació literal a l’historial.
 
 **Prioritat actual (2026-11-02):** abans de reservar 2–3 dies de màquina per model, preparar un cupó amb tauler, diversos pilars i pas inferior. Comprovar primer al laminador unions, llums, portals i base; després registrar la impressió física. No generar una cua de maquetes llargues amb errors coneguts.
 
@@ -180,7 +175,6 @@ P1: fidelitat i imprimibilitat; P2: funcionalitat i ús; P3: exploració. Només
 
 **Actualització v0.9.0:** Pla de sòlids i portes de validació a RO-024-SOLIDS.md, abans de ponts/túnels/cavitats. Encara sense unió general ni validació física.
 
-
 ### RO-025 — Vegetació mesurada i paisatges històrics
 
 **Origen:** conversa i [ARCHITECTURE.md](../ARCHITECTURE.md). Arbres individuals cartografiats/LiDAR i models d’un lloc en altres anys són línies futures diferents de la vegetació procedimental i de l’opció actual d’ocultar edificis.
@@ -188,7 +182,6 @@ P1: fidelitat i imprimibilitat; P2: funcionalitat i ús; P3: exploració. Només
 **Ajornament:** fins a estabilitzar el nucli i disposar de fonts adequades. Si s’activa una d’aquestes línies, dividir-la en tasques pròpies amb fonts, data i precisió. La menció de «v1» a la conversa és una fita futura, no autorització per canviar la versió a 1.0.
 
 **Per validar:** diferenciar dades mesurades/procedimentals i reconstruccions històriques; documentar dates compatibles de relleu, edificació i cobertes del sòl. Eliminar un edifici actual no acredita com era abans el terreny.
-
 
 ### RO-026 — Fidelitat dels edificis i selecció de fonts
 
@@ -215,8 +208,9 @@ P1: fidelitat i imprimibilitat; P2: funcionalitat i ús; P3: exploració. Només
 
 **Actualització v0.9.0:** Primer adaptador Catastre WFS: consultes acotades, XML validat i reprojecció. Altures estimades a partir de plantes, zero plantes excloses. Comparació amb ICGC/OSM disponible. RTL, segona zona i priorització de fonts addicionals pendents.
 
-
 ### RO-032 — Cobertes i volums singulars
+
+**P1 en curs, lot v0.18:** [font i integració](RO-032-INTEGRACIO.md) de petjades/parts i cobertes OSM originals, sis formes paramètriques i mostra real Torre Glòries. Els dos serveis Overpass han esgotat el temps d'espera a la prova local real; l'alternativa OSM simplificada es conserva amb avís. Accés remot reeixit i cobertura de Tamariu encara pendents. Sagrada Família requereix dades i suport específics; no s'ha reconstruït pel nom. No es tanca la cobertura general a partir d'un sol exemple. Els modes limitat/pla conserven el comportament anterior.
 
 **Recerca actualitzada:** [dades reals de cobertes](RO-032-DADES-COBERTES.md), MDTe territorial/litoral com a superfície d’altituds; no conté plans semàntics. Cal endpoint COG/CORS/rangs i ajustos de qualitat per petjada abans d’automatitzar; no s’inventen cobertes. Recerca revisada, 139 proves/build correctes; funcionalitat de cobertes de Tamariu pendent.
 
@@ -225,7 +219,6 @@ P1: fidelitat i imprimibilitat; P2: funcionalitat i ús; P3: exploració. Només
 Estudiar roof:shape, roof:height, roof:direction/angle i parts d’OSM original, CityGML/CityJSON o models municipals 3D. Distingir coberta paramètrica d’una malla real (p. ex. Torre Glòries). Respectar els modes limitat/pla; no inventar cobertes per donar aparença de realisme. Pla i casos de control a PAISATGE-3D.md.
 
 **Actualització v0.9.0:** Primer suport de cobertes gabled/skillion amb forma, altura i direcció explícites en dades locals. Respecta el gir, els patis, el retall i el mode limitat pla. Falten fonts automàtiques de cobertes i formes corbes/complexes; Catastre no les aporta.
-
 
 ### RO-033 — Ponts i viaductes
 
@@ -249,8 +242,11 @@ Estudiar roof:shape, roof:height, roof:direction/angle i parts d’OSM original,
 
 Separar ponts dels camins adherits al terreny; cercar cota del tauler, connexions i suports. brunnel/layer només indiquen tipus/ordre, no metres. Estudiar un viaducte cartografiat amb dades suficients i un cas sense cota. Pla a PAISATGE-3D.md.
 
-
 ### RO-034 — Túnels imprimibles
+
+**Incidència confirmada per l’usuari, lot v0.18:** al sud de la vista inicial de Rajadell, la carretera continua a l’altra banda de la muntanya sense una obertura visible. La v0.17 no es considera resolució d’aquest cas amb els ajustos per defecte. Es revisen ancoratge del perfil als portals generats, fragments i proves a resolucions 24/36/56.
+
+**Correcció v0.18 comprovada localment:** perfil interior DEM conservat i rampes curtes als portals quan la superfície interpolada els enterra; límits de 25% físic, 25 m verticals i 8 mm / 100 m de prolongació (el menor). Excavació limitada als components propers, sense ampliar pressupostos globals. Control de quatre retalls/detalls i 3MF correcte; 284 casos únics i build superats. A 3 km / 150 mm s'omet el principal per manca de coberta suficient. Revisió visual final del túnel i laminat pendents d'usuari; no s'ha repetit l'automatització del navegador després dels bloquejos. [Criteris i límits](RO-034-OBERTURES.md).
 
 **v0.17.0 experimental (2026-11-02), P1:** implementació d’obertures amb booleans i opció experimental estimada explícita, desactivada per defecte. Nucli, UI, worker i vista/exportació integrats. [Proves, portals i límits](RO-034-OBERTURES.md). Dades insuficients no s’etiqueten com una reconstrucció real. La mostra de control en detall ràpid passa; en detall equilibrat i en la regió remota de 3 km hi ha omissions amb avís. Prioritat següent: continuïtat entre fragments MVT, diferències DEM/graella i portals a diferents escales.
 
@@ -258,11 +254,9 @@ Separar ponts dels camins adherits al terreny; cercar cota del tauler, connexion
 
 Escombrar una secció sobre un eix 3D i restar-la dels volums de terreny i capes que travessi. Fan falta portals, traçat, cota, secció i política d’escala. Conservar mar/base, continuïtat entre peces i geometria tancada. No prometre un túnel real a partir d’una línia 2D. Pla a PAISATGE-3D.md; depèn de RO-024.
 
-
 ### RO-035 — Cavitats i relleus amb voladissos
 
 Un MDT d’una altura per XY no descriu cavitats ni voladissos. Investigar núvols de punts o malles d’aixecaments amb cobertura de la cavitat; LiDAR aeri no garanteix veure’n l’interior. Començar per un arc petit amb malla oberta i llicència comprovada. Pla a PAISATGE-3D.md.
-
 
 ### RO-044 — Catastre per seccions i recuperació de configuracions
 
@@ -270,13 +264,11 @@ Un MDT d’una altura per XY no descriu cavitats ni voladissos. Investigar núvo
 
 Comprovació real: 10 consultes, 624 edificis, 2.613 parts, 301 duplicats i 2.447 volums sobre rasant. Navegador local: error incremental conserva model, restaura font/mode/altura i habilita exportació; regió nova usa ICGC amb avís explícit. Model nou confirmat després del Worker. Validació de l’usuari pendent.
 
-
 ### RO-045 — Coherència visual dels sidebars
 
 **v0.14.0:** [llibre d’estil](../DESIGN.md) obligatori també per a Kimi, referenciat a AGENTS.md; tokens de tipografia i controls compartits, sense canviar valors visuals. Criteris d’acceptació inclouen navegador i captures; tests/build no substitueixen revisió visual.
 
 Homogeneïtzats resums, camps, desplegables i sortides de text amb l’estètica existent. Resum de fonts sense caixa fosca ni mida desproporcionada; controls del marc reunits i fletxa del nord retirada. Comprovació visual local completada; validació de l’usuari pendent.
-
 
 ### RO-046 — Catàleg de llocs recomanats
 
@@ -292,9 +284,14 @@ etiquetats com a pont/túnel, amb coordenades XY i sense cota del tauler o eix.
 
 RO-033/034: aquesta ubicació és el següent cas d’estudi; els taulers XYZ s’han incorporat a v0.14; el túnel continua pendent de dades suficients. Cal validar cotes, portals i seccions reals.
 
-
 ### RO-047 — Precàrrega opcional de fonts alternatives
 
 Proposta de l’usuari: opció a Com funciona per carregar altres capes en segon pla, explicant el consum addicional de dades. No activada en aquesta iteració. Primer es corregeixen les consultes i la recuperació d’errors.
 
 Abans d’implementar: cua limitada, cancel·lació per canvi de regió, memòria cau amb caducitat i estat per àrea/font; un error temporal no demostra manca de cobertura ni ha de desactivar permanentment un proveïdor. Sense peticions ocultes addicionals ara.
+
+### RO-050 — Ferrocarrils diferenciats
+
+**P2, implementat i comprovat localment (2026-11-02):** [nucli i comprovacions](RO-050-FERROCARRILS.md). Vies ferroviàries separades dels camins amb increment de 0, 0,5 o 1 mm sobre el realç viari; +1 mm per defecte. Mil·límetres de maqueta, sense exageració vertical. Capa amb assignació de material pròpia, també en impressió monocroma. Control i llegenda revisats a 1280×720; geometria, materials i procedència exportada comprovats, amb 284 casos únics i build superats. Usuari/laminador pendents.
+
+**Criteris:** identificar vies per atributs de la font, sense confondre un camí `track` amb tren. Conservar nivells de ponts i pilars; realç sobre el tauler, sense moure la seva cota original. Vies en túnel no es dibuixen a la superfície. Preview/3MF/STL i canvis incrementals d’edificis han de conservar la mateixa geometria. Migrar assignacions de vuit categories sense perdre triangles en 1/2/4/8 materials. Carrils i travesses detallats queden per escales on siguin imprimibles.
