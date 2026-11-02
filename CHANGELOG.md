@@ -1,5 +1,11 @@
 # Canvis
 
+## v0.15.1 — 2026-11-02
+
+- Punt estable parcial: els detalls de Rajadell es carreguen per la ubicació del retall, també en generar una regió fora de la mostra inicial. Ampliar, reduir o desplaçar el mapa conserva les superfícies i el repartiment documentat mentre l’estructura interseca la peça.
+- Excepció geogràfica petita, memòria cau compartida amb reintent després d’errors i sense consultes a altres regions. La generalització de taulers procedimentals continua en curs; aquest punt no la declara acabada.
+- Regressions locals de càrrega, zoom/desplaçament, errors i edificis, i construcció estàtica. Sense comprovació remota.
+
 ## v0.15.0 — 2026-11-02
 
 - Pilars simplificats sota els taulers, incrustats al terreny i units al pont. Petjades amb marge contra camins i edificis carregats; recalculades en canviar de font d’edificis sense reconstruir el relleu.

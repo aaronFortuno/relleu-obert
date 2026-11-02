@@ -5,6 +5,7 @@ import {loadTerrain,oceanTilePredicate} from './terrain-provider.js';
 import {regionTileCount,MAX_REGION_TILES} from './region-limits.js';
 import {loadBuildingsRecoverably} from './building-recovery.js';
 import {recommendedPlace} from './recommended-places.js';
+import {loadInfrastructureOverrides} from './infrastructure-registry.js';
 
 export {lonLatTile} from './elevation.js';
 import {lonLatTile} from './elevation.js';
@@ -22,6 +23,7 @@ export function readVector(bytes,{x,y,z}){
   }return features;
 }
 async function get(url){const r=await fetch(url,{signal:AbortSignal.timeout(25000),cache:url.endsWith('/planet')?'no-cache':'default'});if(!r.ok)throw Error(`No s’ha pogut carregar ${url.includes('openfreemap')?'la cartografia d’OpenFreeMap':'la mostra local'} (${r.status}). Torna-ho a provar més tard.`);return r;}
+const infrastructureJSON=async name=>(await get((import.meta.env?.BASE_URL||'./')+'data/'+name)).json();
 async function decodeDEM(blob,t){
   const decoder=await import('./dem-browser.js');return decoder.decodeDEM(blob,t);
 }
@@ -67,8 +69,9 @@ export async function loadRegion({sample=true,bbox,buildingSource,decodeElevatio
   if(localDEM){meta.terrain=localDEM.metadata;terrainWarnings.push('MDT GeoTIFF local: altituds en metres, datum vertical de la font sense transformar. No es completen buits amb relleu inventat.');}
   meta.elevationDecoding=localDEM?{method:'numeric GeoTIFF raster; no canvas readback',file:localDEM.metadata}:{method:'binary RGB; no canvas readback',tiles:dem.map(t=>({z:t.z,x:t.x,y:t.y,...t.decoding}))};
   meta.localSources={dem:localDEM?.metadata||null,buildings:localBuildings?.metadata||null};
-  const infrastructure=sample&&meta.infrastructureFile?await(await get(base+meta.infrastructureFile)).json():null;
-  if(infrastructure&&meta.infrastructureLayouts)infrastructure.layouts=await(await get(base+meta.infrastructureLayouts)).json();
+  let infrastructure=null;
+  try{infrastructure=await loadInfrastructureOverrides(meta.bbox,infrastructureJSON);}
+  catch(error){terrainWarnings.push('No s’han pogut carregar els detalls específics dels ponts; s’ha omès aquesta millora. '+error.message);}
   const region={meta,features,vectorFeatures:features,terrainWarnings,dem,localDEM,infrastructure};
   const layer=await loadBuildingsRecoverably(source=>loadBuildingLayer(region,{source,localBuildings},progress),buildingSource||defaultBuildingSource(meta.bbox),localBuildings?[]:buildingFallbacks);
   if(layer.recovery){region.recovery=layer.recovery;region.meta={...region.meta,buildingRecovery:layer.recovery};}

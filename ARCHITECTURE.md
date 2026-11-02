@@ -21,9 +21,10 @@ a la impressió. No es mantindrà un catàleg global de projectes constructius.
 Una futura excepció demanada per l’usuari haurà de tenir àmbit geogràfic,
 identitat de l’estructura, font i alternativa procedimental explícits.
 
-**Límit actual de v0.15.0:** `loadRegion` només carrega `infrastructure` si la
-mostra declara un fitxer de taulers. `buildModel` crea ponts elevats a partir
-d’aquests taulers; sense aquest fitxer, els trams MVT de pont encara entren
+**Punt parcial v0.15.1:** `loadRegion` carrega l’excepció de Rajadell per
+intersecció geogràfica, independent del botó d’exemple, amb memòria cau i
+reintent de lectures fallides. `buildModel` crea ponts elevats a partir
+d’aquests taulers; sense una excepció disponible, els trams MVT encara entren
 al flux de camins sobre el terreny. Per tant, el motor no és encara un flux
 de reconstrucció 3D general per a qualsevol ubicació. RO-033 ha de connectar
 la detecció de trams elevats, el perfil vertical conegut o estimat, els taulers,

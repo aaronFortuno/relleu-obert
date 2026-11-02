@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-02**. Iteració **v0.15.0**: pilars, enllaços del viaducte i camins realçats. Les quatre validacions de v0.8.0 i les anotacions originals són a [HISTORIAL.md](HISTORIAL.md). Identificadors estables, versions 0.x fins a declaració explícita d’estabilitat.
+Actualitzat: **2026-11-02**. Iteració **v0.15.1**: pilars, enllaços del viaducte i camins realçats. Les quatre validacions de v0.8.0 i les anotacions originals són a [HISTORIAL.md](HISTORIAL.md). Identificadors estables, versions 0.x fins a declaració explícita d’estabilitat.
 
 ## Prioritats immediates
 
@@ -206,6 +206,8 @@ Estudiar roof:shape, roof:height, roof:direction/angle i parts d’OSM original,
 **Actualització v0.9.0:** Primer suport de cobertes gabled/skillion amb forma, altura i direcció explícites en dades locals. Respecta el gir, els patis, el retall i el mode limitat pla. Falten fonts automàtiques de cobertes i formes corbes/complexes; Catastre no les aporta.
 
 ### RO-033 — Ponts i viaductes
+
+**En curs, primer punt estable v0.15.1:** excepció de Rajadell per intersecció geogràfica, independent del botó d’exemple. Proves de retalls ampliats/desplaçats i càrrega de regió no mostra correctes. El generador procedimental general està delegat a Kimi en una tasca acotada; aquest punt no el considera implementat.
 
 **Decisió de l’usuari després de v0.15.0:** prioritzar construcció procedimental general; evitar acumular fitxers per a desenes de milers de ponts. Conservar Rajadell com a cas especial ja disponible. Altres excepcions, només sota demanda concreta, amb àmbit geogràfic i font explícits. No s’obre ara una tasca de Millau.
 

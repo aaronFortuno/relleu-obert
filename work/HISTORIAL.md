@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-02. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.15.1 — Punt estable de continuïtat geogràfica
+
+Rajadell es carrega per ubicació també en moure o ampliar el retall fora de la mostra. Proves locals de càrrega/regressió i build. Punt parcial publicat per petició de l’usuari mentre es prepara el motor procedimental general; RO-033 segueix obert.
+
 ## Decisió posterior a v0.15.0 — Procedimental com a via general
 
 L’usuari aprova visualment Rajadell i fixa com a prioritat la generació
