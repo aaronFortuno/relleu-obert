@@ -1,5 +1,9 @@
 # RO-034 — Obertures experimentals i portals
 
+**Actualització v0.18.1:** opció activada inicialment a la interfície,
+volta parabòlica i paviment de camí/ferrocarril. Vegeu el detall al final;
+les seccions anteriors descriuen els criteris i resultats de v0.17–0.18.
+
 Treball delegat del 2026-11-02. **Nucli implementat i retornat a l’agent principal per integrar i validar:**
 passos sintètics i túnel principal de Rajadell amb centreline lliure provats
 localment. No s’ha declarat reconstrucció fidel ni validació d’impressió.
@@ -172,3 +176,61 @@ després d'aquesta correcció, inclòs el cas de 10.001 prismes llunyans.
 Validació final de suite, navegador i fitxer descarregat a l'historial
 v0.18. Les cavitats naturals RO-035 i la geometria interior mesurada no
 queden resoltes per aquesta aproximació experimental.
+
+## v0.18.1 — Volta parabòlica i paviment
+
+La interfície marca inicialment «Túnels estimats · experimental».
+L'API continua requerint `estimatedTunnels:true`; el codi que només vol
+generar relleu no excava sense demanar-ho explícitament.
+
+La secció estimada té parets verticals fins al 55% de l'altura i una
+volta parabòlica al 45% restant, discretitzada en 16 trams. Manté la
+mateixa amplada i altura útils. Les comprovacions de cobertura segueixen
+el perfil real de la secció, també al centre i als punts intermedis de
+la volta. No s'ha substituït per un forat rectangular de sostre pla.
+L'arc facilita la impressió, però no acredita una impressió sense suports
+amb qualsevol dimensió, material o altura de capa.
+
+El pis útil continua a la cota del recorregut `pathMM`. Just a sota es
+generen 0,3 mm de material `roads`, o `railways` per a túnels ferroviaris.
+Aquest paviment es limita al substrat existent i es retira abans de totes
+les categories excavables per evitar volums de dos colors superposats.
+El ferrocarril té precedència si coincideixen dos paviments. També es
+resta qualsevol altra obertura: el pis d'un túnel no pot tapar-ne un altre.
+La base mínima de 2,5 mm es conserva; un paviment que la vulnera es rebutja.
+
+Les noves plataformes de carretera principal reben el mateix tall del
+túnel abans d'afegir pilars, enllaços, edificis i arbres. Excavació i canvi
+de material formen una transacció atòmica: una fallada conserva les capes
+anteriors i deixa un avís.
+
+El control real detecta fragments que col·lapsen en materialitzar un
+resultat booleà a Float32 i un tetraedre petit amb orientació negativa,
+que no és de volum nul. Aquest últim no s'ha eliminat ni invertit.
+La resta i la unió del paviment ara es mantenen dins de Manifold fins a
+una única materialització final per material. No es divideixen ni es
+reimporten resultats intermedis: una cavitat tancada necessita conservar
+la seva closca interior amb el sòlid exterior.
+
+En el resultat final es retiren només components tancats amb tres
+posicions XYZ exactes o menys, amb recompte i avís. No s'aplica cap
+llindar positiu de volum; una capa de 0,001 mm i un prisma real molt petit
+continuen preservats. La regressió de cavitat interior comprova volum,
+raigs lliures i paviment de material camí sense superposicions. Els
+recursos temporals es comproven tant en èxit com en fallades injectades.
+Els altres errors continuen produint retorn atòmic.
+
+Control real final amb ICGC, 150 mm i detall 36: túnel `1820235140` aplicat,
+secció parabòlica de 1,2 × 1,2 mm i paviment de 0,3 mm de material camí.
+Extensions estimades de 72,5 i 20 m; ajustos verticals de 8,675 i 3,566 m,
+registrats a la procedència. El candidat `2348018902` continua omès per
+manca de coberta contínua. Cap fragment eliminat en aquesta execució.
+Les quatre plataformes viàries també s'apliquen i el viaducte conserva
+onze pilars. Execució de 15 s amb mínim de 4,58 GB de RAM lliure.
+
+El punt publicable deixa el prototip viari desactivat i supera les sis
+proves integrades exigents, incloent quatre retalls/detalls i centreline
+lliure al 3MF serialitzat: 180 s i mínim de 4,18 GB lliures. Suite
+ordinària final de 336 casos correcta, build i control activat revisats
+localment a 1280×720. Total del lot: 342 proves úniques correctes. Laminat,
+obertures visibles en detall i impressió continuen pendents d'usuari.

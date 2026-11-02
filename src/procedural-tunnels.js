@@ -1,7 +1,7 @@
 // RO-034: explicitly enabled, estimated tunnels. MVT supplies plan geometry,
 // not measured portals, elevations or sections. Keep original endpoints until
 // after the DEM profile is evaluated; crop only the resulting terrain solid.
-import {tunnelVoid} from './infrastructure-solids.js';
+import {archedTunnelVoid,parabolicTunnelSection} from './infrastructure-solids.js';
 import {lineBuffer} from './roads.js';
 import {polygonOps} from './polygon-ops.js';
 import {isRailway} from './railways.js';
@@ -43,7 +43,8 @@ function join(fragments){
  */
 export function generateProceduralTunnelVoids(features,elevationAt,options={}){
   const {enabled=false,projection,verticalReference,exaggeration=1.5,ground,waterMask=[],minBaseMM=2.5,minOpeningMM=1.2,maxTunnels=24,surfaceRiseMM=0,railSurfaceRiseMM=surfaceRiseMM}=options;
-  const warnings=[],metadata={enabled:enabled===true,estimated:true,method:'linear-dem-with-generated-surface-portal-ramps',section:'estimated rectangular print opening',minimumBaseMM:minBaseMM,minimumOpeningMM:minOpeningMM,count:0,omitted:0,omissions:[]};
+  const pavementThicknessMM=.3,sectionProfile='estimated-parabolic-arch';
+  const warnings=[],metadata={enabled:enabled===true,estimated:true,method:'linear-dem-with-generated-surface-portal-ramps',section:sectionProfile,sectionWallHeightRatio:.55,sectionRoofSegments:16,pavementThicknessMM,minimumBaseMM:minBaseMM,minimumOpeningMM:minOpeningMM,count:0,omitted:0,omissions:[]};
   if(!enabled)return {items:[],warnings,metadata};
   if(enabled!==true||!Array.isArray(features)||typeof elevationAt!=='function'||typeof ground!=='function'||typeof projection?.project!=='function'||![projection?.scale,projection?.width,projection?.height,verticalReference?.originMeters,verticalReference?.minimumSurfaceMM,exaggeration,minBaseMM,minOpeningMM,surfaceRiseMM,railSurfaceRiseMM].every(Number.isFinite)||projection.scale<=0||projection.width<=0||projection.height<=0||exaggeration<=0||minBaseMM<1||minOpeningMM<.8||minOpeningMM>5||surfaceRiseMM<0||surfaceRiseMM>1||railSurfaceRiseMM<0||railSurfaceRiseMM>2||!Number.isSafeInteger(maxTunnels)||maxTunnels<1||maxTunnels>24)
     throw Error('Configuració de túnels experimentals invàlida.');
@@ -120,15 +121,18 @@ export function generateProceduralTunnelVoids(features,elevationAt,options={}){
     const extended=[first.p,...path,last.p],extension=[first.distance,last.distance],portalAdjustmentMM=[first.adjustment,last.adjustment],portalRampGrades=[first.grade,last.grade];
     footprints=lineBuffer(extended,widthMM/2,[projection.width,projection.height]);
     if(waterMask.length&&footprints.some(p=>polygonOps().intersection([p],waterMask).length)){fail(id,'la prolongació del portal coincideix amb aigua.');continue;}
-    if(extended.some(p=>p[2]<minBaseMM)){fail(id,'la cota tallaria el gruix mínim de base.');continue;}
+    if(extended.some(p=>p[2]-pavementThicknessMM<minBaseMM)){fail(id,'la cota del paviment tallaria el gruix mínim de base.');continue;}
     let cover=0,samples=0,badGround=false;const coverSamples=[];
     for(let i=1;i<path.length;i++){
       const a=path[i-1],b=path[i],steps=Math.min(256,Math.max(2,Math.ceil(Math.hypot(b[0]-a[0],b[1]-a[1])/1)));
       const dx=b[0]-a[0],dy=b[1]-a[1],segmentLength=Math.hypot(dx,dy);
       for(let j=0;j<=steps;j++){const t=j/steps,p=a.map((v,k)=>v+(b[k]-v)*t);if(!inside(p,projection))continue;
         if(coverSamples.length>=4096){badGround=true;break;}
-        let g=Infinity;try{for(const offset of [0,-widthMM/2,widthMM/2]){const q=[p[0]-dy/segmentLength*offset,p[1]+dx/segmentLength*offset];if(inside(q,projection))g=Math.min(g,ground(...q));}}catch{badGround=true;continue;}
-        if(!Number.isFinite(g)){badGround=true;continue;}samples++;const roof=g-p[2]-heightMM;
+        let roof=Infinity;try{for(const across of [0,-.5,.5,-.8,.8,-1,1]){
+          const offset=across*widthMM/2,q=[p[0]-dy/segmentLength*offset,p[1]+dx/segmentLength*offset];
+          if(inside(q,projection))roof=Math.min(roof,ground(...q)-p[2]-heightMM*(.55+.45*(1-across*across)));
+        }}catch{badGround=true;continue;}
+        if(!Number.isFinite(roof)){badGround=true;continue;}samples++;
         cover=Math.max(cover,roof);coverSamples.push({station:distances[i-1]+(distances[i]-distances[i-1])*t,roof});
       }
     }
@@ -140,10 +144,10 @@ export function generateProceduralTunnelVoids(features,elevationAt,options={}){
       fail(id,'el relleu no acredita una coberta contínua sobre l’obertura estimada.');continue;
     }
     try{
-      const mesh=tunnelVoid(extended,widthMM,heightMM);
+      const mesh=archedTunnelVoid(extended,widthMM,heightMM),sectionMM=parabolicTunnelSection(widthMM,heightMM),pavementCategory=isRailway(f.props)?'railways':'roads';
       const extensionMetres=extension.map(d=>d/projection.scale);
       const portalAdjustmentMetres=portalAdjustmentMM.map(d=>d/(projection.scale*exaggeration));
-      items.push({id,...mesh,path:extended,originalPath:path,sourceFeatureIds:[...new Set(f.ids)],sourceEndpoints:[[...f.points[0],z0],[...f.points.at(-1),z1]],estimated:true,elevationMethod:metadata.method,widthMM,heightMM,widthMetres,heightMetres,portalAdjustmentMM,portalAdjustmentMetres,maximumPortalAdjustmentMetres:25,portalRampGrades,maximumPortalRampGrade:.25,portalExtensionMM:extension,portalExtensionMetres:extensionMetres,maximumRoofCoverMM:cover,minimumCoveredRoofMM:Math.min(...interior.map(s=>s.roof)),footprints});
+      items.push({id,...mesh,path:extended,originalPath:path,sourceFeatureIds:[...new Set(f.ids)],sourceEndpoints:[[...f.points[0],z0],[...f.points.at(-1),z1]],estimated:true,elevationMethod:metadata.method,sectionProfile,sectionMM,pavementCategory,pavementThicknessMM,minimumBaseMM:minBaseMM,widthMM,heightMM,widthMetres,heightMetres,portalAdjustmentMM,portalAdjustmentMetres,maximumPortalAdjustmentMetres:25,portalRampGrades,maximumPortalRampGrade:.25,portalExtensionMM:extension,portalExtensionMetres:extensionMetres,maximumRoofCoverMM:cover,minimumCoveredRoofMM:Math.min(...interior.map(s=>s.roof)),footprints});
       if(portalAdjustmentMM.some(d=>Math.abs(d)>.05))warnings.push(`Túnel ${id}: cotes dels portals ajustades ${portalAdjustmentMetres.map(m=>m.toFixed(1)).join(' / ')} m al terreny de la maqueta; perfil estimat, no mesurat.`);
       if(extension.some((d,i)=>extensionMetres[i]>25||d>length*.4))warnings.push(`Túnel ${id}: portals prolongats ${extensionMetres.map(m=>m.toFixed(0)).join(' / ')} m de manera estimada per arribar a superfície. No són boques mesurades; comprova aquesta aproximació.`);
     }catch(error){fail(id,error.message);}

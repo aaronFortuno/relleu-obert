@@ -2,7 +2,9 @@
 
 Prototip educatiu separat de Terrology: generació de maquetes geogràfiques amb JavaScript, íntegrament al navegador, publicable a GitHub Pages. No s’ha copiat codi de Terrology.
 
-**v0.18.0 experimental · 2 de novembre de 2026**
+**v0.18.1 experimental · 2 de novembre de 2026**
+
+Novetats v0.18.1: túnels estimats activats inicialment, amb sostre parabòlic i paviment del material dels camins o del ferrocarril. L'envolupant de punts alts per a vies principals es conserva com a prototip desactivat, pendent d'optimitzar els retalls grans. [Punt de represa en un altre ordinador](work/REPRESA.md), [estat viari](work/RO-051-PERFILS-VIARIS.md) i [obertures](work/RO-034-OBERTURES.md). Cal revisar el laminat; les geometries estimades no són cotes constructives mesurades.
 
 Novetats v0.18: ferrocarrils amb realç seleccionable i material propi; [comprovacions](work/RO-050-FERROCARRILS.md). Revisió dels portals dels túnels experimentals. Font nova «OpenStreetMap · cobertes i parts», per mostrar paràmetres de coberta i parts originals en el mode «Altura i coberta de les dades». [Abast, mostra Torre Glòries i accés remot pendent de validar](work/RO-032-INTEGRACIO.md). El mode limitat continua pla. No es prometen cobertes on no hi ha atributs ni geometries mesurades a partir d’una parametrització.
 
@@ -98,7 +100,7 @@ La v0.2 inclou també les edificacions oficials de l’ICGC per a la mostra. A l
 - Les tessel·les d’OpenFreeMap són cartografia generalitzada per visualització: la costa pot ser molt millor que una classificació per triangles, però no equival a una línia topogràfica de precisió. No es promet paritat amb Lichtbild.
 - Les elevacions de Mapterhorn combinen fonts amb precisions diferents. La resolució de la imatge no és la resolució real del terreny. Els penya-segats poden estar suavitzats. Es pot importar un MDT local GeoTIFF; falta incorporar-ne un proveïdor automàtic d’alta precisió.
 - L’alçària d’edificis de la font vectorial pot ser orientativa, fins i tot quan `render_height` existeix. Les peces sense valor utilitzen 6 m i queden indicades. La mida mínima visible és també una adaptació per representació/impressió.
-- Boscos, aigua i camins poden tenir omissions en les dades originals. Els ponts i túnels no es reconstrueixen encara de manera específica.
+- Boscos, aigua i camins poden tenir omissions en les dades originals. Ponts i túnels tenen geometria procedimental estimada; Rajadell conserva una excepció amb cotes de font. Les cavitats naturals i els interiors mesurats continuen pendents.
 - Les connexions a fonts públiques depenen de disponibilitat, CORS i condicions d’ús del proveïdor. “Sense backend propi” no vol dir “sense serveis externs”.
 - Hi ha importació local de GeoTIFF, però encara falta validació/reparació general de malla. La divisió en peces comprova que el motor pugui tractar les malles com a sòlids; un error atura l’exportació i queda visible.
 - L’opció 3MF estàndard és genèrica; un avís de Bambu Studio sobre un fitxer no nadiu és esperable. Els colors de visualització no són perfils de filament. Cal assignar els filaments i revisar l’escala i totes les parts.

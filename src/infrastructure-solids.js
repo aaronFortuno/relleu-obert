@@ -44,6 +44,24 @@ export function tunnelVoid(path,width,height){
   return sweepSection(path,[[-width/2,0],[width/2,0],[width/2,height],[-width/2,height]]);
 }
 
+// An estimated print section, not a surveyed engineering profile. Short
+// vertical walls preserve useful lateral clearance; a sampled parabola gives
+// the roof its crown without changing the floor's vertical reference.
+export function parabolicTunnelSection(width,height,{segments=16}={}){
+  if(!Number.isFinite(width)||width<=0||!Number.isFinite(height)||height<=0||!Number.isSafeInteger(segments)||segments<8||segments>32||segments%2)
+    throw Error('Secció parabòlica del túnel invàlida.');
+  const section=[[-width/2,0],[width/2,0]];
+  for(let i=0;i<=segments;i++){
+    const across=1-2*i/segments;
+    section.push([across*width/2,height*(.55+.45*(1-across*across))]);
+  }
+  return section;
+}
+
+export function archedTunnelVoid(path,width,height,options){
+  return sweepSection(path,parabolicTunnelSection(width,height,options));
+}
+
 export function projectInfrastructurePath(coordinates,projection,verticalReference,exaggeration){
   if(!Array.isArray(coordinates)||coordinates.length<2||!Number.isFinite(verticalReference?.originMeters)||!Number.isFinite(verticalReference?.minimumSurfaceMM)||!Number.isFinite(exaggeration)||exaggeration<=0)
     throw Error('Falta la referència vertical de la infraestructura.');

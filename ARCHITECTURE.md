@@ -51,13 +51,53 @@ L’excavació és anterior a ponts, edificis i arbres, i afecta només substrat
 camins i cobertes del terra. Conserva la base, evita aigua i retorna totes
 les capes originals si falla una operació. Les boques es prolonguen amb
 el pendent del perfil fins a sortir del relleu, amb límits de 8 mm / 100 m
-(el menor) i avisos de prolongació important. El mode està desactivat per
-defecte: ni les boques ni la secció són dades mesurades. Vegeu [comprovacions
+(el menor) i avisos de prolongació important. Des de v0.18.1 la interfície
+activa el mode inicialment; l'API de geometria continua exigint l'opció
+explícita. Ni les boques ni la secció són dades mesurades. Vegeu [comprovacions
 i criteris](work/RO-034-OBERTURES.md).
 
 La procedència dels túnels i el substrat excavat es conserven amb els
 canvis incrementals. Les particions ometen contactes de volum exactament
 zero, preservant totes les capes de volum positiu, incloses les primes.
+
+### Perfils viaris i paviment de túnels (v0.18.1)
+
+L'envolupant viària és un **prototip desactivat per defecte**, sense control
+a la UI publicada. Només s'executa amb `majorRoads:true` explícit. Es
+conserven les amplades i el tractament anterior dels camins mentre no
+s'optimitzi la integració de capes als retalls grans. [Represa](work/REPRESA.md).
+
+`major-roads.js` construeix plataformes estimades per a `motorway`, `trunk`
+i enllaços. Uneix fragments compatibles i mostreja l'eix i les dues vores
+cada 10 m. L'envolupant superior i els límits de pendent treballen sobre
+el DEM i el camp de terreny generat, que es conserven intactes.
+`major-road-fit.js` comprova també els triangles interiors de la calçada;
+l'ajust residual és una translació del tauler, mai una modificació del
+relleu. Un creuament interior necessita cotes XYZ acreditades i llum útil;
+`layer` no aporta una altitud.
+
+Les plataformes del prototip comparteixen `planPiers` i les unions per material amb els
+ponts. Els suports eviten altres camins, vies, ponts, edificis, aigua i
+túnels cartografiats. Si no es poden acotar les llums, el model inicial
+recupera els camins anteriors; una actualització d'edificis incompatible
+conserva el model vàlid anterior. [Decisió i comprovacions](work/RO-051-PERFILS-VIARIS.md).
+
+`transport-carving.js` substitueix només el material que ocupa el gruix del
+tauler; el camp d'altures no canvia. La selecció per component i petjada
+evita sotmetre prismes llunyans a operacions de precisió innecessàries.
+La neteja numèrica només retira components tancats amb tres posicions XYZ
+exactes o menys, incapaços d'envoltar volum; comptadors i avisos ho registren.
+No hi ha un llindar positiu de volum per eliminar capes primes.
+
+La secció de túnel té parets verticals i una volta parabòlica de 16 trams.
+`tunnel-pavement.js` genera 0,3 mm de paviment sota el pis útil i el limita
+al substrat existent. Primer es retira aquest volum de totes les capes
+excavables i després s'assigna a `roads` o `railways`, sense superposicions
+de colors. Resta, clip i unió del paviment es mantenen en Manifold fins
+a una sola materialització final per categoria, conservant les closques
+interiors de les cavitats. La transacció conjunta conserva la base i
+restaura el model anterior davant errors. Els taulers viaris nous també
+reben el tall dels túnels per evitar tapes afegides als portals.
 
 ### Altres capes i càlcul incremental
 

@@ -1,0 +1,31 @@
+import test from 'node:test';import assert from 'node:assert/strict';import Module from 'manifold-3d';
+import {buildModel,updateBuildings,updateVegetation} from '../src/geometry.js';
+import {auditPart} from '../src/solid-audit.js';import {threeMF} from '../src/export.js';import {unzipSync,strFromU8} from 'fflate';
+const api=await Module();api.setup();
+function region(roadClass='motorway'){
+  const values=new Float32Array(121);for(let y=0;y<11;y++)for(let x=0;x<11;x++)values[y*11+x]=100+4*Math.sin(x*Math.PI/2)+y*.2;
+  return {meta:{bbox:[0,0,.01,.01]},localDEM:{width:11,height:11,epsg:4326,affine:[.001,0,0,0,.001,0],pixelIsArea:false,values,metadata:{}},features:[{type:'Feature',id:'main-road',properties:{sourceLayer:'transportation',class:roadClass},geometry:{type:'LineString',coordinates:[[.0001,.005],[.0099,.005]]}}]};
+}
+const options={size:100,resolution:6,trees:false,estimatedTunnels:false,majorRoads:true};
+test('upper-envelope platforms retain the exact terrain heights, a level cross-section and supported free spans',()=>{
+  const data=region(),before=data.localDEM.values.slice(),raw=buildModel(data,{...options,majorRoads:false},()=>{},api),model=buildModel(data,options,()=>{},api);
+  assert.equal(model.provenance.majorRoads.applied,true);assert.equal(model.provenance.majorRoads.count,1);assert.equal(model.provenance.majorRoads.terrainModified,false);
+  assert(data.localDEM.values.every((v,i)=>v===before[i]),'source DEM changed');
+  for(let x=0;x<=100;x+=5)for(let y=0;y<=100;y+=5)assert.equal(model.context.ground(x,y),raw.context.ground(x,y),'the terrain height field changed');
+  const bridge=model.context.bridges.find(b=>b.mainRoad);assert(bridge);
+  for(const x of [20,40,60,80])assert(Math.abs(bridge.top(x,49.8)-bridge.top(x,50.2))<1e-5,'carriageway has a cross-slope');
+  const detail=model.provenance.infrastructure.completion.details.find(b=>b.mainRoad);assert(detail);assert(detail.piers.length>0);assert(detail.maxUnsupportedSpanMM<=10);
+  for(const part of model.categories)assert.deepEqual(auditPart(part).errors,[]);
+});
+test('secondary roads retain terrain-following behaviour and incremental updates retain platform geometry/provenance',()=>{
+  const published=buildModel(region(),{...options,majorRoads:undefined},()=>{},api);assert.equal(published.provenance.majorRoads.enabled,false);assert.equal(published.provenance.majorRoads.applied,false);
+  const secondary=buildModel(region('secondary'),options,()=>{},api);assert.equal(secondary.provenance.majorRoads.applied,false);
+  const data=region(),model=buildModel(data,options,()=>{},api),changed=updateBuildings(model,{features:data.features,meta:data.meta},{maxBuildingHeight:3}),vegetation=updateVegetation(changed,{trees:false});
+  assert.strictEqual(vegetation.context.ground,model.context.ground);assert.strictEqual(vegetation.categories.find(p=>p.id==='roads').vertices,model.categories.find(p=>p.id==='roads').vertices);
+  assert.deepEqual(vegetation.provenance.majorRoads,model.provenance.majorRoads);
+  const zip=unzipSync(threeMF(vegetation)),p=JSON.parse(strFromU8(zip['Metadata/provenance.json']));assert.equal(p.majorRoads.applied,true);assert.equal(p.majorRoads.profiles[0].sourceFeatureIds[0],'main-road');assert.equal(p.majorRoads.terrainModified,false);
+});
+test('a failed platform material replacement restores terrain-following roads atomically',()=>{
+  const broken={Mesh:api.Mesh,Manifold:class{constructor(){throw Error('injected material failure');}}};
+  const fallback=buildModel(region(),options,()=>{},broken);assert.equal(fallback.provenance.majorRoads.applied,false);assert(fallback.warnings.some(w=>w.includes('injected material failure')));assert(fallback.categories.find(p=>p.id==='roads')?.faces.length);
+});

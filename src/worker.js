@@ -4,6 +4,7 @@ import {groupMaterials} from './materials.js';
 import {splitModel,tileArchive} from './mesh-tiles.js';
 import Module from 'manifold-3d';
 import wasmURL from 'manifold-3d/manifold.wasm?url';
+import {majorRoadWidthMetres} from './major-roads.js';
 let current,api;
 const progress=message=>self.postMessage({type:'progress',message});
 self.onmessage=async({data})=>{try{
@@ -12,7 +13,7 @@ self.onmessage=async({data})=>{try{
     self.postMessage({type:'imported',kind:data.type,value},value.values?[value.values.buffer]:[]);return;
   }
   if(data.type==='build'||data.type==='vegetation'){
-    if(data.type==='build'&&!api&&(data.options.estimatedTunnels||data.region.infrastructure?.items?.length||data.region.features?.some(f=>f.properties?.sourceLayer==='transportation'&&f.properties.brunnel==='bridge'))){progress('Preparant les infraestructures…');api=await Module({locateFile:()=>wasmURL});api.setup();}
+    if(data.type==='build'&&!api&&(data.options.estimatedTunnels||data.region.infrastructure?.items?.length||data.region.features?.some(f=>f.properties?.sourceLayer==='transportation'&&(f.properties.brunnel==='bridge'||data.options.majorRoads===true&&majorRoadWidthMetres(f.properties)!=null)))){progress('Preparant les infraestructures…');api=await Module({locateFile:()=>wasmURL});api.setup();}
     current=data.type==='build'?buildModel(data.region,data.options,progress,api):updateVegetation(current,data.options,progress);self.postMessage({type:'model',model:{...current,parts:undefined,categories:data.type==='vegetation'?current.categories.filter(p=>p.id==='trees'):current.categories},vegetation:data.type==='vegetation'});
   }
   if(data.type==='buildings'){current=updateBuildings(current,data.layer,data.options,progress);self.postMessage({type:'model',model:{...current,parts:undefined,categories:current.categories.filter(p=>['buildings','trees','roads','railways'].includes(p.id))},buildings:true});}

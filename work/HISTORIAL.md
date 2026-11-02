@@ -2,6 +2,55 @@
 
 Actualitzat: 2026-11-02. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.18.1 — Túnels arquejats i punt de represa
+
+Tancament parcial demanat per l'usuari per continuar en un ordinador de
+64 GB. Els túnels es publiquen; RO-051 queda guardat com a prototip
+**desactivat per defecte**, sense control a la UI i amb activació només
+explícita `majorRoads:true`. [Represa i diagnòstic](REPRESA.md).
+
+Túnels activats inicialment, volta parabòlica estimada i paviment de
+0,3 mm del material de camí o ferrocarril. Base protegida, pisos limitats
+al substrat i buits compartits entre materials. La transacció es manté
+en Manifold fins a una materialització final, sense dividir les closques
+interiors ni convertir resultats intermedis a Float32. No s'ha eliminat
+el tetraedre petit de volum negatiu trobat al diagnòstic. La neteja només
+retira components tancats exactament col·lapsats, amb comptador i avís;
+preserva prismes positius i capes de 0,001 mm.
+
+RO-051 segueix la proposta i decisió de l'usuari: «Afegir suports estimats,
+mantenint el relleu intacte». Es retira el prototip de tall/terraplè abans
+de publicar i s'integra una envolupant superior amb calçades planes en
+secció, pendent acotat i pilars que eviten obstacles carregats. DEM i
+camp d'altures conservats, comprovats exactament. Els obstacles només
+afecten el retall físic; el que descartava Rajadell era un altre camí-pont
+a uns 418 m fora del model. No s'ha afegit cap excepció geogràfica nova.
+Les comprovacions de creuaments acreditats inclouen el realç ferroviari.
+
+Control real amb prototip activat, ICGC, 150 mm i detall 36: quatre perfils viaris
+aplicats, dos pilars nous i llum mostrejada màxima de 3,681 mm. El viaducte
+conserva onze pilars i dues connexions; el túnel principal s'excava amb
+paviment de camí. Un altre candidat s'omet per manca de coberta contínua.
+El control dura 15 s i manté almenys 4,58 GB de RAM lliure. Alguns extrems
+continuen sense enllaç suau i consten als avisos.
+
+L'ampliació del prototip a 3 km s'interromp als 416 s, amb CPU activa i
+memòria disponible. El diagnòstic situa la lentitud després dels perfils,
+en la integració de capes i preparació de suports. Es conserva una captura
+comprimida d'operació i un script local reproduïble. No es presenta aquest
+lot interromput com una validació ni s'atribueix tot el cost a la RAM.
+
+Punt publicable amb RO-051 desactivat: **342/342 proves úniques correctes**.
+Bloc ordinari: 336 casos, 63 s, heap de 512 MB i mínim de 5,11 GB lliures.
+Bloc exigent: sis casos, 180 s, heap de 1.536 MB i mínim de 4,18 GB lliures.
+Inclou quatre retalls i detalls reals amb centreline lliure també al 3MF
+serialitzat. Build correcte en 4,36 s, amb avisos habituals d'empaquetat.
+UI local revisada a 1280×720: model preparat, túnels marcats inicialment,
+control i ajuda visibles amb scroll intern, capçaleres i footer conservats.
+Captura local `output/v0.18.1-controls-desktop.png`; cap canvi de CSS.
+168 enllaços/ancoratges locals i 51 identificadors comprovats. Sense
+comprovació remota de Pages/CI. Laminat i impressió pendents d'usuari.
+
 
 ## v0.18.0 — Ferrocarrils, portals i cobertes de la font
 

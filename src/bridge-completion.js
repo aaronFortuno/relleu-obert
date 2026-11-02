@@ -89,7 +89,8 @@ export function planApproaches({axis,points,faces,containsDeck,roads,ground,road
   return {plans,missed};
 }
 
-export function planPiers({axis,top,containsDeck,ground,blocked=[],scale,widthMM,heightMM,layout}){
+export function planPiers({axis,top,containsDeck,ground,blocked=[],scale,widthMM,heightMM,layout,minimumClearanceMM=.8}){
+  if(!Number.isFinite(minimumClearanceMM)||minimumClearanceMM<.25||minimumClearanceMM>.8)throw Error('Separació mínima de suport invàlida.');
   // A physical spacing ceiling is independent of map zoom. It is a modelling
   // heuristic, not a promise that a particular printer can bridge this span.
   const maxSpanMM=10,spacing=Math.min(maxSpanMM,Math.max(4,50*scale)),along=Math.max(.8,(layout?.sectionMetres?.along??2.5)*scale),across=Math.max(.8,(layout?.sectionMetres?.across??2.5)*scale),diameter=Math.max(along,across),fullLength=axis.slice(1).reduce((n,p,i)=>n+dist(p,axis[i]),0),samples=resample(axis,Math.max(.25,2*scale,fullLength/20000),fullLength),length=samples.at(-1)?.s||0,piers=[];let omitted=0;
@@ -100,7 +101,7 @@ export function planPiers({axis,top,containsDeck,ground,blocked=[],scale,widthMM
     const maxShift=layout&&!auxiliary?(layout.maxLongitudinalAdjustmentMetres??3)*scale:2,offsets=layout&&!auxiliary?[0,.25,-.25,.5,-.5,1,-1].map(v=>v*maxShift):[0,.5,-.5,1,-1,1.5,-1.5,2,-2];
     for(const offset of offsets)for(const lateral of [0,.15,-.15,.3,-.3,.45,-.45,.6,-.6,.8,-.8,1,-1]){
       if(station+offset<0||station+offset>length)continue;
-      const candidate=atStation(samples,station+offset),index=candidate.index,direction=unit(samples[Math.max(0,index-1)].p,samples[Math.min(samples.length-1,index+1)].p),x=candidate.p[0]-direction[1]*lateral,y=candidate.p[1]+direction[0]*lateral,z=top(x,y);if(z==null||z-ground(x,y)<.8||piers.some(p=>dist(p.center,[x,y])<diameter*2))continue;
+      const candidate=atStation(samples,station+offset),index=candidate.index,direction=unit(samples[Math.max(0,index-1)].p,samples[Math.min(samples.length-1,index+1)].p),x=candidate.p[0]-direction[1]*lateral,y=candidate.p[1]+direction[0]*lateral,z=top(x,y);if(z==null||z-ground(x,y)<minimumClearanceMM||piers.some(p=>dist(p.center,[x,y])<diameter*2))continue;
       const rectangle=(a,b,guard=0)=>[[-1,-1],[1,-1],[1,1],[-1,1]].map(([u,v])=>[x+direction[0]*u*(a/2+guard)-direction[1]*v*(b/2+guard),y+direction[1]*u*(a/2+guard)+direction[0]*v*(b/2+guard)]),ring=rectangle(along,across),clear=rectangle(along,across,.25);
       if(clear.some(p=>p[0]<=0||p[1]<=0||p[0]>=widthMM||p[1]>=heightMM)||collision(clear))continue;
       // Keep the printable foundation/body, but taper the head when the real

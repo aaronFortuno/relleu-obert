@@ -1,5 +1,12 @@
 # Canvis
 
+## v0.18.1 — 2026-11-02
+
+- RO-034: túnels estimats activats inicialment, parets i sostre parabòlic, i paviment de 0,3 mm de material camí o ferrocarril. Excavació i assignació de material en una transacció de sòlids, sense conversions intermèdies ni pèrdua de closques interiors.
+- RO-051: prototip d'envolupant superior amb calçades planes i suports estimats, mantenint el DEM i el camp de relleu. **Desactivat per defecte i sense opció a la UI**: el retall de 3 km necessita optimització abans d'activar-lo. La publicació manté el tractament anterior dels camins.
+- Obstacles limitats al retall físic, també girat, conservant els ancoratges complets del perfil. Comprovacions de llum entre plataformes amb el realç ferroviari inclòs. Correcció de fragments exactament col·lapsats, sense eliminar volums petits positius.
+- Rajadell: túnel principal excavat i viaducte amb onze pilars al control local. El prototip explícit també aplica quatre perfils viaris al retall inicial, però la prova ampliada es va interrompre per durada excessiva. Estat i diagnòstic reproduïble a `work/REPRESA.md`. Laminat i impressió pendents.
+
 ## v0.18.0 — 2026-11-02
 
 - RO-050: ferrocarrils com a capa pròpia, amb increment de 0, +0,5 o +1 mm sobre els camins. Materials independents sense exigir un novè filament; compatibilitat amb assignacions anteriors. Plataformes i ponts respecten la cota inferior i els suports; vies subterrànies no es dibuixen a la superfície.
