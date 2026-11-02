@@ -3,6 +3,8 @@ import Pbf from 'pbf';
 import {inCatalonia,fetchOfficialBuildings,combineBuildings} from './buildings.js';
 import {loadTerrain,oceanTilePredicate} from './terrain-provider.js';
 import {regionTileCount,MAX_REGION_TILES} from './region-limits.js';
+import {loadBuildingsRecoverably} from './building-recovery.js';
+import {recommendedPlace} from './recommended-places.js';
 
 export {lonLatTile} from './elevation.js';
 import {lonLatTile} from './elevation.js';
@@ -38,7 +40,7 @@ export async function loadBuildingLayer(region,{source=defaultBuildingSource(reg
     if(!official.features.length)throw Error('ICGC: no hi ha edificis disponibles. Pots triar OpenStreetMap.');
     const combined=combineBuildings(osm,official);result={features:combined.features,metadata:combined.metadata,warnings:[]};
   }else if(source==='catastre'){
-    progress('Carregant edificis i parts del Catastre…');const {fetchCadastralBuildings}=await import('./cadastre.js');result=await fetchCadastralBuildings(region.meta.bbox);
+    progress('Carregant edificis i parts del Catastre…');const {fetchCadastralBuildings}=await import('./cadastre.js');result=await fetchCadastralBuildings(region.meta.bbox,fetch,{onProgress:progress});
   }else throw Error('Font d’edificis desconeguda.');
   result={...result,source};cache.set(source,result);return result;
 }
@@ -47,11 +49,13 @@ export function applyBuildingLayer(region,layer){
   region.meta={...region.meta,buildings:layer.metadata,buildingSource:layer.source,sourceWarnings:[...(region.terrainWarnings||[]),...layer.warnings],localSources:{...region.meta.localSources,buildings:layer.source==='local'?layer.metadata:null}};
   return region;
 }
-export async function loadRegion({sample=true,bbox,buildingSource,decodeElevation=decodeDEM,localDEM,localBuildings},progress=()=>{}){
+export async function loadRegion({sample=true,bbox,buildingSource,decodeElevation=decodeDEM,localDEM,localBuildings,buildingFallbacks=[]},progress=()=>{}){
   const base=(import.meta.env?.BASE_URL||'./')+'data/';
-  let meta=sample?await(await get(base+'tamariu.json')).json():{name:'Regió seleccionada',bbox,tiles:tileList(bbox),date:new Date().toISOString()};
+  if(typeof sample==='string'&&!recommendedPlace(sample))throw Error('Exemple desconegut.');
+  let meta=sample?await(await get(base+(recommendedPlace(sample)?.file||'tamariu.json'))).json():{name:'Regió seleccionada',bbox,tiles:tileList(bbox),date:new Date().toISOString()};
+  if(sample&&bbox)meta={...meta,bbox};
   let template;if(!sample)template=(await(await get('https://tiles.openfreemap.org/planet')).json()).tiles[0];
-  let features=[],dem=[],terrainWarnings=[];
+  let features=[],dem=[],terrainWarnings=[...(meta.sourceWarnings||[])];
   // Sequential tile pairs keep resource use and public-service load bounded.
   for(let i=0;i<meta.tiles.length;i++){
     const t=meta.tiles[i];progress(`Carregant dades ${i+1}/${meta.tiles.length}…`);
@@ -64,5 +68,7 @@ export async function loadRegion({sample=true,bbox,buildingSource,decodeElevatio
   meta.elevationDecoding=localDEM?{method:'numeric GeoTIFF raster; no canvas readback',file:localDEM.metadata}:{method:'binary RGB; no canvas readback',tiles:dem.map(t=>({z:t.z,x:t.x,y:t.y,...t.decoding}))};
   meta.localSources={dem:localDEM?.metadata||null,buildings:localBuildings?.metadata||null};
   const region={meta,features,vectorFeatures:features,terrainWarnings,dem,localDEM};
-  return applyBuildingLayer(region,await loadBuildingLayer(region,{source:buildingSource,localBuildings},progress));
+  const layer=await loadBuildingsRecoverably(source=>loadBuildingLayer(region,{source,localBuildings},progress),buildingSource||defaultBuildingSource(meta.bbox),localBuildings?[]:buildingFallbacks);
+  if(layer.recovery){region.recovery=layer.recovery;region.meta={...region.meta,buildingRecovery:layer.recovery};}
+  return applyBuildingLayer(region,layer);
 }

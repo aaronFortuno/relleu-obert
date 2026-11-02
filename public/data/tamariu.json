@@ -6,7 +6,7 @@
     3.219,
     41.926
   ],
-  "date": "2026-10-31T21:56:22.630Z",
+  "date": "2026-10-31T21:56:22.63Z",
   "vectorSource": "https://tiles.openfreemap.org/planet/20261025_080012_pt/{z}/{x}/{y}.pbf",
   "tiles": [
     {
@@ -39,5 +39,6 @@
     }
   ],
   "credits": "© OpenStreetMap contributors (ODbL), © OpenMapTiles, OpenFreeMap. Elevations: Mapterhorn; see SOURCES.md.",
-  "officialBuildings": "tamariu-buildings-icgc.geojson"
+  "officialBuildings": "tamariu-buildings-icgc.geojson",
+  "labelTitle": "Badia de Tamariu"
 }

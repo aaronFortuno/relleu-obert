@@ -419,3 +419,84 @@ La densitat deixa de regenerar automàticament tot el bosc. Es desa per traç pe
 **Encàrrec completat:** Kimi ha rebut diagnòstic acotat del WFS, gestió de temps límit/reintents limitats, errors entenedors i regressions. Ha de conservar model/font explícita en fallar i evitar resultats parcials a la memòria cau. Entrega només amb totes les proves i construcció passades, o informe de bloqueig després de tres intents.
 
 **RO-039 · entrega revisada:** [diagnòstic i correcció](RO-039-CATASTRE-TIMEOUT.md), 45 s per intent i un reintent, inclosa la lectura del cos. 89 proves de suite i build correctes; proves específiques repetides pel revisor. Causa exacta del cas real i càrrega satisfactòria de Tamariu pendents de validar.
+
+
+## Validacions de v0.11 confirmades per l’usuari el 2026-11-02
+
+### RO-041 — Recuperar la navegació en tancar vegetació
+
+**Validat expressament per l’usuari al backlog.** Registre d’implementació anterior conservat:
+
+**Implementat i revisat:** [resultats del pinzell](RO-041-042-PINZELL.md), 128 proves i build correctes. Densitat ×0,5/màxim×2, cobertura per gest i retorn de navegació comprovats localment; validació d’usuari pendent.
+
+**Petició de l’usuari:** Tancar el panell o canviar de menú desactiva el pinzell.
+
+**Seguiment:** Implementat, pendent de validar. Encàrrecs seqüencials a Kimi i revisió abans de continuar. Proves locals obligatòries; validació d’usuari diferenciada.
+
+### RO-042 — Densitat i cobertura única de cada traç
+
+**Validat expressament per l’usuari al backlog.** Registre d’implementació anterior conservat:
+
+**Implementat i revisat:** [resultats del pinzell](RO-041-042-PINZELL.md), 128 proves i build correctes. Densitat ×0,5/màxim×2, cobertura per gest i retorn de navegació comprovats localment; validació d’usuari pendent.
+
+**Petició de l’usuari:** Defecte ×0,5, màxim ×2 i evitar sobrepintar la mateixa zona en un gest.
+
+**Seguiment:** Implementat, pendent de validar. Encàrrecs seqüencials a Kimi i revisió abans de continuar. Proves locals obligatòries; validació d’usuari diferenciada.
+
+### RO-043 — Actualització automàtica d’edificis
+
+**Validat expressament per l’usuari al backlog.** Registre d’implementació anterior conservat:
+
+**Implementat i revisat:** [resultats d’edificis automàtics](RO-043-EDIFICIS-AUTO.md). Espera300ms i només edificis sobre terreny vigent; bloqueig/captura i validació posterior a càrrega, cancel·lació i protecció de resultats antics. 138 proves/build i regressió addicional del planificador passada. Navegador: canvi d’altura/font sense botó, i canvi de relleu que conserva Generar explícit, comprovats; validació d’usuari pendent.
+
+**Petició de l’usuari:** Canvis d’edificis amb espera breu, cua i conservació del terreny.
+
+**Seguiment:** Implementat, pendent de validar. Encàrrecs seqüencials a Kimi i revisió abans de continuar. Proves locals obligatòries; validació d’usuari diferenciada.
+
+#### Antecedent de RO-014 abans de reorganitzar els controls
+
+
+**Implementat a v0.11.0:** [resultats](RO-014-IMPLEMENTACIO.md), geometria i exportació independents comprovades localment. Laminador i prova física pendents; la proposta anterior queda com a antecedent.
+
+**Disseny preparat:** [proposta de marc imprimible](RO-014-PROPOSTA.md), revisada per separar tolerància/solapa i segmentar només el perímetre exterior. 106 proves existents i build correctes; geometria, proves específiques futures, laminador i ajust físic pendents.
+
+**Proposta:** exportar el marc en un altre fitxer, amb buit interior calculat des de la maqueta i un marge configurable per encabir-la.
+
+**Ajornament:** fins a definir RO-013 i una prova d’ajust físic (RO-024).
+
+**Per validar:** dimensions, tolerància i gruixos explícits; arxiu independent, ajust físic comprovat i estratègia per a marcs que superin el llit d’impressió. No assumir un encaix universal per a totes les impressores/materials.
+
+
+
+## Historial de v0.9.0
+
+- RO-009, RO-015, RO-030 i RO-031: validats → historial.
+- RO-002: alternativa implementada per provar al mateix cas; no es dona per validada tota la fidelitat cadastral.
+- RO-026 / RO-032: abast parcial explícit; fonts/cobertes noves pendents.
+- RO-036–RO-038: implementats i pendents de validar. RO-024 / RO-033–RO-035 segueixen oberts.
+- Delegació acotada a un únic Kimi k3-256k per al repartiment del pinzell, després que l’usuari confirmés consum inicial del 0%. Dos fitxers revisats i vuit proves pròpies superades; cap altre agent simultani. No es declara un percentatge final de consum que no s’hagi mesurat.
+
+**Comprovació local de v0.9.0:** 82 proves superades i construcció estàtica correcta. Al navegador, retall de 150 × 150 mm a 1:1.000 centrat a 41.91814, 3.20528: 18 fragments amb ICGC i 117 volums retallats amb Catastre. Exportacions STL amb vuit assignacions: material-1 (terreny), material-4 (camins), material-5 (bosc), material-6 (arbres) i material-8 (aigua interior) idèntics byte a byte abans/després; només material-3 (edificis) canvia. Les categories absents continuen absents. El canvi de font manté la càmera i el mapa ocult conserva la selecció. Falta la validació de l’usuari, laminador i impressió; no s’han comprovat Pages/CI remots.
+
+
+
+## Seguiment v0.12
+
+RO-036–039 han passat a [l’historial](HISTORIAL.md), perquè l’usuari els havia marcat «Validat» a la taula. Es preserven totes les observacions i no es trasllada aquesta validació a les novetats de v0.11/v0.12 ni a proves físiques. La petició completa de replantejament de RO-017 es conserva dins de la seva entrada.
+
+
+## Registre del lot v0.12 (antecedent)
+
+
+
+**Reprès el2026-11-02:** [lot v0.12](DELEGACIONS-012.md). RO-012 ja té nucli i integració local en validació; RO-023 reprèn UX de fonts i RO-024 els fonaments de sòlids. Quota real comprovada abans de delegar i vigilant actiu durant cada encàrrec.
+
+**Antecedent v0.11:** publicar les correccions i els tres complements ja integrats. RO-012(escena), RO-023(UX de fonts) i RO-024(sòlids per a infraestructures) continuen pendents; les cobertes reals depenen de dades/accés de RO-032. No es dona cap línia pendent per completada.
+
+**Antecedent del lot v0.11:** [DELEGACIONS-011.md](DELEGACIONS-011.md), Kimi 100% disponible comunicat ara. Acceptar Catastre buit, millorar pinzell/navegació i actualització d’edificis, investigar dades de cobertes i implementar propostes. RO-023 prioritza fonts remotes entenedores; RO-033 inclou viaductes ferroviaris. RO-024 s’executa com a fonament de ponts/cavitats, sense atribuir dades 3D inexistents.
+
+**Lot anterior completat:** execució seqüencial delegada a Kimi, amb revisió i proves obligatòries; cua i abast a [DELEGACIONS.md](DELEGACIONS.md). Primer RO-039, després setup de RO-019 i propostes de RO-014/016/017/012. RO-033–035 mantenen la dependència de RO-024.
+
+1. Validar les correccions de respostes buides del Catastre i interacció del pinzell (RO-040–RO-042), l’actualització automàtica (RO-043) i les novetats de v0.12.
+2. Comparar fidelitat de parts i cobertes, segona zona i noves fonts (RO-026 / RO-032).
+3. Preparar sòlids i proves de continuïtat per a ponts/túnels/cavitats (RO-024), segons [RO-024-SOLIDS.md](RO-024-SOLIDS.md).

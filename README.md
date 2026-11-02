@@ -2,13 +2,15 @@
 
 Prototip educatiu separat de Terrology: generació de maquetes geogràfiques amb JavaScript, íntegrament al navegador, publicable a GitHub Pages. No s’ha copiat codi de Terrology.
 
-**v0.12.0 experimental · 2 de novembre de 2026**
+**v0.13.0 experimental · 2 de novembre de 2026**
 
-Novetats de v0.12: vista «Presentació» amb taula i llum, les mateixes malles i colors i retorn a la vista de treball. Render a demanda en aquest mode, amb reducció de qualitat si es detecten fotogrames lents. Resum de fonts remotes i fitxers propis dins d’un apartat avançat plegat. Els fonaments de sòlids de RO-024 es proven separadament abans d’afectar les exportacions normals; ponts i cavitats reals encara pendents.
+Novetats de v0.13: Catastre dividit per seccions quan el servei rebutja la regió, amb duplicats eliminats i sense acceptar resultats parcials. Els canvis d’edificis fallits restauren els ajustos anteriors; una regió nova pot usar una altra font amb avís explícit. Sidebars homogenis i controls del marc units a una previsualització fidel, sense canviar el zoom. Inici al viaducte de l’Eix Diagonal (41.71792, 1.78391), amb Tamariu conservat al catàleg de llocs recomanats. Rosa dels vents ajornada i fletxa independent retirada del menú.
 
-RO-024 ja té unió per material, auditoria real de la Perica i un [túnel sintètic de control](work/RO-024-TUNEL-CONTROL.md) amb pas continu entre dues peces. `node scripts/solid-control.mjs` genera un control petit de 40 × 24 × 12 mm per revisar al Bambu; `--large` genera el de 40 cm. 201 proves i construcció estàtica correctes; laminador i impressió física pendents.
+Des de v0.12: vista «Presentació» amb taula i llum, les mateixes malles i colors i retorn a la vista de treball. Render a demanda en aquest mode, amb reducció de qualitat si es detecten fotogrames lents. Resum de fonts remotes i fitxers propis dins d’un apartat avançat plegat. Els fonaments de sòlids de RO-024 es proven separadament abans d’afectar les exportacions normals; ponts i cavitats reals encara pendents.
 
-Des de v0.11: el Catastre pot retornar zero edificis sense aturar la maqueta; pinzell ×0,5 (màxim ×2), cobertura única per gest i navegació recuperada en plegar-lo. Altura/font d’edificis s’actualitzen automàticament sobre terreny vigent. Complements independents en ZIP amb 3MF i STL: marc ajustable, placa en majúscules amb accents i fletxa del nord geogràfic. La rosa dels vents incrustada demanada a RO-017 continua pendent. [Sistema d’idiomes preparat](work/RO-019-SETUP.md), amb català com a única llengua i migració de textos parcial. Comprovar laminat i ajust físic abans d’imprimir.
+RO-024 ja té unió per material, auditoria real de la Perica i un [túnel sintètic de control](work/RO-024-TUNEL-CONTROL.md) amb pas continu entre dues peces. `node scripts/solid-control.mjs` genera un control petit de 40 × 24 × 12 mm per revisar al Bambu; `--large` genera el de 40 cm. 209 proves i construcció estàtica correctes; laminador i impressió física pendents.
+
+Des de v0.11: el Catastre pot retornar zero edificis sense aturar la maqueta; pinzell ×0,5 (màxim ×2), cobertura única per gest i navegació recuperada en plegar-lo. Altura/font d’edificis s’actualitzen automàticament sobre terreny vigent. Complements independents en ZIP amb 3MF i STL: marc ajustable i placa en majúscules amb accents. La fletxa independent de v0.11 queda retirada del menú a v0.13. La rosa dels vents incrustada demanada a RO-017 continua pendent. [Sistema d’idiomes preparat](work/RO-019-SETUP.md), amb català com a única llengua i migració de textos parcial. Comprovar laminat i ajust físic abans d’imprimir.
 
 Pinzell amb repartiment aleatori, font Catastre opcional amb parts d’edificis i actualització d’aquesta capa sense reconstruir el terreny. ICGC queda seleccionat per defecte dins de l’àmbit català i OpenStreetMap fora; no hi ha una opció Automàtic duplicada.
 
@@ -24,7 +26,7 @@ El retall es pot girar respecte al nord, també amb mida rectangular i escala fi
 
 L’exportació conserva colors i assignacions de materials, sense selectors de broquet ni tipus de filament. L’usuari tria aquests ajustos al laminador. RO-003 continua ajornat. Marc imprimible i etiquetes ja tenen exportació independent; validació física pendent.
 
-Apartats de configuració replegables, controls flotants al preview i escala horitzontal en un sol camp (per exemple, 1:1.000 o 1000; buit segueix el mapa). En mode fix, la mida física defineix el territori a aquesta escala: 15 × 20 cm a 1:1.000 són 150 × 200 m. Arrossegar el mapa canvia el centre; fer zoom només canvia la vista del mapa. L’exageració vertical és independent. «Mostra de Tamariu» recupera el retall de mostra i el mode lliure.
+Apartats de configuració replegables, controls flotants al preview i escala horitzontal en un sol camp (per exemple, 1:1.000 o 1000; buit segueix el mapa). En mode fix, la mida física defineix el territori a aquesta escala: 15 × 20 cm a 1:1.000 són 150 × 200 m. Arrossegar el mapa canvia el centre; fer zoom només canvia la vista del mapa. L’exageració vertical és independent. «Carrega exemple» recupera el retall del lloc recomanat i el mode lliure.
 
 RO-001 validat per l’usuari. El [diagnòstic RO-002](work/RO-002-DIAGNOSTIC.md) identifica el megabloc de la Perica com una única petjada ICGC sense divisions; es pot comparar amb parts del Catastre mitjançant el selector. L’usuari ha validat la millora de volums a Tamariu. Les parts són volums, no necessàriament habitatges independents; cobertes reals i contrast en altres zones continuen oberts.
 
@@ -47,7 +49,7 @@ pnpm exec vite preview --host 127.0.0.1 --configLoader native
 
 Obre l’adreça local que apareix. `pnpm dev` és útil per desenvolupar. La versió construïda no necessita Node: només un allotjament estàtic HTTP.
 
-La mostra de Tamariu conté quatre tessel·les vectorials i quatre tessel·les d’elevació reals, amb origen i data a `public/data/tamariu.json`. El model inicial usa aquestes dades locals; el mapa de selecció carrega imatges d’OpenStreetMap. També es pot carregar una altra regió des del mapa: el navegador consulta directament OpenFreeMap i els proveïdors de relleu, amb temps límit i errors visibles. La cerca d’adreces consulta Photon en prémer el botó, amb resultats guardats durant la sessió. Les coordenades s’interpreten localment. No hi ha servidor propi ni comptes d’usuari.
+Les mostres del viaducte i de Tamariu contenen cadascuna quatre tessel·les vectorials i quatre tessel·les d’elevació reals, amb origen i data a `public/data/eix-diagonal.json` i `public/data/tamariu.json`. El model inicial usa aquestes dades locals; el mapa de selecció carrega imatges d’OpenStreetMap. També es pot carregar una altra regió des del mapa: el navegador consulta directament OpenFreeMap i els proveïdors de relleu, amb temps límit i errors visibles. La cerca d’adreces consulta Photon en prémer el botó, amb resultats guardats durant la sessió. Les coordenades s’interpreten localment. No hi ha servidor propi ni comptes d’usuari.
 
 La v0.2 inclou també les edificacions oficials de l’ICGC per a la mostra. A l’àmbit català, ICGC és la font seleccionada per defecte: consulta el Referencial Topogràfic Territorial i substitueix les petjades OSM que s’hi encavalquen, conservant les petjades OSM complementàries. Es poden comparar les fonts amb el selector d’edificis. La font i la data de consulta es desen a les metadades; més cobertura no implica que totes les edificacions estiguin actualitzades al dia.
 

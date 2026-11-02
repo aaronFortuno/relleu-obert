@@ -1,5 +1,15 @@
 # Canvis
 
+## v0.13.0 — 2026-11-02
+
+- Catastre: diagnòstic real de `Area of extension out of limits` a la vista inicial de Tamariu. Consulta per quadrants davant límits reconeguts, amb concurrència i recursió acotades, deduplicació i rebuig de resultats parcials. La consulta real recupera 2.447 volums sobre rasant.
+- Canvis d’edificis fallits recuperen font/mode/altura vàlids i deixen disponible el model anterior. Una regió nova pot usar una altra font amb avís i procedència explícits; capes candidates confirmades després del Worker.
+- Sidebars: textos, camps, resums i desplegables homogenis i discrets. Marc configurat i previsualitzat des del mateix apartat, amb geometria/mides/color compartits amb l’exportació i sense canviar el zoom.
+- Catàleg de llocs recomanats: el viaducte de l’Eix Diagonal (41.71792, 1.78391) és l’inici, amb dades incloses; Tamariu es conserva com a badia. Títols curts per a les plaques inicials. Ponts i túnels reals continuen pendents; inventari inicial de fragments 2D documentat.
+- Rosa dels vents ajornada per petició de l’usuari i fletxa retirada del menú. RO-041–043 validats passen a l’historial; notes del marc conservades. Precàrrega de fonts alternatives anotada com a proposta futura.
+
+209 proves locals i construcció estàtica correctes. Comprovació de navegador sota subdirectori de Pages, incloent recuperació de font i catàleg. Sense validació remota de Pages/CI.
+
 ## v0.12.0 — 2026-11-02
 
 - RO-012: vista «Presentació» amb taula i llum locals, sense duplicar ni modificar les malles exportables. Restableix càmera/controls/qualitat en sortir; segueix els canvis incrementals i de dimensions. Llegenda il·lustrativa permanent.

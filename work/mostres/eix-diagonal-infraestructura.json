@@ -1,0 +1,130 @@
+{
+  "date": "2026-11-02T08:38:51.056Z",
+  "bbox": [
+    1.7748839251728468,
+    41.71118266618757,
+    1.7929360748271534,
+    41.72465733381243
+  ],
+  "source": "https://tiles.openfreemap.org/planet/20261025_080012_pt/{z}/{x}/{y}.pbf",
+  "scope": "Fragments vectorials amb almenys un vèrtex dins del retall; poden repetir-se entre tessel·les. No són estructures 3D ni portals validats.",
+  "items": [
+    {
+      "tile": [
+        14,
+        8273,
+        6098
+      ],
+      "id": 2348018902,
+      "type": "LineString",
+      "properties": {
+        "subclass": "path",
+        "brunnel": "tunnel",
+        "class": "path",
+        "layer": -1,
+        "sourceLayer": "transportation"
+      },
+      "points": 2,
+      "coordinateDimensions": [
+        2
+      ]
+    },
+    {
+      "tile": [
+        14,
+        8273,
+        6098
+      ],
+      "id": 1580996772,
+      "type": "LineString",
+      "properties": {
+        "class": "track",
+        "layer": 1,
+        "brunnel": "bridge",
+        "sourceLayer": "transportation"
+      },
+      "points": 2,
+      "coordinateDimensions": [
+        2
+      ]
+    },
+    {
+      "tile": [
+        14,
+        8273,
+        6098
+      ],
+      "id": 1820330422,
+      "type": "LineString",
+      "properties": {
+        "brunnel": "bridge",
+        "surface": "paved",
+        "class": "trunk",
+        "layer": 1,
+        "sourceLayer": "transportation"
+      },
+      "points": 2,
+      "coordinateDimensions": [
+        2
+      ]
+    },
+    {
+      "tile": [
+        14,
+        8273,
+        6099
+      ],
+      "id": 1820235140,
+      "type": "MultiLineString",
+      "properties": {
+        "class": "trunk",
+        "layer": -1,
+        "brunnel": "tunnel",
+        "sourceLayer": "transportation"
+      },
+      "points": 7,
+      "coordinateDimensions": [
+        2
+      ]
+    },
+    {
+      "tile": [
+        14,
+        8273,
+        6099
+      ],
+      "id": 1580861062,
+      "type": "LineString",
+      "properties": {
+        "brunnel": "bridge",
+        "surface": "paved",
+        "class": "minor",
+        "layer": 1,
+        "sourceLayer": "transportation"
+      },
+      "points": 2,
+      "coordinateDimensions": [
+        2
+      ]
+    },
+    {
+      "tile": [
+        14,
+        8273,
+        6099
+      ],
+      "id": 1820330482,
+      "type": "LineString",
+      "properties": {
+        "class": "trunk",
+        "layer": 5,
+        "brunnel": "bridge",
+        "sourceLayer": "transportation"
+      },
+      "points": 8,
+      "coordinateDimensions": [
+        2
+      ]
+    }
+  ]
+}

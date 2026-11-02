@@ -32,3 +32,15 @@
 Kimi va retornar fitxers parcials abans de topar amb429; no havia executat les proves, de manera que les afirmacions anteriors no constituïen una entrega acceptada. Root ha revisat i executat les7proves del nucli: inicialment3fallades de toleràncies incompatibles ambFloat32. S’han establert toleràncies explícites de0,00005mm (ULP a450mm≈0,0000306mm),0,001mm² i0,01mm³; es mantenen les comprovacions de tancament Manifold, volums i absència de solapaments. Les7proves passen.
 
 UI de complements al sidebar dret, Worker i ZIP independents integrats. Un3MF/filament i unSTL equivalent per peça; manifest, guiaSVG i llista de peces. Alçada inicial3mm, sense solera. No modifica ni exporta el marc escènic. Ajust físic i laminador pendents.
+
+## Actualització v0.13
+
+Selector, mides, tolerància, color, previsualització i descàrrega reunits a
+«Marc exterior». La vista fa servir `frameSegments`, com l’exportació, i
+munta les peces amb els seus offsets. Canviar el marc no crida `home()` ni
+altera la càmera. Configuració invàlida conserva l’últim marc visible i
+desactiva la descàrrega amb error explícit.
+
+Prova numèrica de dimensions/alçada/color i comprovació al navegador amb
+amplada 8→12 mm i altura 3→8 mm. Suite de 209 proves i build correctes.
+Validació de l’usuari, Bambu i ajust físic pendents.

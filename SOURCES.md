@@ -57,3 +57,19 @@ Font opcional: Dirección General del Catastro, [WFS INSPIRE BU](https://ovc.cat
 El mode de dades interpreta cobertes gabled/skillion segons [OSM Simple 3D Buildings](https://wiki.openstreetmap.org/wiki/Simple_3D_Buildings) i [roof:direction](https://wiki.openstreetmap.org/wiki/Key:roof:direction). Calen atributs explícits; no se n’infereix una forma real a partir de petjada/plantes. Catastre i la capa actual d’OpenMapTiles no proporcionen aquesta informació de coberta; primer suport disponible amb dades locals.
 
 Descodificació GML: fast-xml-parser 5.11.2 (MIT), carregat sota demanda. Avisos de les vuit biblioteques XML distribuïts a public/licenses, incloent @nodable/entities, fast-xml-builder, is-unsafe, path-expression-matcher, strnum i xml-naming.
+
+## Mostres i recuperació (v0.13)
+
+`public/data/eix-diagonal.json` registra la mostra inicial de 41.71792, 1.78391,
+data de consulta, envolupant i quatre parelles de tessel·les OpenFreeMap/Mapterhorn.
+Edificis ICGC en el GeoJSON adjacent, amb metadades i CC BY 4.0. Mateixes
+condicions de fonts que la mostra de Tamariu; aquestes dades no passen a ser MIT.
+El nom «badia de Tamariu» també apareix a la [descripció municipal del litoral](https://www.palafrugell.cat/noticies/general/1311-reobert-un-tram-del-cami-de-ronda-entre-tamariu-i-aigua-xelida).
+
+El [manual oficial del WFS BU](https://www.catastro.hacienda.gob.es/webinspire/documentos/inspire-bu-wfs.pdf)
+indica límits de 4 km² i 5.000 elements. La prova del 2026-11-02 a Tamariu
+rebutja una envolupant d’uns 3,18 km² amb `Area of extension out of limits`;
+els quadrants sí que responen. El client subdivideix davant límits reconeguts,
+conserva elements complets, elimina duplicats coherents i rebutja qualsevol
+error o contradicció restant. Una font alternativa usada en recuperar una
+regió queda identificada a la interfície i a les metadades d’exportació.
