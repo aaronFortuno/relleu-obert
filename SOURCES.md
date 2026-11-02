@@ -81,3 +81,12 @@ del [full IFC 280110, any 2024](https://datacloud.icgc.cat/datacloud/topografia-
 ICGC Referencial Topogràfic Territorial, CC BY 4.0. No són dades MIT.
 Extracció, coordenades, atribució, gruix de maqueta i límits documentats a
 [RO-033-IMPLEMENTACIO.md](work/RO-033-IMPLEMENTACIO.md).
+
+## Repartiment de pilars de Rajadell (v0.15)
+
+`public/data/eix-diagonal-layouts.json` transcriu dades numèriques del plànol
+Fig. 1, pàgina 2 de [Matute, Millanes i Nebreda, IDEAM, V Congreso ACHE, 2011](https://gpreman-cp165.wordpresstemporal.com/wp-content/uploads/2017/03/pon612_2.pdf).
+La figura dóna dotze trams que sumen 740 m i onze pilars; el resum escrit omet
+un tram de 50 m. Només es distribueixen fets numèrics amb atribució, cap còpia
+del PDF o plànol. Les coordenades d’implantació i els ajustos d’impressió són
+transformacions aproximades del projecte, no un aixecament de pilars.

@@ -11,8 +11,11 @@ self.onmessage=async({data})=>{try{
     const decoder=await import('./local-import.js'),value=data.type==='import-dem'?await decoder.importDEM(data.buffer,data.name):decoder.importBuildings(data.text,data.name);
     self.postMessage({type:'imported',kind:data.type,value},value.values?[value.values.buffer]:[]);return;
   }
-  if(data.type==='build'||data.type==='vegetation'){current=data.type==='build'?buildModel(data.region,data.options,progress):updateVegetation(current,data.options,progress);self.postMessage({type:'model',model:{...current,parts:undefined,categories:data.type==='vegetation'?current.categories.filter(p=>p.id==='trees'):current.categories},vegetation:data.type==='vegetation'});}
-  if(data.type==='buildings'){current=updateBuildings(current,data.layer,data.options,progress);self.postMessage({type:'model',model:{...current,parts:undefined,categories:current.categories.filter(p=>['buildings','trees'].includes(p.id))},buildings:true});}
+  if(data.type==='build'||data.type==='vegetation'){
+    if(data.type==='build'&&data.region.infrastructure?.items?.length&&!api){progress('Preparant les unions dels viaductes…');api=await Module({locateFile:()=>wasmURL});api.setup();}
+    current=data.type==='build'?buildModel(data.region,data.options,progress,api):updateVegetation(current,data.options,progress);self.postMessage({type:'model',model:{...current,parts:undefined,categories:data.type==='vegetation'?current.categories.filter(p=>p.id==='trees'):current.categories},vegetation:data.type==='vegetation'});
+  }
+  if(data.type==='buildings'){current=updateBuildings(current,data.layer,data.options,progress);self.postMessage({type:'model',model:{...current,parts:undefined,categories:current.categories.filter(p=>['buildings','trees','roads'].includes(p.id))},buildings:true});}
   if(data.type==='accessory'){
     if(!current)throw Error('Genera primer el model.');
     if(data.kind!=='marc'&&!api){api=await Module({locateFile:()=>wasmURL});api.setup();}

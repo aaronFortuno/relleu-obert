@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-02. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.15.0 — Pilars, enllaços i camins realçats
+
+Captures d’extrems flotants rebudes de l’usuari; no són una validació de contacte físic. [Implementació i proves](RO-033-SUPORTS-I-ENLLACOS.md): pilars amb evitació d’obstacles, dues connexions al viaducte principal, unions de sòlids i realç opcional. 222 proves i construcció locals correctes. RO-033 continua obert per a fidelitat i laminat; nou RO-049 pendent de validació. Cap validació d’usuari arxivada en aquesta iteració.
+
 ## v0.14.0 — Implementació local, sense noves validacions d’usuari
 
 Primer tauler real del viaducte incorporat a la mostra i al 3MF; [dades,

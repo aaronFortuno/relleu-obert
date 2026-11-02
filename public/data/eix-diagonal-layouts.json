@@ -1,0 +1,17 @@
+{
+  "provider": "IDEAM · Matute, Millanes, Nebreda · V Congreso ACHE, 2011",
+  "source": "https://gpreman-cp165.wordpresstemporal.com/wp-content/uploads/2017/03/pon612_2.pdf",
+  "figure": "Fig. 1, page 2: plan and elevation; E1 PK 64+914.970, E2 PK 65+654.970",
+  "method": "Numerical facts transcribed from the engineering drawing. The page-1 summary omits one 50 m span. No PDF or drawing is redistributed.",
+  "items": {
+    "ifc-127512": {
+      "start": "south",
+      "lengthMetres": 740,
+      "spansMetres": [35,50,70,70,100,70,70,70,70,50,50,35],
+      "stationsMetres": [35,85,155,225,325,395,465,535,605,655,705],
+      "sectionMetres": {"along":2.2,"across":6},
+      "maxLongitudinalAdjustmentMetres": 3,
+      "alignment": "E1 is the southern, higher end. Project chainages are interpolated on the mapped axis and checked within the deck footprint; not surveyed pier XYZ coordinates. Printed widths have a 0.8 mm minimum."
+    }
+  }
+}

@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-02**. Iteració **v0.14.0**: implementació i comprovacions locals; validació d’usuari pendent. Les quatre validacions de v0.8.0 i les anotacions originals són a [HISTORIAL.md](HISTORIAL.md). Identificadors estables, versions 0.x fins a declaració explícita d’estabilitat.
+Actualitzat: **2026-11-02**. Iteració **v0.15.0**: pilars, enllaços del viaducte i camins realçats. Les quatre validacions de v0.8.0 i les anotacions originals són a [HISTORIAL.md](HISTORIAL.md). Identificadors estables, versions 0.x fins a declaració explícita d’estabilitat.
 
 ## Prioritats immediates
 
@@ -17,7 +17,7 @@ Actualitzat: **2026-11-02**. Iteració **v0.14.0**: implementació i comprovacio
 | [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió) | P1 | Fonaments en validació | Unió acotada, continuïtat de cavitats i prova física |
 | [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts) | P1 | En estudi | Comparar parts cadastrals i petjades, amb política de fonts explícita |
 | [RO-032](#ro-032--cobertes-i-volums-singulars) | P2 | En estudi | Cobertes reals segons dades disponibles |
-| [RO-033](#ro-033--ponts-i-viaductes) | P2 | Primer tauler implementat; pendent de validar | Ponts amb cota pròpia; pilars i font automàtica pendents |
+| [RO-033](#ro-033--ponts-i-viaductes) | P2 | Suports i enllaços implementats; pendent de validar | Pilars i estreps simplificats; dades reals i font automàtica pendents |
 | [RO-034](#ro-034--túnels-imprimibles) | P3 | Dades insuficients al cas de prova | Túnels: motor preparat; calen cotes i secció |
 | [RO-035](#ro-035--cavitats-i-relleus-amb-voladissos) | P3 | Per estudiar | Baumes, coves i arcs naturals amb dades 3D |
 | [RO-019](#ro-019--internacionalització) | P3 | Setup preparat; traduccions pendents | Català, castellà, gallec, euskera i anglès |
@@ -30,6 +30,7 @@ Actualitzat: **2026-11-02**. Iteració **v0.14.0**: implementació i comprovacio
 | [RO-046](#ro-046--catàleg-de-llocs-recomanats) | P2 | Implementat; pendent de validar | Viaducte inicial i badia de Tamariu conservada |
 
 | [RO-048](#ro-048--base-relativa-a-la-cota-mínima-del-retall) | P1 | Implementat; pendent de validar | Cota mínima a 5 mm i desnivells conservats |
+| [RO-049](#ro-049--camins-realçats) | P2 | Implementat; pendent de validar | Camins amb relleu opcional de 0,5 o 1 mm |
 
 ## Ajornats
 
@@ -199,6 +200,10 @@ Estudiar roof:shape, roof:height, roof:direction/angle i parts d’OSM original,
 
 ### RO-033 — Ponts i viaductes
 
+**v0.15.0 implementada:** [pilars, enllaços i comprovacions](RO-033-SUPORTS-I-ENLLACOS.md). Viaducte principal amb onze pilars segons el projecte, dues connexions i un únic component tancat; 40 cm també comprovat. Validació d’usuari i laminat pendents.
+
+**Petició i treball v0.15.0:** l’usuari confirma l’avenç i aporta captures de taulers flotants als estreps. Calen pilars que evitin camins i edificis i prolongacions amb pendent suau fins a la superfície de la carretera. Els laterals IFC `lpn` 64097/64748 descriuen vores. El plànol IDEAM/ACHE, figura 1 pàgina 2, sí que aporta onze estacions de pilars i una secció nominal; s’han incorporat amb alineació aproximada a l’eix i comprovació d’obstacles. Es preparen suports i connexions identificats com a adaptacions estimades d’impressió; perfils reals de pilars per a més endavant.
+
 **v0.14.0, parcial implementat:** [taulers reals ICGC, proves i límits](RO-033-IMPLEMENTACIO.md). Quatre superfícies XYZ al catàleg de Manresa, amb gruix imprimible simplificat, aire a sota i exportació. Sense pilars mesurats ni càrrega 3D automàtica fora de la mostra. Falta contrast de datum/estreps, laterals `lpn`, laminat i validació d’usuari.
 
 **Actualització de l’usuari:** Incloure taulers viaris i ferroviaris, connexions i cota pròpia. No confondre brunnel/layer amb altitud; dependència de RO-024.
@@ -259,3 +264,7 @@ Abans d’implementar: cua limitada, cancel·lació per canvi de regió, memòri
 Petició expressa: corregir i publicar com a v0.13.1 abans de continuar RO-033/034, sense esperar validació. Ara es resta la cota mínima de la mateixa graella que genera el relleu i s’hi afegeixen 5 mm; a la costa es manté nivell marí zero com a origen i superfície a 5 mm. Les altituds d’origen es conserven a les metadades; no és una conversió de datum. Edificis, arbres, camins i aigües interiors comparteixen la transformació.
 
 Mostra real de Manresa: origen 227,2727 m, relleu generat entre 5 i 24,7599 mm amb exageració ×1,5 i escala 1:10.000. Tamariu conserva mar a 5 mm. Regressions de cota absoluta/negativa, desnivell, exageració, escala i aigües interiors; validació de l’usuari pendent.
+
+### RO-049 — Camins realçats
+
+Implementat v0.15.0, pendent de validar: [comprovacions](RO-033-SUPORTS-I-ENLLACOS.md#ro-049--realç-opcional-dels-camins). Petició de l’usuari per ressaltar carreteres a 0,5 o 1 mm sobre el terreny. Opció desactivada per defecte, en mil·límetres de maqueta; afecta també el paviment dels taulers i els enllaços, sense presentar-ho com una cota mesurada. Unions, exportació i càmera comprovades localment; validació d’usuari i laminat pendents.

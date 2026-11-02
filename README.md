@@ -2,7 +2,9 @@
 
 Prototip educatiu separat de Terrology: generació de maquetes geogràfiques amb JavaScript, íntegrament al navegador, publicable a GitHub Pages. No s’ha copiat codi de Terrology.
 
-**v0.14.0 experimental · 2 de novembre de 2026**
+**v0.15.0 experimental · 2 de novembre de 2026**
+
+Novetats v0.15: pilars simplificats amb evitació de camins i edificis i prolongacions suaus fins a la carretera. El viaducte principal de Manresa té onze pilars segons el repartiment del projecte i dos enllaços, units al tauler abans de mostrar-los/exportar-los. Suports i enllaços són estimats, pendents de laminat. Selector per realçar camins 0,5 o 1 mm de maqueta, desactivat per defecte. [Comprovacions i límits](work/RO-033-SUPORTS-I-ENLLACOS.md).
 
 Novetats v0.14: primer tauler del viaducte de Manresa amb cotes 3D reals de l’ICGC, separat del terreny i inclòs al 3MF. Gruix imprimible simplificat, sense pilars mesurats; encara només a la mostra. [Implementació i límits](work/RO-033-IMPLEMENTACIO.md). El túnel continua pendent de dades suficients. [Llibre d’estil obligatori](DESIGN.md) per a qualsevol canvi d’interfície, incloses tasques delegades.
 

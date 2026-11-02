@@ -1,5 +1,12 @@
 # Canvis
 
+## v0.15.0 — 2026-11-02
+
+- Pilars simplificats sota els taulers, incrustats al terreny i units al pont. Petjades amb marge contra camins i edificis carregats; recalculades en canviar de font d’edificis sense reconstruir el relleu.
+- Prolongacions sobre la continuació cartografiada de la carretera, amb transició suau de cota i amplada fins al terreny. Viaducte principal de Manresa: onze pilars segons el projecte i dues connexions; un únic component connectat. Geometria estimada, sense atribuir-la a aixecaments de pilars o estreps.
+- Camins amb realç opcional de 0,5 o 1 mm, també al paviment dels taulers i enllaços; arran de terreny per defecte. Canviar el realç conserva l’enquadrament.
+- 222 proves locals i construcció estàtica. Comprovacions de geometria, obstacles, actualització incremental i model de 40 cm; navegador i 3MF revisats localment. Laminat i impressió pendents. Sense comprovació remota de Pages/CI.
+
 ## v0.14.0 — 2026-11-02
 
 - Mostra de Manresa amb quatre superfícies de pont de l’IFC ICGC, inclòs el viaducte: cotes pròpies, gruix imprimible de 0,6 mm, espai inferior i conservació en edicions de capes i exportació. Sense pilars mesurats ni font 3D automàtica fora de la mostra.

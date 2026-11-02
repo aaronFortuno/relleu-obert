@@ -68,6 +68,7 @@ export async function loadRegion({sample=true,bbox,buildingSource,decodeElevatio
   meta.elevationDecoding=localDEM?{method:'numeric GeoTIFF raster; no canvas readback',file:localDEM.metadata}:{method:'binary RGB; no canvas readback',tiles:dem.map(t=>({z:t.z,x:t.x,y:t.y,...t.decoding}))};
   meta.localSources={dem:localDEM?.metadata||null,buildings:localBuildings?.metadata||null};
   const infrastructure=sample&&meta.infrastructureFile?await(await get(base+meta.infrastructureFile)).json():null;
+  if(infrastructure&&meta.infrastructureLayouts)infrastructure.layouts=await(await get(base+meta.infrastructureLayouts)).json();
   const region={meta,features,vectorFeatures:features,terrainWarnings,dem,localDEM,infrastructure};
   const layer=await loadBuildingsRecoverably(source=>loadBuildingLayer(region,{source,localBuildings},progress),buildingSource||defaultBuildingSource(meta.bbox),localBuildings?[]:buildingFallbacks);
   if(layer.recovery){region.recovery=layer.recovery;region.meta={...region.meta,buildingRecovery:layer.recovery};}
