@@ -2,6 +2,19 @@
 
 Actualitzat: 2026-11-02. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## RO-053 — Prioritat de flux per etapes recollida (2026-11-02)
+
+L'usuari reitera que el flux granular no pot quedar perdut a la conversa:
+preparació de mida d'impressió, selecció d'ubicació/zoom i construcció de
+terreny, vegetació, vies i edificis en passos controlables. Es registra
+RO-053, P1, a la vista prioritària i al detall del backlog, i s'afegeix un
+avís visible al punt de represa del portàtil. L'ordre proposat continua
+obert a estudi; disseny i implementació encara pendents. Es preserven
+edicions manuals, dependències, memòria cau, coherència de transport i
+validacions per etapa com a criteris. Millau es recull explícitament a
+RO-033 com a cas d'omissions/geometries anguloses segons zoom i retall.
+Canvi només documental; no es modifica ni es dona per resolt RO-052.
+
 ## v0.19.0 PARCIAL — RO-052 i retirada del marc (2026-11-02)
 
 Tancament expressament demanat per l'usuari per apagar l'equip i reprendre

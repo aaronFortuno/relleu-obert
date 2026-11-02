@@ -6,19 +6,22 @@ Actualitzat: **2026-11-02 · v0.19.0 PARCIAL**. Tancament expressament demanat p
 
 **RO-052 — reprendre al portàtil.** Primera tasca: corregir la regressió del rectangle girat abans de més validació o impressions. Hi ha feina transversal desada però incompleta; 370/370 ordinàries passaven abans del darrer refinament, no en acrediten l'estat actual. Cap procés ni agent queda treballant en aquest equip.
 
+**RO-053 — prioritat de disseny i arquitectura: flux per etapes.** Petició reiterada de l'usuari: separar terreny, vegetació, vies i edificis per guanyar agilitat i control, començant per la mida d'impressió i la selecció del territori. [Proposta completa, decisions obertes i criteris](#ro-053--flux-de-treball-per-etapes). Cal estudiar l'ordre i les dependències; no és una seqüència ja aprovada ni una millora opcional perduda entre retocs. Preparar el disseny com a següent línia prioritària, coordinada amb les correccions RO-052/051.
+
 1. **RO-051 — Primera optimització validada localment.** 3 km: 189,3 → 56,6 s; màscares sota demanda, de 14 unions a 2, amb mateixos perfils/omissions/pilars/llums. 344 proves i build correctes. Següent: component nul d'1,5 km / detall 12 i màscares multipart; prototip desactivat. [Informe i controls](RO-051-RENDIMENT.md).
 2. **RO-034 / RO-050 — Validació del lot.** Revisar túnels arquejats i suports a Rajadell; comparar +0,5 / +1 mm ferroviaris i materials. Distingir control geomètric local de laminat i impressió.
 3. **RO-024 — Qualitat abans d'impressions llargues.** Analitzar els canvis de material observats en algunes capes al laminador; no atribuir-ne encara la causa al programa. Cupó reduït abans de maquetes de 2–3 dies.
 4. **RO-032 — Cobertes i singulars, P1.** Acreditar accés remot reeixit i obtenir dades de coberta de Tamariu. Nucli de sis formes i fixture Torre Glòries verificats; cobertura general i altres singulars encara oberts.
 5. **RO-033 — Contrast fora de Rajadell.** Tres llocs reals amb pont recte, corbat i pas inferior; revisar connexions, obstacles i suports dels enllaços.
 
-**Seguiment:** 16 línies obertes, 6 ajornades i 30 arxivades. «Implementat» vol dir disponible; la validació local, la d’usuari, el laminat i la impressió es registren per separat.
+**Seguiment:** 17 línies obertes, 6 ajornades i 30 arxivades. «Implementat» vol dir disponible; la validació local, la d’usuari, el laminat i la impressió es registren per separat.
 
 ## Desenvolupament prioritari
 
 | ID                                                                 | Prioritat | Estat                                                                                                                                                                                                                                                                                                                                 | Proper resultat comprovable                             |
 | ------------------------------------------------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| [RO-033](#ro-033--ponts-i-viaductes)                               | P1        | Corregit; pendent d’usuari/laminat                                                                                                                                                                                                                                                                                                    | Pilars consistents a zoom in/out i llums diagnosticades |
+| [RO-053](#ro-053--flux-de-treball-per-etapes) | P1 | Proposta prioritària de l'usuari; ordre per estudiar | Flux revisable, dependències de capes i primer pilot incremental |
+| [RO-033](#ro-033--ponts-i-viaductes) | P1 | Controls de Rajadell corregits; generalització/Millau pendents | Reproduir omissions i angles a Millau segons zoom/retall; contrastar altres ponts |
 | [RO-034](#ro-034--túnels-imprimibles) | P1 | Corregit en controls locals; pendent d'usuari/laminat | Revisar portals amb mode experimental activat |
 | [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | 3 km un 70% més ràpid; 344 proves/build correctes | Component nul a 1,5 km/detall 12; IDs multipart; usuari/laminat |
 | [RO-052](#ro-052--continuïtat-i-amplada-del-traçat-viari) | P1 | Entrega parcial; rectangle girat falla | REPRESA-RO-052.md: corregir graó, suite final, controls i revisió visual |
@@ -236,6 +239,8 @@ Estudiar roof:shape, roof:height, roof:direction/angle i parts d’OSM original,
 
 **Decisió de l’usuari després de v0.15.0:** prioritzar construcció procedimental general; evitar acumular fitxers per a desenes de milers de ponts. Conservar Rajadell com a cas especial ja disponible. Altres excepcions, només sota demanda concreta, amb àmbit geogràfic i font explícits. No s’obre ara una tasca de Millau.
 
+**Actualització posterior de l'usuari (2026-11-02):** Millau sí queda recollit com a cas de regressió de la generalització: segons zoom/posició del retall s'omet bona part del viaducte o apareixen geometries anguloses. Reproduir amb centre, retall, escala, fonts i resultat registrats; revisar traçat, retall i continuïtat a RO-033/052. Aquest seguiment actualitza la priorització anterior, sense introduir una reconstrucció específica pel nom del lloc.
+
 **Pendent, P1:** contrastar almenys tres ubicacions reals alienes a Rajadell (recte, corbat i creuament inferior), incloent canvi de font d’edificis i límit del retall. Revisar que els DEM dels extrems i la interpolació no enfonsen els taulers en relleus intermedis. Les proves sintètiques no substitueixen aquesta comprovació. Validar laminat, suports omesos i fragments separats. El camí inferior ha de continuar obert, no només el peu del pilar en queda fora.
 
 **Validació rebuda:** l’usuari aprova l’aspecte visual de la reconstrucció de Rajadell. Continuen pendents la impressió, els fragments petits tallats i la cobertura general; l’evitació es limita als obstacles presents a les dades.
@@ -320,7 +325,7 @@ Abans d’implementar: cua limitada, cancel·lació per canvi de regió, memòri
 - [ ] Usuari: imprimir un cupó petit després de revisar el laminat, abans d'impressions llargues. Les malles correctes no acrediten encara la impressió física.
 - [ ] Agent: un cop resoltes les incidències i contrastats els controls, decidir l'activació i mesurar cobertura/unions residuals abans de plantejar paral·lelització. Si es reprèn el filtratge espacial, capturar la primera col·lisió divergent i el motor/tolerància emprats.
 
-**Després d'aquest diagnòstic:** refactorització/modularització segons els límits del motor; proposta de flux per etapes i auditoria de sidebars; contrast general de ponts (incloent Millau amb retalls/escales diferents); depuració de backlog i documents redundants conservant observacions originals i evidència pendent. Són passos previstos, encara sense implementació ni validació.
+**Després d'aquest diagnòstic:** refactorització/modularització segons els límits del motor; [RO-053: flux per etapes i auditoria de sidebars](#ro-053--flux-de-treball-per-etapes); contrast general de ponts (incloent Millau amb retalls/escales diferents); depuració de backlog i documents redundants conservant observacions originals i evidència pendent. Són passos previstos, encara sense implementació ni validació.
 
 **P1, en curs (v0.18.1):** l'usuari observa ondulacions desproporcionades a l'Eix Transversal, al costat de Rajadell. Cal una estratègia general per a motorway/trunk i enllaços, preservant camins secundaris i fonts/procedència.
 
@@ -349,3 +354,41 @@ Primer prototip local: perfil longitudinal regularitzat amb tall/terraplè acota
 - [x] Agent: provar una passada conjunta de continuïtat a boques i estreps, amb cotes i dues vores coherents, mantenint el terreny i els buits sota les estructures.
 - [ ] Agent: completar la regressió integrada superfície → pont → superfície → túnel → superfície; mostrejar eix i vores, connexions i material, a diferents escales i retalls. Conservar la geometria a preview i 3MF.
 - [ ] Usuari: revisar els enllaços i les transicions d'amplada dels nous controls abans de validar laminat/impressió. Els fitxers de v0.18.2 documenten el problema i no el donen per resolt.
+
+### RO-053 — Flux de treball per etapes
+
+**P1, proposta prioritària reiterada per l'usuari el 2026-11-02. Estat: per dissenyar; encara no implementat.** Objectiu: seguir polint la implementació i separar clarament els processos de **terreny, vegetació, vies i edificis**, possiblement en quatre etapes successives de construcció. Guanyar rapidesa, control i comprensió del resultat, evitant una generació monolítica seguida de retocs aïllats. Inclou arquitectura incremental i navegació/sidebars; no és només canviar l'ordre dels menús.
+
+**Hipòtesi inicial de l'usuari, pendent d'avaluar i validar:**
+
+| Moment | Acció de l'usuari i resultat esperat |
+| --- | --- |
+| Preparació | Triar primer mida útil d'impressió, dimensions del projecte/peces i configuració bàsica, tenint en compte el límit de la màquina. |
+| Territori i terreny | Triar ubicació, zoom/escala i retall. Generar elevacions i tipologies bàsiques: aigua, terra i boscos/zones verdes. La proposta també contempla mostrar ja vegetació inicial. |
+| Vegetació i base | Desplegar la configuració de vegetació; pintar-la o ajustar la base i continuar quan l'usuari estigui satisfet. |
+| Vies de comunicació | Configurar i generar carreteres/ferrocarrils, ponts, viaductes i túnels, amb perfils altimètrics, creuaments i connexions coherents segons les dades i l'escala. |
+| Edificis | Afegir edificis i contorns precisos, triant les col·leccions ICGC, OpenStreetMap o Catastre disponibles. Estudiar altres fonts després que aquest flux sigui funcional. |
+
+La preparació de mida i territori precedeix les quatre capes; el nombre de pantalles o passos de la UI encara no està decidit. L'usuari considera que aquest ordre té sentit però el planteja com a hipòtesi. **Cal estudiar l'ordre lògic abans d'implementar-lo**, inclosa l'alternativa de completar o reconciliar la vegetació després de vies/edificis. Diferenciar la cobertura verda bàsica del terreny dels volums d'arbres.
+
+**Dependències i comportament que el disseny ha de resoldre:**
+
+- Les vies i els edificis condicionen les col·lisions i la vegetació. Si s'incorporen després de pintar, conservar els traços i definir com es reconcilien els arbres afectats; explicar qualsevol canvi visible i oferir desfer/ajustar.
+- Tornar a un pas anterior ha de conservar les decisions de l'usuari. Definir què es reutilitza, es reprojecta o s'invalida en canviar mida, escala, ubicació, gir, font o configuració, sense pèrdues silencioses.
+- Separar càrrega de dades, preparació de geometria i presentació de cada capa; memòria cau i recalculat només de les dependències afectades. Mesurar el temps de cada etapa i els canvis incrementals abans de decidir si convé paral·lelitzar càlculs.
+- Estats clars de pendent/calculant/preparat/error, progrés, cancel·lació quan sigui viable i recuperació del model vàlid. Preview central i mides d'impressió estables en avançar o retrocedir.
+- Carreteres, rails, ponts i túnels han de formar un traçat coherent encara que es generin en etapes. Distingir cotes acreditades, estimacions i realços físics; coordinar amb RO-052, RO-033, RO-034, RO-050 i RO-051.
+- Homogeneïtzar el llenguatge dels controls i revisar l'UX dels sidebars seguint DESIGN.md i RO-045. La modularització del motor ha de donar suport al flux, no provocar reconstruccions completes per canvis locals.
+
+**Casos i observacions que s'han de conservar:** els ponts sobre alguns rius ja s'han generat correctament, però queden viaductes, túnels, creuaments ferroviaris i altimetria per contrastar. **Viaducte de Millau:** l'usuari observa omissions de bona part de l'estructura o geometries anguloses segons zoom i posició del model. Incorporar-lo com a regressió general de RO-033/052 amb retall, escala i fonts registrats; no donar-lo per resolt per les proves de Rajadell ni convertir-lo automàticament en una excepció geogràfica.
+
+**Pla de treball i seguiment:**
+
+- [ ] Agent: inventariar el flux actual i les dependències de dades/meshes/edicions, aprofitant el recalculat incremental existent.
+- [ ] Agent: comparar l'ordre proposat amb alternatives justificades; preparar un mapa de passos i estats, incloent tornar enrere, errors i invalidació de capes.
+- [ ] Usuari: revisar un prototip o proposta visual del flux i dels sidebars abans d'una reorganització general de la UI.
+- [ ] Agent: definir límits de mòduls i un primer pilot petit de construcció per etapes; implementar-lo gradualment, conservant el comportament i les dades verificades.
+- [ ] Agent: comprovar temps/memòria per etapa, reutilització de capes no afectades, conservació del pinzell i configuració, continuïtat del transport i igualtat preview/exportació. Provar avançar/retrocedir i errors, no només la construcció final.
+- [ ] Usuari: validar claredat, agilitat, control i absència de soroll mental amb un recorregut real complet; després, laminat/impressió dels nous controls quan la geometria estigui estabilitzada.
+
+**Proper resultat revisable:** proposta explícita d'ordre i dependències, amb justificació de la posició de la vegetació i de les decisions de mida/escala. Disseny prioritari coordinat amb les incidències obertes; el registre d'aquesta proposta no tanca RO-052 ni autoritza a donar per acabades les validacions geomètriques pendents.

@@ -5,6 +5,21 @@ l'ordinador i continuar al portàtil durant la nit. Es publica el treball
 actual, inclòs el refinament encara incomplet. **RO-052 no està resolt.**
 No queda cap prova, generació de model ni feina d'agent en marxa.
 
+## Prioritat addicional que ha de rebre l'agent del portàtil
+
+L'usuari ha reiterat explícitament la necessitat d'estudiar un flux més
+granular, separat en terreny, vegetació, vies i edificis, amb mida
+d'impressió abans de seleccionar ubicació/zoom. Queda registrat com a
+**[RO-053, P1](BACKLOG.md#ro-053--flux-de-treball-per-etapes)**, amb la seva
+seqüència candidata, dependències i criteris. No deixar-ho com una nota
+opcional al final del diagnòstic ni donar l'ordre per decidit.
+
+Després d'estabilitzar el punt fallit de RO-052, preparar com a següent
+línia prioritària una proposta revisable del flux i de la invalidació
+incremental de capes. El pinzell inicial de vegetació ha de poder conviure
+amb vies/edificis incorporats després, sense perdre edicions silenciosament.
+Millau queda com a cas de regressió general de RO-033 segons zoom i retall.
+
 ## Punt de partida
 
 - Llegir `AGENTS.md`, `DESIGN.md` i el detall de RO-052 a `BACKLOG.md`.
