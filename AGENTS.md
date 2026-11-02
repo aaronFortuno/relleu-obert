@@ -5,6 +5,7 @@
 - Mantén les versions experimentals en `0.x` o `0.x.x`. Després de `0.9` ve `0.10`; no passis a `1.0` sense una petició explícita de l’usuari que declari la versió estable.
 - Prioritza l’ús d’escriptori. Header i footer sempre visibles, dos sidebars amb scroll intern i preview central estable.
 - Tot el càlcul es fa al navegador i l’aplicació es publica estàticament a GitHub Pages.
+- Ponts i viaductes: prioritzar un flux procedimental general a partir de les dades de la regió, amb comprovació de camins/edificis i connexions. Rajadell es conserva com a excepció documentada de mostra; no construir un catàleg mundial de plànols ni preparar altres excepcions sense una petició concreta. Distingir motor procedimental disponible de càrrega/reconstrucció automàtica realment integrada fora de les mostres.
 - Les elevacions RGB són dades numèriques: descodifica els bytes WebP/PNG directament, sense lectures de canvas (`getImageData`), que poden alterar els canals i les altituds. Conserva els diagnòstics i la procedència de les fonts.
 - Després de validar localment, no facis comprovacions remotes de la web ni de CI: les fa l’usuari manualment.
 - L’autorització de publicar els canvis d’aquest projecte a GitHub ja consta a la conversa. Utilitza Git Credential Manager i git.exe amb `http.sslBackend=openssl`; no utilitzis `gh` ni exposis credencials.

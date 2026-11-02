@@ -2,6 +2,17 @@
 
 Actualitzat: 2026-11-02. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## Decisió posterior a v0.15.0 — Procedimental com a via general
+
+L’usuari aprova visualment Rajadell i fixa com a prioritat la generació
+procedimental de ponts amb evitació de camins i edificis. Es conserva
+l’excepció ja disponible, sense crear un catàleg mundial de plànols; altres
+casos específics només sota demanda. Revisió del codi: suports i enllaços
+reutilitzables, però la reconstrucció dels taulers fora de les mostres encara
+no està integrada. RO-033 passa a P1 i continua obert. S’actualitzen
+[arquitectura](../ARCHITECTURE.md) i [prioritats](BACKLOG.md); sense canvis de
+funcionalitat ni versió nova. Validació visual distingida de laminat/impressió.
+
 ## v0.15.0 — Pilars, enllaços i camins realçats
 
 Captures d’extrems flotants rebudes de l’usuari; no són una validació de contacte físic. [Implementació i proves](RO-033-SUPORTS-I-ENLLACOS.md): pilars amb evitació d’obstacles, dues connexions al viaducte principal, unions de sòlids i realç opcional. 222 proves i construcció locals correctes. RO-033 continua obert per a fidelitat i laminat; nou RO-049 pendent de validació. Cap validació d’usuari arxivada en aquesta iteració.

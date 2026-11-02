@@ -6,9 +6,38 @@ Terrology és un motor Python amb FastAPI, processos i dependències natives. Un
 
 ## Flux actual
 
+### Ponts: estratègia general i excepcions
+
+Decisió de l’usuari després de v0.15.0: la via principal serà procedimental,
+amb suports que evitin les petjades de camins i edificis carregats i amb
+connexions contínues a la carretera. Si falta un lloc segur per a un suport,
+s’omet i s’avisa. Les fonts incompletes impedeixen garantir l’absència de
+col·lisions amb elements reals que no estiguin cartografiats.
+
+`planPiers` ja té repartiment procedimental quan no rep `layout`, i
+`planApproaches` calcula els enllaços. La distribució del projecte de Rajadell
+és una excepció petita associada a la mostra; les formes continuen adaptades
+a la impressió. No es mantindrà un catàleg global de projectes constructius.
+Una futura excepció demanada per l’usuari haurà de tenir àmbit geogràfic,
+identitat de l’estructura, font i alternativa procedimental explícits.
+
+**Límit actual de v0.15.0:** `loadRegion` només carrega `infrastructure` si la
+mostra declara un fitxer de taulers. `buildModel` crea ponts elevats a partir
+d’aquests taulers; sense aquest fitxer, els trams MVT de pont encara entren
+al flux de camins sobre el terreny. Per tant, el motor no és encara un flux
+de reconstrucció 3D general per a qualsevol ubicació. RO-033 ha de connectar
+la detecció de trams elevats, el perfil vertical conegut o estimat, els taulers,
+els enllaços i els suports sense exigir fitxers preparats per lloc.
+
+Les cotes estimades es distingiran de les mesurades; `layer` no es convertirà
+en metres. Primer es validarà aquesta via general en ubicacions independents
+de Rajadell; les dades específiques quedaran com a millora opcional.
+
+### Altres capes i càlcul incremental
+
 Des de v0.9, `loadBuildingLayer` conserva vectors OSM originals i memòria cau de fonts per regió. Catastre s’importa sota demanda amb `cadastre.js` i fast-xml-parser; es valida XML/GML, EPSG, anells, identificadors i límits abans de generar volums. Les parts d’una família substitueixen la seva envolupant; zero plantes s’omet explícitament. Cap política automàtica de priorització de fonts noves.
 
-`updateBuildings` reconstrueix només la categoria d’edificis, compartint els buffers estàtics i el camp de relleu amb el model anterior. Conserva posicions de capçades supervivents i retira col·lisions amb la nova petjada; no replanta automàticament espais que un edifici deixa lliures. Actualitza la màscara per a edicions posteriors. Canvis d’altura conserven fins i tot el buffer d’arbres. El Worker envia només les categories modificades i el client manté la càmera. Els errors no substitueixen el model per un resultat incomplet.
+`updateBuildings` reconstrueix els edificis compartint els buffers estàtics i el camp de relleu amb el model anterior. Des de v0.15, si canvien les petjades també recomprova els pilars i pot actualitzar la categoria de carreteres; si només canvien altures, reutilitza aquesta geometria. Conserva posicions de capçades supervivents i retira col·lisions amb la nova petjada; no replanta automàticament espais que un edifici deixa lliures. Actualitza la màscara per a edicions posteriors. Canvis d’altura conserven fins i tot el buffer d’arbres. El Worker envia les categories de l’actualització i el client manté la càmera. Els errors no substitueixen el model per un resultat incomplet.
 
 `brush-scatter.js` genera punts dins del disc amb distància mínima i intents limitats; la graella auxiliar només indexa veïns, no col·loca arbres. Llavor local per traç i capçades independents del recorregut automàtic. `building-roofs.js` interpreta gabled/skillion i la direcció de pendent respecte al nord, transformada al gir del model. El carener de dues aigües es talla explícitament abans de triangular; patis i substrat es conserven. Forma/altura/direcció incompletes o tipus no admesos produeixen una coberta plana amb motiu a la procedència.
 
