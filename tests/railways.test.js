@@ -20,7 +20,7 @@ const near=(a,b)=>assert(Math.abs(a-b)<1e-5,`${a} != ${b}`);
 test('rail semantics select rail/transit/railway tags without treating a dirt track as railway',()=>{
  for(const p of [{class:'rail'},{class:'light_rail'},{class:'transit',subclass:'tram'},{class:'transit',subclass:'subway'},{railway:'light_rail'}])assert.equal(isRailway(p),true);
  for(const p of [{class:'track'},{class:'path'},{class:'transit',subclass:'bus'},{class:'rail',subclass:'abandoned'},{railway:'disused'}])assert.equal(isRailway(p),false);
- assert.deepEqual(railwayOptions(),{railRise:1});for(const railRise of [-1,.25,2,NaN])assert.throws(()=>railwayOptions({railRise}),/ferrocarrils/);
+ assert.deepEqual(railwayOptions(),{railRise:0});for(const railRise of [-1,.25,2,NaN])assert.throws(()=>railwayOptions({railRise}),/ferrocarrils/);
 });
 
 test('nine road/rail rise combinations produce separate physical heights independent of exaggeration',()=>{
@@ -31,7 +31,8 @@ test('nine road/rail rise combinations produce separate physical heights indepen
   assert.equal(m.provenance.railways.surfaceRiseMM,roadRise+railRise);assert.equal(m.provenance.railways.incrementMM,railRise);
   const rail=part(m,'railways'),[y0,y1]=minmax(rail,1);assert(y1-y0>=.4399,'minimum platform width must survive small scales');
  }
- const defaultRise=buildModel(region,{...options,roadRise:.5});near(minmax(part(defaultRise,'railways'))[1],6.5);
+ const defaultRise=buildModel(region,{...options,roadRise:.5});
+ near(minmax(part(defaultRise,'railways'))[1],minmax(part(defaultRise,'roads'))[1]);
 });
 
 test('rail crossings occupy their own ground surface and do not duplicate the road footprint',()=>{
@@ -84,7 +85,8 @@ test('nine semantic categories preserve all triangles with 1/2/4/8 filaments and
   const old=defaults.slice(0,8),snapshot=old.slice(),migrated=normalizeAssignments(n,old);assert.deepEqual(old,snapshot);assert.equal(migrated[8],old[3]);
   assert.equal(groupMaterials({categories,provenance:{}},n,old).parts.reduce((s,p)=>s+p.faces.length,0),27);
  }
- const custom=defaultAssignments(8);custom[8]=7;const model=groupMaterials({categories:[categories[8]],provenance:{}},8,custom);assert.equal(model.parts[0].id,'material-8');
+ const custom=defaultAssignments(8);assert.equal(custom[8],custom[2]);assert.notEqual(custom[8],custom[3]);
+ custom[8]=7;const model=groupMaterials({categories:[categories[8]],provenance:{}},8,custom);assert.equal(model.parts[0].id,'material-8');
  for(const invalid of [[0],[0,0,0,0,0,0,0,0,0,0],Array(9).fill(4)])assert.throws(()=>normalizeAssignments(4,invalid),/assignació/);
 });
 

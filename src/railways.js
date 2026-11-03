@@ -10,7 +10,7 @@ export function isRailway(properties={}){
   return TYPES.has(p.class)||TYPES.has(p.railway)||(p.class==='transit'&&TYPES.has(p.subclass));
 }
 export function railwayOptions(options={}){
-  const railRise=options.railRise??1;
+  const railRise=options.railRise??0;
   if(![0,.5,1].includes(railRise))throw Error('Relleu dels ferrocarrils invàlid.');
   return {railRise};
 }

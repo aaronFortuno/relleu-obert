@@ -1,5 +1,11 @@
 # Canvis
 
+## v0.19.3 — 2026-11-03
+
+- RO-053: els ajustos de carreteres, ferrocarrils i túnels s'apliquen automàticament quan la maqueta correspon al retall i al terreny seleccionats. La vista es conserva durant el càlcul.
+- Les capçaleres del panell dret i la descàrrega queden visibles. Cada apartat té scroll intern. Triar un format al desplegable inicia la descàrrega i el deixa seleccionat per a la propera.
+- RO-050: ferrocarrils sense increment d'altura per defecte. Amb vuit materials comparteixen el dels edificis. Amb quatre, edificis, carreteres i ferrocarrils comparteixen un material reassignable.
+
 ## v0.19.2 — 2026-11-03
 
 - RO-053: primera integració de l'ordre validat, amb sis apartats i una acció al costat del títol actiu. Es pot tornar directament a qualsevol apartat, i avançar amb teclat manté el focus dins del flux. La generació inicial i els canvis de vies encara treballen sobre el model complet.

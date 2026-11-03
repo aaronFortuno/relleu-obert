@@ -53,9 +53,9 @@
     <section class="config-section" data-step="transport">
       <div class="step-header"><h2 class="config-heading"><button type="button" class="section-toggle" id="step-transport" aria-expanded="false" aria-controls="panel-transport"><span aria-hidden="true">05</span><span data-i18n="section.transport">Vies</span><i aria-hidden="true">+</i></button></h2><button type="button" class="secondary step-action" data-step-action="transport" hidden>Edificis →</button></div>
       <div id="panel-transport" class="config-content" role="region" aria-labelledby="step-transport" hidden><label for="road-rise">Relleu dels camins <span class="unit">mm de maqueta</span></label><select id="road-rise"><option value="0">Arran de terreny</option><option value="0.5">Realç de 0,5 mm</option><option value="1">Realç d’1 mm</option></select>
-      <label for="rail-rise">Relleu de ferrocarrils <span class="unit">sobre els camins</span></label><select id="rail-rise"><option value="0">Igual que els camins</option><option value="0.5">+0,5 mm</option><option value="1" selected>+1 mm</option></select>
+      <label for="rail-rise">Relleu de ferrocarrils <span class="unit">sobre els camins</span></label><select id="rail-rise"><option value="0" selected>Igual que els camins</option><option value="0.5">+0,5 mm</option><option value="1">+1 mm</option></select>
       <label class="check-row"><input id="estimated-tunnels" type="checkbox" checked aria-describedby="tunnel-note"><span>Túnels estimats · experimental</span></label><p id="tunnel-note" class="hint">Perfil arquejat i paviment de camí. Revisa els portals i el laminat.</p>
-      <p class="hint">Aplica els canvis al model quan hagis ajustat les vies.</p>
+      <p class="hint">Els ajustos s’apliquen automàticament a la maqueta generada.</p>
       </div>
     </section>
     <section class="config-section" data-step="buildings">
@@ -77,14 +77,34 @@
     </div>
   </section>
   <aside class="sidebar sidebar-right" aria-label="Informació i exportació">
-    <section><div class="section-heading"><h2>La teva maqueta</h2><span class="small-label">EN MIL·LÍMETRES</span></div><div id="metrics" class="metrics"><div><strong>—</strong><span>Mida final</span></div><div><strong>—</strong><span>Escala</span></div></div><div id="tiling-summary" class="subtle-note">Una sola peça</div></section>
-    <section><div class="section-heading"><h2>Colors i materials</h2></div>
-      <label for="material-count" >Colors / materials</label><select id="material-count"><option value="1">1 material · impressió monocroma</option><option value="2">2 materials</option><option value="4" selected>4 materials</option><option value="8">8 materials</option></select><div id="material-legend" class="material-legend"></div></section>
-    <section><div class="section-heading"><h2>Descarrega el model</h2></div><button id="export-3mf" class="primary" disabled>3MF per a Bambu Studio ↓</button><button id="export-standard" class="secondary" disabled>3MF estàndard ↓</button><button id="export-stl" class="secondary" disabled>STL per material ↓</button><p id="export-hint" class="hint">Obre el 3MF com a projecte i comprova els filaments i el laminat.</p></section>
-    <section><details class="data-notes"><summary>Dades i limitacions</summary><p id="building-info" class="hint"></p><div id="warnings"></div><p class="hint">Els arbres són procedimentals. Revisa les malles i el laminat abans d’imprimir.</p></details></section>
+    <section class="info-panel is-open">
+      <h2><button type="button" class="section-toggle" aria-expanded="true" aria-controls="info-model">La teva maqueta <i aria-hidden="true">−</i></button></h2>
+      <div class="config-content" id="info-model"><div id="metrics" class="metrics"><div><strong>—</strong><span>Mida final · mm</span></div><div><strong>—</strong><span>Escala</span></div></div><div id="tiling-summary" class="subtle-note">Una sola peça</div></div>
+    </section>
+    <section class="info-panel">
+      <h2><button type="button" class="section-toggle" aria-expanded="false" aria-controls="info-materials">Colors i materials <i aria-hidden="true">+</i></button></h2>
+      <div class="config-content" id="info-materials" hidden><label for="material-count">Colors / materials</label><select id="material-count"><option value="1">1 material · impressió monocroma</option><option value="2">2 materials</option><option value="4" selected>4 materials</option><option value="8">8 materials</option></select><div id="material-legend" class="material-legend"></div></div>
+    </section>
+    <section class="info-panel">
+      <h2><button type="button" class="section-toggle" aria-expanded="false" aria-controls="info-data">Dades i limitacions <i aria-hidden="true">+</i></button></h2>
+      <div class="config-content data-notes" id="info-data" hidden><p id="building-info" class="hint"></p><div id="warnings"></div><p class="hint">Els arbres són procedimentals. Revisa les malles i el laminat abans d’imprimir.</p></div>
+    </section>
+    <section class="download-panel">
+      <div class="section-heading"><h2>Descarrega el model</h2></div>
+      <div class="download-control">
+        <button type="button" id="export-model" class="primary" disabled>3MF per a Bambu Studio ↓</button>
+        <button type="button" id="export-formats" class="primary" aria-label="Formats de descàrrega" aria-expanded="false" aria-controls="export-options" disabled>▾</button>
+        <div id="export-options" hidden>
+          <button type="button" data-format="bambu" aria-pressed="true">3MF per a Bambu Studio</button>
+          <button type="button" data-format="3mf" aria-pressed="false">3MF estàndard</button>
+          <button type="button" data-format="stl" aria-pressed="false">STL per material</button>
+        </div>
+      </div>
+      <p id="export-hint" class="hint">Obre el 3MF com a projecte i comprova els filaments i el laminat.</p>
+    </section>
   </aside>
 </main>
-<footer class="app-footer"><span data-i18n="footer.tagline">Un tros del món, a les teves mans.</span><div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions">v0.19.2</button><button data-open="about-dialog" class="v4v-button">♡ Sobre el projecte · V4V</button></div></footer>
+<footer class="app-footer"><span data-i18n="footer.tagline">Un tros del món, a les teves mans.</span><div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions">v0.19.3</button><button data-open="about-dialog" class="v4v-button">♡ Sobre el projecte · V4V</button></div></footer>
 
 <dialog id="changelog-dialog" aria-labelledby="changelog-title"><div class="dialog-heading"><h2 id="changelog-title">Historial de versions</h2><button data-close aria-label="Tanca">×</button></div><div class="dialog-content"><div id="release-list"></div><a class="dialog-link" href="https://github.com/aaronFortuno/relleu-obert/blob/main/CHANGELOG.md" target="_blank" rel="noreferrer">Changelog complet al repositori ↗</a><p class="hint">Versions experimentals 0.x fins que es declari explícitament una versió estable.</p></div></dialog>
 <dialog id="help-dialog" aria-labelledby="help-title"><div class="dialog-heading"><h2 id="help-title">Geografia que pots tocar.</h2><button data-close aria-label="Tanca">×</button></div><div class="dialog-content"><p>Relleu Obert transforma dades de llocs reals en maquetes per explorar el paisatge i imprimir-lo en 3D.</p><ol class="help-steps"><li><strong>Peça i territori.</strong> Tria la mida, situa el retall al mapa i revisa l’escala.</li><li><strong>Terreny.</strong> Ajusta el relleu i prem «Genera el model». La primera generació inclou les capes amb els ajustos actuals.</li><li><strong>Vegetació, vies i edificis.</strong> Afina cada apartat. Torna a qualsevol pas des del seu títol. Els canvis a les vies s’apliquen amb una nova generació del model.</li><li><strong>Descarrega.</strong> Tria 3MF o STL, assigna els filaments i revisa el laminat abans d’imprimir.</li></ol><p class="hint">La cerca d’adreces i la cartografia consulten serveis públics. La geometria i els fitxers es calculen al navegador. Els arbres són una representació del bosc, no individus mesurats.</p></div></dialog>

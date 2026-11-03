@@ -26,3 +26,18 @@
 .step-header .section-toggle:focus-visible{outline-offset:0}
 .step-header .step-action{width:auto;min-height:26px;margin:0;padding:4px 8px;white-space:nowrap}
 .step-header .step-action.is-build{background:var(--green);border-color:var(--green);color:white}
+.sidebar-right {display:flex;flex-direction:column;overflow:hidden}
+.sidebar-right .info-panel {display:flex;flex-direction:column;flex:none;min-height:0;padding:0}
+.sidebar-right .info-panel:first-child {padding-top:0}
+.sidebar-right .info-panel.is-open {flex:1 1 0}
+.sidebar-right .info-panel h2 {flex:none}
+.sidebar-right .info-panel .section-toggle {height:36px}
+.sidebar-right .info-panel .section-toggle:focus-visible {outline-offset:0}
+.sidebar-right .download-panel {flex:none;margin-top:auto;padding:12px 0 14px}
+.download-panel .section-heading {margin-bottom:8px}
+.download-control {position:relative;display:flex;gap:2px}
+.download-control #export-model {min-width:0;border-radius:5px 0 0 5px}
+.download-control #export-formats {flex:0 0 32px;width:32px;padding:0;border-radius:0 5px 5px 0}
+#export-options {position:absolute;bottom:calc(100% + 4px);right:0;z-index:5;width:100%;padding:4px;background:var(--paper);border:1px solid var(--line);border-radius:5px}
+#export-options button {display:block;width:100%;border:0;border-radius:4px;background:transparent;padding:8px;text-align:left;font-size:var(--ui-control)}
+#export-options button[aria-pressed=true], #export-options button:hover {background:#eef3e7}

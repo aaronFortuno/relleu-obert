@@ -2,6 +2,22 @@
 
 Actualitzat: 2026-11-03. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.19.3 — Ajustos de vies automàtics i descàrrega fixa
+
+RO-053 aplica els canvis de vies automàticament sobre les dades del retall
+vigent i conserva la vista durant el càlcul. El panell dret mostra les
+capçaleres i la descàrrega encara que el contingut obert tingui scroll.
+El format triat al desplegable inicia l'exportació i es recorda durant
+la sessió. A Rajadell s'ha verificat un canvi de realç de +0,5 mm i la
+preparació del 3MF estàndard des del desplegable. Revisió local a
+1280×720 i 1600×900, amb Escape i retorn de focus al selector.
+380 proves ordinàries i compilació correctes.
+
+RO-050 iguala per defecte el realç de carretera i ferrocarril. Amb vuit
+materials, les vies ferroviàries comparteixen material amb els edificis
+i les carreteres mantenen el seu. La paleta de quatre agrupa les tres
+categories inicialment i permet reassignar-les.
+
 ## v0.19.2 — Primer flux productiu RO-053 i límit del retall RO-052
 
 L'usuari valida l'ordre i proposa provar accions al títol. La UI productiva

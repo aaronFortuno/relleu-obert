@@ -14,7 +14,7 @@ export function defaultAssignments(count){
   if(count===1)return CATEGORIES.map(()=>0);
   if(count===2)return [0,1,0,0,0,0,0,1,0];
   if(count===4)return [0,1,2,2,3,3,3,1,2];
-  if(count===8)return [0,1,2,3,4,5,6,7,3];
+  if(count===8)return [0,1,2,3,4,5,6,7,2];
   throw Error('Tria 1, 2, 4 o 8 materials.');
 }
 // Old callers/configurations had eight categories. Their railway assignment

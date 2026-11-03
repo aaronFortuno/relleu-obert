@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-03 · v0.19.2**. RO-053: ordre validat i primera integració amb accions al títol i conservació de traços. RO-052: els dos extrems del quadrat surten pel cantell nord abans que hi càpiga l'enllaç; l'aplicació ho indica. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md). Marc ajornat. Versions 0.x; observacions originals a MILLORES-BUGS.md.
+Actualitzat: **2026-11-03 · v0.19.3**. RO-053 incorpora ajustos de vies automàtics, scroll intern al panell dret i descàrrega fixa. RO-050 parteix de 0 mm d'increment ferroviari. RO-052 conserva l'avís dels dos extrems del quadrat de Rajadell. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
 
 ## Ordre de treball
 
@@ -307,6 +307,8 @@ Abans d’implementar: cua limitada, cancel·lació per canvi de regió, memòri
 
 ### RO-050 — Ferrocarrils diferenciats
 
+**v0.19.3.** Increment inicial de 0 mm. Amb 8 materials, ferrocarrils i edificis comparteixen material i es distingeixen de les carreteres. Amb 4 comparteixen el grup de construccions, reassignable per categoria.
+
 **P2, implementat i comprovat localment (2026-11-02):** [nucli i comprovacions](RO-050-FERROCARRILS.md). Vies ferroviàries separades dels camins amb increment de 0, 0,5 o 1 mm sobre el realç viari; +1 mm per defecte. Mil·límetres de maqueta, sense exageració vertical. Capa amb assignació de material pròpia, també en impressió monocroma. Control i llegenda revisats a 1280×720; geometria, materials i procedència exportada comprovats, amb 284 casos únics i build superats. Usuari/laminador pendents.
 
 **Criteris:** identificar vies per atributs de la font, sense confondre un camí `track` amb tren. Conservar nivells de ponts i pilars; realç sobre el tauler, sense moure la seva cota original. Vies en túnel no es dibuixen a la superfície. Preview/3MF/STL i canvis incrementals d’edificis han de conservar la mateixa geometria. Migrar assignacions de vuit categories sense perdre triangles en 1/2/4/8 materials. Carrils i travesses detallats queden per escales on siguin imprimibles.
@@ -360,6 +362,8 @@ Primer prototip local: perfil longitudinal regularitzat amb tall/terraplè acota
 - [ ] Usuari: revisar els enllaços i les transicions d'amplada dels nous controls abans de validar laminat/impressió. Els fitxers de v0.18.2 documenten el problema i no el donen per resolt.
 
 ### RO-053 — Flux de treball per etapes
+
+**v0.19.3.** Aplicació automàtica dels ajustos de vies en un retall ja generat. El càlcul encara reconstrueix les malles a partir de les dades carregades. Panell dret amb scroll intern i descàrrega fixa. Seleccionar format el descarrega i el manté durant la sessió.
 
 **P1, ordre validat el 2026-11-03 i primer pilot integrat a v0.19.2.** [Informe, matriu d'impacte i pilot](RO-053-UX.md). Sis apartats i accions al títol. Els traços es recuperen en tornar al mateix retall i mida, dins la sessió. La generació encara és conjunta per a terreny i vies; el càlcul per capes de la demostració és il·lustratiu.
 
