@@ -1,6 +1,28 @@
 # Historial i validacions de Relleu Obert
 
-Actualitzat: 2026-11-02. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
+Actualitzat: 2026-11-03. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
+
+## v0.19.2 — Primer flux productiu RO-053 i límit del retall RO-052
+
+L'usuari valida l'ordre i proposa provar accions al títol. La UI productiva
+adopta els sis apartats i manté l'acció del pas fora del contingut amb scroll.
+Navegar no torna a calcular la maqueta. El primer càlcul continua essent
+conjunt; vegetació i edificis conserven les actualitzacions parcials.
+Els traços es confirmen després d'una generació reeixida i es recuperen
+en tornar al mateix retall, gir i mida durant la sessió.
+
+RO-052: el recorregut dels dos enllaços pendents surt del cantell nord
+abans que hi càpiga la pendent. Prova de retall/ampliació i avís verificat
+a la maqueta real de Rajadell. No s'altera el tauler mesurat; el graó d'un
+dels extrems encara és visible al quadrat. Laminat i altres retalls pendents.
+
+380/380 proves ordinàries (67,9 s; mínim 2,71 GiB lliures), compilació
+correcta i revisió del producte a 1280×720 i 1600×900. Comprovats el focus
+en avançar, el mapa i el retall de la mostra inicial, els sis títols
+visibles, la sortida del pinzell, l'avís de dos extrems i l'exportació
+habilitada només amb els canvis aplicats. Demostració: confirmació,
+aplicació i focus al botó següent. Els dos blocs que requereixen
+4 GiB inicials no s'han repetit en aquesta iteració. Pages/CI no verificats.
 
 ## v0.19.1 — RO-052 corregit en controls i proposta RO-053 (2026-11-02)
 

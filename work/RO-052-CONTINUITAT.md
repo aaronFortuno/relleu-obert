@@ -1,6 +1,15 @@
 # RO-052 — Continuïtat i amplada de la calçada
 
-**Estat actual: v0.19.1, correccions comprovades localment.** La regressió
+**v0.19.2 · diagnòstic dels dos extrems de Rajadell.** Tots dos recorreguts
+compatibles surten pel cantell nord abans que hi càpiga l'enllaç suau.
+El tauler `ifc-132561` arriba al cantell; `ifc-114729` acaba 0,579 mm
+abans i deixa un graó respecte de la carretera inferior. El diagnòstic
+distingeix aquest cas d'una continuació curta que acaba dins del retall
+i recomana ampliar o desplaçar la selecció. No s'ha estès artificialment
+el tauler ni s'ha alterat la pendent admissible. La regressió sintètica
+verifica que ampliar el retall recupera l'enllaç quan hi ha prou recorregut.
+
+**Antecedent v0.19.1, correccions comprovades localment.** La regressió
 del portal girat passa sense rebaixar toleràncies. També s'han corregit
 plecs dels enllaços en revolts i metadades absents al JSON. **377/377 proves
 ordinàries finals i sis proves integrades verificades.** Dos controls reals

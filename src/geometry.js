@@ -401,7 +401,10 @@ export function updateBuildings(previous,layer={},changes={},progress=()=>{}){
     const auxiliary=stats.reduce((n,s)=>n+(s.auxiliaryPiers||0),0);if(auxiliary)ctx.warnings.push(`${auxiliary} suports auxiliars afegits per reduir les llums de la maqueta; no són pilars mesurats del projecte.`);
     if(omitted)ctx.warnings.push(`${omitted} posicions de suport omeses per falta d’espai o obstacles. Revisa els trams lliures al laminador.`);
     const longSpans=stats.reduce((n,s)=>n+(s.unsupportedSpans?.length||0),0);if(longSpans)ctx.warnings.push(`${longSpans} trams elevats superen la separació prevista de suports perquè no hi ha una posició segura disponible. Comprova les llums al laminador.`);
-    const unconnected=stats.reduce((n,s)=>n+s.unconnectedEnds.length,0);if(unconnected)ctx.warnings.push(`${unconnected} extrems sense enllaç suau dins del retall. Poden quedar al límit de la peça o sense una continuació cartografiada suficient.`);
+    const unconnected=stats.flatMap(s=>s.unconnectedEnds);
+    const clipped=unconnected.filter(end=>end?.clippedByCrop).length;
+    if(clipped)ctx.warnings.push(`El límit de la maqueta talla ${clipped} continuacions de pont abans que es puguin enllaçar suaument. Amplia o desplaça el retall per donar espai als enllaços.`);
+    if(unconnected.length>clipped)ctx.warnings.push(`${unconnected.length-clipped} extrems sense enllaç suau dins del retall.`);
     if(stats.some(s=>s.connectedComponents>1))ctx.warnings.push('Alguns ponts contenen fragments separats. Revisa les unions i els extrems al laminador abans d’imprimir.');
   }
   if(!previous.categories)return updateVegetation({context:ctx},ctx.options,progress);

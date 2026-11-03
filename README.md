@@ -2,11 +2,13 @@
 
 Prototip educatiu separat de Terrology: generació de maquetes geogràfiques amb JavaScript, íntegrament al navegador, publicable a GitHub Pages. No s’ha copiat codi de Terrology.
 
-**v0.19.1 experimental · 2 de novembre de 2026**
+**v0.19.2 experimental · 3 de novembre de 2026**
+
+Primera integració de RO-053: Peça → Territori → Terreny → Vegetació → Vies → Edificis, amb accions al costat del títol actiu. La generació inicial encara inclou totes les capes; els canvis de vegetació i edificis poden aplicar-se parcialment. Els traços es conserven en un error i es recuperen en tornar al mateix retall i mida durant la sessió. RO-052 distingeix els raccords que no caben dins del retall; els dos extrems del quadrat de Rajadell demanen ampliar o desplaçar la selecció.
 
 Novetats v0.19.1: corregits el graó del portal girat i els plecs d'enllaços en revolts. 377 proves ordinàries i sis integrades de ponts/túnels verificades; dos controls reals regenerats amb auditoria sense errors. [Quadrat de Rajadell](public/controls/ro-052/RO-052-Rajadell-150mm.3mf) i [rectangle girat](public/controls/ro-052/RO-052-Rajadell-150x200mm-gir25.3mf), en 3MF estàndard. El quadrat encara registra dos extrems sense enllaç suau: [resultats i límits](work/RO-052-CONTINUITAT.md). Laminat i impressió pendents.
 
-**RO-053, proposta d'UX per revisar:** [prototip navegable](https://aaronFortuno.github.io/relleu-obert/prototypes/ro053/) i [decisions de disseny](work/RO-053-UX.md). Peça → Territori → Terreny → Vegetació → Vies → Edificis, amb retorn i conservació de traços. Il·lustració sense cartografia ni generació real; el flux productiu es manté fins a la revisió de l'usuari. [Punt de represa actualitzat](work/REPRESA-RO-052.md).
+**RO-053, desenvolupament gradual:** [prototip navegable](https://aaronFortuno.github.io/relleu-obert/prototypes/ro053/) i [decisions de disseny](work/RO-053-UX.md). El prototip continua essent una demostració il·lustrativa del càlcul separat per capes. [Punt de represa](work/REPRESA-RO-052.md).
 
 Novetats v0.19.0: amplada comuna de calçada i passada de continuïtat als enllaços de ponts i túnels. El paviment del túnel es distingeix de l'obertura mínima imprimible; boques i carretera exterior comparteixen les cotes de les dues vores. Les connexions segueixen la identitat del traçat i la cota del segment real connectat. Els taulers mesurats conserven el contorn estructural amb transicions cap a la calçada. «Marc exterior» retirat del sidebar i ajornat. [Implementació i validacions](work/RO-052-CONTINUITAT.md), [seguiment RO-052](work/BACKLOG.md#ro-052--continuïtat-i-amplada-del-traçat-viari).
 

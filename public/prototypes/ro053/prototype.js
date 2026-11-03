@@ -16,16 +16,39 @@ function controls(){
  if(project.step===4)content=select('roadRise','Relleu dels camins',[[0,'Arran de terreny'],[.5,'Realç de 0,5 mm'],[1,'Realç d’1 mm']])+select('railRise','Relleu de ferrocarrils',[[0,'Igual que els camins'],[.5,'+0,5 mm sobre els camins'],[1,'+1 mm sobre els camins']])+check('tunnels','Túnels estimats · experimental')+'<p class="hint">Carreteres, ferrocarrils, ponts i túnels formen una mateixa capa. Les estimacions es diferencien de les cotes acreditades.</p><div class="note-line">Els arbres que hi coincideixin s’ocultaran. Cap traç del pinzell s’esborrarà.</div>';
  if(project.step===5)content=select('source','Font dels edificis',[['icgc','ICGC'],['osm','OpenStreetMap'],['catastre','Catastre · parts']])+select('height','Altura màxima',[[3,'3 metres reals'],[5,'5 metres reals'],[10,'10 metres reals'],[20,'20 metres reals']])+'<p class="hint">La font disponible dependrà de la zona. Les cobertes i altures reals requereixen dades que les descriguin.</p><div class="note-line">Canviar la font també pot ajustar arbres i suports de ponts, conservant el terreny.</div>';
  const prerequisite=project.step>=2&&!canApply(project,id)&&!project.job?'<p class="hint">'+(!project.accepted.piece?'Confirma primer la mida del projecte.':!project.accepted.place?'Confirma primer el territori.':'Prepara primer el terreny.')+'</p>':'';
- return `<h2 id="panel-title">${stages[project.step]}</h2>${prerequisite}<fieldset class="stage-fields"${project.job?' disabled':''}>${content}</fieldset>${id&&id!=='terrain'?'<button class="quiet-button" data-action="omit"'+(!canApply(project,id)?' disabled':'')+'>Continuar sense aquesta capa</button>':''}`;
+ return `${prerequisite}<fieldset class="stage-fields"${project.job?' disabled':''}>${content}</fieldset>${id&&id!=='terrain'&&project.layers[id].status!=='omitted'?'<button class="quiet-button" data-action="omit"'+(!canApply(project,id)?' disabled':'')+'>Continuar sense aquesta capa</button>':''}`;
+}
+function focusIdentity(element){
+ if(element.id)return '#'+element.id;
+ for(const key of ['step','setting','tool','action']){
+  if(element.dataset[key])return `[data-${key}="${element.dataset[key]}"]`;
+ }
+ return null;
+}
+function restoreFocus(previous,identity){
+ if(!identity)return;
+ const candidate=document.querySelector(identity);
+ if(candidate&&!candidate.disabled&&!candidate.closest('[hidden], fieldset:disabled')){
+  if(candidate!==previous)candidate.focus({preventScroll:true});
+ }else $('panel-title').focus({preventScroll:true});
 }
 function render(){
+ const previousFocus=document.activeElement,identity=focusIdentity(previousFocus);
  $('step-counter').textContent=`Pas ${project.step+1} de ${stages.length}`;
  $('stage-nav').innerHTML=stages.map((name,i)=>{const text=i===0?project.accepted.piece?'Confirmada':'Pendent':i===1?project.accepted.place?'Confirmat':'Pendent':statusText[project.layers[layerNames[i-2]].status];return `<button class="stage-button" data-step="${i}"${project.step===i?' aria-current="step"':''}${project.job?' disabled':''}><span class="stage-number">${String(i+1).padStart(2,'0')}</span><span>${name}</span><span class="stage-status">${text}</span></button>`;}).join('');
  $('controls').innerHTML=controls();const currentId=layerNames[project.step-2];
- $('apply').textContent=project.step===0?'Confirmar mida':project.step===1?'Confirmar territori':project.layers[currentId].status==='error'?'Tornar-ho a provar':`Aplicar ${stages[project.step].toLowerCase()}`;
+ const currentStatus=project.layers[currentId]?.status;
+ const ready=['ready','review','omitted'].includes(currentStatus);
+ $('panel-title').textContent=stages[project.step];
+ $('apply').textContent=project.step===0?'Confirmar mida':project.step===1?'Confirmar territori':currentStatus==='error'?'Reintentar':currentStatus==='omitted'?'Incorporar':'Aplicar';
+ $('apply').setAttribute('aria-label',project.step<2?$('apply').textContent:`${$('apply').textContent} · ${stages[project.step]}`);
+ $('apply').hidden=currentStatus==='ready'||currentStatus==='review';
  $('apply').disabled=!!project.job||project.step>=2&&!canApply(project,currentId);
- $('back').disabled=!!project.job||project.step===0;$('next').disabled=!!project.job||project.step===5||(project.step===0?!project.accepted.piece:project.step===1?!project.accepted.place:!['ready','omitted','review'].includes(project.layers[currentId].status));
- $('next').textContent=project.step<5?`${stages[project.step+1]} →`:'Final';
+ $('next').hidden=project.step<2||project.step===5||!ready;
+ $('next').disabled=$('next').hidden||!!project.job;
+ const nextLabel=project.step<5?`Següent pas: ${stages[project.step+1]}`:'Següent pas';
+ $('next').setAttribute('aria-label',nextLabel);
+ $('next').title=nextLabel;
  const [w,h]=dimensions(project),[cols,rows]=pieces(project);$('model-size').textContent=`${w} × ${h}`;$('piece-count').textContent=String(cols*rows);$('piece-label').textContent=cols*rows===1?'Peça':`Peces · ${cols} × ${rows}`;
  $('project-place').textContent=project.accepted.place?locations[project.settings.location].name:'Territori pendent de confirmar';$('pending-size').hidden=!sceneDirty();$('pending-size').textContent='La vista conserva el resultat anterior fins a aplicar els canvis.';
  $('layer-status').innerHTML=layerNames.map(id=>`<li data-state="${project.layers[id].status}"><span>${layerLabels[id]}</span><span>${statusText[project.layers[id].status]}</span></li>`).join('');
@@ -37,6 +60,7 @@ function render(){
  $('working').hidden=!project.job;$('landscape').setAttribute('aria-busy',String(!!project.job));$('notice').textContent=project.notice;$('notice').classList.toggle('error',layerNames.some(id=>project.layers[id].status==='error'));
  $('top-view').setAttribute('aria-pressed',String(project.view==='top'));$('scene-caption').textContent=project.scene.layers.terrain?`${locations[project.scene.location].name} · paisatge esquemàtic${sceneDirty()?' · vista anterior':''}`:'Paisatge esquemàtic · prepara el terreny per incorporar capes.';
  const colors=palettes[materials];$('legend').innerHTML=['Terreny','Aigua','Construccions','Vegetació'].map((name,i)=>`<span><i style="--swatch:${colors[i]}"></i>${name}</span>`).join('');drawScene();
+ restoreFocus(previousFocus,identity);
 }
 function drawScene(){
  const colors=palettes[materials],shown=project.scene.layers,[mmW,mmH]=project.scene.size.split('x').map(Number);let w=580,h=w*mmH/mmW;if(h>460){w*=460/h;h=460;}
@@ -51,14 +75,42 @@ function drawScene(){
  $('scene').innerHTML=`<g id="model-surface" transform="${transform}"><path d="M 0 0 H ${w} V ${h+26} H 0 Z" fill="#b4a17c" stroke="#9c8b6c" stroke-width="1"/><rect width="${w}" height="${h}" fill="${shown.terrain?colors[0]:'#e4e9dc'}" stroke="#a5b69b" stroke-width="1.3"/>${shown.terrain?`<path d="M ${p(0,0)} H ${w} V ${h*.65} Q ${w*.68} ${h*.89} ${w*.42} ${h*.54} T 0 ${h*.7} Z" fill="${colors[3]}" opacity=".35"/>${contours}${water}`:''}${shown.transport?`<path d="${road}" fill="none" stroke="#a79d81" stroke-width="${Math.max(12,w*.032)}"/><path d="${road}" fill="none" stroke="${colors[2]}" stroke-width="${Math.max(9,w*.025)}"/><path d="M ${p(.12,.95)} Q ${p(.45,.5)} ${p(.91,.03)}" fill="none" stroke="${materials===8?'#6f7476':colors[2]}" stroke-width="5"/>`:''}${trees}${built}${shown.terrain?'':`<text x="${w/2}" y="${h/2}" fill="#7e8b75" text-anchor="middle" font-size="16">El terreny apareixerà aquí</text>`}</g>`;
  $('landscape').classList.toggle('painting',project.step===3&&project.tool!=='navigate'&&shown.vegetation&&!project.job);
 }
-function go(step){if(project.job)return;project.step=Math.max(0,Math.min(5,step));project.tool='navigate';render();$('controls').scrollTop=0;}
-function applyLayer(omit=false,withError=false){const id=layerNames[project.step-2];if(!start(project,id))return;project.tool='navigate';render();timer=setTimeout(()=>{timer=null;if(withError)fail(project);else finish(project,{omit:omit||id==='vegetation'&&!project.settings.trees});render();},450);}
+function focusPanel(){
+ $('controls').scrollTop=0;
+ $('panel-title').focus({preventScroll:true});
+}
+function go(step,fromNavigation=false){
+ if(project.job)return;
+ project.step=Math.max(0,Math.min(5,step));
+ project.tool='navigate';
+ render();
+ $('controls').scrollTop=0;
+ if(!fromNavigation)focusPanel();
+}
+function applyLayer(omit=false,withError=false){
+ const id=layerNames[project.step-2];
+ if(!start(project,id))return;
+ project.tool='navigate';
+ render();
+ $('cancel-job').focus({preventScroll:true});
+ timer=setTimeout(()=>{
+  timer=null;
+  const moveFocus=document.activeElement===$('cancel-job');
+  if(withError)fail(project);
+  else finish(project,{omit:omit||id==='vegetation'&&!project.settings.trees});
+  render();
+  if(moveFocus){
+   const destination=withError?$('apply'):$('next').hidden?$('panel-title'):$('next');
+   destination.focus({preventScroll:true});
+  }
+ },450);
+}
 function action(name){if(name==='omit')applyLayer(true);if(name==='undo-stroke'){undoStroke(project);render();}if(name==='accept-trees'){acceptTrees(project);render();}}
-$('stage-nav').addEventListener('click',e=>{const button=e.target.closest('[data-step]');if(button)go(Number(button.dataset.step));});
+$('stage-nav').addEventListener('click',e=>{const button=e.target.closest('[data-step]');if(button)go(Number(button.dataset.step),true);});
 $('controls').addEventListener('change',e=>{if(e.target.dataset.setting){let value=e.target.type==='checkbox'?e.target.checked:e.target.value;if(['plate','rotation','exaggeration','roadRise','railRise','height'].includes(e.target.dataset.setting))value=Number(value);change(project,e.target.dataset.setting,value);render();}if(e.target.id==='brush-density'){project.density=Number(e.target.value);render();}});
 $('controls').addEventListener('click',e=>{const button=e.target.closest('button');if(!button)return;if(button.dataset.tool){project.tool=button.dataset.tool;render();}if(button.dataset.action)action(button.dataset.action);});
-$('apply').onclick=()=>{if(project.step<2){confirm(project,project.step===0?'piece':'place');render();}else applyLayer();};$('back').onclick=()=>go(project.step-1);$('next').onclick=()=>go(project.step+1);
-$('cancel-job').onclick=()=>{clearTimeout(timer);timer=null;cancel(project);render();};$('restore-settings').onclick=()=>{restore(project);render();};$('review-trees').onclick=()=>go(3);$('undo-layer').onclick=()=>{undoLayer(project);render();};
+$('apply').onclick=()=>{if(project.step<2){confirm(project,project.step===0?'piece':'place');render();focusPanel();}else applyLayer();};$('next').onclick=()=>go(project.step+1);
+$('cancel-job').onclick=()=>{clearTimeout(timer);timer=null;cancel(project);render();if(!$('apply').hidden&&!$('apply').disabled)$('apply').focus({preventScroll:true});};$('restore-settings').onclick=()=>{restore(project);render();};$('review-trees').onclick=()=>go(3);$('undo-layer').onclick=()=>{undoLayer(project);render();};
 $('materials').onchange=e=>{materials=Number(e.target.value);render();};$('top-view').onclick=()=>{project.view=project.view==='top'?'perspective':'top';render();};$('reset-view').onclick=()=>{project.view='perspective';render();};
 $('demo-stroke').onclick=()=>{addStroke(project,[{x:.36,y:.42},{x:.42,y:.45},{x:.47,y:.48}]);render();};$('demo-error').onclick=()=>applyLayer(false,true);$('reset-demo').onclick=()=>{project=createProject();materials=4;$('materials').value='4';render();};
 $('about').onclick=()=>$('about-dialog').showModal();for(const button of document.querySelectorAll('[data-close]'))button.onclick=()=>button.closest('dialog').close();

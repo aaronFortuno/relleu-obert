@@ -39,8 +39,10 @@ classes existents. `output` de formulari no ha de flotar a la dreta.
 ## Distribució i responsabilitats
 
 - Header de 58 px i footer de 32 px sempre visibles. Cap scroll de pàgina.
-- Sidebar esquerre: lloc/orientació, mida/escala, relleu/edificis i vegetació.
-  Les quatre capçaleres es veuen sempre; scroll només al contingut obert.
+- Sidebar esquerre: Peça, Territori, Terreny, Vegetació, Vies i Edificis.
+  Les sis capçaleres es veuen sempre; scroll només al contingut obert.
+  L’acció del pas actiu acompanya el títol. Els títols permeten saltar
+  directament a un altre pas; «Següent» no inicia un càlcul.
 - Sidebar dret: mètriques, materials i descàrrega. Scroll
   intern. Els ajustos d’un mateix objecte van junts, amb el seu resultat.
 - «Marc exterior» i els complements ajornats no apareixen al sidebar;

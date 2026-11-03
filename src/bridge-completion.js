@@ -107,14 +107,20 @@ export function planApproaches({axis,points,faces,containsDeck,roads,ground,road
     if(!start||startZ==null||start[0]<0||start[1]<0||start[0]>widthMM||start[1]>heightMM){missed.push('outside or no cap');continue;}
     const inward=[start[0]-dir[0]*Math.max(width,1),start[1]-dir[1]*Math.max(width,1)],innerZ=top(...inward),grade=innerZ==null?0:(startZ-innerZ)/dist(start,inward);
     // Keep the mapped endpoint: dropping it shortcuts the first bend of a join.
-    const route=[start,...continuationPath],samples=[];for(const sample of resample(route,.2,maxLength)){const [x,y]=sample.p;if(x<0||y<0||x>widthMM||y>heightMM)break;samples.push(sample);}
+    const route=[start,...continuationPath],samples=[];
+    let clippedByCrop=false;
+    for(const sample of resample(route,.2,maxLength)){
+      const [x,y]=sample.p;
+      if(x<0||y<0||x>widthMM||y>heightMM){clippedByCrop=true;break;}
+      samples.push(sample);
+    }
     const lineAt=sample=>continuationPath.segments?.[sample.segment-1]?.line;
     const landing=(sample,x=sample.p[0],y=sample.p[1])=>destinationSurface?destinationSurface(x,y,lineAt(sample)):ground(x,y);
     const firstExternal=samples.find(s=>s.segment>0)||samples[0];
     if(!forceConnections&&startZ<=landing(firstExternal)+roadRise+.03&&Math.abs(width-roadWidth)<.05)continue;
     const gap=Math.abs(startZ-landing(firstExternal)-roadRise),minimum=Math.max(width*2,2,gap/.12);let end=-1;
     for(let i=1;i<samples.length;i++){const sample=samples[i],{s}=sample,delta=landing(sample)+roadRise-(startZ+grade*s);if(s>=Math.max(width*2,2)&&(delta>=0||s>=minimum&&Math.abs(delta)/s<.15)){end=i;break;}}
-    if(end<0){const last=samples.at(-1);missed.push({reason:'no gentle join',gap,grade,minimum,available:last?.s??0,finalDelta:last?landing(last)+roadRise-(startZ+grade*last.s):null});continue;}
+    if(end<0){const last=samples.at(-1);missed.push({reason:'no gentle join',clippedByCrop,gap,grade,minimum,available:last?.s??0,finalDelta:last?landing(last)+roadRise-(startZ+grade*last.s):null});continue;}
     const selected=samples.slice(0,end+1),last=selected.at(-1),before=selected.at(-2),length=last.s,endZ=landing(last)+roadRise,endGrade=(landing(last)-landing(before))/(last.s-before.s);
     const terminal=continuationPath.segments?.[last.segment-1],endWidth=terminal?.line.width??roadWidth;
     const startDirection=unit(selected[0].p,selected[1].p),endDirection=unit(before.p,last.p);

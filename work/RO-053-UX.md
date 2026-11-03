@@ -1,8 +1,13 @@
 # RO-053 — Proposta de flux per etapes
 
-2026-11-02. **Proposta revisable, encara no aprovada ni integrada a la UI
-productiva.** Aquest treball avança en paral·lel a RO-052, sense modificar
-el motor de geometria. No dona per resolts encaixos, perfils ni impressions.
+**2026-11-03 · ordre validat per l'usuari i primera integració a v0.19.2.**
+El producte ja presenta sis apartats i l'acció del pas al costat del títol.
+Es pot tornar a qualsevol pas i plegar el panell de vegetació per recuperar
+l'òrbita. Els traços només canvien de retall després d'una generació reeixida;
+es poden recuperar en tornar al mateix retall i mida durant la sessió.
+Terreny i vies encara comparteixen generació; vegetació i edificis
+reutilitzen les actualitzacions existents. El document següent conserva
+la proposta de càlcul independent i els límits encara pendents.
 
 Prototip: [public/prototypes/ro053/index.html](../public/prototypes/ro053/index.html).
 Des d'un servidor local del projecte: `/prototypes/ro053/`. El paquet de
@@ -31,7 +36,7 @@ ordre. Es poden preparar petjades d'obstacles ja disponibles, sense
 presentar-les com a edificis o vies generats. Qualsevol precàrrega remota
 addicional ha de continuar explícita i acotada; RO-047 no s'activa aquí.
 
-## Inventari actual i friccions concretes
+## Inventari inicial (v0.19.1) i friccions concretes
 
 Lectura de [index.html](../index.html), [main.js](../src/main.js),
 [worker.js](../src/worker.js), [geometry.js](../src/geometry.js),
@@ -159,7 +164,7 @@ cancel·lació de CSG real. A producció cal diferenciar abortar una petició,
 interrompre una feina del Worker i descartar un resultat obsolet. Cancel·lar
 no pot deixar el Worker amb un model diferent del preview/exportació.
 
-## Primer pilot productiu, després de revisar la proposta
+## Pilot productiu i treball següent
 
 1. Introduir estat de projecte separat de la UI: configuració desitjada,
    revisions aplicades de dades/malles, feina activa i últim model vàlid.
@@ -228,6 +233,7 @@ general; els sis accessos de navegació queden entre header i footer.
 Captures locals a `output/ro053-1280-ready.png` i
 `output/ro053-1600-ready.png` (no formen part del paquet publicat).
 
-L'usuari ha de revisar l'ordre recomanat, el lloc de la vegetació i la
-resposta davant canvis abans d'una reorganització general. RO-053 continua
-obert; aquesta proposta no tanca RO-052 ni les validacions d'impressió.
+L'usuari ha validat l'ordre i ha demanat provar les accions al costat
+del títol. El producte i la demostració ja les hi situen. Queda pendent
+la revisió d'ús de la nova disposició i el càlcul separat de terreny/vies.
+RO-053 continua obert, igual que les validacions d'impressió de RO-052.

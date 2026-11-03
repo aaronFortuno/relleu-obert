@@ -1,5 +1,11 @@
 # Canvis
 
+## v0.19.2 — 2026-11-03
+
+- RO-053: primera integració de l'ordre validat, amb sis apartats i una acció al costat del títol actiu. Es pot tornar directament a qualsevol apartat, i avançar amb teclat manté el focus dins del flux. La generació inicial i els canvis de vies encara treballen sobre el model complet.
+- Els traços del pinzell no es descarten mentre s'intenta generar un retall nou. Durant la sessió es recuperen en tornar al mateix retall, gir i mida física. No es reprojecten entre retalls diferents.
+- RO-052: el diagnòstic distingeix quan la continuació cartografiada d'un pont surt del retall abans que hi càpiga l'enllaç. Conserva l'avís i recomana ampliar o desplaçar la selecció. No canvia la geometria dels taulers mesurats.
+
 ## v0.19.1 — 2026-11-02
 
 - RO-052: corregit el graó del portal en el rectangle girat. El material viari conserva el paviment que ja li pertany, evitant un retall i una reunió redundants sobre cares gairebé coplanàries. Comprovació de les cotes reals al model i al 3MF Bambu, sense relaxar toleràncies.

@@ -34,6 +34,20 @@ test('road continuation preserves the main route at a branch and does not use a 
  const sample=topSampler([[0,0,10],[10,0,20],[0,10,10]],[0,1,2]);assert.equal(sample(2,2),12);assert.equal(sample(20,20),null);
 });
 
+test('an unresolved approach distinguishes a crop boundary from a short mapped route',()=>{
+ const axis=[[40,50],[99,50]];axis.roadClass='trunk';axis.identity=transportIdentity({class:'trunk',ref:'C-1'});
+ const options={axis,points:[[40,49.5,6],[99,49.5,6],[99,50.5,6],[40,50.5,6]],faces:[0,1,2,0,2,3],ground:()=>5,containsDeck:([x,y])=>x>=40&&x<=99&&Math.abs(y-50)<=.5,widthMM:100,heightMM:100,roadWidth:1};
+ const plan=(end,widthMM=100)=>planApproaches({...options,widthMM,roads:[{points:[[99,50],[end,50]],class:'trunk',ref:'C-1',width:1}]});
+ const cropped=plan(115);
+ assert.equal(cropped.plans.length,0);
+ const failure=cropped.missed.find(end=>end?.reason==='no gentle join');
+ assert.equal(failure?.clippedByCrop,true);assert(failure.available<failure.minimum);
+ const short=plan(99.7).missed.find(end=>end?.reason==='no gentle join');
+ assert.equal(short?.clippedByCrop,false);
+ const expanded=plan(115,120);
+ assert.equal(expanded.plans.length,1);assert.equal(expanded.plans[0].sections.at(-1).centre[2],5);
+});
+
 test('a coplanar surveyed deck tapers continuously into its mapped carriageway without a width jump',()=>{
  const points=[[40,49,10],[60,49,10],[60,51,10],[40,51,10]],faces=[0,1,2,0,2,3],axis=[[40,50],[60,50]];axis.roadClass='trunk';axis.identity=transportIdentity({class:'trunk',ref:'C-1'});
  const roads=[{points:[[40,50],[10,50]],class:'trunk',ref:'C-1',width:.6},{points:[[60,50],[90,50]],class:'trunk',ref:'C-1',width:.6}];

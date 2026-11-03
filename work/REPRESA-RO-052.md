@@ -1,6 +1,15 @@
-# Represa RO-052 / RO-053 · v0.19.1
+# Represa RO-052 / RO-053 · v0.19.2
 
-**Estat actual al portàtil, 2026-11-02:** regressió del portal girat
+**Estat actual al portàtil, 2026-11-03:** RO-053 ja té els sis apartats
+aprovats i accions al títol. El model i els traços es mantenen en cas
+d'error; en canviar de retall els traços queden associats al retall
+original fins que es tanqui la pàgina. El pas següent és separar el
+càlcul de terreny i vies, mantenint les actualitzacions parcials existents.
+RO-052 identifica els dos enllaços limitats pel cantell nord del quadrat;
+ampliar o desplaçar el retall és l'acció disponible. No s'han forçat rampes.
+Queden el contrast en altres retalls, Millau i el laminat.
+
+**Antecedent al portàtil, 2026-11-02:** regressió del portal girat
 corregida sense rebaixar toleràncies. Corregits també els plecs d'enllaços
 reals i la serialització d'identificadors absents. 377/377 proves ordinàries
 finals i sis integrades verificades (cinc inicials i una repetida després
@@ -9,16 +18,14 @@ sense errors; al quadrat queden dos extrems sense enllaç suau. [Informe
 actual i fitxers](RO-052-CONTINUITAT.md). No donar per resolt RO-052 ni
 substituir la revisió de laminat/impressió per aquestes proves.
 
-**RO-053 avança en paral·lel:** [disseny, invalidacions i pilot proposat](RO-053-UX.md),
+**RO-053:** [disseny, invalidacions i pilot](RO-053-UX.md),
 amb [demostració navegable](https://aaronFortuno.github.io/relleu-obert/prototypes/ro053/)
-revisada localment a 1280×720 i 1600×900. Ordre recomanat: Peça → Territori →
-Terreny → Vegetació → Vies → Edificis. Esperar la revisió d'aquest flux
-abans de reorganitzar la UI productiva. Primer pilot acotat proposat:
-preservar traços i model vàlid davant error de mida/lloc. No és una
-implementació del motor per capes ni un generador real en el prototip.
+revisada localment a 1280×720 i 1600×900. Ordre validat: Peça → Territori →
+Terreny → Vegetació → Vies → Edificis. El prototip continua simulant
+el càlcul per capes i no genera un fitxer imprimible.
 
-**Pròxims passos:** dos extrems del quadrat; usuari/laminat dels controls;
-revisió del flux RO-053; després pilot incremental i contrast general
+**Pròxims passos:** usuari/laminat dels controls; revisar la posició de les
+accions RO-053; separar el càlcul de terreny/vies i contrast general
 de RO-033/052, inclòs Millau. RO-051 continua desactivat. Conservar els
 pressupostos de memòria i una única cua pesada. Pages/CI els revisa l'usuari.
 

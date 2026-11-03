@@ -1,13 +1,13 @@
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import {parseCoordinates,scaledBBox,validateScale,physicalBBox,selectionPose} from './selection.js';
-import {recommendedPlace,DEFAULT_PLACE} from './recommended-places.js';
+import {recommendedPlace,DEFAULT_PLACE,placeSelection} from './recommended-places.js';
 
 export function createPlaceMap(container,{onChange,onName,width=150,height=150}){
   const map=L.map(container,{zoomControl:true,attributionControl:true,zoomSnap:0,scrollWheelZoom:true,minZoom:4,maxZoom:18}).setView(recommendedPlace(DEFAULT_PLACE).center,15);
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(map);
   const frame=document.createElement('div');frame.className='selection-frame';frame.setAttribute('aria-hidden','true');container.appendChild(frame);
-  let physical=[width,height],targetScale=null,lastBBox,lastBase,pendingFit,rotation=0,lastRotation,restoring=false,retainedBase=null;
+  let physical=[width,height],targetScale=null,lastBBox,lastBase=placeSelection(DEFAULT_PLACE,width,height),pendingFit,rotation=0,lastRotation,restoring=false,retainedBase=null;
   map.on('movestart zoomstart',()=>{if(!restoring)retainedBase=null;});
   function frameSize(){const w=container.clientWidth,h=container.clientHeight,r=physical[0]/physical[1],a=rotation*Math.PI/180,c=Math.abs(Math.cos(a)),s=Math.abs(Math.sin(a)),fw=Math.min((w-46)/(c+s/r),(h-54)/(s+c/r));return [fw,fw/r];}
   function baseSelection(){
