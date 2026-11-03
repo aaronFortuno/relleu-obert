@@ -7,8 +7,12 @@ export const RELIEF_TREE_MIN_DIAMETER_MM=.45;
 export const RELIEF_TREE_DIAMETER_METRES=TREE_CROWN_METRES;
 const MAX_RELIEF_TREES=2500;
 const SIDES=8;
-const PROFILE=[[.45,-.55],[1,.1],[.7,.8],[.38,1.28],[.16,1.49]];
+const ROUND_PROFILE=[[.45,-.55],[.90,.02],[1,.33],[.83,.68],[.44,.91]];
+const CONE_PROFILE=[[.45,-.55],[1,.1],[.7,.8],[.38,1.28],[.16,1.49]];
 const CIRCLE=Array.from({length:SIDES},(_,i)=>[Math.cos(i*2*Math.PI/SIDES),Math.sin(i*2*Math.PI/SIDES)]);
+
+// A visual convention for the retall, independent of vertical exaggeration.
+export const reliefCrownTaper=maximumElevation=>Math.max(0,Math.min(1,(maximumElevation-1000)/800));
 
 function fieldSample(grid,field,x,y){
   const {width,height,resolution:n,diagonals}=grid;
@@ -54,11 +58,15 @@ export function reliefForestTrees(grid,containsForest,scale){
 }
 
 export function reliefTreePart(grid,{left,bottom,right,top}){
-  const {width,height,resolution:n,trees=[]}=grid;
+  const {width,height,resolution:n,trees=[],crownTaper=0}=grid;
   const x0=left*width/n,y0=bottom*height/n,x1=right*width/n,y1=top*height/n;
   const visible=trees.filter(({x,y,radius})=>x-radius>=x0&&y-radius>=y0&&x+radius<=x1&&y+radius<=y1);
   if(!visible.length)return null;
-  const ringVertices=PROFILE.length*SIDES,vertexCount=ringVertices+2;
+  const blend=(a,b)=>a+(b-a)*crownTaper;
+  const profile=ROUND_PROFILE.map(([radius,level],i)=>[blend(radius,CONE_PROFILE[i][0]),blend(level,CONE_PROFILE[i][1])]);
+  const widest=Math.max(...profile.map(([radius])=>radius));
+  const tipLevel=blend(1.02,1.56);
+  const ringVertices=profile.length*SIDES,vertexCount=ringVertices+2;
   const vertices=new Float32Array(visible.length*vertexCount*3);
   const faces=new Uint32Array(visible.length*ringVertices*6);
   let v=0,f=0;
@@ -66,18 +74,18 @@ export function reliefTreePart(grid,{left,bottom,right,top}){
   const tri=(a,b,c)=>{faces[f++]=a;faces[f++]=b;faces[f++]=c;};
   for(const {x,y,ground,radius,rotation,heightFactor} of visible){
     const first=v/3;
-    for(const [widthRatio,level] of PROFILE)for(let i=0;i<SIDES;i++){
-      const angle=rotation+i*2*Math.PI/SIDES,r=radius*widthRatio;
+    for(const [widthRatio,level] of profile)for(let i=0;i<SIDES;i++){
+      const angle=rotation+i*2*Math.PI/SIDES,r=radius*widthRatio/widest;
       vertex(x+r*Math.cos(angle),y+r*Math.sin(angle),ground+radius*level*heightFactor);
     }
     const foot=v/3;
-    vertex(x,y,ground+radius*PROFILE[0][1]*heightFactor);
+    vertex(x,y,ground+radius*profile[0][1]*heightFactor);
     const tip=v/3;
-    vertex(x,y,ground+radius*1.56*heightFactor);
+    vertex(x,y,ground+radius*tipLevel*heightFactor);
     for(let i=0;i<SIDES;i++){
       const next=(i+1)%SIDES;
       tri(foot,first+next,first+i);
-      for(let ring=0;ring<PROFILE.length-1;ring++){
+      for(let ring=0;ring<profile.length-1;ring++){
         const a=first+ring*SIDES+i,b=first+ring*SIDES+next;
         tri(a,b,b+SIDES);tri(a,b+SIDES,a+SIDES);
       }

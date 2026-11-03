@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-03 · v0.19.22**. Boscos cartografiats i capçades a escala a Relleu pur. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
+Actualitzat: **2026-11-03 · v0.19.23**. Perfil de les capçades adaptat a la cota màxima del retall. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
 
 ## Ordre de treball
 
@@ -475,3 +475,5 @@ La preparació de mida i territori precedeix les quatre capes. En separar el mot
 **v0.19.21.** Relleu pur pot llegir la hidrografia d’OpenFreeMap fora de l’Aneto, inclosa la riera de Rajadell. Es manté pendent estendre la cobertura del sòl i validar al laminador.
 
 **v0.19.22.** Els boscos es delimiten amb cartografia d’OpenStreetMap. A escales prou detallades, s’hi distribueixen capçades procedimentals proporcionades. Quan serien inferiors a 0,45 mm, el bosc es representa només amb color. Pendent de comprovar les capçades i els canvis de material al laminador.
+
+**v0.19.23.** Les capçades de Relleu pur passen d’un perfil arrodonit a un de cònic entre 1.000 i 1.800 m de cota màxima del retall. És un criteri visual; queda pendent la validació al laminador.

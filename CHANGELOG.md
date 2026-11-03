@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.19.23 — 2026-11-03
+
+- Relleu pur adapta el perfil de les capçades a la cota màxima del retall.
+
 ## v0.19.22 — 2026-11-03
 
 - Relleu pur representa els boscos cartografiats amb un material propi.

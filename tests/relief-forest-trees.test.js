@@ -1,11 +1,24 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {reliefForestTrees,reliefTreePart} from '../src/relief-forest-trees.js';
+import {reliefCrownTaper,reliefForestTrees,reliefTreePart} from '../src/relief-forest-trees.js';
 import {auditPart} from '../src/solid-audit.js';
 
 const resolution=4;
 const grid={width:40,height:40,resolution,
   heights:Float64Array.from({length:25},(_,i)=>10+i%5),diagonals:new Uint8Array(16)};
+
+test('absolute maximum elevation blends a rounded crown into a taller cone',()=>{
+  const tree={x:20,y:20,ground:10,radius:.25,rotation:0,heightFactor:1};
+  const heights=[400,1400,2500].map(elevation=>{
+    const part=reliefTreePart({...grid,trees:[tree],crownTaper:reliefCrownTaper(elevation)},
+      {left:0,bottom:0,right:4,top:4});
+    const audit=auditPart(part);
+    assert.deepEqual(audit.errors,[]);
+    assert.equal(audit.dimensions[0],.5);
+    return audit.bbox.max[2];
+  });
+  assert(heights[0]<heights[1]&&heights[1]<heights[2]);
+});
 
 test('pure relief crowns use geographic scale and close below the terrain surface',()=>{
   assert.deepEqual(reliefForestTrees(grid,()=>true,.01),[]);

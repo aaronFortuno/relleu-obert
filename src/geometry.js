@@ -3,7 +3,7 @@ import {levelReliefLakes} from './relief-lakes.js';
 import {reliefDiagonals,reliefParts,PURE_RELIEF_RESOLUTIONS} from './pure-relief-mesh.js';
 import {reliefStreamStrips} from './relief-streams.js';
 import {sampleReliefForest} from './relief-forest.js';
-import {reliefForestTrees,RELIEF_TREE_MIN_DIAMETER_MM,RELIEF_TREE_DIAMETER_METRES} from './relief-forest-trees.js';
+import {reliefCrownTaper,reliefForestTrees,RELIEF_TREE_MIN_DIAMETER_MM,RELIEF_TREE_DIAMETER_METRES} from './relief-forest-trees.js';
 import {waterwayPolygons} from './waterways.js';
 import {polygonOps} from './polygon-ops.js';
 import earcut from 'earcut';
@@ -326,11 +326,12 @@ function buildPureRelief(data,options,progress,preview){
   progress('Calculant el camp d’altures…');
   const heightAt=(x,y)=>sample(...unproject([x*width/resolution,y*height/resolution]));
   const heights=new Float64Array((resolution+1)**2);
-  let originMeters=Infinity;
+  let originMeters=Infinity,maximumElevation=-Infinity;
   for(let row=0;row<=resolution;row++)for(let col=0;col<=resolution;col++){
     const z=heightAt(col,row);
     heights[row*(resolution+1)+col]=z;
     originMeters=Math.min(originMeters,z);
+    maximumElevation=Math.max(maximumElevation,z);
   }
   const lakes=data.lakes?.length?levelReliefLakes(data.lakes,project,heights,resolution,width,height):null;
   const diagonals=reliefDiagonals(heights,resolution,(col,row)=>heightAt(col+.5,row+.5));
@@ -358,8 +359,9 @@ function buildPureRelief(data,options,progress,preview){
   const waterAreas=streams?(data.waterAreas||[]).map(feature=>geoPolys(feature,project)):[];
   const streamStrips=reliefStreamStrips([...paths,...waterAreas],width,height,resolution);
   const forest=sampleReliefForest((data.forests||[]).flatMap(feature=>geoPolys(feature,project)),width,height,resolution);
+  const crownTaper=reliefCrownTaper(maximumElevation);
   const reliefGrid={resolution,width,height,heights,diagonals,scores,lakeWeights:lakes?.count?lakes.weights:null,
-    forestWeights:forest?.cells?forest.weights:null,streamStrips};
+    forestWeights:forest?.cells?forest.weights:null,streamStrips,crownTaper};
   const trees=options.trees!==false;
   if(trees&&forest?.cells)reliefGrid.trees=reliefForestTrees(reliefGrid,forest.contains,scale);
   progress('Construint el sòlid del relleu…');
@@ -373,7 +375,8 @@ function buildPureRelief(data,options,progress,preview){
   const provenance={...data.meta,options:{...options,pureRelief:true,trees},verticalExaggeration:exaggeration,verticalReference,
     units:'millimeters',coverageCells:{bare:cells[0],snow:cells[1],total:resolution**2},lakeCount:lakes?.count??0,
     streamCount:paths.length,flowingWaterAreaCount:waterAreas.length,forestSamples:forest?.cells??0,
-    treeRepresentation:{crownDiameterMetres:RELIEF_TREE_DIAMETER_METRES,minimumDiameterMM:RELIEF_TREE_MIN_DIAMETER_MM,omittedBelowThreshold}};
+    treeRepresentation:{crownDiameterMetres:RELIEF_TREE_DIAMETER_METRES,minimumDiameterMM:RELIEF_TREE_MIN_DIAMETER_MM,
+      omittedBelowThreshold,maximumElevation,crownTaper}};
   return groupMaterials({width,height,scale:Math.round(1000/scale),treeCount,buildingCount:0,categories,warnings,reliefGrid,
     triangles:categories.reduce((n,p)=>n+p.faces.length/3,0),elevationDiagnostics:prepared.diagnostics,provenance});
 }

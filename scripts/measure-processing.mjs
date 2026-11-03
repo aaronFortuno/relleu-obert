@@ -48,7 +48,8 @@ const report={schemaVersion:1,environment:'node',startedAt,selection:{name,bbox:
   data:{vectorFeatures:data.features.length,demTiles:data.dem.length,buildingSource:data.meta.buildingSource,terrainProvider:data.meta.terrain?.provider??'sample',demZoom:data.meta.terrain?.zoom,demSampleSize:data.meta.terrain?.sampleSize,coverage:data.meta.coverage},
   sources,worker,firstTerrainPreviewMilliseconds,totalMilliseconds,peakProcessRSSBytes:process.resourceUsage().maxRSS*1024,
   result:{scale:result.scale,triangles:result.triangles,buildings:result.buildingCount,trees:result.treeCount,
-    coverageCells:result.provenance.coverageCells,forestSamples:result.provenance.forestSamples,streamCount:result.provenance.streamCount,audit}};
+    coverageCells:result.provenance.coverageCells,forestSamples:result.provenance.forestSamples,
+    treeRepresentation:result.provenance.treeRepresentation,streamCount:result.provenance.streamCount,audit}};
 await mkdir('output',{recursive:true});
 await writeFile(`output/temps-${name}.json`,JSON.stringify(report,null,2)+'\n');
 if(name==='aneto20'&&audit.every(part=>!part.errors.length))await writeFile('output/aneto-20km.3mf',threeMF(result,{bambu:true}));
