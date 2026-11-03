@@ -1,5 +1,5 @@
 // Estimated platforms above an intact DEM. These are not surveyed road/deck
-// elevations. Only unambiguous surface motorway/trunk axes are considered.
+// elevations. Classify surface axes before estimating their profiles.
 import {isInactiveRailway,isRailway,railwayWidthMetres} from './railways.js';
 import {polygonOps} from './polygon-ops.js';
 import {lineBuffer} from './roads.js';
@@ -9,6 +9,7 @@ import {roadWidthMetres} from './transport-width.js';
 const METRES=111320;
 const LIMITS={features:50000,fragments:256,inputPoints:10000,linePoints:2000,items:80,stations:3000,axisStations:1200};
 const MAJOR_CLASSES=['motorway','trunk','motorway_link','trunk_link'];
+const SMOOTH_ROAD_CLASSES=[...MAJOR_CLASSES,'primary','primary_link'];
 const key=p=>`${p[0].toFixed(7)},${p[1].toFixed(7)}`;
 const endKey=p=>`${p[0].toFixed(6)},${p[1].toFixed(6)}`;
 const slope=(a,b)=>(b[1]-a[1])/(b[0]-a[0]);
@@ -24,10 +25,12 @@ function cleanLine(line){
   }
   return points.length>1?points:null;
 }
-function classOf(p){
+function classOf(p,smooth=false){
   const c=String(p.class??'');
-  if(c==='motorway'||c==='trunk')return isLink(p)?`${c}_link`:c;
-  return MAJOR_CLASSES.includes(c)?c:null;
+  const classes=smooth?SMOOTH_ROAD_CLASSES:MAJOR_CLASSES;
+  if(classes.includes(c))return isLink(p)&&!c.endsWith('_link')?`${c}_link`:c;
+  if(smooth&&[true,1,'1','yes'].includes(p.motorroad))return isLink(p)?'trunk_link':'trunk';
+  return null;
 }
 function widthOf(p,c){
   return roadWidthMetres({...p,class:c});
@@ -72,6 +75,31 @@ function resample(points,step){
   let index=1;
   const coordinates=stations.map(d=>{while(index<lengths.length-1&&lengths[index]<d)index++;const a=points[index-1],b=points[index],t=(d-lengths[index-1])/(lengths[index]-lengths[index-1]);return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];});
   return {stations,coordinates,length};
+}
+
+function clipAxis(points,projection,margin){
+  const lines=[];
+  let line=null;
+  const xy=points.map(projection.project);
+  for(let i=1;i<xy.length;i++){
+    const a=xy[i-1],b=xy[i],delta=b.map((v,j)=>v-a[j]);
+    let start=0,end=1;
+    for(const [j,limit] of [projection.width,projection.height].entries()){
+      if(!delta[j]){
+        if(a[j]<-margin||a[j]>limit+margin)end=-1;
+        continue;
+      }
+      const t0=(-margin-a[j])/delta[j],t1=(limit+margin-a[j])/delta[j];
+      start=Math.max(start,Math.min(t0,t1));
+      end=Math.min(end,Math.max(t0,t1));
+    }
+    if(start>=end){line=null;continue;}
+    const at=t=>projection.unproject(a.map((v,j)=>v+t*delta[j]));
+    if(!line||start>0){line=[start===0?points[i-1]:at(start)];lines.push(line);}
+    line.push(end===1?points[i]:at(end));
+    if(end<1)line=null;
+  }
+  return lines;
 }
 function offsets(points){
   const directions=[];
@@ -251,7 +279,7 @@ export function generateMajorRoadItems(features,elevationAt,options={}){
       }
       if(structure||railway&&!smooth)continue;
     }
-    const c=railway?'rail':classOf(p)||(smooth&&p.class==='primary'?'primary':null),level=String(p.layer??0);
+    const c=railway?'rail':classOf(p,smooth),level=String(p.layer??0);
     const sourceWidth=railway?railwayWidthMetres(p):widthOf(p,c);
     for(const line of linesOf(g)){
       const points=cleanLine(line);if(!points){if(c)fail([f.id??index],'traçat invàlid o pressupost de punts superat');continue;}
@@ -268,7 +296,10 @@ export function generateMajorRoadItems(features,elevationAt,options={}){
     }
   }
   const pc=polygonOps(),items=[];let stationCount=0,considered=0;
-  for(const f of joinFragments(fragments,degree)){
+  const axes=joinFragments(fragments,degree);
+  const candidates=options.cropToElevationWindow?axes.flatMap(f=>
+    clipAxis(f.points,projection,5*projection.scale).map(points=>({...f,points}))):axes;
+  for(const f of candidates){
     if(obstacleOverflow||f.railway&&roadObstacleOverflow){fail(f.ids,'pressupost d’obstacles superat; no s’acrediten els creuaments');continue;}
     const sourceWidthMetres=f.sourceWidth,widthMetres=Math.max(sourceWidthMetres,minRoadWidthMM/projection.scale),half=widthMetres/2;
     if(bbox){
@@ -360,5 +391,5 @@ export function generateMajorRoadItems(features,elevationAt,options={}){
   if(dropped)warnings.push(`Plataformes viàries: ${dropped} eixos/fragments omesos pels límits de ${maxItems} eixos, ${LIMITS.fragments} fragments, ${LIMITS.inputPoints} punts i ${LIMITS.stations} estacions.`);
   for(const omission of omissions)warnings.push(`Carretera ${omission.sourceFeatureIds.join(', ')} omesa: ${omission.reason}.`);
   if(items.length)warnings.push(smooth?'Vies principals i ferroviàries amb perfils suavitzats i suports estimats a partir del relleu.':'Carreteres principals amb envolupant superior del DEM i suports estimats; es conserva el relleu. No són cotes constructives mesurades.');
-  return {items,warnings,metadata:{estimated:true,method:'upper-envelope-dem',reference:renderedElevationAt?'source-and-generated-terrain':'source-dem',terrainModified:false,obstacleScope:roi===undefined?'complete-axis':'physical-roi',allowEndpointLift,classes:[...MAJOR_CLASSES],count:items.length,stationCount,omitted:omissions.length+dropped,omissions,stationMetres,minRoadWidthMM,maxLiftMetres,maximumGrade:.12,maximumLinkGrade:.16,maximumSourceLiftMetres:items.length?Math.max(...items.map(i=>i.maximumSectionLiftMetres)):0,minimumFloorClearanceMetres:items.length?Math.min(...items.map(i=>i.minimumFloorClearanceMetres)):0,crossingChecks:items.flatMap(item=>item.crossingChecks.map(check=>({itemId:item.id,...check}))),budgets:{...LIMITS,maxItems},floorMethod:'maximum original DEM on axis/both edges, and optional unchanged generated-terrain elevations',clearanceReference:'road TOP minus original DEM; subtract printable slab thickness before support planning',source:'original source axes and DEM; estimated upper envelope, no measured road alignment'}};
+  return {items,warnings,metadata:{estimated:true,method:'upper-envelope-dem',reference:renderedElevationAt?'source-and-generated-terrain':'source-dem',terrainModified:false,obstacleScope:roi===undefined?'complete-axis':'physical-roi',allowEndpointLift,classes:[...(smooth?SMOOTH_ROAD_CLASSES:MAJOR_CLASSES)],count:items.length,stationCount,omitted:omissions.length+dropped,omissions,stationMetres,minRoadWidthMM,maxLiftMetres,maximumGrade:.12,maximumLinkGrade:.16,maximumSourceLiftMetres:items.length?Math.max(...items.map(i=>i.maximumSectionLiftMetres)):0,minimumFloorClearanceMetres:items.length?Math.min(...items.map(i=>i.minimumFloorClearanceMetres)):0,crossingChecks:items.flatMap(item=>item.crossingChecks.map(check=>({itemId:item.id,...check}))),budgets:{...LIMITS,maxItems},floorMethod:'maximum original DEM on axis/both edges, and optional unchanged generated-terrain elevations',clearanceReference:'road TOP minus original DEM; subtract printable slab thickness before support planning',source:'original source axes and DEM; estimated upper envelope, no measured road alignment'}};
 }

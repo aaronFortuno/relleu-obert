@@ -436,7 +436,7 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
   };
   const majorRoadsEnabled=options.majorRoads===true;
   if(majorRoadsEnabled)progress('Calculant els perfils de les vies principals…');
-  const majorPlan=majorRoadsEnabled&&infrastructureApi?generateMajorRoadItems(data.features,elevationAt,{projection:proj,bbox:data.meta.bbox,roi:rect,renderedElevationAt:representedElevationAt,allowEndpointLift:true,smoothProfiles:options.smoothProfiles===true,maxLiftMetres:30,allowCrossing:(other,p)=>other.properties?.brunnel==='bridge'&&knownCrossingSources.some(source=>source.contains(p)&&!!source.item.railway===isRailway(other.properties))}):{items:[],metadata:{count:0,terrainModified:false},warnings:[]};
+  const majorPlan=majorRoadsEnabled&&infrastructureApi?generateMajorRoadItems(data.features,elevationAt,{projection:proj,bbox:data.meta.bbox,roi:rect,renderedElevationAt:representedElevationAt,allowEndpointLift:true,cropToElevationWindow:!!data.terrainRaster,smoothProfiles:options.smoothProfiles===true,maxLiftMetres:30,allowCrossing:(other,p)=>other.properties?.brunnel==='bridge'&&knownCrossingSources.some(source=>source.contains(p)&&!!source.item.railway===isRailway(other.properties))}):{items:[],metadata:{count:0,terrainModified:false},warnings:[]};
   const acceptedMajor=[],majorOmissions=[];
   for(const [itemIndex,profile]of majorPlan.items.entries()){
     if(excludedProfiles.has(profile.id)){
@@ -509,8 +509,12 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
     return restored;
   };
   const recoverProfiles=(ids,message)=>{
-    if(excludedProfiles.size||ids.length>=acceptedMajor.length)return fallbackMajor(message);
-    return buildTransport(data,options,terrain,progress,infrastructureApi,diagnostics,buildingGeometry,new Map(ids.map(id=>[id,message])),preview);
+    const rejected=new Set(ids);
+    if(excludedProfiles.size>=3||acceptedMajor.every(item=>rejected.has(item.id)))return fallbackMajor(message);
+    const next=new Map(excludedProfiles);
+    for(const id of rejected)next.set(id,message);
+    if(next.size===excludedProfiles.size)return fallbackMajor(message);
+    return buildTransport(data,options,terrain,progress,infrastructureApi,diagnostics,buildingGeometry,next,preview);
   };
   let staticBase=terrain.surfaces.slice();
   if(acceptedMajor.length){

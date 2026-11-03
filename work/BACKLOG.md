@@ -1,13 +1,13 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-03 · v0.21.2**. Corregit el lliurament del MET5 al motor i afegida la Roca Foradada com a control de RO-035. [Historial](HISTORIAL.md).
+Actualitzat: **2026-11-03 · v0.21.3**. Perfils amb MET5 contrastats al planificador en dos retalls de la C-37. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
 | Lot | Línies | Resultat que permet avançar |
 | --- | --- | --- |
 | **0.21 · Exportació comprovable** | RO-024, RO-033, RO-034, RO-050, RO-052, RO-055 | Auditar els 3MF amb controls petits i identificar el primer defecte reproduïble. Les comprovacions de Bambu Studio i d’impressió es registren a banda. |
-| **0.22 · Vies i rendiment** | RO-051, RO-052, RO-053 | Comparar els accessos de Millau i Rajadell i un segon retall ferroviari. Mesurar cada canvi amb el mateix retall, escala i ajustos. |
+| **0.22 · Vies i rendiment** | RO-033, RO-034, RO-050, RO-051, RO-052, RO-053 | Bateria de retalls amb C-37, Millau i un corredor ferroviari. Registrar classificació, pendents, omissions, unions i temps a dues escales. |
 | **Retocs en paral·lel** | RO-046, RO-054 | Validar la càrrega dels exemples i la recuperació de projectes girats, amb els dos modes i traços. Reproduir qualsevol pèrdua d’ajustos abans de tocar el flux. |
 | **Pilot de relleu rocós** | RO-023, RO-035 | Quatre controls del Cavall Bernat i un cupó local dels Degotalls auditats. Contrastar un segon lloc i resoldre la georeferenciació del cupó. [Resultats](RELLEU-ROCOS.md) |
 | **Després** | RO-026, RO-032 | Comparar les fonts d’edificis en dues zones, amb proves d’accés i cobertura abans de fer canvis al model. |
@@ -151,7 +151,7 @@ Realç i material ferroviari diferenciats, comprovats localment. Pendent de cont
 
 ### RO-051 — Perfils de carreteres principals
 
-El radi intermedi de suavitzat està verificat en carretera i ferrocarril sintètics a dues escales. Comparar canvis de pendent, omissions i temps a Millau, Rajadell i un altre retall ferroviari. [Perfils](RO-051-PERFILS-VIARIS.md) · [Mesures](RO-051-RENDIMENT.md)
+Les vies ràpides i el ferrocarril han de conservar una rasant contínua. Validar perfils, connexions i omissions a diverses escales. Registrar per separat les vies recuperades sobre el terreny després d’una fallada d’integració. [Perfils i control de la C-37](RO-051-PERFILS-VIARIS.md) · [Mesures](RO-051-RENDIMENT.md)
 
 ### RO-052 — Continuïtat i amplada del traçat viari
 

@@ -22,6 +22,32 @@ test('only motorway/trunk surface roads and links produce estimated platforms wi
   assert(r.warnings.some(w=>/No són cotes constructives/.test(w)));
 });
 
+test('smooth mode includes primary ramps and explicitly designated motor roads while leaving ordinary paths on the terrain',()=>{
+  const features=[feature([[0,0],[600,0]],{class:'primary',ramp:1},'ramp'),
+    feature([[0,100],[600,100]],{class:'secondary',motorroad:'yes'},'motorroad'),
+    feature([[0,200],[600,200]],{class:'secondary'},'secondary'),
+    feature([[0,300],[600,300]],{class:'track'},'track')];
+  const {items}=generateMajorRoadItems(features,()=>100,{...options,smoothProfiles:true});
+  assert.deepEqual(items.map(item=>[item.sourceFeatureIds[0],item.roadClass]).sort(),[['motorroad','trunk'],['ramp','primary_link']]);
+});
+
+test('a windowed DEM keeps a trunk profile whose mapped axis extends beyond the crop',()=>{
+  const axis=feature([[-900,50],[200,50],[1100,50]]);
+  const proj={...projection(),width:60,height:15};
+  const elevation=(lon)=>{
+    const x=lon*M;
+    if(x< -10||x>610)throw Error('fora del ràster');
+    return 100+.02*x;
+  };
+  const settings={projection:proj,smoothProfiles:true};
+  assert.equal(generateMajorRoadItems([axis],elevation,settings).items.length,0);
+  const [profile]=generateMajorRoadItems([axis],elevation,{...settings,cropToElevationWindow:true}).items;
+  assert(profile);
+  assert(profile.axisXYZ[0][0]*M<0);
+  assert(profile.axisXYZ.at(-1)[0]*M>600);
+  assert(profile.maximumGrade<.021);
+});
+
 test('global upper envelope remains above axis and BOTH edges with fixed original section endpoints',()=>{
   const {items,metadata}=generateMajorRoadItems([road],terrain,options),p=items[0];assert(p);
   close(p.elevations[0],p.sourceFloors[0]);close(p.elevations.at(-1),p.sourceFloors.at(-1));

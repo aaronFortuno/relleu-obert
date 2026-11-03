@@ -106,3 +106,9 @@ La generalització necessita contrast en més regions i amb fonts remotes,
 especialment enllaços, retalls girats, terreny de poca resolució i
 infraestructures superposades. Les comprovacions sobre cartografia
 incompleta no garanteixen evitar obstacles reals absents de les dades.
+
+## C-37 a Sant Salvador de Guardiola · v0.21.3
+
+OpenFreeMap classifica la C-37 com a via troncal. Al retall sud-oest, centrat a 41,68075 N, 1,754 E, el túnel 317900732 i el pont 317898440 tenen etiquetes pròpies. Amb MET5, el planificador passa de quatre a cinc perfils troncals en un retall d’1,5 km per a una peça de 150 mm. Al retall de Salelles, centrat a 41,706 N, 1,781 E, es conserva un perfil troncal. Les omissions per manca de DEM passen de dues a zero en cadascun dels retalls. Les altres causes d’omissió, incloses les de pendent o encaix, continuen subjectes a les comprovacions geomètriques.
+
+El planificador del túnel sud-oest troba una obertura elegible. Queda pendent comprovar l’excavació i el pont al model complet de Sant Salvador, i repetir la bateria amb altres escales i corredors. [Avaluació ambiental del tram Sant Salvador–Manresa](https://www.gencat.cat/mediamb/dia/dia_guardiola.pdf)

@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-03. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.21.3 — Perfils de vies principals amb MET5
+
+Els eixos de superfície es retallen abans de mostrejar el MET5. El planificador conserva cinc perfils troncals al retall sud-oest de Sant Salvador de Guardiola, un més que abans. El resultat integrat i el laminat del túnel i el pont queden pendents. [Control de la C-37](RO-051-PERFILS-VIARIS.md)
+
 ## v0.21.2 — Lliurament de la graella MET5
 
 El missatge del navegador al procés de geometria conserva el ràster numèric. Prova de regressió amb còpia estructurada en tots dos modes. El cupó local dels Degotalls té un resultat satisfactori segons l’usuari.

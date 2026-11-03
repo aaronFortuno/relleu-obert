@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.21.3 — 2026-11-03
+
+- Els perfils suaus amb MET5 acoten el càlcul al retall i un petit marge. Inclouen els ramals de vies primàries i les vies reservades a motor quan la font les identifica.
+- En els reintents d’integració es poden excloure successivament els perfils que fallen i conservar els altres.
+
 ## v0.21.2 — 2026-11-03
 
 - El navegador conserva la graella MET5 en enviar el retall al motor de geometria. Corregit l’error «No hi ha dades d’elevació».
