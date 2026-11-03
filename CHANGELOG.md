@@ -1,5 +1,11 @@
 # Canvis
 
+## v0.19.15 — 2026-11-03
+
+- RO-053: les unions de grans capes viàries es fan per grups i s’evita tornar a retallar les petjades completament interiors. L’informe de temps separa les operacions de polígons.
+- RO-033: es descarten per caixa envolupant els obstacles llunyans abans de provar interseccions de pilars.
+- RO-051 / RO-052: accessos de vies principals amb una tangent d’arribada limitada per evitar bonys locals. Els perfils experimentals adapten la finestra de suavitzat a l’escala. Les amplades estimades distingeixen classe i escala en superfície, ponts i paviment de túnels.
+
 ## v0.19.14 — 2026-11-03
 
 - RO-053: informe local JSON de la darrera generació completa. Inclou retall, zoom, opcions, fonts, temps fins al primer relleu provisional, durades de càrrega i càlcul i seguiment del Catastre per blocs.

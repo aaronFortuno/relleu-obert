@@ -153,7 +153,19 @@ export function planApproaches({axis,points,faces,containsDeck,roads,ground,road
       end=i;break;
     }
     if(end<0){const last=samples.at(-1);missed.push({reason:'no gentle join',clippedByCrop,gap,grade,minimum,available:last?.s??0,finalDelta:last?landing(last)+roadRise-(startZ+grade*last.s):null});continue;}
-    const selected=samples.slice(0,end+1),last=selected.at(-1),before=selected.at(-2),length=last.s,endZ=landing(last)+roadRise,endGrade=targetGrade??(landing(last)-landing(before))/(last.s-before.s);
+    const selected=samples.slice(0,end+1),last=selected.at(-1),before=selected.at(-2),length=last.s,endZ=landing(last)+roadRise;
+    let endGrade=targetGrade??(landing(last)-landing(before))/(last.s-before.s);
+    if(!terminalRoad&&/^(motorway|trunk|primary)(_link)?$/.test(axis.roadClass)){
+      const average=(endZ-startZ)/length;
+      // Keep the landing height and the deck tangent. A short terrain
+      // triangle at the landing must not make the ramp reverse its slope.
+      if(average===0||endGrade*average<0)endGrade=0;
+      else if(grade*average>=0){
+        const initial=grade/average;
+        const limit=Math.abs(average)*Math.sqrt(Math.max(0,9-initial**2));
+        endGrade=Math.sign(average)*Math.min(Math.abs(endGrade),limit);
+      }
+    }
     const terminal=continuationPath.segments?.[last.segment-1],endWidth=terminal?.line.width??roadWidth;
     const startDirection=unit(selected[0].p,selected[1].p),endDirection=unit(before.p,last.p);
     const fractions=crossSectionFractions({centre:start,normal:[-startDirection[1],startDirection[0]],widthMM:width},{points,faces});
@@ -191,6 +203,15 @@ export function planApproaches({axis,points,faces,containsDeck,roads,ground,road
 // pier candidate needs a collision query. The same mask survives later edits.
 export function deferredObstacleMask(create){let mask;return ()=>mask??=create();}
 
+const obstacleBounds=new WeakMap();
+function bounds(ring){
+  let left=Infinity,bottom=Infinity,right=-Infinity,top=-Infinity;
+  for(const [x,y]of ring){
+    left=Math.min(left,x);bottom=Math.min(bottom,y);right=Math.max(right,x);top=Math.max(top,y);
+  }
+  return {left,bottom,right,top};
+}
+
 export function planPiers({axis,top,containsDeck,ground,blocked=[],scale,widthMM,heightMM,layout,minimumClearanceMM=.8}){
   if(!Number.isFinite(minimumClearanceMM)||minimumClearanceMM<.25||minimumClearanceMM>.8)throw Error('Separació mínima de suport invàlida.');
   // A physical spacing ceiling is independent of map zoom. It is a modelling
@@ -198,7 +219,17 @@ export function planPiers({axis,top,containsDeck,ground,blocked=[],scale,widthMM
   const maxSpanMM=10,spacing=Math.min(maxSpanMM,Math.max(4,50*scale)),along=Math.max(.8,(layout?.sectionMetres?.along??2.5)*scale),across=Math.max(.8,(layout?.sectionMetres?.across??2.5)*scale),diameter=Math.max(along,across),fullLength=axis.slice(1).reduce((n,p,i)=>n+dist(p,axis[i]),0),samples=resample(axis,Math.max(.25,2*scale,fullLength/20000),fullLength),length=samples.at(-1)?.s||0,piers=[];let omitted=0;
   if(layout&&(!Number.isFinite(layout.lengthMetres)||layout.lengthMetres<=0||!Array.isArray(layout.spansMetres)||layout.spansMetres.some(v=>!Number.isFinite(v)||v<=0)||Math.abs(layout.spansMetres.reduce((a,b)=>a+b,0)-layout.lengthMetres)>.01||!Array.isArray(layout.stationsMetres)||layout.stationsMetres.length!==layout.spansMetres.length-1||layout.stationsMetres.some((v,i,a)=>!Number.isFinite(v)||v<=0||v>=layout.lengthMetres||i&&v<=a[i-1]||Math.abs(v-layout.spansMetres.slice(0,i+1).reduce((a,b)=>a+b,0))>.01)||!Number.isFinite(layout.sectionMetres?.along)||layout.sectionMetres.along<=0||!Number.isFinite(layout.sectionMetres?.across)||layout.sectionMetres.across<=0||Math.abs(length/(scale*layout.lengthMetres)-1)>.05))throw Error('La distribució de pilars no concorda amb la llargada del projecte.');
   const targets=layout?layout.stationsMetres.map(m=>({station:m/layout.lengthMetres*length,sourceMetres:m})):Array.from({length:Math.max(0,Math.ceil((length-spacing/3-spacing/2)/spacing))},(_,i)=>({station:spacing/2+i*spacing}));
-  const collision=ring=>blocked.some(source=>{const mask=typeof source==='function'?source():source;return mask.length&&pc.intersection([[ring.concat([ring[0]])]],mask).length;});
+  const collision=ring=>{
+    const {left,bottom,right,top}=bounds(ring),footprint=[[ring.concat([ring[0]])]];
+    return blocked.some(source=>{
+      const mask=typeof source==='function'?source():source;
+      if(!mask.length)return false;
+      let indexed=obstacleBounds.get(mask);
+      if(!indexed){indexed=mask.map(poly=>({poly,...bounds(poly[0])}));obstacleBounds.set(mask,indexed);}
+      const candidates=indexed.filter(b=>b.left<=right&&b.right>=left&&b.bottom<=top&&b.top>=bottom).map(b=>b.poly);
+      return candidates.length&&pc.intersection(footprint,candidates).length;
+    });
+  };
   function place(station,sourceMetres,auxiliary=false){
     const maxShift=layout&&!auxiliary?(layout.maxLongitudinalAdjustmentMetres??3)*scale:2,offsets=layout&&!auxiliary?[0,.25,-.25,.5,-.5,1,-1].map(v=>v*maxShift):[0,.5,-.5,1,-1,1.5,-1.5,2,-2];
     for(const offset of offsets)for(const lateral of [0,.15,-.15,.3,-.3,.45,-.45,.6,-.6,.8,-.8,1,-1]){

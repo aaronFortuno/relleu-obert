@@ -105,19 +105,37 @@ function limitedSlopeMajorant(stations,floors,maxGrade){
 // Average the continuous envelope over a centred window. Linear extensions
 // at both ends preserve the terminal tangent when the envelope is straight.
 // A constant lift covers the rounding deficit without adding slope breaks.
-function roundEnvelope(stations,elevations,radius=24){
+function roundEnvelope(stations,elevations,radius){
   const areas=[0];
   for(let i=1;i<stations.length;i++)areas.push(areas[i-1]+(stations[i]-stations[i-1])*(elevations[i-1]+elevations[i])/2);
   const last=stations.length-1;
-  function integral(at){
-    let i=0;
+  function integral(at,i){
     while(i<last-1&&stations[i+1]<at)i++;
     const dx=at-stations[i],grade=(elevations[i+1]-elevations[i])/(stations[i+1]-stations[i]);
-    return areas[i]+dx*(elevations[i]+grade*dx/2);
+    return {area:areas[i]+dx*(elevations[i]+grade*dx/2),index:i};
   }
-  const smoothed=stations.map(at=>(integral(at+radius)-integral(at-radius))/(2*radius));
+  let before=0,after=0;
+  const smoothed=stations.map(at=>{
+    const left=integral(at-radius,before),right=integral(at+radius,after);
+    before=left.index;after=right.index;
+    return (right.area-left.area)/(2*radius);
+  });
   const lift=Math.max(0,...elevations.map((height,i)=>height-smoothed[i]));
   return smoothed.map(height=>height+lift);
+}
+
+function roundedProfile(stations,envelope,sectionMinima,scale,maxLiftMetres,railway){
+  const baseRadius=24;
+  // At coarse scales the original window can occupy barely a millimetre.
+  // Aim for a visible curve, keeping the window local to the mapped axis.
+  const targetRadius=railway?baseRadius:Math.max(baseRadius,Math.min(120,stations.at(-1)/5,4/scale));
+  const radii=targetRadius===baseRadius?[baseRadius]:[targetRadius,(targetRadius+baseRadius)/2,baseRadius];
+  for(const radius of radii){
+    const elevations=roundEnvelope(stations,envelope,radius);
+    // If extra smoothing would lift the road too far, try a shorter window.
+    // The final candidate still goes through the normal grade and lift checks.
+    if(radius===baseRadius||elevations.every((z,i)=>z-sectionMinima[i]<=maxLiftMetres+1e-8))return {elevations,radius};
+  }
 }
 
 function straightRailProfile(stations,floors,minima,length,maxGrade,maxLift){
@@ -279,7 +297,8 @@ export function generateMajorRoadItems(features,elevationAt,options={}){
     const constraintFloors=allowEndpointLift?limitedSlopeMajorant(stations,originalConstraintFloors,maxGrade):originalConstraintFloors.slice();
     const {elevations:envelope,hull}=upperEnvelope(stations,constraintFloors);
     const railLine=f.railway?straightRailProfile(stations,originalConstraintFloors,sectionMinima,length,maxGrade,maxLiftMetres):null;
-    const elevations=railLine||(smooth?roundEnvelope(stations,envelope):envelope);
+    const rounded=smooth&&!railLine?roundedProfile(stations,envelope,sectionMinima,projection.scale,maxLiftMetres,f.railway):null;
+    const elevations=railLine||rounded?.elevations||envelope;
     const maxObservedGrade=Math.max(...elevations.slice(1).map((z,i)=>Math.abs(z-elevations[i])/(stations[i+1]-stations[i])));
     if(maxObservedGrade>maxGrade+1e-8){fail(f.ids,`pendent de l’envolupant ${(maxObservedGrade*100).toFixed(2)}% superior al límit ${(maxGrade*100).toFixed(0)}%`);continue;}
     const maximumLiftMetres=Math.max(...elevations.map((z,i)=>z-sourceElevations[i])),maximumSectionLiftMetres=Math.max(...elevations.map((z,i)=>z-sectionMinima[i]));
@@ -323,7 +342,7 @@ export function generateMajorRoadItems(features,elevationAt,options={}){
     }
     let meanLiftMetres=0;for(let i=1;i<stations.length;i++)meanLiftMetres+=((elevations[i]-sourceElevations[i])+(elevations[i-1]-sourceElevations[i-1]))*(stations[i]-stations[i-1])/2;
     const id=`estimated-major-road-${f.ids.map(String).join('-')}-${key(f.points[0]).replaceAll(',','_')}`;
-    items.push({id,coordinates,faces,outlines:[outline],axis:f.points,axisXYZ:axisCoordinates.map((p,i)=>[...p,elevations[i]]),sourceFeatureIds:f.ids,railway:f.railway,estimated:true,mainRoad:true,elevationMethod:railLine?'rail-endpoint-grade':smooth?'rounded-upper-envelope-dem':'upper-envelope-dem',roadClass:f.class,ref:f.props.ref,name:f.props.name,oneway:f.props.oneway,layer:f.level,widthMetres,sourceWidthMetres,stations,sourceElevations,sourceFloors,renderedElevations,renderedFloors,originalConstraintFloors,constraintFloors,elevations,hullAnchors:hull,lengthMetres:length,maxGrade,maximumGrade:maxObservedGrade,maximumLiftMetres,maximumSectionLiftMetres,meanLiftMetres:meanLiftMetres/length,minimumFloorClearanceMetres:Math.min(...elevations.map((z,i)=>z-sourceFloors[i])),minimumConstraintClearanceMetres:Math.min(...elevations.map((z,i)=>z-constraintFloors[i])),endpointLiftMetres:[elevations[0]-sourceFloors[0],elevations.at(-1)-sourceFloors.at(-1)],crossingChecks});
+    items.push({id,coordinates,faces,outlines:[outline],axis:f.points,axisXYZ:axisCoordinates.map((p,i)=>[...p,elevations[i]]),sourceFeatureIds:f.ids,railway:f.railway,estimated:true,mainRoad:true,elevationMethod:railLine?'rail-endpoint-grade':smooth?'rounded-upper-envelope-dem':'upper-envelope-dem',smoothingRadiusMetres:rounded?.radius,roadClass:f.class,ref:f.props.ref,name:f.props.name,oneway:f.props.oneway,layer:f.level,widthMetres,sourceWidthMetres,stations,sourceElevations,sourceFloors,renderedElevations,renderedFloors,originalConstraintFloors,constraintFloors,elevations,hullAnchors:hull,lengthMetres:length,maxGrade,maximumGrade:maxObservedGrade,maximumLiftMetres,maximumSectionLiftMetres,meanLiftMetres:meanLiftMetres/length,minimumFloorClearanceMetres:Math.min(...elevations.map((z,i)=>z-sourceFloors[i])),minimumConstraintClearanceMetres:Math.min(...elevations.map((z,i)=>z-constraintFloors[i])),endpointLiftMetres:[elevations[0]-sourceFloors[0],elevations.at(-1)-sourceFloors.at(-1)],crossingChecks});
     stationCount+=stations.length;
   }
   if(dropped)warnings.push(`Plataformes viàries: ${dropped} eixos/fragments omesos pels límits de ${maxItems} eixos, ${LIMITS.fragments} fragments, ${LIMITS.inputPoints} punts i ${LIMITS.stations} estacions.`);

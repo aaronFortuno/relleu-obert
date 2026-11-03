@@ -49,6 +49,19 @@ test('a folded pavement omits only its own approach',()=>{
  const mesh=solid(result.plans[0].mesh);mesh.delete();
 });
 
+test('a main road access does not reverse its slope to follow a short landing triangle',()=>{
+ const axis=[[40,50],[60,50]];axis.roadClass='primary';
+ const points=[[40,49.5,10],[60,49.5,10],[60,50.5,10],[40,50.5,10]];
+ const ground=x=>9+(x-60)*.02;
+ const {plans}=planApproaches({axis,points,faces:[0,1,2,0,2,3],roads:[{points:[[60,50],[90,50]],class:'primary'}],
+   ground,containsDeck:([x,y])=>x>=40&&x<=60&&Math.abs(y-50)<=.5,widthMM:100,heightMM:100,roadWidth:1,forceConnections:true});
+ assert.equal(plans.length,1);
+ const [approach]=plans;
+ assert.equal(approach.endGrade,0);
+ assert.equal(approach.sections.at(-1).centre[2],ground(approach.sections.at(-1).centre[0]));
+ assert(approach.sections.every((s,i,a)=>!i||s.centre[2]<=a[i-1].centre[2]+1e-10));
+});
+
 test('an unresolved approach distinguishes a crop boundary from a short mapped route',()=>{
  const axis=[[40,50],[99,50]];axis.roadClass='trunk';axis.identity=transportIdentity({class:'trunk',ref:'C-1'});
  const options={axis,points:[[40,49.5,6],[99,49.5,6],[99,50.5,6],[40,50.5,6]],faces:[0,1,2,0,2,3],ground:()=>5,containsDeck:([x,y])=>x>=40&&x<=99&&Math.abs(y-50)<=.5,widthMM:100,heightMM:100,roadWidth:1};

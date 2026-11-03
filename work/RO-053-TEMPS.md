@@ -56,3 +56,34 @@ dels ponts 0,05 s i la delimitació de les capes del relleu 6,45 s.
 El bloc que completa els ponts s’executa durant la fase d’edificis
 perquè els pilars en necessiten les petjades. Les dues malles superen
 l’auditoria. Les durades corresponen a aquest equip i aquests ajustos.
+
+## Sant Llorenç de Munt, v0.19.15
+
+Retall de 3.995 × 3.995 m, centre 41.636118, 1.965557, peça de
+200 × 200 mm, detall 36, ICGC, túnels i arbres activats. A l’informe
+del navegador anterior, el primer relleu arribava als 70,30 s i el
+model complet als 83,31 s. Els controls locals Node separen la
+delimitació de cada capa. Els temps de Node i navegador corresponen
+a entorns diferents.
+
+| Control Node | Polígons viaris | Primer relleu | Model complet |
+| --- | ---: | ---: | ---: |
+| Abans, aturat al primer relleu | 107,56 s | 132,69 s | — |
+| Després, aturat al primer relleu | 4,35 s | 23,74 s | — |
+| Després, model complet | 4,33 s | 22,63 s | 36,47 s |
+
+Els controls posteriors inclouen el canvi d’amplades. Les malles
+superen l’auditoria, inclosa la del model complet amb 12.000 arbres.
+Construir les superfícies encara ha costat 14,65 s al control complet.
+Un control amb la unió nova i les amplades anteriors ha mesurat
+11,94 s als polígons viaris. Ha arribat al límit de heap de Node
+(512 MiB) durant la construcció de superfícies, de manera que només
+es compara l’operació viària en aquest control.
+
+## Repetició de Millau, v0.19.15
+
+Al control de 3 km amb els mateixos ajustos, el total ha passat de
+42,36 a 28,91 s i el primer relleu de 9,57 a 4,60 s. Buscar i comprovar
+els suports ha passat de 31,58 a 22,96 s. Els set ponts tenen el
+mateix nombre de peces a la unió i la malla supera l’auditoria.
+Els temps inclouen les variacions de càrrega de les fonts remotes.

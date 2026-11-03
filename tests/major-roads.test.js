@@ -48,6 +48,25 @@ test('rounded primary-road crests reduce slope breaks while staying above both e
   assert(rounded.elevations.every((z,i)=>z>=rounded.sourceFloors[i]-1e-9));
 });
 
+test('coarse-scale main roads round crests over a longer section while retaining the clearance limits',()=>{
+  const crest=lon=>110-.04*Math.abs(lon*M-300);
+  const detail=generateMajorRoadItems([road],crest,{projection:projection(.2),smoothProfiles:true}).items[0];
+  const coarse=generateMajorRoadItems([road],crest,{projection:projection(.05),smoothProfiles:true}).items[0];
+  assert.equal(detail.smoothingRadiusMetres,24);
+  assert.equal(coarse.smoothingRadiusMetres,80);
+  const maxChange=p=>{
+    const grades=p.elevations.slice(1).map((z,i)=>(z-p.elevations[i])/(p.stations[i+1]-p.stations[i]));
+    return Math.max(...grades.slice(1).map((grade,i)=>Math.abs(grade-grades[i])));
+  };
+  assert(maxChange(coarse)<maxChange(detail)/2);
+  assert(coarse.elevations.every((z,i)=>z>=coarse.constraintFloors[i]-1e-9));
+  assert(coarse.maximumGrade<=coarse.maxGrade);
+
+  const constrained=generateMajorRoadItems([road],crest,{projection:projection(.05),smoothProfiles:true,maxLiftMetres:.5}).items[0];
+  assert.equal(constrained.smoothingRadiusMetres,24);
+  assert(constrained.maximumSectionLiftMetres<=.5);
+});
+
 test('unambiguous railway fragments use a constant grade, while an unmapped level crossing is preserved',()=>{
   const left=feature([[0,0],[300,0]],{class:'rail',ref:'R1'},'rail-west');
   const right=feature([[300,0],[600,0]],{class:'rail',ref:'R1'},'rail-east');

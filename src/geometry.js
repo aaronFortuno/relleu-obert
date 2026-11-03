@@ -21,7 +21,7 @@ import {generateProceduralBridgeItems} from './procedural-bridges.js';
 import {generateProceduralTunnelVoids} from './procedural-tunnels.js';
 import {carveAvailableTunnels} from './tunnel-operations.js';
 import {generateMajorRoadItems,reserveProfileEnds} from './major-roads.js';
-import {roadWidthMM} from './transport-width.js';
+import {roadWidthMM,MIN_ROAD_WIDTH_MM} from './transport-width.js';
 import {transportIdentity,compatibleTransport,continuationRoute} from './transport-network.js';
 import {crossSectionFractions} from './transport-sections.js';
 import {fitMajorRoadItem,knownBridgeClearance} from './major-road-fit.js';
@@ -37,6 +37,18 @@ const box=(w,h)=>[[[[0,0],[w,0],[w,h],[0,h],[0,0]]]];
 const intersect=(a,b)=>a.length&&b.length?pc.intersection(a,b):[];
 const subtract=(a,b)=>a.length&&b.length?pc.difference(a,b):a;
 function merge(polys){let result=[];for(let i=0;i<polys.length;i+=30){const batch=polys.slice(i,i+30);result=result.length?pc.union(result,...batch):pc.union(...batch);}return result;}
+// Keep the accumulated outlines local until the final union. Repeatedly
+// merging tiny batches into one region-wide outline reprocesses it each time.
+function mergeLayer(polys){
+  if(polys.length<=300)return merge(polys);
+  let level=polys;
+  while(level.length>30){
+    const next=[];
+    for(let i=0;i<level.length;i+=30)next.push(pc.union(...level.slice(i,i+30)));
+    level=next;
+  }
+  return pc.union(...level);
+}
 const snap=v=>Math.round(v*1e5)/1e5;
 export function makeProjection(bbox,size,physical={}){
   if(physical.selectionPose){
@@ -140,7 +152,7 @@ export function treeMesh({x,y,ground,rx,ry,rz,rotation=0,phase=0}){
   for(let i=0;i<rings;i++)for(let j=0;j<segments;j++){surf.tri(p(i,j),p(i+1,j),p(i+1,j+1));surf.tri(p(i,j),p(i+1,j+1),p(i,j+1));}
   return {vertices:surf.vertices,faces:surf.faces};
 }
-function prepareTerrain(data,options,progress,preview){
+function prepareTerrain(data,options,progress,preview,measure){
   const {size=160,exaggeration=1.5,density=2.5,resolution=36}=options,proj=makeProjection(data.meta.bbox,size,options),{width,height,project,scale}=proj,rect=box(width,height),warnings=[];
   if(!Number.isFinite(density)||density<.25||density>5||!Number.isInteger(resolution)||resolution<2||resolution>100||!Number.isFinite(exaggeration)||exaggeration<1||exaggeration>5||!Number.isFinite(size)||size<50||size>450||width>450||height>450)throw Error('Els ajustos de la maqueta són fora del rang admès.');
   if(options.targetScale!=null&&Math.abs(1000/scale-validateScale(options.targetScale))>options.targetScale*1e-6)throw Error('El retall no concorda amb l’escala demanada. Torna a seleccionar la regió.');
@@ -207,8 +219,14 @@ function prepareTerrain(data,options,progress,preview){
   }
   progress('Delimitant costa i capes…');
   const cropped=polys=>polys.map(p=>intersect(p,rect)).filter(p=>p.length);
-  const waterPoly=merge(cropped(water)),land=subtract(rect,waterPoly),railPoly=intersect(merge(cropped(rails)),land);
-  let roadOnlyPoly=subtract(intersect(merge(cropped(roads)),land),railPoly),roadPoly=merge([roadOnlyPoly,railPoly].filter(p=>p.length)),forest=subtract(intersect(merge(cropped(green)),land),roadPoly),bare=subtract(subtract(land,roadPoly),forest);
+  const boundedRoads=polys=>polys.map(p=>p.every(poly=>poly.every(ring=>ring.every(([x,y])=>x>=0&&x<=width&&y>=0&&y<=height)))?p:intersect(p,rect)).filter(p=>p.length);
+  const waterPoly=measure('terrain.water',()=>merge(cropped(water)),{inputs:water.length}),land=subtract(rect,waterPoly);
+  const railPoly=measure('terrain.railways',()=>intersect(mergeLayer(boundedRoads(rails)),land),{inputs:rails.length});
+  const roadOnlyPoly=measure('terrain.roads',()=>subtract(intersect(mergeLayer(boundedRoads(roads)),land),railPoly),{inputs:roads.length});
+  const roadPoly=merge([roadOnlyPoly,railPoly].filter(p=>p.length));
+  const greenLand=measure('terrain.green-union',()=>intersect(merge(cropped(green)),land),{inputs:green.length});
+  const forest=measure('terrain.green-minus-roads',()=>subtract(greenLand,roadPoly));
+  const bare=measure('terrain.bare',()=>subtract(subtract(land,roadPoly),forest));
   const oceanPoly=merge(cropped(ocean)),hasOcean=oceanPoly.length>0;
   progress('Calculant el camp d’altures…');
   const field=createTerrainField({width,height,resolution,at:(x,y)=>{const[lon,lat]=proj.unproject([x,y]);const h=localHeight?localHeight(lon,lat):sampleHeight(prepared.tiles,lon,lat);return hasOcean?Math.max(0,h):h;}});
@@ -219,8 +237,8 @@ function prepareTerrain(data,options,progress,preview){
   const ground=field.sample;
   const terrain={size,exaggeration,resolution,proj,rect,warnings,elevationAt,deckItems,deckMask,transport,roadPieces,railPieces,
     roadOnlyPoly,roadPoly,forest,bare,railPoly,waterPoly,land,oceanPoly,green,cropped,ground,verticalReference,diagnostics:prepared.diagnostics,
-    woodsMask:merge(cropped(woods))};
-  terrain.surfaces=terrainCover(forest,bare,terrain,progress);
+    woodsMask:measure('terrain.woods',()=>merge(cropped(woods)),{inputs:woods.length})};
+  terrain.surfaces=measure('terrain.surfaces',()=>terrainCover(forest,bare,terrain,progress));
   const sea=new Surface();
   for(const polygon of oceanPoly)sea.polygon(polygon,()=>5);
   terrain.surfaces[1]=surfacePart(1,sea.solid(()=>0));
@@ -255,7 +273,7 @@ function roadSurface(index,polygons,rise,terrain){
 
 export function buildModel(data,options={},progress=()=>{},infrastructureApi=null,diagnostics=null,preview){
   preview?.stage('terrain','Preparant el relleu…');
-  const terrain=prepareTerrain(data,options,progress,preview);
+  const terrain=prepareTerrain(data,options,progress,preview,phaseTimer(diagnostics));
   preview?.parts('terrain',terrain.surfaces,terrain.proj);
   return buildTransport(data,options,terrain,progress,infrastructureApi,diagnostics,undefined,undefined,preview);
 }
@@ -268,14 +286,18 @@ export function updateTransport(previous,changes={},progress=()=>{},infrastructu
   return buildTransport({...ctx.transportSource,meta:ctx.meta},options,ctx.terrain,progress,infrastructureApi,null,ctx.buildingGeometry);
 }
 
-function buildTransport(data,options,terrain,progress,infrastructureApi,diagnostics,buildingGeometry,excludedProfiles=new Map(),preview){
-  preview?.stage('transport','Calculant les vies…');
+function phaseTimer(diagnostics){
   // Optional synchronous diagnostics stay out of worker options/provenance.
-  const measure=(phase,run,details={})=>{
+  return (phase,run,details={})=>{
     if(!diagnostics)return run();
     const start=performance.now();diagnostics({phase,event:'start',...details});
     try{return run();}finally{diagnostics({phase,event:'end',milliseconds:performance.now()-start,...details});}
   };
+}
+
+function buildTransport(data,options,terrain,progress,infrastructureApi,diagnostics,buildingGeometry,excludedProfiles=new Map(),preview){
+  preview?.stage('transport','Calculant les vies…');
+  const measure=phaseTimer(diagnostics);
   const {size,exaggeration,resolution,proj,rect,elevationAt,transport,roadPieces,railPieces,waterPoly,land,green,cropped,ground,verticalReference}=terrain;
   const {width,height,project,scale}=proj,{originMeters}=verticalReference;
   const warnings=terrain.warnings.slice(),deckItems=terrain.deckItems.slice();
@@ -498,7 +520,7 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
   const containsGroundRoad=polygonTester(roadPoly),approachMask=merge(bridges.flatMap(b=>b.approaches.plans.map(p=>intersect(p.footprint,rect))).filter(p=>p.length)),containsApproach=polygonTester(approachMask);
   const context={ground,verticalReference,proj,rect,forest,land,roadPoly,roadOnlyPoly,railPoly,waterPoly,bridges,tunnelMask,infrastructureApi,containsForest:polygonTester(forest),containsLand:polygonTester(land),containsRoad:p=>containsDeck(p)||containsApproach(p)||containsGroundRoad(p),width,height,scale,staticWarnings:warnings,options:{...options,size,exaggeration,resolution,roadRise,railRise},meta:{...data.meta,tunnels:tunnelMetadata,railways:{incrementMM:railRise,surfaceRiseMM:roadRise+railRise,method:'cartographic railway platform; physical millimetres, no vertical exaggeration',groundPresent:railPoly.length>0,bridges:bridges.filter(b=>b.railway).length},infrastructure:deckCount?{...data.infrastructure,provider:knownCount?'Specific overrides and estimated transport platforms':'Estimated transport platforms from OSM/DEM',items:undefined,count:deckCount,knownCount,proceduralCount,deckProfiles:bridges.map(b=>({id:b.id,mainRoad:b.mainRoad,generatedSurfaceAdjustmentMM:b.generatedSurfaceAdjustmentMM,estimated:b.estimated,elevationMethod:b.elevationMethod,widthMetres:b.widthMetres,sourceFeatureIds:b.sourceFeatureIds,railway:b.railway,surfaceRiseMM:b.surfaceRise,printableThicknessMM:b.thickness})),printableThicknessMM:.6+roadRise,railwayPrintableThicknessMM:bridges.some(b=>b.railway)?.6+roadRise+railRise:undefined}:null},diagnostics:terrain.diagnostics,staticBase,terrain,transportSource:{infrastructure:data.infrastructure,features:data.features},buildingGeometry,buildingFeatures:buildingGeometry?.features??data.features};
   context.meta.majorRoads=majorMetadata;
-  context.meta.transportContinuity={widthPolicy:'shared width, then lanes, then road class; carriageway independent of structural deck and bore',minimumCarriagewayMM:.44,connections:bridges.map(b=>({id:b.id,identity:b.identity,carriagewayWidthMM:b.roadWidth,joins:b.approaches.plans.map(p=>({startWidthMM:p.startWidthMM,endWidthMM:p.endWidthMM,targetFeatureIds:p.targetFeatureIds,routingRepairs:p.routingRepairs})),unconnectedEnds:b.approaches.missed})),portals:openedTunnels.flatMap(t=>t.portalConnections||[])};
+  context.meta.transportContinuity={widthPolicy:'mapped width, then lanes, then road class; scale-sensitive floor; independent of structural deck and bore',minimumCarriagewayMM:MIN_ROAD_WIDTH_MM,connections:bridges.map(b=>({id:b.id,identity:b.identity,carriagewayWidthMM:b.roadWidth,joins:b.approaches.plans.map(p=>({startWidthMM:p.startWidthMM,endWidthMM:p.endWidthMM,targetFeatureIds:p.targetFeatureIds,routingRepairs:p.routingRepairs})),unconnectedEnds:b.approaches.missed})),portals:openedTunnels.flatMap(t=>t.portalConnections||[])};
   if(context.meta.infrastructure)context.meta.infrastructure.mainRoadCount=majorDecks.length;
   if(preview&&(openedTunnels.length||majorDecks.length)){
     preview.parts('transport',[...staticBase,...bridges.map(b=>({...CATEGORIES[b.category],...b.mesh}))],proj);

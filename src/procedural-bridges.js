@@ -6,7 +6,7 @@
 // retalla el perfil: el mateix pont té les mateixes cotes en qualsevol retall.
 
 import {isRailway,isInactiveRailway,railwayWidthMetres} from './railways.js';
-import {roadWidthMetres} from './transport-width.js';
+import {roadWidthMetres,roadMinimumWidthMM} from './transport-width.js';
 const LAT_METRES=111320;
 const MAX_FEATURES=50000,MAX_BRIDGES=200,MAX_AXIS_POINTS=1000;
 const MAX_FRAGMENTS=1000,MAX_TOTAL_POINTS=20000,MAX_LINE_POINTS=2000;
@@ -168,11 +168,11 @@ function joinFragments(fragments){
   return merged;
 }
 
-export function generateProceduralBridgeItems(features,elevationAt,{scale=.1,minWidthMM=.44,bbox}={}){
+export function generateProceduralBridgeItems(features,elevationAt,{scale=.1,minWidthMM,bbox}={}){
   if(!Array.isArray(features))throw Error('Les entitats d’entrada han de ser un array.');
   if(typeof elevationAt!=='function')throw Error('Cal un callback elevationAt(lon,lat).');
   if(!Number.isFinite(scale)||scale<=0)throw Error('Escala invàlida.');
-  if(!Number.isFinite(minWidthMM)||minWidthMM<=0)throw Error('Amplada mínima invàlida.');
+  if(minWidthMM!==undefined&&(!Number.isFinite(minWidthMM)||minWidthMM<=0))throw Error('Amplada mínima invàlida.');
   if(bbox!==undefined&&(!Array.isArray(bbox)||bbox.length!==4||!bbox.every(Number.isFinite)||bbox[0]>=bbox[2]||bbox[1]>=bbox[3]))throw Error('Bbox invàlid.');
   const warnings=[];
   let input=features;
@@ -224,7 +224,7 @@ export function generateProceduralBridgeItems(features,elevationAt,{scale=.1,min
     warnings.push(`Pressupost de ${MAX_BRIDGES} ponts aplicat: ${inBBox.length-MAX_BRIDGES} eixos omesos.`);
     inBBox.length=MAX_BRIDGES;
   }
-  const items=[],minWidthMetres=minWidthMM/scale;
+  const items=[];
   inBBox.forEach((axis,order)=>{
     const id=`proc-bridge-${String(order+1).padStart(4,'0')}`;
     let points=axis.points;
@@ -241,7 +241,10 @@ export function generateProceduralBridgeItems(features,elevationAt,{scale=.1,min
       warnings.push(`Pont ${id} omès: elevació d’extrem no vàlida (${z0}, ${z1}).`);
       return;
     }
-    const sourceWidthMetres=widthFromProperties(axis.props,warnings,id),widthMetres=Math.max(sourceWidthMetres,minWidthMetres);
+    const railway=isRailway(axis.props);
+    const sourceWidthMetres=widthFromProperties(axis.props,warnings,id);
+    const minimumMM=minWidthMM??(railway ? .44 : roadMinimumWidthMM(axis.props,scale));
+    const widthMetres=Math.max(sourceWidthMetres,minimumMM/scale);
     const latRef=points[0][1],kx=LAT_METRES*Math.cos(latRef*Math.PI/180);
     const xy=points.map(([lon,lat])=>[lon*kx,lat*LAT_METRES]);
     const distance=[0];
@@ -281,7 +284,7 @@ export function generateProceduralBridgeItems(features,elevationAt,{scale=.1,min
       ref:axis.props.ref,
       name:axis.props.name,
       oneway:axis.props.oneway,
-      railway:isRailway(axis.props),
+      railway,
       elevationMethod:'linear-dem-endpoints',
       sourceFeatureIds:axis.ids,
     });

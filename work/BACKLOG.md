@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-03 · v0.19.14**. RO-053 incorpora un informe descarregable amb el retall, els ajustos i els temps de generació. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
+Actualitzat: **2026-11-03 · v0.19.15**. Les unions viàries grans s’acceleren i s’ajusten els accessos i les amplades de vies. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
 
 ## Ordre de treball
 
@@ -10,7 +10,7 @@ Actualitzat: **2026-11-03 · v0.19.14**. RO-053 incorpora un informe descarregab
 
 **Retocs de RO-053, v0.19.13.** Les guies de tall segueixen la superfície i es pot descarregar la maqueta calculada amb canvis pendents al mapa. [Detall](#ro-053--flux-de-treball-per-etapes).
 
-1. **RO-053 / RO-051 — Agilitzar els suports dels ponts.** La primera mesura a Millau atribueix 31,58 de 42,36 s a la cerca i comprovació de suports. Repetir els controls abans i després de cada optimització i comparar la geometria. [Temps de generació](RO-053-TEMPS.md).
+1. **RO-053 / RO-051 — Rendiment del terreny i dels suports.** Sant Llorenç ha passat de 132,69 a 23,74 s fins al primer relleu en els controls Node. A Millau, els suports han passat de 31,58 a 22,96 s i continuen dominant el temps. [Temps de generació](RO-053-TEMPS.md).
 2. **RO-051 / RO-052 — Perfils i amplada de les vies.** Reproduir els bonys dels accessos de Millau i comparar la llegibilitat de diferents classes de via en una peça local i un retall ampli. Revisar amplades i mínims imprimibles conjuntament.
 3. **RO-055 — Relleu pur.** Provar una peça de gran extensió dels Pirineus amb un pressupost de resolució i memòria propi. El primer resultat ha de mostrar què es guanya en extensió i temps de càrrega.
 4. **RO-054 — Galeria local.** Desar i recuperar configuracions en un mateix navegador. Valorar després una còpia del model acabat quan calgui recuperar exactament la mateixa geometria.
@@ -333,6 +333,8 @@ Abans d’implementar: cua limitada, cancel·lació per canvi de regió, memòri
 
 ### RO-051 — Perfils de carreteres principals
 
+**v0.19.15.** La finestra de suavitzat dels perfils experimentals s’adapta a l’escala. Els accessos de vies principals limiten les tangents que provocaven canvis de sentit del pendent. Pendent de contrast al visor en els accessos de Millau.
+
 **Validació d’usuari a v0.19.12.** El tauler de Millau es veu bé i l’enllaç és relativament net. Encara es veuen bonys a les vies principals. Cal comparar el perfil longitudinal i la transició amb el relleu abans i després de l’accés, en més d’una escala.
 
 **v0.19.8.** Opció experimental a Vies, desactivada d'entrada. Les vies principals incorporen l'arrodoniment de l'envolupant i els ferrocarrils proven un pendent constant entre extrems. Es mantenen els controls de separació, creuaments, suports i unions. Falta contrastar més retalls ferroviaris i validar el laminat.
@@ -365,6 +367,8 @@ Primer prototip local: perfil longitudinal regularitzat amb tall/terraplè acota
 
 ### RO-052 — Continuïtat i amplada del traçat viari
 
+**v0.19.15.** Amplades compartides per classe i escala. A 1:20.000, mínims modelats de 0,44 mm en principals i rails, 0,40 mm en secundàries i 0,36 mm en camins menors. Pendent de laminat.
+
 **Amplada a zoom llunyà.** En retalls de diversos quilòmetres quadrats, alguns camins queden visualment massa amples. Comparar les amplades físiques i els mínims imprimibles per classe de via a dues escales. Valorar presets adaptats a l’escala i un ajust manual, compartits per superfície, ponts i túnels quan siguin aplicables.
 
 **v0.19.11.** Aïllat l’error «Les seccions de paviment es pleguen o es creuen» notificat a Millau. Un extrem defectuós conserva el tauler i l’altre extrem vàlid. Validació de l’usuari amb el retall original pendent.
@@ -390,6 +394,8 @@ Primer prototip local: perfil longitudinal regularitzat amb tall/terraplè acota
 - [ ] Usuari: revisar els enllaços i les transicions d'amplada dels nous controls abans de validar laminat/impressió. Els fitxers de v0.18.2 documenten el problema i no el donen per resolt.
 
 ### RO-053 — Flux de treball per etapes
+
+**v0.19.15.** Control del retall de Sant Llorenç, 4 km i detall 36. La delimitació viària es beneficia d’unions per grups i del filtre de retalls interiors. [Mesures](RO-053-TEMPS.md).
 
 **v0.19.14.** «Dades i limitacions» permet descarregar la darrera generació en JSON. Es registren fonts, primer relleu provisional, càlcul per etapes i operacions, resultat i consultes del Catastre per blocs. Les operacions imbricades es mostren per separat per evitar comptar-les dues vegades. [Proves de temps](RO-053-TEMPS.md).
 
@@ -455,6 +461,8 @@ La preparació de mida i territori precedeix les quatre capes. En separar el mot
 **Primer control.** Desar dues configuracions, recarregar l’aplicació i recuperar-ne una amb les mateixes opcions. La regeneració pot donar un resultat diferent quan canvien les fonts. Valorar en una segona etapa si convé conservar també el model acabat, amb límit d’espai i eliminació per projecte, per recuperar-ne exactament la geometria.
 
 ### RO-055 — Mode de relleu pur
+
+**Paleta a explorar al pilot.** Tons de granit per al relleu rocós i blanc per representar cotes altes. Si el color es deriva de l’altura, cal presentar-lo com a convenció de la maqueta.
 
 **P2, proposat.** Oferir un mode orientat a serralades i grans regions on es carregui només el relleu necessari. La representació detallada conserva les vies i els edificis amb els límits adequats per a aquestes capes.
 

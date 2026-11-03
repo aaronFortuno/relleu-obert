@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {generateProceduralBridgeItems} from '../src/procedural-bridges.js';
+import {roadWidthMM} from '../src/transport-width.js';
 
 const bridge=(coords,props={},id)=>({type:'Feature',id,properties:{sourceLayer:'transportation',brunnel:'bridge',class:'primary',...props},geometry:{type:'LineString',coordinates:coords}});
 const flat=()=>100;
@@ -47,6 +48,15 @@ test('width: attribute, lanes or class table, with physical minimum and absurd v
   const [L,R]=byId.a.coordinates;
   const width=Math.hypot((L[0]-R[0])*111320*Math.cos(L[1]*Math.PI/180),(L[1]-R[1])*111320);
   assert(Math.abs(width-10)<1e-6);
+});
+
+test('a distant path bridge uses the same width as its road continuation',()=>{
+  const f=bridge([[0,0],[0.002,0]],{class:'path'},'path');
+  const scale=.05;
+  const estimated=generateProceduralBridgeItems([f],flat,{scale}).items[0];
+  assert(Math.abs(estimated.widthMetres*scale-roadWidthMM(f.properties,scale))<1e-12);
+  const overridden=generateProceduralBridgeItems([f],flat,{scale,minWidthMM:.44}).items[0];
+  assert(Math.abs(overridden.widthMetres*scale-.44)<1e-12);
 });
 
 test('curve: mitered strip with coherent +Z faces and closed outline; hairpin omitted with warning',()=>{
