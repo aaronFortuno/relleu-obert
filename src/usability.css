@@ -57,13 +57,12 @@
 #piece-sizes .piece-size:hover {border-color:var(--green);background:#eef3e7}
 #recommended-place {margin-bottom:8px}
 .sidebar-left #new-project {flex:none;min-height:30px;margin:12px 0 8px;padding:6px 10px}
-.map-rotation-handle,.map-rotation-reset {
-  display:grid;place-items:center;width:26px;height:26px;padding:0;border:1px solid var(--ui-control-border);
-  border-radius:5px;background:var(--paper);color:var(--green);font-size:16px;
-}
-.map-rotation-handle {position:absolute;top:-13px;right:-13px;border-radius:50%;pointer-events:auto;touch-action:none;cursor:grab}
+.selection-frame {--selection-line:#37583e;border-color:var(--selection-line)}
+.map-rotation-handle {position:absolute;top:-9px;right:-9px;width:16px;height:16px;padding:0;border:2px solid var(--selection-line);border-radius:50%;background:transparent;pointer-events:auto;touch-action:none;cursor:grab}
 .map-rotation-handle:active {cursor:grabbing}
-.map-rotation-reset {position:absolute;z-index:460;top:5px;right:5px}
+.leaflet-top .map-north-control {margin-top:5px}
+.map-rotation-reset {display:grid;place-items:center;width:25px;height:25px;padding:0;border:0;border-radius:3px;background:#fff;color:#526b45}
+.map-rotation-reset:disabled {opacity:1;background:#f4f4f4;color:#bbb;cursor:default}
 .map-rotation-reset svg {width:16px;height:16px}
 #scale-ticks {display:flex;justify-content:space-between;padding:0 6px;height:16px;font-size:8px;color:#65755d}
 #scale-ticks span {position:relative;width:0;text-align:center;white-space:nowrap}

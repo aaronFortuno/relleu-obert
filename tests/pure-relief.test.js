@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
 import {buildModel} from '../src/geometry.js';
-import {loadRegion} from '../src/sources.js';
+import {loadRegion,mergeStandingWaterFragments} from '../src/sources.js';
 import {auditPart} from '../src/solid-audit.js';
 import {physicalBBox} from '../src/selection.js';
 import {groupMaterials} from '../src/materials.js';
@@ -23,16 +24,50 @@ test('pure relief builds solid coverage colours from mapped classes, independent
   assert.deepEqual(neutral.categories.map(p=>p.id),['terrain']);
 });
 
-test('pure relief fetches only elevations outside the pilot coverage',async()=>{
+test('pure relief survives missing remote hydrography without loading full model layers',async()=>{
   const previous=globalThis.fetch,requests=[];
-  globalThis.fetch=async url=>{requests.push(String(url));return new Response(new Uint8Array([1]));};
+  globalThis.fetch=async url=>{
+    requests.push(String(url));
+    return String(url).startsWith('https://tiles.mapterhorn.com/')?new Response(new Uint8Array([1])):new Response(null,{status:503});
+  };
   try{
     const data=await loadRegion({bbox,pureRelief:true,decodeElevation:async(_,tile)=>({...tile,size:2,elev:new Float32Array([100,100,100,100])})});
-    assert(requests.length>0&&requests.every(url=>url.startsWith('https://tiles.mapterhorn.com/')));
+    assert(requests.some(url=>url==='https://tiles.openfreemap.org/planet'));
+    assert(requests.every(url=>url.startsWith('https://tiles.mapterhorn.com/')||url==='https://tiles.openfreemap.org/planet'));
     assert.deepEqual(data.features,[]);
+    assert.deepEqual(data.waterways,[]);
+    assert(data.meta.sourceWarnings.some(message=>message.includes('Es conserva el relleu')));
     assert.equal(data.meta.coverage.available,false);
     assert.equal(data.meta.buildingSource,null);
   }finally{globalThis.fetch=previous;}
+});
+
+test('pure relief loads the real Rajadell stream from the bundled sample',async()=>{
+  const previous=globalThis.fetch,requests=[];
+  globalThis.fetch=async url=>{
+    requests.push(String(url));
+    if(String(url).startsWith('./data/'))return new Response(await readFile(new URL('../public/'+String(url).slice(2),import.meta.url)));
+    if(String(url).startsWith('https://tiles.mapterhorn.com/'))return new Response(new Uint8Array([1]));
+    throw Error('Unexpected request '+url);
+  };
+  try{
+    const data=await loadRegion({sample:'eix-diagonal',bbox:physicalBBox([41.71792,1.78391],1.5,1.5),pureRelief:true,
+      decodeElevation:async(_,tile)=>({...tile,size:2,elev:new Float32Array([100,100,100,100])})});
+    assert(data.waterways.some(feature=>feature.properties.name==='Riera de Rajadell'));
+    assert(data.lakes.length);
+    assert(requests.some(url=>url.endsWith('.pbf')));
+    assert(!requests.some(url=>url.includes('openfreemap')));
+    assert.deepEqual(data.features,[]);
+  }finally{globalThis.fetch=previous;}
+});
+
+test('adjacent tile fragments of the same lake merge into one footprint',()=>{
+  const tile=(left,right)=>({type:'Feature',id:42,properties:{class:'lake'},geometry:{type:'Polygon',
+    coordinates:[[[left,0],[right,0],[right,1],[left,1],[left,0]]]}});
+  const lakes=mergeStandingWaterFragments([tile(0,1),tile(1,2)]);
+  assert.equal(lakes.length,1);
+  assert.equal(lakes[0].geometry.coordinates.length,1);
+  assert.deepEqual(lakes[0].geometry.coordinates[0][0],[[0,0],[2,0],[2,1],[0,1],[0,0]]);
 });
 
 test('relief diagonals follow the measured centre and interpolated materials close across cuts',()=>{
@@ -104,4 +139,15 @@ test('pure relief leaves a lake flat where a mapped stream crosses it',()=>{
   assert(xs.some(x=>x<38)&&xs.some(x=>x>62));
   assert(!xs.some(x=>x>44&&x<56));
   assert.deepEqual(auditPart(part).errors,[]);
+});
+
+test('pure relief uses the mapped width of a flowing-water polygon without a centreline',()=>{
+  const [w,s,e,n]=bbox,at=(x,y)=>[w+(e-w)*x,s+(n-s)*y];
+  const waterAreas=[{geometry:{type:'Polygon',
+    coordinates:[[at(.15,.35),at(.85,.35),at(.85,.55),at(.15,.55),at(.15,.35)]]}}];
+  const model=buildModel({meta:{bbox},dem,waterAreas},options);
+  const water=auditPart(model.parts.find(part=>part.id==='inland-water'));
+  assert.deepEqual(water.errors,[]);
+  assert(Math.abs(water.dimensions[1]-20)<.001);
+  assert(water.dimensions[2]>.36);
 });

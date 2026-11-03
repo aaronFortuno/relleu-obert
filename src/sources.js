@@ -9,7 +9,9 @@ import {loadBuildingsRecoverably} from './building-recovery.js';
 import {recommendedPlace} from './recommended-places.js';
 import {loadInfrastructureOverrides} from './infrastructure-registry.js';
 import {fetchOSMBuildings} from './roof-sources.js';
-import {loadReliefWaterways,RELIEF_WATERWAY_SOURCE,overlapsWaterwayCoverage} from './relief-waterways.js';
+import {loadReliefWaterways,RELIEF_WATERWAY_SOURCE} from './relief-waterways.js';
+import {isFlowingWater,isStandingWater} from './standing-water.js';
+import {polygonOps} from './polygon-ops.js';
 
 export {lonLatTile} from './elevation.js';
 import {lonLatTile} from './elevation.js';
@@ -28,6 +30,82 @@ export function readVector(bytes,{x,y,z},layers=['water','waterway','landcover',
 }
 async function get(url){const r=await fetch(url,{signal:AbortSignal.timeout(25000),cache:url.endsWith('/planet')?'no-cache':'default'});if(!r.ok)throw Error(`No s’ha pogut carregar ${url.includes('openfreemap')?'la cartografia d’OpenFreeMap':'la mostra local'} (${r.status}). Torna-ho a provar més tard.`);return r;}
 const infrastructureJSON=async name=>(await get((import.meta.env?.BASE_URL||'./')+'data/'+name)).json();
+const vectorCatalog='https://tiles.openfreemap.org/planet';
+const vectorTemplate=async()=> (await(await get(vectorCatalog)).json()).tiles[0];
+const waterPolygonOps=polygonOps();
+
+export function mergeStandingWaterFragments(lakes){
+  const groups=new Map();
+  for(const lake of lakes){
+    const key=lake.id??lake.properties.id??lake;
+    if(!groups.has(key))groups.set(key,[]);
+    groups.get(key).push(lake);
+  }
+  const merged=[];
+  for(const fragments of groups.values()){
+    const [first]=fragments;
+    if(fragments.length===1){merged.push(first);continue;}
+    try{
+      let coordinates=[];
+      for(let i=0;i<fragments.length;i+=8){
+        const batch=fragments.slice(i,i+8).map(({geometry:g})=>g.type==='Polygon'?[g.coordinates]:g.coordinates);
+        coordinates=waterPolygonOps.union(coordinates,...batch);
+      }
+      if(coordinates.length)merged.push({...first,geometry:{type:'MultiPolygon',coordinates}});
+    }catch{/* Preserve the usable fragments if one has invalid geometry. */
+      merged.push(...fragments);
+    }
+  }
+  return merged;
+}
+
+async function loadReliefHydrography(bbox,sample,progress){
+  const zoom=[14,13,12,11,10,9,8].find(z=>regionTileCount(bbox,z)<=MAX_REGION_TILES);
+  const tiles=tileList(bbox,zoom),base=(import.meta.env?.BASE_URL||'./')+'data/';
+  const place=typeof sample==='string'?recommendedPlace(sample):null;
+  const deadline=AbortSignal.timeout(12000);
+  const request=async url=>{
+    const response=await fetch(url,{signal:deadline});
+    if(!response.ok)throw Error(`HTTP ${response.status}`);
+    return response;
+  };
+  const read=async url=>new Uint8Array(await(await request(url)).arrayBuffer());
+  let local=new Map();
+  if(place){
+    try{
+      const catalog=await(await request(base+place.file)).json();
+      local=new Map(catalog.tiles.map(t=>[`${t.z}/${t.x}/${t.y}`,base+t.vector]));
+    }catch{/* Remote tiles can still cover this selection. */}
+  }
+  let template;
+  const remote=async({z,x,y})=>{
+    template??=request(vectorCatalog).then(response=>response.json()).then(catalog=>catalog.tiles[0]);
+    return read((await template).replace('{z}',z).replace('{x}',x).replace('{y}',y));
+  };
+  const features=[],lakes=[],waterways=[],waterAreas=[];
+  let failures=0;
+  for(let i=0;i<tiles.length;i+=4){
+    progress(`Carregant la cartografia d’aigua ${i+1}/${tiles.length}…`);
+    const batch=await Promise.allSettled(tiles.slice(i,i+4).map(async t=>{
+      const url=local.get(`${t.z}/${t.x}/${t.y}`);
+      const bytes=url?await read(url).catch(()=>remote(t)):await remote(t);
+      return readVector(bytes,t,['water','waterway']);
+    }));
+    for(const result of batch){
+      if(result.status==='fulfilled')features.push(...result.value);
+      else failures++;
+    }
+  }
+  for(const feature of features){
+    const {properties,geometry:{type}}=feature;
+    if(properties.sourceLayer==='waterway'&&(type==='LineString'||type==='MultiLineString'))waterways.push(feature);
+    else if(properties.sourceLayer==='water'&&(type==='Polygon'||type==='MultiPolygon')){
+      if(isStandingWater(properties))lakes.push(feature);
+      else if(isFlowingWater(properties))waterAreas.push(feature);
+    }
+  }
+  return {lakes:mergeStandingWaterFragments(lakes),waterways,waterAreas,failures,zoom,tileCount:tiles.length};
+}
 async function decodeDEM(blob,t){
   const decoder=await import('./dem-browser.js');return decoder.decodeDEM(blob,t);
 }
@@ -78,7 +156,7 @@ export async function loadRegion({sample=true,bbox,buildingSource,decodeElevatio
     const terrain=await time('source.terrain',()=>loadTerrain(bbox,decodeElevation,fetch,progress,undefined,{
       zooms:[14,13,12,11,10],maxTiles:96,maxSamples:8*1024**2
     }));
-    let coverage=[],lakes=[],waterways=[];
+    let coverage=[],lakes=[],waterways=[],waterAreas=[],hydrography;
     const warnings=terrain.warnings.slice();
     progress('Carregant la cobertura de sòl nu i neu o gel…');
     try{
@@ -89,27 +167,38 @@ export async function loadRegion({sample=true,bbox,buildingSource,decodeElevatio
         if(bbox[0]<w||bbox[1]<s||bbox[2]>e||bbox[3]>n)warnings.push('Fora del retall cartografiat del pilot, el relleu es mostra en un color neutre.');
       }else warnings.push('Aquest retall és fora de la cobertura de colors del pilot de l’Aneto.');
     }catch{warnings.push('No s’ha pogut carregar la cobertura de sòl nu i neu o gel. Es mostra el relleu en un color neutre.');}
-    try{
-      lakes=await time('source.relief-lakes',()=>loadReliefLakes(bbox));
-      if(lakes.length)warnings.push('Llacs i estanys del pilot de l’Aneto: © OpenStreetMap contributors, via OpenFreeMap. Cota estimada del model d’elevacions.');
-    }catch{warnings.push('No s’ha pogut carregar la cartografia de llacs del pilot de l’Aneto.');}
-    if(overlapsWaterwayCoverage(bbox)){
-      try{waterways=await time('source.relief-waterways',()=>loadReliefWaterways(bbox));}
-      catch{warnings.push('No s’ha pogut carregar la cartografia de rius i rierols del pilot de l’Aneto.');}
-    }else warnings.push('Aquest retall és fora de la cobertura de rius i rierols de Relleu pur.');
+    const [w,s,e,n]=RELIEF_LAKE_SOURCE.bounds;
+    const insidePilot=bbox[0]>=w&&bbox[1]>=s&&bbox[2]<=e&&bbox[3]<=n;
+    if(insidePilot){
+      try{
+        lakes=await time('source.relief-lakes',()=>loadReliefLakes(bbox));
+        waterways=await time('source.relief-waterways',()=>loadReliefWaterways(bbox));
+        if(lakes.length)warnings.push('Llacs i estanys del pilot de l’Aneto: © OpenStreetMap contributors, via OpenFreeMap. Cota estimada del model d’elevacions.');
+      }catch{warnings.push('No s’ha pogut carregar tota la cartografia d’aigua local de l’Aneto.');}
+    }else{
+      try{
+        const {failures,zoom,tileCount,...water}=await time('source.relief-hydrography',()=>loadReliefHydrography(bbox,sample,progress));
+        ({lakes,waterways,waterAreas}=water);
+        const {provider,license,attribution,url}=RELIEF_WATERWAY_SOURCE;
+        hydrography={provider,license,attribution,url,zoom,tileCount,failures};
+        if(failures===tileCount)warnings.push('No s’ha pogut carregar la cartografia d’aigua. Es conserva el relleu.');
+        else if(failures)warnings.push('Falten algunes tessel·les de cartografia d’aigua. Es mostren les dades disponibles.');
+        if(zoom<14)warnings.push('La cartografia d’aigua d’aquest retall ampli pot ometre els cursos menors.');
+      }catch{warnings.push('No s’ha pogut carregar la cartografia d’aigua. Es conserva el relleu.');}
+    }
     const meta={bbox,name:'Relleu pur',date:new Date().toISOString(),terrain:terrain.metadata,tiles:terrain.tiles.map(({z,x,y})=>({z,x,y})),
       coverage:{...RELIEF_COVERAGE_SOURCE,available:!!coverage.length,tiles:coverage.map(t=>t.tile)},
-      lakes:{count:lakes.length,...(lakes.length?RELIEF_LAKE_SOURCE:{})},
-      waterways:{count:waterways.length,...(waterways.length?RELIEF_WATERWAY_SOURCE:{})},
+      lakes:{count:lakes.length,...(lakes.length?(insidePilot?RELIEF_LAKE_SOURCE:hydrography):{})},
+      waterways:{count:waterways.length,areaCount:waterAreas.length,...(waterways.length||waterAreas.length?(insidePilot?RELIEF_WATERWAY_SOURCE:hydrography):{})},
       buildings:{count:0},buildingSource:null,sourceWarnings:warnings,pureRelief:true};
-    return {meta,features:[],dem:terrain.tiles,coverage,lakes,waterways,terrainWarnings:warnings};
+    return {meta,features:[],dem:terrain.tiles,coverage,lakes,waterways,waterAreas,terrainWarnings:warnings};
   }
   const base=(import.meta.env?.BASE_URL||'./')+'data/';
   if(typeof sample==='string'&&!recommendedPlace(sample))throw Error('Exemple desconegut.');
   let meta=sample?await time('source.catalog',async()=>(await get(base+(recommendedPlace(sample)?.file||'tamariu.json'))).json(),{provider:'sample'}):{name:'Regió seleccionada',bbox,tiles:tileList(bbox),date:new Date().toISOString()};
   if(sample&&bbox)meta={...meta,bbox};
   let template;
-  if(!sample)template=await time('source.catalog',async()=>(await(await get('https://tiles.openfreemap.org/planet')).json()).tiles[0],{provider:'OpenFreeMap'});
+  if(!sample)template=await time('source.catalog',vectorTemplate,{provider:'OpenFreeMap'});
   let features=[],dem=[],bridgeDem=[],bridgeFeatures=[],incompleteBridgeIds=[],terrainWarnings=[...(meta.sourceWarnings||[])];
   const vectorEntries=[];
   // Sequential tile pairs keep resource use and public-service load bounded.

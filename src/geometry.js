@@ -350,10 +350,11 @@ function buildPureRelief(data,options,progress,preview){
       else if(centre[2]>centre[0])cells[1]++;
     }
   }
-  if(options.streams!==false&&data.waterways?.length)progress('Traçant els rius i rierols…');
-  const streams=options.streams!==false&&data.waterways?.length
-    ?waterwayPolygons(data.waterways,project,{width,height,scale,multiplier:options.streamWidth}):[];
-  const streamStrips=reliefStreamStrips(streams,width,height,resolution);
+  const streams=options.streams!==false;
+  if(streams&&(data.waterways?.length||data.waterAreas?.length))progress('Traçant els rius i rierols…');
+  const paths=streams?waterwayPolygons(data.waterways||[],project,{width,height,scale,multiplier:options.streamWidth}):[];
+  const waterAreas=streams?(data.waterAreas||[]).map(feature=>geoPolys(feature,project)):[];
+  const streamStrips=reliefStreamStrips([...paths,...waterAreas],width,height,resolution);
   const reliefGrid={resolution,width,height,heights,diagonals,scores,lakeWeights:lakes?.count?lakes.weights:null,streamStrips};
   progress('Construint el sòlid del relleu…');
   const categories=reliefParts(reliefGrid);
@@ -362,7 +363,7 @@ function buildPureRelief(data,options,progress,preview){
   const warnings=[...(data.meta.sourceWarnings||[])];
   const provenance={...data.meta,options:{...options,pureRelief:true,trees:false},verticalExaggeration:exaggeration,verticalReference,
     units:'millimeters',coverageCells:{bare:cells[0],snow:cells[1],total:resolution**2},lakeCount:lakes?.count??0,
-    streamCount:streams.length};
+    streamCount:paths.length,flowingWaterAreaCount:waterAreas.length};
   return groupMaterials({width,height,scale:Math.round(1000/scale),treeCount:0,buildingCount:0,categories,warnings,reliefGrid,
     triangles:categories.reduce((n,p)=>n+p.faces.length/3,0),elevationDiagnostics:prepared.diagnostics,provenance});
 }

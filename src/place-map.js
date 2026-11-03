@@ -21,9 +21,15 @@ export function createPlaceMap(container,{onChange,onName,width=150,height=150})
   reset.type='button';reset.className='map-rotation-reset';
   reset.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="M16.24 7.76l-2.12 6.36-6.36 2.12 2.12-6.36 6.36-2.12z"/></svg>';
   reset.setAttribute('aria-label','Restableix l’orientació');reset.title='Restableix l’orientació';
-  container.append(reset);
+  const north=L.control({position:'topleft'});
+  north.onAdd=()=>{
+    const bar=L.DomUtil.create('div','leaflet-bar map-north-control');
+    bar.append(reset);
+    L.DomEvent.disableClickPropagation(bar);
+    return bar;
+  };
+  north.addTo(map);
   L.DomEvent.disableClickPropagation(handle);
-  L.DomEvent.disableClickPropagation(reset);
   let physical=[width,height],lastBBox,lastBase=placeSelection(DEFAULT_PLACE,width,height),pendingFit,rotation=0,lastRotation,restoring=false,retainedBase=null,gesture=null,locked=false,pureRelief=false;
   map.on('zoomstart',()=>{if(!restoring)retainedBase=null;});
   function frameSize(){const w=container.clientWidth,h=container.clientHeight,r=physical[0]/physical[1],a=rotation*Math.PI/180,c=Math.abs(Math.cos(a)),s=Math.abs(Math.sin(a)),fw=Math.min((w-46)/(c+s/r),(h-54)/(s+c/r));return [fw,fw/r];}

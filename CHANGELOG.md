@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.19.21 — 2026-11-03
+
+- Relleu pur incorpora cursos d’aigua i llacs cartografiats fora del pilot de l’Aneto, amb una consulta limitada de tessel·les.
+- Tirador de gir més petit i transparent. El botó de nord queda sota els controls de zoom.
+
 ## v0.19.20 — 2026-11-03
 
 - Selector segmentat Model complet / Relleu pur.

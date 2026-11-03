@@ -12,6 +12,10 @@ El retall inclòs s’ha derivat d’ESA WorldCover 2021 v200 (Zanaga et al., 20
 
 ## Mesures locals
 
+### Hidrografia fora de l’Aneto a la v0.19.21
+
+Relleu pur incorpora les capes de rius, rierols i llacs d’OpenFreeMap amb un màxim de 16 tessel·les. Descodifica les capes d’aigua del paquet vectorial. Si falten tessel·les, la maqueta aprofita les disponibles. La mostra de Rajadell reutilitza les tessel·les locals i el retall de l’Aneto conserva les dades pròpies del pilot. El color de sòl nu i neu continua limitat a la cobertura WorldCover distribuïda. [Font i llicència](https://www.openstreetmap.org/copyright)
+
 ### Rius i rierols a la v0.19.20
 
 El selector segmentat de Territori permet triar Model complet o Relleu pur. En tots dos modes es poden activar els rius i rierols cartografiats i fixar una amplada mínima de 0,45 a 1,35 mm. El multiplicador actua sobre el mínim i conserva les amplades cartogràfiques més grans. Els cursos segueixen el pendent i les superfícies dels llacs es mantenen planes.
