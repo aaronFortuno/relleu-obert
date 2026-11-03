@@ -1,4 +1,5 @@
-import {reliefDiagonals,reliefParts} from './pure-relief-mesh.js';
+import {sampleCoverage} from './relief-contours.js';
+import {reliefDiagonals,reliefParts,PURE_RELIEF_RESOLUTIONS} from './pure-relief-mesh.js';
 import {polygonOps} from './polygon-ops.js';
 import earcut from 'earcut';
 import {sampleHeight,prepareElevationTiles,createTerrainField,createElevationSampler} from './elevation.js';
@@ -284,7 +285,7 @@ function buildPureRelief(data,options,progress,preview){
   const {size=160,exaggeration=1.5,resolution=56}=options;
   const {width,height,scale,unproject}=makeProjection(data.meta.bbox,size,options);
   if(![width,height,exaggeration].every(Number.isFinite)||Math.min(width,height)<=0||Math.max(width,height)>450||exaggeration<1||exaggeration>5||
-      !Number.isInteger(resolution)||resolution<2||resolution>432||1000/scale<9999.9||1000/scale>100001)
+      !Number.isInteger(resolution)||resolution<2||resolution>PURE_RELIEF_RESOLUTIONS[56]||1000/scale<9999.9||1000/scale>100001)
     throw Error('El mode Relleu pur admet escales d’1:10.000 a 1:100.000.');
   preview?.stage('terrain','Revisant les mostres d’altitud…');
   const prepared=prepareElevationTiles(data.dem),sample=createElevationSampler(prepared.tiles);
@@ -299,21 +300,25 @@ function buildPureRelief(data,options,progress,preview){
   }
   const diagonals=reliefDiagonals(heights,resolution,(col,row)=>heightAt(col+.5,row+.5));
   for(let i=0;i<heights.length;i++)heights[i]=5+(heights[i]-originMeters)*scale*exaggeration;
-  const cells=[0,0],labels=new Uint8Array(resolution**2);
-  progress('Projectant la cobertura de sòl nu i neu o gel…');
-  if(data.coverage?.length)for(let row=0;row<resolution;row++)for(let col=0;col<resolution;col++){
-    const [lon,lat]=unproject([(col+.5)*width/resolution,(row+.5)*height/resolution]);
-    for(const {bbox:[w,s,e,n],width,height,values}of data.coverage){
-      if(lon<w||lon>=e||lat<=s||lat>n)continue;
-      const value=values[Math.floor((n-lat)/(n-s)*height)*width+Math.floor((lon-w)/(e-w)*width)];
-      const category=value===60?1:value===70?2:0;
-      labels[row*resolution+col]=category;
-      if(category)cells[category-1]++;
-      break;
+  const cells=[0,0],coverage=data.coverage||[];
+  const scores=coverage.length?new Float32Array(heights.length*3):null;
+  progress('Traçant els contorns de sòl nu i neu o gel…');
+  if(scores){
+    const stride=resolution+1;
+    for(let row=0;row<=resolution;row++)for(let col=0;col<=resolution;col++){
+      const [lon,lat]=unproject([col*width/resolution,row*height/resolution]);
+      sampleCoverage(coverage,lon,lat,scores,(row*stride+col)*3);
+    }
+    const centre=new Float32Array(3);
+    for(let row=0;row<resolution;row++)for(let col=0;col<resolution;col++){
+      const [lon,lat]=unproject([(col+.5)*width/resolution,(row+.5)*height/resolution]);
+      centre.fill(0);sampleCoverage(coverage,lon,lat,centre,0);
+      if(centre[1]>centre[0]&&centre[1]>centre[2])cells[0]++;
+      else if(centre[2]>centre[0])cells[1]++;
     }
   }
   progress('Construint el sòlid del relleu…');
-  const reliefGrid={resolution,width,height,heights,diagonals,labels};
+  const reliefGrid={resolution,width,height,heights,diagonals,scores};
   const categories=reliefParts(reliefGrid);
   preview?.parts('terrain',categories,{width,height});
   const verticalReference={originMeters,minimumSurfaceMM:5,seaLevelMM:null,method:'lowest generated-terrain sample at 5 mm'};

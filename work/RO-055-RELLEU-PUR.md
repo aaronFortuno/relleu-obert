@@ -14,6 +14,19 @@ El retall inclòs s’ha derivat d’ESA WorldCover 2021 v200 (Zanaga et al., 20
 
 Retalls centrats a 42,635° N i 0,650° E, escala 1:100.000 i exageració ×1,5. Amb detall Alt, la malla té 432 × 432 cel·les. Cada cel·la pren una mostra central per triar la diagonal que s’hi ajusta millor. El visor calcula normals contínues sobre la superfície indexada. L’exportació en peces conserva les cotes i la triangulació als talls, que es reconstrueixen sobre línies de la mateixa malla.
 
+### Contorns de la v0.19.18
+
+El retall WorldCover distribuït passa de 512 a 2.048 píxels per costat, amb un pas d’uns 28 × 30 m. La coberta es representa traçant el límit entre les classes interpolades dins de cada triangle. Els contorns conserven el caràcter històric de la font i la seva precisió final també depèn del pas de malla i de la mida d’impressió.
+
+| Retall | Pas Equilibrat (384) | Pas Alt (540) | Temps Alt |
+| --- | --- | --- | --- |
+| 20 × 20 km | 52 m | 37 m | 3,19 s |
+| 40 × 40 km | 104 m | 74 m | 3,85 s |
+
+Els dos models Alt i els quatre fragments del de 40 km han superat l’auditoria de malla. Els temps exclouen l’auditoria i l’exportació.
+
+### Referència de la v0.19.17
+
 | Retall | Tessel·les Mapterhorn | Pas a v0.19.16 | Pas a v0.19.17 | Temps local | Exportació |
 | --- | --- | --- | --- | --- | --- |
 | 20 × 20 km | 42, zoom 13 | 208 m | 46 m | 2,92 s | Un 3MF de 20 × 20 cm |

@@ -34,14 +34,17 @@ test('pure relief fetches only elevations outside the pilot coverage',async()=>{
   }finally{globalThis.fetch=previous;}
 });
 
-test('relief diagonals follow the measured centre and checkerboard materials stay closed',()=>{
+test('relief diagonals follow the measured centre and interpolated materials close across cuts',()=>{
   assert.equal(reliefDiagonals([0,10,10,0],1,()=>9)[0],1);
   assert.equal(reliefDiagonals([0,10,10,0],1,()=>1)[0],0);
   const reliefGrid={resolution:2,width:400,height:400,
     heights:new Float64Array([6,7,8,8,9,10,9,11,12]),
-    diagonals:new Uint8Array([1,0,0,1]),labels:new Uint8Array([1,2,2,1])};
+    diagonals:new Uint8Array([1,0,0,1]),
+    scores:Float32Array.from([1,0,2,1,2,0,2,0,1].flatMap(kind=>[0,1,2].map(i=>+(i===kind)+i*.0001)))};
   const parts=reliefParts(reliefGrid);
   for(const part of parts)assert.deepEqual(auditPart(part).errors,[]);
+  const snow=parts.find(part=>part.id==='snow');
+  assert(snow.vertices.some((v,i)=>i%3<2&&v%200!==0),'colour boundaries must cross the inside of cells');
   const tiles=splitPureRelief({reliefGrid,width:400,height:400,provenance:{}},200,()=>{});
   assert.equal(tiles.length,4);
   for(const tile of tiles)for(const part of tile.parts)assert.deepEqual(auditPart(part).errors,[]);

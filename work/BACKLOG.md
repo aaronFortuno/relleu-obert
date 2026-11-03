@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-03 · v0.19.17**. Malla de Relleu pur més fina i exportació en peces des de la mateixa graella. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
+Actualitzat: **2026-11-03 · v0.19.18**. Contorns de neu i roca interpolats i malla de Relleu pur més fina. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
 
 ## Ordre de treball
 
@@ -465,5 +465,7 @@ La preparació de mida i territori precedeix les quatre capes. En separar el mot
 **P2, pilot implementat a v0.19.16.** Escales d’1:10.000 a 1:100.000, càrrega d’elevacions separada i colors de sòl nu i neu o gel segons ESA WorldCover 2021 al retall de l’Aneto.
 
 **v0.19.17.** Detall alt de 432 cel·les per costat i més resolució a les dades d’elevació. Les peces comparteixen la malla dels talls. Pendent de validar en un laminador i en altres serralades. [Mesures i fonts](RO-055-RELLEU-PUR.md).
+
+**v0.19.18.** Cobertura cartogràfica de l’Aneto a uns 30 m per píxel, contorns de materials interpolats i malla més fina en detall Equilibrat i Alt. Pendent de validació d’usuari abans d’abordar la vegetació.
 
 **Vegetació pendent.** Representar boscos cartografiats i provar formes arrodonides proporcionades a l’escala de la maqueta. A escales on els arbres individuals quedin per sota de la resolució d’impressió, estudiar una representació contínua del bosc.

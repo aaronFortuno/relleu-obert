@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.19.18 — 2026-11-03
+
+- Relleu pur amb contorns de materials interpolats i cobertura de l’Aneto a uns 30 m per píxel.
+- Malla de 384 cel·les per costat amb detall Equilibrat i de 540 amb detall Alt.
+
 ## v0.19.17 — 2026-11-03
 
 - Relleu pur amb fins a 432 cel·les per costat, dades d’elevació més fines i diagonals triades a partir d’una mostra central de cada cel·la.

@@ -1,7 +1,8 @@
+import {coverageSkins,RELIEF_SKIN_DEPTH} from './relief-contours.js';
 import {RELIEF_MATERIALS} from './materials.js';
 import {tilePlan} from './selection.js';
 
-export const PURE_RELIEF_RESOLUTIONS={24:192,36:288,56:432};
+export const PURE_RELIEF_RESOLUTIONS={24:240,36:384,56:540};
 
 // The two possible diagonals interpolate different heights at the centre.
 // Choose the one closest to the actual elevation sample.
@@ -16,24 +17,16 @@ export function reliefDiagonals(heights,n,midpoint){
   return diagonals;
 }
 
-const skinDepth=.65;
 const directions=[[0,-1],[1,0],[0,1],[-1,0]];
 const corners=[[0,0],[1,0],[1,1],[0,1]];
 
-function reliefSolid(grid,bounds,kind,layered){
-  const {resolution:n,heights,diagonals,labels,width,height}=grid;
+function reliefBase(grid,bounds,layered){
+  const {resolution:n,heights,diagonals,width,height}=grid;
   const {left,bottom,right,top}=bounds,cols=right-left,rows=top-bottom,stride=cols+1;
-  const base=kind===null;
-  const selected=(x,y)=>x>=left&&x<right&&y>=bottom&&y<top&&(base||labels[y*n+x]===kind);
-  let cells=0,edges=0;
-  for(let y=bottom;y<top;y++)for(let x=left;x<right;x++)if(selected(x,y)){
-    cells++;
-    for(const [dx,dy] of directions)if(!selected(x+dx,y+dy))edges++;
-  }
-  if(!cells)return null;
-  const capacity=stride*(rows+1),slots=new Uint32Array(capacity*(base?1:2));
-  const vertices=new Float32Array((base?capacity+edges+1:Math.min(4*cells,capacity*2)*2)*3);
-  const faces=new Uint32Array((cells*(base?2:4)+edges*(base?3:2))*3);
+  const capacity=stride*(rows+1),edges=2*(cols+rows);
+  const vertices=new Float32Array((capacity+edges+1)*3);
+  const faces=new Uint32Array((2*cols*rows+3*edges)*3);
+  const slots=new Uint32Array(capacity),floor=new Uint32Array(capacity);
   let nv=0,nf=0;
   const vertex=(x,y,z)=>{
     const i=nv++*3;
@@ -43,20 +36,10 @@ function reliefSolid(grid,bounds,kind,layered){
     return i/3;
   };
   const triangle=(a,b,c)=>{faces[nf++]=a;faces[nf++]=b;faces[nf++]=c;};
-  const floor=base?new Uint32Array(capacity):null;
-  const centre=base?vertex((left+right)/2,(bottom+top)/2,0):null;
-  function topIndex(x,y,corner){
-    let slot=(y-bottom)*stride+x-left;
-    // Opposite cells can touch at a point. Keep their vertical edges separate.
-    if(!base&&corner>=2){
-      const a=selected(x-1,y-1),b=selected(x,y-1),c=selected(x,y),d=selected(x-1,y);
-      if(a&&c&&!b&&!d||b&&d&&!a&&!c)slot+=capacity;
-    }
-    if(!slots[slot]){
-      const z=heights[y*(n+1)+x]-(base&&layered?skinDepth:0);
-      slots[slot]=vertex(x,y,z)+1;
-      if(!base)vertex(x,y,z-skinDepth);
-    }
+  const centre=vertex((left+right)/2,(bottom+top)/2,0);
+  function topIndex(x,y){
+    const slot=(y-bottom)*stride+x-left;
+    if(!slots[slot])slots[slot]=vertex(x,y,heights[y*(n+1)+x]-(layered?RELIEF_SKIN_DEPTH:0))+1;
     return slots[slot]-1;
   }
   function floorIndex(x,y){
@@ -64,27 +47,22 @@ function reliefSolid(grid,bounds,kind,layered){
     if(!floor[slot])floor[slot]=vertex(x,y,0)+1;
     return floor[slot]-1;
   }
-  for(let y=bottom;y<top;y++)for(let x=left;x<right;x++)if(selected(x,y)){
-    const ids=corners.map(([dx,dy],corner)=>topIndex(x+dx,y+dy,corner));
+  for(let y=bottom;y<top;y++)for(let x=left;x<right;x++){
+    const ids=corners.map(([dx,dy])=>topIndex(x+dx,y+dy));
     const [a,b,c,d]=ids;
-    if(diagonals[y*n+x]){
-      triangle(a,b,d);triangle(b,c,d);
-      if(!base){triangle(d+1,b+1,a+1);triangle(d+1,c+1,b+1);}
-    }else{
-      triangle(a,b,c);triangle(a,c,d);
-      if(!base){triangle(c+1,b+1,a+1);triangle(d+1,c+1,a+1);}
-    }
+    if(diagonals[y*n+x]){triangle(a,b,d);triangle(b,c,d);}
+    else{triangle(a,b,c);triangle(a,c,d);}
+    if(x>left&&x+1<right&&y>bottom&&y+1<top)continue;
     for(let side=0;side<4;side++){
-      const [dx,dy]=directions[side];
-      if(selected(x+dx,y+dy))continue;
+      const [dx,dy]=directions[side],nx=x+dx,ny=y+dy;
+      if(nx>=left&&nx<right&&ny>=bottom&&ny<top)continue;
       const next=(side+1)%4,p=ids[side],q=ids[next];
-      const pb=base?floorIndex(x+corners[side][0],y+corners[side][1]):p+1;
-      const qb=base?floorIndex(x+corners[next][0],y+corners[next][1]):q+1;
-      triangle(p,pb,qb);triangle(p,qb,q);
-      if(base)triangle(centre,qb,pb);
+      const pb=floorIndex(x+corners[side][0],y+corners[side][1]);
+      const qb=floorIndex(x+corners[next][0],y+corners[next][1]);
+      triangle(p,pb,qb);triangle(p,qb,q);triangle(centre,qb,pb);
     }
   }
-  return {vertices:vertices.slice(0,nv*3),faces};
+  return {vertices,faces};
 }
 
 function combine(a,b){
@@ -98,18 +76,11 @@ function combine(a,b){
 }
 
 export function reliefParts(grid,bounds={left:0,bottom:0,right:grid.resolution,top:grid.resolution}){
-  const {labels,resolution:n}=grid,{left,bottom,right,top}=bounds;
-  let layered=false;
-  for(let y=bottom;y<top&&!layered;y++)for(let x=left;x<right;x++)if(labels[y*n+x]){
-    layered=true;break;
-  }
-  const base=reliefSolid(grid,bounds,null,layered);
-  const terrain=layered?combine(base,reliefSolid(grid,bounds,0,true)):base;
+  const skins=grid.scores?coverageSkins(grid,bounds):[],layered=!!(skins[1]||skins[2]);
+  const base=reliefBase(grid,bounds,layered);
+  const terrain=layered?combine(base,skins[0]):base;
   const parts=[{...RELIEF_MATERIALS[0],...terrain}];
-  if(layered)for(let kind=1;kind<=2;kind++){
-    const solid=reliefSolid(grid,bounds,kind,true);
-    if(solid)parts.push({...RELIEF_MATERIALS[kind],...solid});
-  }
+  if(layered)for(let kind=1;kind<=2;kind++)if(skins[kind])parts.push({...RELIEF_MATERIALS[kind],...skins[kind]});
   return parts;
 }
 
