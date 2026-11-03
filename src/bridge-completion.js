@@ -80,13 +80,15 @@ function approachNormals(samples){
 
 // Geometry is an explicitly estimated PRINT adaptation. The surveyed deck
 // surface is unchanged; connections follow mapped roads, with C1 Hermite Z.
-export function planApproaches({axis,points,faces,containsDeck,roads,ground,roadRise=0,widthMM,heightMM,roadWidth=.44,scale=.1,destinationSurface=null,destinationBreaks=null,forceConnections=false}){
+export function planApproaches({axis,points,faces,containsDeck,roads,ground,roadRise=0,widthMM,heightMM,roadWidth=.44,scale=.1,destinationSurface=null,destinationBreaks=null,forceConnections=false,terminalRoads=null,maxGrade=null}){
   const top=topSampler(points,faces),plans=[],missed=[],maxLength=Math.max(40,400*scale);
   for(const reverse of [false,true]){
+    const terminalRoad=terminalRoads?.[Number(reverse)];
+    if(terminalRoads&&!terminalRoad)continue;
     const path=reverse?axis.slice().reverse():axis,dir=unit(path[1],path[0]);
     let inside=null;for(const {p}of resample(path,.05,Math.max(widthMM,heightMM)*2))if(containsDeck(p)){inside=p;break;}
     if(!inside){missed.push('no interior');continue;}
-    const continuationPath=continuation(path[0],dir,roads,axis.roadClass,maxLength,axis.identity);if(continuationPath.length<2){missed.push('no compatible mapped road');continue;}
+    const continuationPath=continuation(path[0],dir,terminalRoad?[terminalRoad]:roads,axis.roadClass,maxLength,axis.identity);if(continuationPath.length<2){missed.push('no compatible mapped road');continue;}
     // Move from the mapped endpoint into the measured deck until a full width
     // transverse section exists, then overlap it by a small distance.
     let start=null,width=0,startZ=0;
@@ -105,7 +107,8 @@ export function planApproaches({axis,points,faces,containsDeck,roads,ground,road
       }
     }
     if(!start||startZ==null||start[0]<0||start[1]<0||start[0]>widthMM||start[1]>heightMM){missed.push('outside or no cap');continue;}
-    const inward=[start[0]-dir[0]*Math.max(width,1),start[1]-dir[1]*Math.max(width,1)],innerZ=top(...inward),grade=innerZ==null?0:(startZ-innerZ)/dist(start,inward);
+    const tangentStep=terminalRoad ? .05 : Math.max(width,1);
+    const inward=[start[0]-dir[0]*tangentStep,start[1]-dir[1]*tangentStep],innerZ=top(...inward),grade=innerZ==null?0:(startZ-innerZ)/dist(start,inward);
     // Keep the mapped endpoint: dropping it shortcuts the first bend of a join.
     const route=[start,...continuationPath],samples=[];
     let clippedByCrop=false;
@@ -118,10 +121,38 @@ export function planApproaches({axis,points,faces,containsDeck,roads,ground,road
     const landing=(sample,x=sample.p[0],y=sample.p[1])=>destinationSurface?destinationSurface(x,y,lineAt(sample)):ground(x,y);
     const firstExternal=samples.find(s=>s.segment>0)||samples[0];
     if(!forceConnections&&startZ<=landing(firstExternal)+roadRise+.03&&Math.abs(width-roadWidth)<.05)continue;
-    const gap=Math.abs(startZ-landing(firstExternal)-roadRise),minimum=Math.max(width*2,2,gap/.12);let end=-1;
-    for(let i=1;i<samples.length;i++){const sample=samples[i],{s}=sample,delta=landing(sample)+roadRise-(startZ+grade*s);if(s>=Math.max(width*2,2)&&(delta>=0||s>=minimum&&Math.abs(delta)/s<.15)){end=i;break;}}
+    const gap=Math.abs(startZ-landing(firstExternal)-roadRise),minimum=Math.max(width*2,2,gap/.12);let end=-1,targetGrade=null;
+    for(let i=1;i<samples.length;i++){
+      const sample=samples[i],{s}=sample,delta=landing(sample)+roadRise-(startZ+grade*s);
+      if(s<Math.max(width*2,2)||terminalRoad&&i===samples.length-1)continue;
+      if(maxGrade!=null){
+        if(i===samples.length-1||sample.segment!==samples[i+1].segment)continue;
+        const secant=(landing(sample)+roadRise-startZ)/s;
+        const ahead=mix(sample.p,samples[i+1].p,.05);
+        const endGrade=(landing(sample,...ahead)-landing(sample))/dist(sample.p,ahead);
+        // The derivative of the cubic is quadratic. Check its interior
+        // extremum as well as both tangents before using this landing.
+        const a=3*(grade+endGrade-2*secant),b=2*(3*secant-2*grade-endGrade);
+        const t=a===0?0:-b/(2*a),peak=t>0&&t<1?(a*t+b)*t+grade:0;
+        if(Math.max(Math.abs(grade),Math.abs(endGrade),Math.abs(peak))>maxGrade+1e-6)continue;
+        // The surface strip still runs underneath the approach. Avoid
+        // burying the ramp in it or creating a long unsupported extension.
+        let unsupported=0,clear=true;
+        for(let j=1;j<i;j++){
+          const distance=samples[j].s,u=distance/s;
+          const height=startZ+distance*(grade+u*(b/2+u*a/3));
+          const clearance=height-(landing(samples[j])+roadRise);
+          if(clearance>.6+roadRise)unsupported+=distance-samples[j-1].s;
+          else unsupported=0;
+          if(clearance<-.02||unsupported>10){clear=false;break;}
+        }
+        if(!clear)continue;
+        targetGrade=endGrade;
+      }else if(delta<0&&(s<minimum||Math.abs(delta)/s>=.15))continue;
+      end=i;break;
+    }
     if(end<0){const last=samples.at(-1);missed.push({reason:'no gentle join',clippedByCrop,gap,grade,minimum,available:last?.s??0,finalDelta:last?landing(last)+roadRise-(startZ+grade*last.s):null});continue;}
-    const selected=samples.slice(0,end+1),last=selected.at(-1),before=selected.at(-2),length=last.s,endZ=landing(last)+roadRise,endGrade=(landing(last)-landing(before))/(last.s-before.s);
+    const selected=samples.slice(0,end+1),last=selected.at(-1),before=selected.at(-2),length=last.s,endZ=landing(last)+roadRise,endGrade=targetGrade??(landing(last)-landing(before))/(last.s-before.s);
     const terminal=continuationPath.segments?.[last.segment-1],endWidth=terminal?.line.width??roadWidth;
     const startDirection=unit(selected[0].p,selected[1].p),endDirection=unit(before.p,last.p);
     const fractions=crossSectionFractions({centre:start,normal:[-startDirection[1],startDirection[0]],widthMM:width},{points,faces});

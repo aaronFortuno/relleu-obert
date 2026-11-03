@@ -1,10 +1,10 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-03 · v0.19.8**. RO-051 incorpora perfils suaus experimentals per a carreteres principals i ferrocarrils. RO-052 conserva les seccions de terminació en la precisió de la malla. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
+Actualitzat: **2026-11-03 · v0.19.9**. RO-051 i RO-052 enllacen els perfils suaus amb la via sobre el terreny i incorporen un segon control ferroviari real. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
 
 ## Ordre de treball
 
-**RO-052 — límit del retall identificat.** Al quadrat real hi ha dos enllaços amb poc recorregut al cantell nord. El missatge de v0.19.2 recomana ampliar o desplaçar la selecció i conserva el desnivell real del tauler. Validació local en la mostra inicial; 380 proves ordinàries. Queden laminat, retalls externs i contrast general.
+**RO-052 — terminacions dels perfils experimentals.** Les unions amb la via sobre el terreny comparteixen cota i tangent. Es mantenen oberts els dos extrems dels taulers mesurats de Rajadell, el contrast en altres territoris i el laminat.
 
 **RO-053 — primera integració en producció.** Ordre validat per l'usuari: Peça → Territori → Terreny → Vegetació → Vies → Edificis. Botons compactes al títol actiu, navegació lliure i traços conservats durant la sessió. [Disseny, invalidacions i pas següent](RO-053-UX.md). La UI ja segueix el flux; terreny i vies encara comparteixen càlcul. Una sola cua pesada alhora.
 
@@ -23,8 +23,8 @@ Actualitzat: **2026-11-03 · v0.19.8**. RO-051 incorpora perfils suaus experimen
 | [RO-053](#ro-053--flux-de-treball-per-etapes) | P1 | Sis apartats i conservació de traços integrats | Revisar accions al títol; separar terreny i transport |
 | [RO-033](#ro-033--ponts-i-viaductes) | P1 | Controls de Rajadell corregits; generalització/Millau pendents | Reproduir omissions i angles a Millau segons zoom/retall; contrastar altres ponts |
 | [RO-034](#ro-034--túnels-imprimibles) | P1 | Corregit en controls locals; pendent d'usuari/laminat | Revisar portals amb mode experimental activat |
-| [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | 3 km un 70% més ràpid; 344 proves/build correctes | Component nul a 1,5 km/detall 12; IDs multipart; usuari/laminat |
-| [RO-052](#ro-052--continuïtat-i-amplada-del-traçat-viari) | P1 | Dos extrems limitats pel retall, avís verificat | Contrastar retalls i revisar al laminador |
+| [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | Perfil ferroviari d’1,22% verificat en un segon retall | Contrastar suports i laminat en altres escales |
+| [RO-052](#ro-052--continuïtat-i-amplada-del-traçat-viari) | P1 | Unions de perfils experimentals verificades; dos extrems de pont oberts | Contrastar extrems i revisar al laminador |
 | [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió) | P1 | Artefactes de materials pendents de diagnòstic | Distingir malla/exportació de configuració del laminador |
 | [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts)     | P1        | Fonts en estudi                                                                                                                                                                                                                                                                                                                       | Comparació de parts i petjades en segona zona           |
 | [RO-032](#ro-032--cobertes-i-volums-singulars) | P1 | Nucli verificat; servei remot pendent de validar | Consulta real reeixida i dades de coberta de Tamariu |
@@ -346,6 +346,8 @@ Primer prototip local: perfil longitudinal regularitzat amb tall/terraplè acota
 **Criteris:** perfil menys ondulat, continuïtat amb ponts/túnels i extrems, malles tancades, absència de col·lisions amb vies/edificis carregats, escala i retall coherents, avisos quan no hi ha una solució segura, mateixa geometria en preview i fitxer, laminat pendent d'usuari. La simplificació no és un aixecament real de la carretera.
 
 ### RO-052 — Continuïtat i amplada del traçat viari
+
+**v0.19.9.** Transicions calculades dins del traçat cartografiat, amb la cota de la malla al punt d’unió. Es conserva la via sobre el terreny quan no hi ha una unió admissible. [Control ferroviari, regressió i límits](RO-052-CONTINUITAT.md).
 
 **v0.19.2:** el retall quadrat talla les dues continuacions al nord abans que hi càpiga la transició. `ifc-132561` arriba al cantell; `ifc-114729` acaba 0,579 mm abans i conserva un graó. L'avís recomana ampliar o desplaçar el retall. No s'han afegit rampes abruptes ni modificat les cotes mesurades.
 

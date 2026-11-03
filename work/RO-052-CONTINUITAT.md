@@ -1,5 +1,27 @@
 # RO-052 — Continuïtat i amplada de la calçada
 
+**v0.19.9 · terminacions dels perfils experimentals.** Cada extrem interior reserva
+espai a la mateixa via cartografiada. El tram de transició pren la cota
+i el pendent del perfil i els de la via sobre el relleu als dos punts
+d'unió. El motor descarta el perfil local si no troba una unió admissible.
+Els perfils que surten de la maqueta continuen fins al cantell. Una
+regressió comprova les dues unions de la via a la malla final.
+
+**Segon retall ferroviari.** Centre `41.724, 1.788`, 400 × 400 m, peça
+150 × 150 mm, detall 12, edificis OSM, túnels i arbres desactivats. Amb
+les tessel·les locals, el perfil es va aplicar i les cinc malles van
+superar l'auditoria. Mesura en 36 intervals de la superfície ferroviària,
+descomptada l'exageració vertical: **1,220–1,223%**. El retall de 600 m
+centrat a `41.7242, 1.791` va recuperar la via sobre el terreny per falta
+de suports segurs en el control ferroviari aïllat.
+
+**Rajadell, detall 12.** Retall inicial d'1,5 km, peça de 150 mm,
+edificis ICGC i túnels activats. Tres perfils viaris es mantenen sobre
+el terreny perquè no hi cap la transició prevista. El perfil ferroviari
+s'omet per un creuament amb un túnel sense cota acreditada. Les sis
+malles superen l'auditoria. Queden pendents els extrems dels ponts
+mesurats, el contrast a més resolucions i el laminat.
+
 **v0.19.2 · diagnòstic dels dos extrems de Rajadell.** Tots dos recorreguts
 compatibles surten pel cantell nord abans que hi càpiga l'enllaç suau.
 El tauler `ifc-132561` arriba al cantell; `ifc-114729` acaba 0,579 mm

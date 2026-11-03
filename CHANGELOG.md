@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.19.9 — 2026-11-03
+
+- RO-051 / RO-052: els perfils suaus reserven tram cartografiat als extrems interiors i l’enllacen amb la superfície de la via. Si no hi cap una transició amb pendent i recolzament admissibles, aquell perfil es manté sobre el terreny.
+- Pendent ferroviari comprovat a la malla d’un segon retall real de 400 m, a l’est de la mostra. Resultats i límits al [seguiment de continuïtat](work/RO-052-CONTINUITAT.md).
+
 ## v0.19.8 — 2026-11-03
 
 - «Projecte nou» ara és un botó sobre Territori. El tirador del mapa és un cercle i el compàs recupera el nord.

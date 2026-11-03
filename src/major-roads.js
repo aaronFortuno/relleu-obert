@@ -141,6 +141,29 @@ function axisCrossings(axis,otherLines){
   return points;
 }
 
+// Retain the ordinary surface on the mapped ends so the ramps can land
+// before a junction. A profile leaving the crop needs no such landing.
+export function reserveProfileEnds(item,projection){
+  const path=item.axisXYZ.map(projection.project),{stations}=item,last=stations.length-1;
+  const ends=[null,null],limits=[0,last];
+  for(const end of [0,1]){
+    const edge=end?last:0,[x,y]=path[edge];
+    if(x<0||y<0||x>projection.width||y>projection.height)continue;
+    const reserve=Math.min(item.lengthMetres/3,Math.max(60,12/projection.scale,item.endpointLiftMetres[end]/item.maxGrade*2));
+    let index=edge;
+    while(Math.abs(stations[index]-stations[edge])<reserve&&index!==(end?0:last))index+=end?-1:1;
+    limits[end]=index;
+    ends[end]=end?path.slice(index):path.slice(0,index+1).reverse();
+  }
+  const [first,final]=limits;
+  if(final<=first)return null;
+  if(!ends.some(Boolean))return {...item,terminalRoutes:ends};
+  const coordinates=item.coordinates.slice(2*first,2*final+2),faces=[];
+  for(let i=0;i<coordinates.length-2;i+=2)faces.push(i,i+1,i+3,i,i+3,i+2);
+  const left=coordinates.filter((_,i)=>i%2),right=coordinates.filter((_,i)=>i%2===0).reverse();
+  return {...item,coordinates,faces,outlines:[[...left,...right,left[0]]],axis:item.axisXYZ.slice(first,final+1),terminalRoutes:ends};
+}
+
 /**
  * generateMajorRoadItems(features,elevationAt,{projection,bbox?,...})
  * -> {items,metadata,warnings}. No mutation or ground sampler is returned.
