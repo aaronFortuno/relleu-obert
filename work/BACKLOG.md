@@ -1,22 +1,17 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-03 · v0.19.25**. Capçades còniques més altes i retall conjunt dels Rasos i la Gallina Pelada. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
+Actualitzat: **2026-11-03 · v0.20.0**. Galeria local i ordre de treball per blocs. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
 
 ## Ordre de treball
 
-**RO-052 — terminacions dels perfils experimentals.** Les unions amb la via sobre el terreny comparteixen cota i tangent. Es mantenen oberts els dos extrems dels taulers mesurats de Rajadell, el contrast en altres territoris i el laminat.
+| Lot | Línies | Resultat que permet avançar |
+| --- | --- | --- |
+| **0.20 · Projectes locals** | RO-054 | Desar i recuperar retall, ajustos, materials i traços en el mateix navegador. Provar un projecte girat i els dos modes. La còpia de la malla exacta és una fase posterior. |
+| **0.21 · Exportació comprovable** | RO-024, RO-033, RO-034, RO-050, RO-052, RO-055 | Auditar els 3MF amb controls petits i identificar el primer defecte reproduïble. Les comprovacions de Bambu Studio i d’impressió es registren a banda. |
+| **0.22 · Vies i rendiment** | RO-051, RO-052, RO-053 | Comparar els accessos de Millau i Rajadell i un segon retall. Mesurar cada canvi amb el mateix retall, escala i ajustos. |
+| **Després** | RO-023, RO-026, RO-032 | Comparar les fonts d’elevació i edificis en dues zones, amb proves d’accés i cobertura abans de fer canvis al model. |
 
-**RO-053 — primera integració en producció.** Ordre validat per l'usuari: Peça → Territori → Terreny → Vegetació → Vies → Edificis. Botons compactes al títol actiu, navegació lliure i traços conservats durant la sessió. [Disseny, invalidacions i pas següent](RO-053-UX.md). El visor rep capes parcials i recomptes de feina. El substrat i les vies encara comparteixen part de la preparació. Una sola cua pesada alhora.
-
-**Retocs de RO-053, v0.19.13.** Les guies de tall segueixen la superfície i es pot descarregar la maqueta calculada amb canvis pendents al mapa. [Detall](#ro-053--flux-de-treball-per-etapes).
-
-1. **RO-053 / RO-051 — Rendiment del terreny i dels suports.** Sant Llorenç ha passat de 132,69 a 23,74 s fins al primer relleu en els controls Node. A Millau, els suports han passat de 31,58 a 22,96 s i continuen dominant el temps. [Temps de generació](RO-053-TEMPS.md).
-2. **RO-051 / RO-052 — Perfils i amplada de les vies.** Reproduir els bonys dels accessos de Millau i comparar la llegibilitat de diferents classes de via en una peça local i un retall ampli. Revisar amplades i mínims imprimibles conjuntament.
-3. **RO-055 — Relleu pur.** Validar al laminador les capçades a escala i el material de bosc a Rajadell i a l’Aneto.
-4. **RO-054 — Galeria local.** Desar i recuperar configuracions en un mateix navegador. Valorar després una còpia del model acabat quan calgui recuperar exactament la mateixa geometria.
-5. **RO-032 — Cobertes i singulars.** Mesurar la cobertura real de formes de coberta en un retall abans d’ampliar el modelatge. Verificar els volums singulars amb fonts i llicències concretes.
-
-Continuen oberts el laminat dels controls de ponts, túnels i ferrocarrils (RO-033/034/050/052) i el diagnòstic de materials (RO-024).
+Els encàrrecs independents avancen en paral·lel. Cada bloc validat té el seu commit i es manté una sola prova pesada alhora. Els casos que requereixen inspecció al laminador poden quedar pendents mentre avancen altres línies.
 
 **Seguiment:** 19 línies obertes, 6 ajornades i 30 arxivades. «Implementat» vol dir disponible; la validació local, la d’usuari, el laminat i la impressió es registren per separat.
 
@@ -34,7 +29,7 @@ Continuen oberts el laminat dels controls de ponts, túnels i ferrocarrils (RO-0
 | [RO-032](#ro-032--cobertes-i-volums-singulars) | P1 | Nucli verificat; servei remot pendent de validar | Consulta real reeixida i dades de coberta de Tamariu |
 | [RO-023](#ro-023--relleu-local-i-fonts-vectorials-de-més-precisió) | P2        | Fonts remotes pendents                                                                                                                                                                                                                                                                                                                | MDT més precís accessible al navegador                  |
 | [RO-055](#ro-055--mode-de-relleu-pur) | P2 | Pilot implementat | Malla amb hidrografia i boscos; pendent de laminat |
-| [RO-054](#ro-054--galeria-local-de-projectes) | P2 | Proposat | Desar i recuperar una configuració en el mateix navegador |
+| [RO-054](#ro-054--galeria-local-de-projectes) | P2 | Integrat a v0.20.0 | Validar la recuperació en l’ús habitual |
 
 ## Validació i retocs acotats
 
@@ -456,7 +451,7 @@ La preparació de mida i territori precedeix les quatre capes. En separar el mot
 
 ### RO-054 — Galeria local de projectes
 
-**P2, proposat.** Desar amb un nom el retall, les coordenades, l’orientació, la mida, l’escala, les capes, les opcions i els traços necessaris per regenerar una maqueta. Recuperació al mateix navegador i emmagatzematge local.
+**P2, integrat a v0.20.0.** Desar amb un nom el retall, les coordenades, l’orientació, la mida, l’escala, les capes, les opcions i els traços necessaris per regenerar una maqueta. Recuperació al mateix navegador i emmagatzematge local.
 
 **Primer control.** Desar dues configuracions, recarregar l’aplicació i recuperar-ne una amb les mateixes opcions. La regeneració pot donar un resultat diferent quan canvien les fonts. Valorar en una segona etapa si convé conservar també el model acabat, amb límit d’espai i eliminació per projecte, per recuperar-ne exactament la geometria.
 

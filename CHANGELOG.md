@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.20.0 — 2026-11-03
+
+- Galeria local de projectes amb retall, orientació, mida, capes, materials i traços. Els ajustos es poden recuperar per regenerar una maqueta.
+
 ## v0.19.25 — 2026-11-03
 
 - Fins a un 50 % més d’alçada visible a les capçades còniques.
