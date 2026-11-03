@@ -12,6 +12,17 @@ test('every varied crown embeds in the same triangular terrain used by the model
   }
 });
 const bbox=[0,0,.01,.01],forest={type:'Feature',properties:{sourceLayer:'landcover',class:'wood'},geometry:{type:'Polygon',coordinates:[[[0,0],[.01,0],[.01,.01],[0,.01],[0,0]]]}},data={meta:{bbox},features:[forest],dem:[{z:0,x:0,y:0,size:2,elev:new Float32Array(4).fill(0)}]};
+test('full-model automatic crowns taper in high terrain and respect an explicit round choice',()=>{
+  const high={...data,dem:[{...data.dem[0],elev:new Float32Array(4).fill(2200)}]};
+  const options={size:50,resolution:2,density:.5};
+  const automatic=buildModel(high,options),round=buildModel(high,{...options,treeType:'round'});
+  assert.equal(automatic.provenance.treeRepresentation.crownTaper,1);
+  assert.equal(round.provenance.treeRepresentation.crownTaper,0);
+  assert.equal(automatic.treeCount,round.treeCount);
+  assert(automatic.treeCount>0);
+  const placement=automatic.context.placements[0];
+  assert.notDeepEqual(treeMesh(placement).vertices,treeMesh({...placement,crownTaper:0}).vertices);
+});
 test('higher density adds trees, the result is reproducible, and crown heights vary',()=>{
   const options={size:50,resolution:2,density:3},sparse=buildModel(data,{...options,density:.5}),dense=buildModel(data,options),repeat=buildModel(data,options);
   assert(dense.treeCount>sparse.treeCount*3);assert.equal(dense.treeCount,repeat.treeCount);

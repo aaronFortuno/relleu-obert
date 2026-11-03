@@ -13,13 +13,16 @@ import {tileArchive} from '../src/mesh-tiles.js';
 import {PURE_RELIEF_RESOLUTIONS,splitPureRelief} from '../src/pure-relief-mesh.js';
 
 const name=process.argv[2];
-if(!['tamariu','millau','rajadell-pure','aneto-forest','aneto-lakes','aneto-lakes-pure','aneto20','aneto40'].includes(name))
-  throw Error('Ús: node --max-old-space-size=512 scripts/measure-processing.mjs tamariu|millau|rajadell-pure|aneto-forest|aneto-lakes|aneto-lakes-pure|aneto20|aneto40');
+const mountainCentres={'peguera':[42.14193,1.76436],'gallina':[42.1835,1.7435],'gallina-complet':[42.1835,1.7435]};
+const mountain=Object.hasOwn(mountainCentres,name);
+if(!mountain&&!['tamariu','millau','rajadell-pure','aneto-forest','aneto-lakes','aneto-lakes-pure','aneto20','aneto40'].includes(name))
+  throw Error('Ús: node --max-old-space-size=512 scripts/measure-processing.mjs tamariu|millau|rajadell-pure|aneto-forest|aneto-lakes|aneto-lakes-pure|aneto20|aneto40|peguera|gallina|gallina-complet');
 if(freemem()/2**30<2.5)throw Error('Calen almenys 2,5 GiB lliures.');
 const rajadell=name==='rajadell-pure',forestAlpine=name==='aneto-forest',alpine=name==='aneto-lakes-pure'||forestAlpine;
-const sample=rajadell?'eix-diagonal':name==='tamariu',landscapeLakes=name==='aneto-lakes',pureRelief=rajadell||alpine||['aneto20','aneto40'].includes(name);
+const sample=rajadell?'eix-diagonal':name==='tamariu',landscapeLakes=name==='aneto-lakes',
+  pureRelief=rajadell||alpine||['aneto20','aneto40','peguera','gallina'].includes(name);
 const extent=rajadell?1.5:alpine?3:pureRelief?Number(name.slice(5)):null;
-const bbox=rajadell?physicalBBox([41.71792,1.78391],extent,extent):pureRelief||landscapeLakes
+const bbox=mountain?physicalBBox(mountainCentres[name],3,3):rajadell?physicalBBox([41.71792,1.78391],extent,extent):pureRelief||landscapeLakes
   ?physicalBBox(forestAlpine?[42.629,.58]:[42.635,.65],extent??3,extent??3)
   :sample?physicalBBox([41.918,3.2075],.65,.65):physicalBBox([44.0797,3.0226],3,3);
 const startedAt=new Date().toISOString(),started=performance.now(),sources=[];
@@ -31,9 +34,9 @@ globalThis.fetch=async (url,options)=>{
 };
 await init(await WebAssembly.compile(await readFile(new URL('../node_modules/@jsquash/webp/codec/dec/webp_dec.wasm',import.meta.url))));
 const data=await loadRegion({sample,bbox,pureRelief,buildingSource:'osm',decodeElevation:async(blob,t)=>decodeDEMTile(await blob.arrayBuffer(),t,decode),onTiming:event=>sources.push(event)});
-const settings={size:pureRelief&&!rajadell&&!alpine?extent*10:150,
-  resolution:rajadell||alpine?PURE_RELIEF_RESOLUTIONS[36]:pureRelief?PURE_RELIEF_RESOLUTIONS[56]:landscapeLakes?96:12,
-  exaggeration:1.5,trees:pureRelief,estimatedTunnels:!pureRelief,pureRelief};
+const settings={size:pureRelief&&!rajadell&&!alpine&&!mountain?extent*10:150,
+  resolution:rajadell||alpine||mountain&&pureRelief?PURE_RELIEF_RESOLUTIONS[36]:pureRelief?PURE_RELIEF_RESOLUTIONS[56]:landscapeLakes||mountain?96:12,
+  exaggeration:1.5,trees:pureRelief||mountain,estimatedTunnels:!pureRelief,pureRelief};
 const timing=createProcessingTiming();
 timing.mark('initialization','Preparant el motor de geometria…');
 const api=pureRelief?null:await Module();api?.setup();
@@ -56,6 +59,7 @@ if(name==='aneto20'&&audit.every(part=>!part.errors.length))await writeFile('out
 if(name==='aneto-lakes-pure'&&audit.every(part=>!part.errors.length))await writeFile('output/aneto-llacs-rius.3mf',threeMF(result,{bambu:true}));
 if(rajadell&&audit.every(part=>!part.errors.length))await writeFile('output/rajadell-boscos.3mf',threeMF(result,{bambu:true}));
 if(forestAlpine&&audit.every(part=>!part.errors.length))await writeFile('output/aneto-boscos.3mf',threeMF(result,{bambu:true}));
+if(mountain&&audit.every(part=>!part.errors.length))await writeFile(`output/${name}-vegetacio.3mf`,threeMF(result,{bambu:true}));
 if(name==='aneto40'&&audit.every(part=>!part.errors.length)){
   const pieces=splitPureRelief(result,200,()=>{});
   if(pieces.length!==4||pieces.some(piece=>piece.parts.some(part=>auditPart(part).errors.length)))

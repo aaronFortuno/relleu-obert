@@ -1,5 +1,11 @@
 # Canvis
 
+## v0.19.24 — 2026-11-03
+
+- Model complet adopta capçades còniques en alta muntanya amb la forma automàtica.
+- Relleu pur augmenta la densitat de capçades i la redueix progressivament amb la cota local.
+- Els contorns de materials es tanquen segons les arestes obertes reals de la malla.
+
 ## v0.19.23 — 2026-11-03
 
 - Relleu pur adapta el perfil de les capçades a la cota màxima del retall.

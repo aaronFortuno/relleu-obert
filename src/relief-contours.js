@@ -1,4 +1,3 @@
-const near=(a,b)=>Math.abs(a-b)<1e-8;
 export const RELIEF_SKIN_DEPTH=.65;
 
 // Interpolate class weights on the raster. Each grid vertex receives three
@@ -46,18 +45,22 @@ function grow(array,minimum){
   return bigger;
 }
 
-function skinBuilder(kind,bounds,grid){
+function skinBuilder(bounds,grid){
   const {left,bottom,right,top}=bounds,{resolution:n,width,height}=grid;
   const stride=right-left+1,integer=new Uint32Array(stride*(top-bottom+1));
-  const intersections=new Map();
+  const intersections=new Map(),boundary=new Map(),edgeStride=2**24;
   let vertices=new Float32Array(1024),faces=new Uint32Array(1024),nv=0,nf=0;
   function vertex([x,y,z]){
+    const vx=Math.fround((x-left)*width/n),vy=Math.fround((y-bottom)*height/n);
+    const ix=Math.round(x),iy=Math.round(y);
+    if(vx===Math.fround((ix-left)*width/n))x=ix;
+    if(vy===Math.fround((iy-bottom)*height/n))y=iy;
     const lattice=Number.isInteger(x)&&Number.isInteger(y);
-    const key=lattice?(y-bottom)*stride+x-left:Math.round(x*1e8)+','+Math.round(y*1e8);
+    const key=lattice?(y-bottom)*stride+x-left:vx+','+vy;
     const found=lattice?integer[key]:intersections.get(key);
     if(found)return found-1;
     vertices=grow(vertices,nv+6);
-    const vx=(x-left)*width/n,vy=(y-bottom)*height/n,index=nv/3;
+    const index=nv/3;
     vertices[nv++]=vx;vertices[nv++]=vy;vertices[nv++]=z;
     vertices[nv++]=vx;vertices[nv++]=vy;vertices[nv++]=z-RELIEF_SKIN_DEPTH;
     if(lattice)integer[key]=index+1;
@@ -70,30 +73,88 @@ function skinBuilder(kind,bounds,grid){
     faces[nf++]=a;faces[nf++]=b;faces[nf++]=c;
   }
   const wall=(a,b)=>{tri(a,a+1,b+1);tri(a,b+1,b);};
-  const outer=(a,b)=>(a[0]===b[0]&&(a[0]===left||a[0]===right))||
-    (a[1]===b[1]&&(a[1]===bottom||a[1]===top));
+  function edge(a,b,face){
+    const key=Math.min(a,b)*edgeStride+Math.max(a,b);
+    if(boundary.has(key))boundary.delete(key);
+    else boundary.set(key,a<b?face+1:-face-1);
+  }
+  function splitPinches(){
+    const degree=new Map();
+    for(const key of boundary.keys()){
+      const a=Math.floor(key/edgeStride),b=key%edgeStride;
+      degree.set(a,(degree.get(a)||0)+1);
+      degree.set(b,(degree.get(b)||0)+1);
+    }
+    const pinches=new Map();
+    for(const [id,count] of degree)if(count>2)pinches.set(id,[]);
+    if(!pinches.size)return new Map();
+    for(let face=0;face<nf;face+=6){
+      for(let i=0;i<3;i++){
+        const fan=pinches.get(faces[face+i]);
+        if(fan)fan.push([face,faces[face+(i+1)%3],faces[face+(i+2)%3]]);
+      }
+    }
+    const replacements=new Map();
+    for(const [id,fan] of pinches){
+      const neighbours=new Map();
+      for(const corner of fan)for(const neighbour of corner.slice(1)){
+        if(!neighbours.has(neighbour))neighbours.set(neighbour,[]);
+        neighbours.get(neighbour).push(corner);
+      }
+      const pending=new Set(fan);
+      let first=true;
+      while(pending.size){
+        const component=[pending.values().next().value];
+        pending.delete(component[0]);
+        for(const corner of component)for(const neighbour of corner.slice(1)){
+          for(const next of neighbours.get(neighbour))if(pending.delete(next))component.push(next);
+        }
+        if(first){first=false;continue;}
+        vertices=grow(vertices,nv+6);
+        const copy=nv/3;
+        vertices.copyWithin(nv,id*3,id*3+6);nv+=6;
+        for(const [face] of component){
+          for(let i=0;i<6;i++){
+            if(faces[face+i]===id)faces[face+i]=copy;
+            else if(faces[face+i]===id+1)faces[face+i]=copy+1;
+          }
+          if(!replacements.has(face))replacements.set(face,new Map());
+          replacements.get(face).set(id,copy);
+        }
+      }
+    }
+    return replacements;
+  }
   return {
-    patch(poly,interior){
+    patch(poly){
       const ids=poly.map(vertex);
       for(let i=1;i+1<ids.length;i++){
-        tri(ids[0],ids[i],ids[i+1]);tri(ids[0]+1,ids[i+1]+1,ids[i]+1);
-      }
-      for(let i=0;i<poly.length;i++){
-        const j=(i+1)%poly.length,a=poly[i],b=poly[j];
-        const shore=near(a[6],0)&&near(b[6],0);
-        const forestEdge=kind!==3&&near(a[7],0)&&near(b[7],0);
-        const materialBoundary=kind<3&&!interior&&[0,1,2].some(other=>other!==kind&&
-          near(a[3+kind],a[3+other])&&near(b[3+kind],b[3+other]));
-        if(outer(a,b)||shore||forestEdge||materialBoundary)wall(ids[i],ids[j]);
+        const a=ids[0],b=ids[i],c=ids[i+1];
+        if(a===b||b===c||a===c)continue;
+        edge(a,b,nf);edge(b,c,nf);edge(c,a,nf);
+        tri(a,b,c);tri(a+1,c+1,b+1);
       }
     },
-    finish(){return nf?{vertices:vertices.slice(0,nv),faces:faces.slice(0,nf)}:null;}
+    finish(){
+      if(!nf)return null;
+      // Build walls from actual open top edges. Independent clipping passes
+      // can otherwise classify the same almost coincident edge twice.
+      const replacements=splitPinches();
+      for(const [key,face] of boundary){
+        let a=Math.floor(key/edgeStride),b=key%edgeStride;
+        const moved=replacements.get(Math.abs(face)-1);
+        a=moved?.get(a)??a;b=moved?.get(b)??b;
+        if(face>0)wall(a,b);
+        else wall(b,a);
+      }
+      return {vertices:vertices.slice(0,nv),faces:faces.slice(0,nf)};
+    }
   };
 }
 
 export function coverageSkins(grid,bounds){
   const {left,bottom,right,top}=bounds;
-  const {resolution:n,heights,diagonals,scores,lakeWeights,forestWeights}=grid,builders=[0,1,2,3,4].map(kind=>skinBuilder(kind,bounds,grid));
+  const {resolution:n,heights,diagonals,scores,lakeWeights,forestWeights}=grid,builders=Array.from({length:5},()=>skinBuilder(bounds,grid));
   const point=(x,y)=>{
     const i=y*(n+1)+x;
     return [x,y,heights[i],scores?.[i*3]??1,scores?.[i*3+1]??0,scores?.[i*3+2]??0,lakeWeights?.[i]??-1,forestWeights?.[i]??-1];
@@ -103,25 +164,25 @@ export function coverageSkins(grid,bounds){
     let poly=[a,b,c];
     if(a[6]>0||b[6]>0||c[6]>0){
       const water=clip(poly,p=>p[6]);
-      if(water.length>=3)builders[3].patch(water,true);
+      if(water.length>=3)builders[3].patch(water);
       poly=clip(poly,p=>-p[6]);
       if(poly.length<3)return;
     }
     if(poly.some(p=>p[7]>0)){
       const forest=clip(poly,p=>p[7]);
-      if(forest.length>=3)builders[4].patch(forest,true);
+      if(forest.length>=3)builders[4].patch(forest);
       poly=clip(poly,p=>-p[7]);
       if(poly.length<3)return;
     }
     const first=kindAt(a);
     if(first===kindAt(b)&&first===kindAt(c)){
-      builders[first].patch(poly,true);
+      builders[first].patch(poly);
       return;
     }
     for(let kind=0;kind<3;kind++){
       let region=poly;
       for(let other=0;other<3&&region.length;other++)if(kind!==other)region=clip(region,p=>p[3+kind]-p[3+other]);
-      if(region.length>=3)builders[kind].patch(region,false);
+      if(region.length>=3)builders[kind].patch(region);
     }
   }
   for(let y=bottom;y<top;y++)for(let x=left;x<right;x++){

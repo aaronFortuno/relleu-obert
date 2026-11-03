@@ -12,6 +12,18 @@ El retall inclòs s’ha derivat d’ESA WorldCover 2021 v200 (Zanaga et al., 20
 
 ## Mesures locals
 
+### Capçades d’alta muntanya a la v0.19.24
+
+En Model complet, la forma automàtica pren la cota màxima del retall com a referència per afinar el perfil. En Relleu pur, la densitat parteix del bosc cartografiat i disminueix amb la cota local de cada capçada entre 1.950 i 2.450 m. Aquesta franja és un criteri visual de simulació.
+
+| Retall de 3 × 3 km a 1:20.000 | Mode | Capçades |
+| --- | --- | ---: |
+| Rasos de Peguera | Relleu pur | 3.638 |
+| Gallina Pelada | Relleu pur | 2.512 |
+| Gallina Pelada | Model complet | 8.897, perfil cònic automàtic |
+
+Les tres malles han passat l’auditoria. Queda pendent comprovar-les al laminador. [Rasos de Peguera](https://www.openstreetmap.org/node/2653927400) · [Gallina Pelada](https://www.openstreetmap.org/node/26862904)
+
 ### Boscos a la v0.19.22
 
 Les zones de bosc cartografiades es representen en verd, amb contorns interpolats dins de la malla. Les capçades tenen un diàmetre de referència de 12 m i s’escampen de manera procedimental dins d’aquests polígons. S’afegeixen quan el diàmetre equival almenys a 0,45 mm a la maqueta i eviten l’aigua i les vores de les peces. [Font i llicència](https://www.openstreetmap.org/copyright)

@@ -3,7 +3,7 @@ import {levelReliefLakes} from './relief-lakes.js';
 import {reliefDiagonals,reliefParts,PURE_RELIEF_RESOLUTIONS} from './pure-relief-mesh.js';
 import {reliefStreamStrips} from './relief-streams.js';
 import {sampleReliefForest} from './relief-forest.js';
-import {reliefCrownTaper,reliefForestTrees,RELIEF_TREE_MIN_DIAMETER_MM,RELIEF_TREE_DIAMETER_METRES} from './relief-forest-trees.js';
+import {reliefCrownTaper,reliefForestTrees,RELIEF_TREE_MIN_DIAMETER_MM,RELIEF_TREE_DIAMETER_METRES,RELIEF_TREE_THINNING} from './relief-forest-trees.js';
 import {waterwayPolygons} from './waterways.js';
 import {polygonOps} from './polygon-ops.js';
 import earcut from 'earcut';
@@ -165,9 +165,15 @@ export function deckSurfaceSolid(item,proj,verticalReference,exaggeration,thickn
   }
   return surface.solid((x,y,z)=>z-thickness);
 }
-export function treeMesh({x,y,ground,rx,ry,rz,rotation=0,phase=0}){
+export function treeMesh({x,y,ground,rx,ry,rz,rotation=0,phase=0,crownTaper=0}){
   const surf=new Surface(),rings=6,segments=8,embed=Math.min(.3,rz*.35),z=ground+rz-embed;
-  const p=(i,j)=>{const v=i/rings*Math.PI,u=j/segments*Math.PI*2,w=1+.05*Math.cos(3*u+phase)*Math.sin(v),dx=rx*Math.sin(v)*Math.cos(u)*w,dy=ry*Math.sin(v)*Math.sin(u)*w;return [x+dx*Math.cos(rotation)-dy*Math.sin(rotation),y+dx*Math.sin(rotation)+dy*Math.cos(rotation),z+rz*Math.cos(v)];};
+  const p=(i,j)=>{
+    const t=i/rings,v=t*Math.PI,u=j/segments*Math.PI*2;
+    const round=Math.sin(v),cone=Math.min(t*1.5,(1-t)*3);
+    const radius=round+(cone-round)*crownTaper,w=1+.05*Math.cos(3*u+phase)*radius;
+    const dx=rx*radius*Math.cos(u)*w,dy=ry*radius*Math.sin(u)*w;
+    return [x+dx*Math.cos(rotation)-dy*Math.sin(rotation),y+dx*Math.sin(rotation)+dy*Math.cos(rotation),z+rz*Math.cos(v)];
+  };
   for(let i=0;i<rings;i++)for(let j=0;j<segments;j++){surf.tri(p(i,j),p(i+1,j),p(i+1,j+1));surf.tri(p(i,j),p(i+1,j+1),p(i,j+1));}
   return {vertices:surf.vertices,faces:surf.faces};
 }
@@ -256,12 +262,13 @@ function prepareTerrain(data,options,progress,preview,measure){
   const oceanPoly=merge(cropped(ocean)),hasOcean=oceanPoly.length>0;
   progress('Calculant el camp d’altures…');
   const field=createTerrainField({width,height,resolution,at:(x,y)=>{const[lon,lat]=proj.unproject([x,y]);const h=localHeight?localHeight(lon,lat):sampleHeight(prepared.tiles,lon,lat);return hasOcean?Math.max(0,h):h;}});
-  let originMeters=Infinity;for(const h of field.values)originMeters=Math.min(originMeters,h);
+  let originMeters=Infinity,maximumElevation=-Infinity;
+  for(const h of field.values){originMeters=Math.min(originMeters,h);maximumElevation=Math.max(maximumElevation,h);}
   if(hasOcean)originMeters=0;
   const verticalReference={originMeters,minimumSurfaceMM:5,seaLevelMM:hasOcean?5:null,method:hasOcean?'sea level at 5 mm; no bathymetry':'lowest generated-terrain sample at 5 mm'};
   for(let i=0;i<field.values.length;i++)field.values[i]=5+(field.values[i]-originMeters)*scale*exaggeration;
   const ground=field.sample;
-  const terrain={size,exaggeration,resolution,proj,rect,warnings,elevationAt,deckItems,deckMask,transport,roadPieces,railPieces,
+  const terrain={size,exaggeration,resolution,proj,rect,warnings,elevationAt,deckItems,deckMask,transport,roadPieces,railPieces,maximumElevation,
     roadOnlyPoly,roadPoly,forest,bare,railPoly,waterPoly,land,oceanPoly,green,cropped,ground,verticalReference,diagnostics:prepared.diagnostics,
     woodsMask:measure('terrain.woods',()=>merge(cropped(woods)),{inputs:woods.length})};
   terrain.surfaces=measure('terrain.surfaces',()=>terrainCover(forest,bare,terrain,progress));
@@ -361,7 +368,7 @@ function buildPureRelief(data,options,progress,preview){
   const forest=sampleReliefForest((data.forests||[]).flatMap(feature=>geoPolys(feature,project)),width,height,resolution);
   const crownTaper=reliefCrownTaper(maximumElevation);
   const reliefGrid={resolution,width,height,heights,diagonals,scores,lakeWeights:lakes?.count?lakes.weights:null,
-    forestWeights:forest?.cells?forest.weights:null,streamStrips,crownTaper};
+    forestWeights:forest?.cells?forest.weights:null,streamStrips,crownTaper,originMeters,exaggeration};
   const trees=options.trees!==false;
   if(trees&&forest?.cells)reliefGrid.trees=reliefForestTrees(reliefGrid,forest.contains,scale);
   progress('Construint el sòlid del relleu…');
@@ -376,7 +383,7 @@ function buildPureRelief(data,options,progress,preview){
     units:'millimeters',coverageCells:{bare:cells[0],snow:cells[1],total:resolution**2},lakeCount:lakes?.count??0,
     streamCount:paths.length,flowingWaterAreaCount:waterAreas.length,forestSamples:forest?.cells??0,
     treeRepresentation:{crownDiameterMetres:RELIEF_TREE_DIAMETER_METRES,minimumDiameterMM:RELIEF_TREE_MIN_DIAMETER_MM,
-      omittedBelowThreshold,maximumElevation,crownTaper}};
+      omittedBelowThreshold,maximumElevation,crownTaper,thinningMetres:RELIEF_TREE_THINNING}};
   return groupMaterials({width,height,scale:Math.round(1000/scale),treeCount,buildingCount:0,categories,warnings,reliefGrid,
     triangles:categories.reduce((n,p)=>n+p.faces.length/3,0),elevationDiagnostics:prepared.diagnostics,provenance});
 }
@@ -822,6 +829,7 @@ export function updateVegetation(previous,changes={},progress=()=>{},preview){
   progress('Actualitzant la capa de vegetació…');
   let seed=7341;const rand=()=>{seed=(1664525*seed+1013904223)>>>0;return seed/4294967296;};
   const dimensions=treeDimensions(ctx.scale),step=dimensions.spacing/Math.sqrt(density);
+  const crownTaper=treeType==='mixed'?reliefCrownTaper(ctx.terrain?.maximumElevation??0):0;
   const brushDensity=options.brushDensity??density;
   if(!Number.isFinite(brushDensity)||brushDensity<.25||brushDensity>5)throw Error('Densitat del pinzell fora del rang admès.');
   const make=(x,y,manual=false,random=rand)=>{
@@ -829,7 +837,7 @@ export function updateVegetation(previous,changes={},progress=()=>{},preview){
     const contains=manual?containsLand:containsForest;
     if(x<=r||y<=r||x>=width-r||y>=height-r||!contains(p)||containsRoad(p)||containsBuilding(p))return;
     const footprint=Array.from({length:12},(_,i)=>[x+Math.cos(i/12*Math.PI*2)*r,y+Math.sin(i/12*Math.PI*2)*r]);
-    if(footprint.every(q=>contains(q)&&!containsBuilding(q)&&!containsRoad(q)))return {x,y,manual,ground:ground(x,y),rx,ry,rz,rotation,phase};
+    if(footprint.every(q=>contains(q)&&!containsBuilding(q)&&!containsRoad(q)))return {x,y,manual,ground:ground(x,y),rx,ry,rz,rotation,phase,crownTaper};
   };
   let candidates=[],eligible=0;
   if(trees&&dimensions.visible){
@@ -898,7 +906,7 @@ function finishModel(ctx,options,placements,categories,vegetationBudget){
   if(vegetationBudget.eligibleAutomatic>MAX_TREES||vegetationBudget.automaticReduced)warnings.push('Límit de 12.000 arbres: repartits per tota la zona verda; el pinzell té prioritat.');
   if(vegetationBudget.manualDropped)warnings.push('Límit de 12.000 arbres pintats: els nous substitueixen els més antics.');
   if(trees&&!dimensions.visible)warnings.push('Arbres massa petits a aquesta escala: es conserva la superfície del bosc.');
-  const raw={categories:present,width,height,treeCount:placements.length,buildingCount:ctx.buildingCount,scale:options.targetScale??Math.round(1000/ctx.scale),triangles:present.reduce((s,p)=>s+p.faces.length/3,0),warnings,elevationDiagnostics:ctx.diagnostics,provenance:{...ctx.meta,options,vegetationBudget,buildingVolumes:ctx.buildingVolumes,buildingHeightReference:'highest generated-terrain point within the clipped footprint; horizontal roof for limited/source modes',treeMode:'procedural, varied crowns embedded in the generated terrain mesh',treeRepresentation:{crownDiameterMetres:TREE_CROWN_METRES,scale:'horizontal geographic scale; no vertical exaggeration',minimumDiameterMM:MIN_TREE_MM,omittedBelowThreshold:!!trees&&!dimensions.visible},elevation:ctx.meta.terrain?.provider||'Mapterhorn Terrarium',elevationRepairs:ctx.diagnostics,units:'millimeters',verticalExaggeration:options.exaggeration,verticalReference:ctx.verticalReference}};
+  const raw={categories:present,width,height,treeCount:placements.length,buildingCount:ctx.buildingCount,scale:options.targetScale??Math.round(1000/ctx.scale),triangles:present.reduce((s,p)=>s+p.faces.length/3,0),warnings,elevationDiagnostics:ctx.diagnostics,provenance:{...ctx.meta,options,vegetationBudget,buildingVolumes:ctx.buildingVolumes,buildingHeightReference:'highest generated-terrain point within the clipped footprint; horizontal roof for limited/source modes',treeMode:'procedural, varied crowns embedded in the generated terrain mesh',treeRepresentation:{crownDiameterMetres:TREE_CROWN_METRES,scale:'horizontal geographic scale; no vertical exaggeration',minimumDiameterMM:MIN_TREE_MM,omittedBelowThreshold:!!trees&&!dimensions.visible,crownTaper:placements[0]?.crownTaper??0},elevation:ctx.meta.terrain?.provider||'Mapterhorn Terrarium',elevationRepairs:ctx.diagnostics,units:'millimeters',verticalExaggeration:options.exaggeration,verticalReference:ctx.verticalReference}};
   const model=groupMaterials(raw,4);for(const material of MATERIALS)if(!model.parts.some(p=>p.id===material.id))warnings.push(`${material.name}: no hi ha geometria exportable d’aquesta capa a les dades carregades.`);
   Object.defineProperty(model,'context',{value:ctx});return model;
 }

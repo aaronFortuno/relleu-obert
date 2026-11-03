@@ -2,7 +2,7 @@
 
 Prototip educatiu separat de Terrology: generació de maquetes geogràfiques amb JavaScript, íntegrament al navegador, publicable a GitHub Pages. No s’ha copiat codi de Terrology.
 
-**v0.19.23 experimental · 3 de novembre de 2026**
+**v0.19.24 experimental · 3 de novembre de 2026**
 
 Vies ofereix l'opció experimental de perfils suaus. Arrodoneix els canvis de pendent a les carreteres principals i prova un pendent constant entre els extrems dels trams ferroviaris. Els avisos de «Dades i limitacions» indiquen els perfils omesos. «Projecte nou» és sobre Territori.
 

@@ -34,6 +34,15 @@ test('pure relief crowns use geographic scale and close below the terrain surfac
   assert(part.vertices[2]<trees[0].ground);
 });
 
+test('pure relief thins crowns with local absolute elevation independent of exaggeration',()=>{
+  const level=new Float64Array(25).fill(5),base={...grid,heights:level};
+  const dense=reliefForestTrees({...base,originMeters:1900},()=>true,.05);
+  const sparse=reliefForestTrees({...base,originMeters:2350},()=>true,.05);
+  assert(sparse.length>0&&sparse.length<dense.length/2);
+  assert.equal(reliefForestTrees({...base,originMeters:2450},()=>true,.05).length,0);
+  assert.deepEqual(reliefForestTrees({...base,originMeters:2350,exaggeration:3},()=>true,.05),sparse);
+});
+
 test('pure relief crowns stay clear of water and print cuts',()=>{
   const grid={width:300,height:40,resolution,heights:new Float64Array(25).fill(10),
     diagonals:new Uint8Array(16),

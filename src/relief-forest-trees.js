@@ -5,7 +5,8 @@ import {treeSampler} from './vegetation-budget.js';
 
 export const RELIEF_TREE_MIN_DIAMETER_MM=.45;
 export const RELIEF_TREE_DIAMETER_METRES=TREE_CROWN_METRES;
-const MAX_RELIEF_TREES=2500;
+export const RELIEF_TREE_THINNING={from:1950,to:2450};
+const MAX_RELIEF_TREES=4000;
 const SIDES=8;
 const ROUND_PROFILE=[[.45,-.55],[.90,.02],[1,.33],[.83,.68],[.44,.91]];
 const CONE_PROFILE=[[.45,-.55],[1,.1],[.7,.8],[.38,1.28],[.16,1.49]];
@@ -13,6 +14,14 @@ const CIRCLE=Array.from({length:SIDES},(_,i)=>[Math.cos(i*2*Math.PI/SIDES),Math.
 
 // A visual convention for the retall, independent of vertical exaggeration.
 export const reliefCrownTaper=maximumElevation=>Math.max(0,Math.min(1,(maximumElevation-1000)/800));
+
+// Thin procedural crowns towards the high-mountain tree line. Mapped
+// forest remains the mask, including where crowns are too sparse to print.
+export function reliefTreeChance(elevation){
+  const {from,to}=RELIEF_TREE_THINNING;
+  const t=Math.max(0,Math.min(1,(elevation-from)/(to-from)));
+  return 1-t*t*(3-2*t);
+}
 
 function fieldSample(grid,field,x,y){
   const {width,height,resolution:n,diagonals}=grid;
@@ -28,7 +37,7 @@ function fieldSample(grid,field,x,y){
 export function reliefForestTrees(grid,containsForest,scale){
   const diameter=RELIEF_TREE_DIAMETER_METRES*scale;
   if(diameter<RELIEF_TREE_MIN_DIAMETER_MM)return [];
-  const {width,height,resolution:n,lakeWeights,streamStrips,heights}=grid;
+  const {width,height,resolution:n,lakeWeights,streamStrips,heights,originMeters=0,exaggeration=1}=grid;
   const {cols,rows}=tilePlan(width,height);
   const seamDistance=(v,step)=>Math.abs(v-Math.round(v/step)*step);
   const streamTests=new Map();
@@ -41,17 +50,19 @@ export function reliefForestTrees(grid,containsForest,scale){
   }
   const eligible=(x,y)=>containsForest([x,y])&&dry(x,y);
   const candidates=treeSampler(MAX_RELIEF_TREES);
-  const pitch=Math.max(2.4,diameter*5.5,Math.sqrt(width*height/6500));
+  const pitch=Math.max(1.7,diameter*3.8,Math.sqrt(width*height/9000));
   let seed=39127;
   const random=()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/4294967296);
   for(let row=0;row<Math.ceil(height/pitch);row++)for(let col=0;col<Math.ceil(width/pitch);col++){
     const x=(col+.14+.72*random())*pitch,y=(row+.14+.72*random())*pitch;
     const radius=Math.max(RELIEF_TREE_MIN_DIAMETER_MM/2,diameter*(.46+.08*random()));
-    const rotation=random()*2*Math.PI,heightFactor=.8+.4*random();
+    const rotation=random()*2*Math.PI,heightFactor=.8+.4*random(),chance=random();
     if(x<radius||y<radius||x>width-radius||y>height-radius||
        seamDistance(x,width/cols)<radius||seamDistance(y,height/rows)<radius)continue;
     if(!eligible(x,y)||!CIRCLE.every(([dx,dy])=>eligible(x+radius*dx,y+radius*dy)))continue;
     const ground=fieldSample(grid,heights,x,y);
+    const elevation=originMeters+(ground-5)/(scale*exaggeration);
+    if(chance>=reliefTreeChance(elevation))continue;
     candidates.add({x,y,ground,radius,rotation,heightFactor});
   }
   return candidates.values;

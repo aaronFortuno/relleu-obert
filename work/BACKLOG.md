@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-03 · v0.19.23**. Perfil de les capçades adaptat a la cota màxima del retall. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
+Actualitzat: **2026-11-03 · v0.19.24**. Capçades d’alta muntanya al Model complet i densitat segons la cota a Relleu pur. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
 
 ## Ordre de treball
 
@@ -477,3 +477,5 @@ La preparació de mida i territori precedeix les quatre capes. En separar el mot
 **v0.19.22.** Els boscos es delimiten amb cartografia d’OpenStreetMap. A escales prou detallades, s’hi distribueixen capçades procedimentals proporcionades. Quan serien inferiors a 0,45 mm, el bosc es representa només amb color. Pendent de comprovar les capçades i els canvis de material al laminador.
 
 **v0.19.23.** Les capçades de Relleu pur passen d’un perfil arrodonit a un de cònic entre 1.000 i 1.800 m de cota màxima del retall. És un criteri visual; queda pendent la validació al laminador.
+
+**v0.19.24.** El perfil automàtic del Model complet s’adapta al retall. A Relleu pur, més densitat dins del bosc cartografiat i aclarida gradual entre 1.950 i 2.450 m de cota local. Pendent de validar al laminador.
