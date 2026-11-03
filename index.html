@@ -6,13 +6,13 @@
   <a class="brand" href="./" aria-label="Relleu Obert"><svg viewBox="0 0 38 32" aria-hidden="true"><path d="M3 27 18 3l17 24H3Z"/><path d="m8 23 10-15 11 15H8Zm5-4 5-7 5 7H13Z"/></svg><span>relleu<span class="brand-light">obert</span></span></a>
   <span class="tagline" data-i18n="app.tagline">Geografia que pots tocar.</span>
   <span class="header-spacer" aria-hidden="true"></span>
-  <button id="new-project" type="button" class="header-button" hidden>Projecte nou</button>
   <button id="language-open" class="header-button" data-open="language-dialog" data-i18n="header.language">Idioma</button>
   <button id="help-open" class="header-button" data-i18n="header.help">Com funciona</button>
 </header>
 <main class="app-layout">
   <aside class="sidebar sidebar-left" aria-label="Configuració del model">
     <h1 class="sr-only">Prepara una maqueta</h1>
+    <button id="new-project" type="button" class="secondary" hidden>Projecte nou</button>
     <section class="config-section" data-step="place">
       <div class="step-header"><h2 class="config-heading"><button type="button" class="section-toggle" id="step-place" aria-expanded="false" aria-controls="panel-place"><span aria-hidden="true">01</span><span data-i18n="section.place">Territori</span><i aria-hidden="true">+</i></button></h2><button type="button" class="secondary step-action" data-step-action="place" hidden>Genera el model</button></div>
       <div id="panel-place" class="config-content" role="region" aria-labelledby="step-place" hidden>
@@ -44,6 +44,8 @@
       <div id="panel-transport" class="config-content" role="region" aria-labelledby="step-transport" hidden><label for="road-rise">Relleu dels camins <span class="unit">mm de maqueta</span></label><select id="road-rise"><option value="0">Arran de terreny</option><option value="0.5">Realç de 0,5 mm</option><option value="1">Realç d’1 mm</option></select>
       <label for="rail-rise">Relleu de ferrocarrils <span class="unit">sobre els camins</span></label><select id="rail-rise"><option value="0" selected>Igual que els camins</option><option value="0.5">+0,5 mm</option><option value="1">+1 mm</option></select>
       <label class="check-row"><input id="estimated-tunnels" type="checkbox" checked aria-describedby="tunnel-note"><span>Túnels estimats · experimental</span></label><p id="tunnel-note" class="hint">Perfil arquejat i paviment de camí. Revisa els portals i el laminat.</p>
+      <label class="check-row"><input id="major-profiles" type="checkbox" aria-describedby="major-profiles-note"><span>Perfils suaus de vies principals i ferrocarrils · experimental</span></label>
+      <p id="major-profiles-note" class="hint">Suavitza els canvis de pendent. Pot allargar el càlcul.</p>
       <p class="hint">Els ajustos s’apliquen automàticament a la maqueta generada.</p>
       </div>
     </section>
@@ -98,7 +100,7 @@
     </section>
   </aside>
 </main>
-<footer class="app-footer"><span data-i18n="footer.tagline">Un tros del món, a les teves mans.</span><div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions">v0.19.7</button><button data-open="about-dialog" class="v4v-button">♡ Sobre el projecte · V4V</button></div></footer>
+<footer class="app-footer"><span data-i18n="footer.tagline">Un tros del món, a les teves mans.</span><div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions">v0.19.8</button><button data-open="about-dialog" class="v4v-button">♡ Sobre el projecte · V4V</button></div></footer>
 
 <dialog id="changelog-dialog" aria-labelledby="changelog-title"><div class="dialog-heading"><h2 id="changelog-title">Historial de versions</h2><button data-close aria-label="Tanca">×</button></div><div class="dialog-content"><div id="release-list"></div><a class="dialog-link" href="https://github.com/aaronFortuno/relleu-obert/blob/main/CHANGELOG.md" target="_blank" rel="noreferrer">Changelog complet al repositori ↗</a><p class="hint">Versions experimentals 0.x fins que es declari explícitament una versió estable.</p></div></dialog>
 <dialog id="help-dialog" aria-labelledby="help-title"><div class="dialog-heading"><h2 id="help-title">Geografia que pots tocar.</h2><button data-close aria-label="Tanca">×</button></div><div class="dialog-content"><p>Relleu Obert transforma dades de llocs reals en maquetes per explorar el paisatge i imprimir-lo en 3D.</p><ol class="help-steps"><li><strong>Mida i territori.</strong> Tria la mida al centre, situa el retall al mapa i prem «Genera el model» a Territori.</li><li><strong>Vegetació, vies i edificis.</strong> Afina cada apartat. Torna a qualsevol pas des del seu títol. Els canvis a les vies s’apliquen sobre el terreny preparat.</li><li><strong>Descarrega.</strong> Tria 3MF o STL, assigna els filaments i revisa el laminat abans d’imprimir.</li></ol><p class="hint">La cerca d’adreces i la cartografia consulten serveis públics. La geometria i els fitxers es calculen al navegador. Els arbres són una representació del bosc, no individus mesurats.</p></div></dialog>

@@ -25,7 +25,8 @@ test('piers embed in sloping ground, touch the deck and avoid complete road/buil
 test('an approach follows the mapped road and its full end width meets the raised terrain',()=>{
  const points=[[60,47,12],[140,47,12],[140,53,12],[60,53,12]],faces=[0,1,2,0,2,3],axis=[[60,50],[140,50]];axis.roadClass='trunk';
  const roads=[{points:[[60,50],[30,50]],class:'trunk'},{points:[[140,50],[170,50]],class:'trunk'}],ground=(x,y)=>10.5+.02*(y-50),containsDeck=([x,y])=>x>=60&&x<=140&&y>=47&&y<=53;
- const {plans,missed}=planApproaches({axis,points,faces,roads,ground,containsDeck,roadRise:.5,widthMM:200,heightMM:100,roadWidth:1});assert.equal(plans.length,2);assert.deepEqual(missed,[]);
+ const destinationBreaks=()=>[.5-1e-7,.25];
+ const {plans,missed}=planApproaches({axis,points,faces,roads,ground,containsDeck,destinationBreaks,roadRise:.5,widthMM:200,heightMM:100,roadWidth:1});assert.equal(plans.length,2);assert.deepEqual(missed,[]);
  for(const p of plans){assert(p.length>10);assert.equal(p.grade,0);for(const side of ['left','right']){const end=p.sections.at(-1)[side];assert(Math.abs(end[2]-ground(end[0],end[1])-.5)<1e-9);}const s=solid(stripSolid(p.sections,.6));s.delete();}
 });
 test('road continuation preserves the main route at a branch and does not use a tunnel',()=>{

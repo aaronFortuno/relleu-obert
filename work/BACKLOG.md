@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-03 · v0.19.7**. RO-044 incorpora previsualització del Catastre per blocs i descarta els identificadors contradictoris individualment. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
+Actualitzat: **2026-11-03 · v0.19.8**. RO-051 incorpora perfils suaus experimentals per a carreteres principals i ferrocarrils. RO-052 conserva les seccions de terminació en la precisió de la malla. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
 
 ## Ordre de treball
 
@@ -316,6 +316,8 @@ Abans d’implementar: cua limitada, cancel·lació per canvi de regió, memòri
 **Criteris:** identificar vies per atributs de la font, sense confondre un camí `track` amb tren. Conservar nivells de ponts i pilars; realç sobre el tauler, sense moure la seva cota original. Vies en túnel no es dibuixen a la superfície. Preview/3MF/STL i canvis incrementals d’edificis han de conservar la mateixa geometria. Migrar assignacions de vuit categories sense perdre triangles en 1/2/4/8 materials. Carrils i travesses detallats queden per escales on siguin imprimibles.
 
 ### RO-051 — Perfils de carreteres principals
+
+**v0.19.8.** Opció experimental a Vies, desactivada d'entrada. Les vies principals incorporen l'arrodoniment de l'envolupant i els ferrocarrils proven un pendent constant entre extrems. Es mantenen els controls de separació, creuaments, suports i unions. Falta contrastar més retalls ferroviaris i validar el laminat.
 
 **Represa autoritzada (2026-11-02), primer lot completat localment:** diagnòstic i optimització seqüencial en l'equip de 64 GB. El prototip continua sense activar-se a la UI. Ordre i responsables:
 

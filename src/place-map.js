@@ -11,13 +11,14 @@ export function createPlaceMap(container,{onChange,onName,width=150,height=150})
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(map);
   const frame=document.createElement('div');frame.className='selection-frame';container.appendChild(frame);
   const handle=document.createElement('button');
-  handle.type='button';handle.className='map-rotation-handle';handle.textContent='⟳';
+  handle.type='button';handle.className='map-rotation-handle';
   handle.setAttribute('role','slider');handle.setAttribute('aria-label','Gira el retall');
   handle.setAttribute('aria-valuemin','-180');handle.setAttribute('aria-valuemax','180');
   handle.title='Arrossega per girar · fletxes per ajustar';
   frame.append(handle);
   const reset=document.createElement('button');
-  reset.type='button';reset.className='map-rotation-reset';reset.textContent='↶';
+  reset.type='button';reset.className='map-rotation-reset';
+  reset.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="M16.24 7.76l-2.12 6.36-6.36 2.12 2.12-6.36 6.36-2.12z"/></svg>';
   reset.setAttribute('aria-label','Restableix l’orientació');reset.title='Restableix l’orientació';
   container.append(reset);
   L.DomEvent.disableClickPropagation(handle);

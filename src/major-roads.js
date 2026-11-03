@@ -1,6 +1,6 @@
 // Estimated platforms above an intact DEM. These are not surveyed road/deck
 // elevations. Only unambiguous surface motorway/trunk axes are considered.
-import {isRailway,railwayWidthMetres} from './railways.js';
+import {isInactiveRailway,isRailway,railwayWidthMetres} from './railways.js';
 import {polygonOps} from './polygon-ops.js';
 import {lineBuffer} from './roads.js';
 import {polygonTester} from './polygon-index.js';
@@ -49,7 +49,7 @@ function joinFragments(fragments,degree){
         if(!ends.has(k))ends.set(k,[]);ends.get(k).push([i,end]);
       }
       for(const [k,pair]of ends){
-        if(pair.length!==2||pair[0][0]===pair[1][0]||(degree.get(`${work[pair[0][0]].level}|${k}`)||0)>2)continue;
+        if(pair.length!==2||pair[0][0]===pair[1][0]||(degree.get(`${work[pair[0][0]].network}|${k}`)||0)>2)continue;
         const [[i,a],[j,b]]=pair,A=work[i],B=work[j],p=a?A.points:A.points.slice().reverse(),q=b?B.points.slice().reverse():B.points;
         const u=p.at(-2),v=p.at(-1),w=q[1],dot=(v[0]-u[0])*(w[0]-v[0])+(v[1]-u[1])*(w[1]-v[1]);
         if(dot<0)continue;
@@ -101,6 +101,33 @@ function limitedSlopeMajorant(stations,floors,maxGrade){
   for(let i=result.length-2;i>=0;i--)result[i]=Math.max(result[i],result[i+1]-maxGrade*(stations[i+1]-stations[i]));
   return result;
 }
+
+// Average the continuous envelope over a centred window. Linear extensions
+// at both ends preserve the terminal tangent when the envelope is straight.
+// A constant lift covers the rounding deficit without adding slope breaks.
+function roundEnvelope(stations,elevations,radius=24){
+  const areas=[0];
+  for(let i=1;i<stations.length;i++)areas.push(areas[i-1]+(stations[i]-stations[i-1])*(elevations[i-1]+elevations[i])/2);
+  const last=stations.length-1;
+  function integral(at){
+    let i=0;
+    while(i<last-1&&stations[i+1]<at)i++;
+    const dx=at-stations[i],grade=(elevations[i+1]-elevations[i])/(stations[i+1]-stations[i]);
+    return areas[i]+dx*(elevations[i]+grade*dx/2);
+  }
+  const smoothed=stations.map(at=>(integral(at+radius)-integral(at-radius))/(2*radius));
+  const lift=Math.max(0,...elevations.map((height,i)=>height-smoothed[i]));
+  return smoothed.map(height=>height+lift);
+}
+
+function straightRailProfile(stations,floors,minima,length,maxGrade,maxLift){
+  const start=floors[0],grade=(floors.at(-1)-start)/length;
+  if(Math.abs(grade)>maxGrade+1e-8)return null;
+  const line=stations.map(at=>start+at*grade);
+  const lift=Math.max(0,...floors.map((height,i)=>height-line[i]));
+  const elevations=line.map(height=>height+lift);
+  return elevations.some((height,i)=>height-minima[i]>maxLift+1e-8)?null:elevations;
+}
 function axisCrossings(axis,otherLines){
   const points=[],seen=new Set();
   for(let i=1;i<axis.length;i++)for(const line of otherLines)for(let j=1;j<line.length;j++){
@@ -135,13 +162,14 @@ function axisCrossings(axis,otherLines){
  */
 export function generateMajorRoadItems(features,elevationAt,options={}){
   const {projection,bbox,stationMetres=10,minRoadWidthMM=.44,maxLiftMetres=12,maxItems=LIMITS.items,allowCrossing,renderedElevationAt,allowEndpointLift=false}=options;
+  const smooth=options.smoothProfiles===true;
   if(!Array.isArray(features)||typeof elevationAt!=='function'||typeof projection?.project!=='function'||typeof projection?.unproject!=='function'||!Number.isFinite(projection.scale)||projection.scale<=0||![stationMetres,minRoadWidthMM,maxLiftMetres].every(v=>Number.isFinite(v)&&v>0)||stationMetres<5||stationMetres>30||minRoadWidthMM>2||maxLiftMetres>30||!Number.isInteger(maxItems)||maxItems<1||maxItems>LIMITS.items||allowCrossing!==undefined&&typeof allowCrossing!=='function'||renderedElevationAt!==undefined&&typeof renderedElevationAt!=='function'||typeof allowEndpointLift!=='boolean'||bbox!==undefined&&(!Array.isArray(bbox)||bbox.length!==4||!bbox.every(Number.isFinite)||bbox[0]>=bbox[2]||bbox[1]>=bbox[3]))throw Error('Configuració de plataformes viàries invàlida.');
   let roi=options.roi;
   if(roi===undefined&&[projection.width,projection.height].every(v=>Number.isFinite(v)&&v>0))roi=[[[[0,0],[projection.width,0],[projection.width,projection.height],[0,projection.height],[0,0]]]];
   if(roi!==undefined&&(!Array.isArray(roi)||roi.some(poly=>!Array.isArray(poly)||!poly.length||poly.some(r=>!Array.isArray(r)||r.length<4||r.some(p=>!Array.isArray(p)||p.length!==2||!p.every(Number.isFinite))))))throw Error('ROI física de plataformes viàries invàlida.');
   const inROI=roi===undefined?()=>true:polygonTester(roi);
   const warnings=[],omissions=[],fragments=[],seen=new Set(),degree=new Map(),degreeSeen=new Set(),water=[],crossingObstacles=[];
-  let inputPoints=0,dropped=0,obstaclePoints=0,obstacleOverflow=false;
+  let inputPoints=0,dropped=0,obstaclePoints=0,obstacleOverflow=false,roadObstaclePoints=0,roadObstacleOverflow=false;
   const fail=(ids,reason)=>omissions.push({sourceFeatureIds:ids,reason});
   if(features.length>LIMITS.features)warnings.push(`Plataformes viàries: entrada limitada a ${LIMITS.features} entitats.`);
   for(const [index,f]of features.slice(0,LIMITS.features).entries()){
@@ -151,36 +179,45 @@ export function generateMajorRoadItems(features,elevationAt,options={}){
       for(const poly of polys)if(Array.isArray(poly)&&poly.length&&poly.every(r=>Array.isArray(r)&&r.length>=4&&r.every(q=>Array.isArray(q)&&q.length>=2&&q.slice(0,2).every(Number.isFinite))))water.push(poly.map(r=>r.map(projection.project)));
       continue;
     }
-    if(p.sourceLayer!=='transportation')continue;
-    if(isRailway(p)||['bridge','tunnel'].includes(p.brunnel)){
+    if(p.sourceLayer!=='transportation'||isInactiveRailway(p))continue;
+    const railway=isRailway(p),structure=['bridge','tunnel'].includes(p.brunnel);
+    if(railway||structure||smooth){
       for(const raw of linesOf(g)){
         const points=cleanLine(raw);if(!points)continue;
-        if(obstaclePoints+points.length>LIMITS.inputPoints){obstacleOverflow=true;continue;}
-        obstaclePoints+=points.length;
+        const onlyRail=!railway&&!structure;
+        if(onlyRail){
+          if(roadObstaclePoints+points.length>LIMITS.inputPoints){roadObstacleOverflow=true;continue;}
+          roadObstaclePoints+=points.length;
+        }else{
+          if(obstaclePoints+points.length>LIMITS.inputPoints){obstacleOverflow=true;continue;}
+          obstaclePoints+=points.length;
+        }
         const width=isRailway(p)?railwayWidthMetres(p):roadWidthMetres(p);
         const xy=points.map(projection.project);
-        crossingObstacles.push({id:f.id??index,feature:f,type:isRailway(p)?'ferrocarril':p.brunnel==='tunnel'?'túnel':'pont',lines:[xy],polygons:lineBuffer(xy,Math.max(minRoadWidthMM,width*projection.scale)/2)});
+        crossingObstacles.push({id:f.id??index,feature:f,onlyRail,type:railway?'ferrocarril':p.brunnel==='tunnel'?'túnel':structure?'pont':'carretera',lines:[xy],radius:Math.max(minRoadWidthMM,width*projection.scale)/2});
       }
-      continue;
+      if(structure||railway&&!smooth)continue;
     }
-    const c=classOf(p),level=String(p.layer??0);
+    const c=railway?'rail':classOf(p)||(smooth&&p.class==='primary'?'primary':null),level=String(p.layer??0);
+    const sourceWidth=railway?railwayWidthMetres(p):widthOf(p,c);
     for(const line of linesOf(g)){
       const points=cleanLine(line);if(!points){if(c)fail([f.id??index],'traçat invàlid o pressupost de punts superat');continue;}
-      const dkey=level+'|'+points.map(endKey).join(';'),reverse=level+'|'+points.slice().reverse().map(endKey).join(';');
+      const network=railway?'rail|'+level:level;
+      const dkey=network+'|'+points.map(endKey).join(';'),reverse=network+'|'+points.slice().reverse().map(endKey).join(';');
       if(!degreeSeen.has(dkey)&&!degreeSeen.has(reverse)){
-        degreeSeen.add(dkey);for(const q of [points[0],points.at(-1)]){const k=level+'|'+endKey(q);degree.set(k,(degree.get(k)||0)+1);}
+        degreeSeen.add(dkey);for(const q of [points[0],points.at(-1)]){const k=network+'|'+endKey(q);degree.set(k,(degree.get(k)||0)+1);}
       }
       if(!c)continue;
-      const group=JSON.stringify([c,level,p.ref??'',p.name??'',p.oneway??'',widthOf(p,c)]),k=group+'|'+points.map(key).join(';'),r=group+'|'+points.slice().reverse().map(key).join(';');
+      const group=JSON.stringify([c,level,p.ref??'',p.name??'',p.oneway??'',sourceWidth]),k=group+'|'+points.map(key).join(';'),r=group+'|'+points.slice().reverse().map(key).join(';');
       if(seen.has(k)||seen.has(r))continue;seen.add(k);
       if(fragments.length>=LIMITS.fragments||inputPoints+points.length>LIMITS.inputPoints){dropped++;continue;}
-      inputPoints+=points.length;fragments.push({points,ids:[f.id??index],props:p,class:c,level,group});
+      inputPoints+=points.length;fragments.push({points,ids:[f.id??index],props:p,class:c,level,network,group,railway,sourceWidth});
     }
   }
   const pc=polygonOps(),items=[];let stationCount=0,considered=0;
   for(const f of joinFragments(fragments,degree)){
-    if(obstacleOverflow){fail(f.ids,'pressupost d’obstacles superat; no s’acrediten els creuaments');continue;}
-    const sourceWidthMetres=widthOf(f.props,f.class),widthMetres=Math.max(sourceWidthMetres,minRoadWidthMM/projection.scale),half=widthMetres/2;
+    if(obstacleOverflow||f.railway&&roadObstacleOverflow){fail(f.ids,'pressupost d’obstacles superat; no s’acrediten els creuaments');continue;}
+    const sourceWidthMetres=f.sourceWidth,widthMetres=Math.max(sourceWidthMetres,minRoadWidthMM/projection.scale),half=widthMetres/2;
     if(bbox){
       // Miter length is at most 1/cos(30deg), because sharper bends are rejected.
       const radius=half/Math.cos(Math.PI/6),xs=f.points.map(p=>p[0]),ys=f.points.map(p=>p[1]),latMargin=radius/METRES,lonMargin=latMargin/Math.cos(Math.max(...ys.map(Math.abs))*Math.PI/180);
@@ -214,10 +251,12 @@ export function generateMajorRoadItems(features,elevationAt,options={}){
       }
     }catch{invalid=true;}
     if(invalid){fail(f.ids,'DEM absent o cota no vàlida a l’eix o les vores');continue;}
-    const maxGrade=isLink(f.props) ? .16 : .12;
+    const maxGrade=f.railway ? .04 : isLink(f.props) ? .16 : .12;
     const originalConstraintFloors=sourceFloors.map((z,i)=>Math.max(z,renderedElevationAt?renderedFloors[i]:z));
     const constraintFloors=allowEndpointLift?limitedSlopeMajorant(stations,originalConstraintFloors,maxGrade):originalConstraintFloors.slice();
-    const {elevations,hull}=upperEnvelope(stations,constraintFloors);
+    const {elevations:envelope,hull}=upperEnvelope(stations,constraintFloors);
+    const railLine=f.railway?straightRailProfile(stations,originalConstraintFloors,sectionMinima,length,maxGrade,maxLiftMetres):null;
+    const elevations=railLine||(smooth?roundEnvelope(stations,envelope):envelope);
     const maxObservedGrade=Math.max(...elevations.slice(1).map((z,i)=>Math.abs(z-elevations[i])/(stations[i+1]-stations[i])));
     if(maxObservedGrade>maxGrade+1e-8){fail(f.ids,`pendent de l’envolupant ${(maxObservedGrade*100).toFixed(2)}% superior al límit ${(maxGrade*100).toFixed(0)}%`);continue;}
     const maximumLiftMetres=Math.max(...elevations.map((z,i)=>z-sourceElevations[i])),maximumSectionLiftMetres=Math.max(...elevations.map((z,i)=>z-sectionMinima[i]));
@@ -244,7 +283,9 @@ export function generateMajorRoadItems(features,elevationAt,options={}){
       interior.push(interior[0]);
       const originalMask=[[interior.map(p=>projection.project(p))]],mask=roi===undefined?originalMask:pc.intersection(originalMask,roi);let rejected=null;
       for(const obstacle of crossingObstacles){
+        if(obstacle.onlyRail&&!f.railway||f.ids.includes(obstacle.id))continue;
         if(!mask.length)break;
+        obstacle.polygons??=lineBuffer(obstacle.lines[0],obstacle.radius);
         const overlap=pc.intersection(mask,obstacle.polygons);if(!overlap.length)continue;
         let crossingPoints=axisCrossings(xy.slice(first,last+1),obstacle.lines).filter(inROI);
         if(!crossingPoints.length)crossingPoints=overlap.map(poly=>{const r=poly[0].slice(0,-1);return [r.reduce((n,p)=>n+p[0],0)/r.length,r.reduce((n,p)=>n+p[1],0)/r.length];});
@@ -259,11 +300,11 @@ export function generateMajorRoadItems(features,elevationAt,options={}){
     }
     let meanLiftMetres=0;for(let i=1;i<stations.length;i++)meanLiftMetres+=((elevations[i]-sourceElevations[i])+(elevations[i-1]-sourceElevations[i-1]))*(stations[i]-stations[i-1])/2;
     const id=`estimated-major-road-${f.ids.map(String).join('-')}-${key(f.points[0]).replaceAll(',','_')}`;
-    items.push({id,coordinates,faces,outlines:[outline],axis:f.points,axisXYZ:axisCoordinates.map((p,i)=>[...p,elevations[i]]),sourceFeatureIds:f.ids,railway:false,estimated:true,mainRoad:true,elevationMethod:'upper-envelope-dem',roadClass:f.class,ref:f.props.ref,name:f.props.name,oneway:f.props.oneway,layer:f.level,widthMetres,sourceWidthMetres,stations,sourceElevations,sourceFloors,renderedElevations,renderedFloors,originalConstraintFloors,constraintFloors,elevations,hullAnchors:hull,lengthMetres:length,maxGrade,maximumGrade:maxObservedGrade,maximumLiftMetres,maximumSectionLiftMetres,meanLiftMetres:meanLiftMetres/length,minimumFloorClearanceMetres:Math.min(...elevations.map((z,i)=>z-sourceFloors[i])),minimumConstraintClearanceMetres:Math.min(...elevations.map((z,i)=>z-constraintFloors[i])),endpointLiftMetres:[elevations[0]-sourceFloors[0],elevations.at(-1)-sourceFloors.at(-1)],crossingChecks});
+    items.push({id,coordinates,faces,outlines:[outline],axis:f.points,axisXYZ:axisCoordinates.map((p,i)=>[...p,elevations[i]]),sourceFeatureIds:f.ids,railway:f.railway,estimated:true,mainRoad:true,elevationMethod:railLine?'rail-endpoint-grade':smooth?'rounded-upper-envelope-dem':'upper-envelope-dem',roadClass:f.class,ref:f.props.ref,name:f.props.name,oneway:f.props.oneway,layer:f.level,widthMetres,sourceWidthMetres,stations,sourceElevations,sourceFloors,renderedElevations,renderedFloors,originalConstraintFloors,constraintFloors,elevations,hullAnchors:hull,lengthMetres:length,maxGrade,maximumGrade:maxObservedGrade,maximumLiftMetres,maximumSectionLiftMetres,meanLiftMetres:meanLiftMetres/length,minimumFloorClearanceMetres:Math.min(...elevations.map((z,i)=>z-sourceFloors[i])),minimumConstraintClearanceMetres:Math.min(...elevations.map((z,i)=>z-constraintFloors[i])),endpointLiftMetres:[elevations[0]-sourceFloors[0],elevations.at(-1)-sourceFloors.at(-1)],crossingChecks});
     stationCount+=stations.length;
   }
   if(dropped)warnings.push(`Plataformes viàries: ${dropped} eixos/fragments omesos pels límits de ${maxItems} eixos, ${LIMITS.fragments} fragments, ${LIMITS.inputPoints} punts i ${LIMITS.stations} estacions.`);
   for(const omission of omissions)warnings.push(`Carretera ${omission.sourceFeatureIds.join(', ')} omesa: ${omission.reason}.`);
-  if(items.length)warnings.push('Carreteres principals amb envolupant superior del DEM i suports estimats; es conserva el relleu. No són cotes constructives mesurades.');
+  if(items.length)warnings.push(smooth?'Vies principals i ferroviàries amb perfils suavitzats i suports estimats a partir del relleu.':'Carreteres principals amb envolupant superior del DEM i suports estimats; es conserva el relleu. No són cotes constructives mesurades.');
   return {items,warnings,metadata:{estimated:true,method:'upper-envelope-dem',reference:renderedElevationAt?'source-and-generated-terrain':'source-dem',terrainModified:false,obstacleScope:roi===undefined?'complete-axis':'physical-roi',allowEndpointLift,classes:[...MAJOR_CLASSES],count:items.length,stationCount,omitted:omissions.length+dropped,omissions,stationMetres,minRoadWidthMM,maxLiftMetres,maximumGrade:.12,maximumLinkGrade:.16,maximumSourceLiftMetres:items.length?Math.max(...items.map(i=>i.maximumSectionLiftMetres)):0,minimumFloorClearanceMetres:items.length?Math.min(...items.map(i=>i.minimumFloorClearanceMetres)):0,crossingChecks:items.flatMap(item=>item.crossingChecks.map(check=>({itemId:item.id,...check}))),budgets:{...LIMITS,maxItems},floorMethod:'maximum original DEM on axis/both edges, and optional unchanged generated-terrain elevations',clearanceReference:'road TOP minus original DEM; subtract printable slab thickness before support planning',source:'original source axes and DEM; estimated upper envelope, no measured road alignment'}};
 }

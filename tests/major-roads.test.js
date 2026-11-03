@@ -36,6 +36,34 @@ test('global upper envelope remains above axis and BOTH edges with fixed origina
   close(metadata.maximumSourceLiftMetres,p.maximumSectionLiftMetres);assert(metadata.minimumFloorClearanceMetres>=-1e-8);
 });
 
+test('rounded primary-road crests reduce slope breaks while staying above both edges',()=>{
+  const primary=feature([[0,0],[600,0]],{class:'primary'});
+  const crest=lon=>110-.03*Math.abs(lon*M-300);
+  const legacy=generateMajorRoadItems([road],crest,options).items[0];
+  const rounded=generateMajorRoadItems([primary],crest,{...options,smoothProfiles:true}).items[0];
+  assert.equal(rounded.elevationMethod,'rounded-upper-envelope-dem');
+  const grades=p=>p.elevations.slice(1).map((z,i)=>(z-p.elevations[i])/(p.stations[i+1]-p.stations[i]));
+  const jump=p=>Math.max(...grades(p).slice(1).map((g,i)=>Math.abs(g-grades(p)[i])));
+  assert(jump(rounded)<jump(legacy)/2);
+  assert(rounded.elevations.every((z,i)=>z>=rounded.sourceFloors[i]-1e-9));
+});
+
+test('unambiguous railway fragments use a constant grade, while an unmapped level crossing is preserved',()=>{
+  const left=feature([[0,0],[300,0]],{class:'rail',ref:'R1'},'rail-west');
+  const right=feature([[300,0],[600,0]],{class:'rail',ref:'R1'},'rail-east');
+  const settings={...options,smoothProfiles:true,allowEndpointLift:true};
+  const {items}=generateMajorRoadItems([right,left],terrain,settings);
+  assert.equal(items.length,1);
+  const [rail]=items;
+  assert.equal(rail.elevationMethod,'rail-endpoint-grade');
+  assert.equal(rail.railway,true);
+  for(let i=1;i<rail.stations.length;i++)close((rail.elevations[i]-rail.elevations[i-1])/(rail.stations[i]-rail.stations[i-1]),.015);
+  const roadCrossing=feature([[280,-30],[280,30]],{class:'secondary'},'crossing');
+  const crossed=generateMajorRoadItems([right,left,roadCrossing],terrain,settings);
+  assert.equal(crossed.items.length,0);
+  assert(crossed.metadata.omissions.some(o=>o.reason.includes('carretera crossing')));
+});
+
 test('deck item topology has one flat cross-section per station and upward triangle winding',()=>{
   const p=generateMajorRoadItems([road],terrain,options).items[0];
   assert.equal(p.coordinates.length,p.stations.length*2);assert.equal(p.faces.length,(p.stations.length-1)*6);

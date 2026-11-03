@@ -1,4 +1,4 @@
-// RO-051 prototype only: never enabled by the published UI in v0.18.1.
+// Local benchmark for the RO-051 estimated transport profiles.
 import {readFile,writeFile} from 'node:fs/promises';
 import {freemem} from 'node:os';
 import decode,{init} from '@jsquash/webp/decode.js';
@@ -20,6 +20,7 @@ const api=await Module();api.setup();
 globalThis.fetch=async url=>new Response(await readFile(new URL('../public/'+String(url).replace(/^\.\//,''),import.meta.url)));
 const buildingSource=process.argv.includes('--icgc')?'icgc':'osm',estimatedTunnels=process.argv.includes('--tunnels');
 const majorRoads=!process.argv.includes('--surface-roads'),rotation=Number(process.argv.find(v=>v.startsWith('--rotation='))?.slice(11)??0),heightMM=Number(process.argv.find(v=>v.startsWith('--height-mm='))?.slice(12)??mm);
+const smoothProfiles=process.argv.includes('--smooth-profiles');
 if(!Number.isFinite(rotation)||Math.abs(rotation)>180||!Number.isFinite(heightMM)||heightMM<50||heightMM>450)throw Error('Gir o altura física invàlids.');
 const data=await loadRegion({sample:'eix-diagonal',buildingSource,decodeElevation:async(blob,t)=>decodeDEMTile(await blob.arrayBuffer(),t,decode)});
 const centreArgument=process.argv.find(v=>v.startsWith('--centre='))?.slice(9),centre=centreArgument?centreArgument.split(',').map(Number):km===1.5||km===2.4?[41.71792,1.78391]:[41.72213,1.779785],start=Date.now();
@@ -27,7 +28,7 @@ if(centre.length!==2||!centre.every(Number.isFinite)||Math.abs(centre[0])>85||Ma
 console.log({km,mm,heightMM,rotation,centre,resolution,buildingSource,estimatedTunnels,majorRoads,initialFreeGB:freemem()/2**30});
 const trace=process.argv.includes('--trace')?event=>console.log('RO051_TIMING '+JSON.stringify({...event,elapsedMS:Date.now()-start,rssMB:process.memoryUsage().rss/2**20})):null;
 const bbox=physicalBBox(centre,km,km*heightMM/mm),pose=rotation||heightMM!==mm?selectionPose(bbox,rotation):undefined;
-const model=buildModel({...data,meta:{...data.meta,bbox:pose?.bbox??bbox}},{size:mm,widthMM:mm,heightMM,resolution,trees:false,majorRoads,estimatedTunnels,...(pose?{selectionPose:pose}:{})},message=>console.log(Math.round((Date.now()-start)/1000)+'s',message),api,trace);
+const model=buildModel({...data,meta:{...data.meta,bbox:pose?.bbox??bbox}},{size:mm,widthMM:mm,heightMM,resolution,trees:false,majorRoads,smoothProfiles,estimatedTunnels,...(pose?{selectionPose:pose}:{})},message=>console.log(Math.round((Date.now()-start)/1000)+'s',message),api,trace);
 const seconds=(Date.now()-start)/1000;
 const audit=process.argv.includes('--verify')?model.categories.map(auditPart).map(({id,errors,triangles})=>({id,errors,triangles})):undefined;
 const exportPath=process.argv.find(v=>v.startsWith('--export='))?.slice(9);

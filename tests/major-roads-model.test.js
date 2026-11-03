@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';import Module from 'manifold-3d';
-import {buildModel,updateBuildings,updateVegetation} from '../src/geometry.js';
+import {buildModel,updateBuildings,updateVegetation,updateTransport} from '../src/geometry.js';
 import {auditPart} from '../src/solid-audit.js';import {threeMF} from '../src/export.js';import {unzipSync,strFromU8} from 'fflate';
 const api=await Module();api.setup();
 function region(roadClass='motorway'){
@@ -7,6 +7,18 @@ function region(roadClass='motorway'){
   return {meta:{bbox:[0,0,.01,.01]},localDEM:{width:11,height:11,epsg:4326,affine:[.001,0,0,0,.001,0],pixelIsArea:false,values,metadata:{}},features:[{type:'Feature',id:'main-road',properties:{sourceLayer:'transportation',class:roadClass},geometry:{type:'LineString',coordinates:[[.0001,.005],[.0099,.005]]}}]};
 }
 const options={size:100,resolution:6,trees:false,estimatedTunnels:false,majorRoads:true};
+test('smooth rail platforms are applied incrementally in the railway material',()=>{
+  const data=region('rail');
+  const initial=buildModel(data,{...options,majorRoads:false,smoothProfiles:true},()=>{},api);
+  const updated=updateTransport(initial,{majorRoads:true});
+  assert.equal(updated.context.ground,initial.context.ground);
+  assert.equal(updated.provenance.majorRoads.applied,true);
+  assert.equal(updated.provenance.majorRoads.profiles[0].elevationMethod,'rail-endpoint-grade');
+  assert.equal(updated.provenance.infrastructure.completion.details[0].railway,true);
+  assert(updated.categories.some(part=>part.id==='railways'));
+  assert(!updated.categories.some(part=>part.id==='roads'));
+  for(const part of updated.categories)assert.deepEqual(auditPart(part).errors,[]);
+});
 test('upper-envelope platforms retain the exact terrain heights, a level cross-section and supported free spans',()=>{
   const data=region(),before=data.localDEM.values.slice(),raw=buildModel(data,{...options,majorRoads:false},()=>{},api),model=buildModel(data,options,()=>{},api);
   assert.equal(model.provenance.majorRoads.applied,true);assert.equal(model.provenance.majorRoads.count,1);assert.equal(model.provenance.majorRoads.terrainModified,false);

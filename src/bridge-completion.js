@@ -127,7 +127,16 @@ export function planApproaches({axis,points,faces,containsDeck,roads,ground,road
     const fractions=crossSectionFractions({centre:start,normal:[-startDirection[1],startDirection[0]],widthMM:width},{points,faces});
     if(destinationBreaks)fractions.push(...destinationBreaks({centre:last.p,normal:[-endDirection[1],endDirection[0]],widthMM:endWidth,line:terminal?.line}));
     const normalized=fractions.map(v=>Math.abs(v)<1e-9?0:Math.abs(v-.5)<1e-9?.5:Math.abs(v+.5)<1e-9?-.5:v);
-    const acrossFractions=normalized.filter((v,i,a)=>a.findIndex(q=>Math.abs(q-v)<1e-9)===i).sort((a,b)=>b-a);
+    // A breakpoint next to an edge or the centre can round onto that same
+    // column in the output mesh. Preserve the three anchors and keep the
+    // other breaks at least a few Float32 units apart at the narrowest row.
+    const minimumWidth=Math.min(width,endWidth);
+    const separation=4*Math.max(widthMM,heightMM)*2**-23/minimumWidth;
+    const acrossFractions=[.5,0,-.5];
+    for(const fraction of normalized.sort((a,b)=>b-a)){
+      if(acrossFractions.every(anchor=>Math.abs(anchor-fraction)>separation))acrossFractions.push(fraction);
+    }
+    acrossFractions.sort((a,b)=>b-a);
     let normals;try{normals=approachNormals(selected);}catch{missed.push('no safe approach bend');continue;}
     const sections=selected.map(({p,s},i)=>{const t=s/length,z=(2*t**3-3*t*t+1)*startZ+(t**3-2*t*t+t)*length*grade+(-2*t**3+3*t*t)*endZ+(t**3-t*t)*length*endGrade,n=normals[i];
       const widthAt=width+(endWidth-width)*(t*t*(3-2*t));

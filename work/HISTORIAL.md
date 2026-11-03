@@ -2,6 +2,27 @@
 
 Actualitzat: 2026-11-03. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.19.8 — Perfils suaus i controls del mapa
+
+L'opció experimental de Vies arrodoneix els canvis de pendent de les
+carreteres principals. Els perfils ferroviaris provinents d'eixos
+compatibles prefereixen un pendent constant entre extrems, sempre que
+respecti el relleu i els límits de separació. Els punts transversals
+que coincideixen a la precisió de sortida es consoliden abans de
+construir la unió.
+
+El control local de Rajadell de 150 mm i detall 36 aplica quatre perfils
+i un túnel en 26,06 s. Les sis capes superen l'auditoria de malles. Un
+perfil s'omet pel creuament amb un túnel sense cota acreditada. Queden
+els dos extrems coneguts limitats pel retall i el contrast de les
+terminacions i del ferrocarril en altres llocs.
+
+«Projecte nou» passa al panell esquerre. El tirador és circular i el
+restabliment d'orientació usa el [compàs de Lucide](https://lucide.dev/icons/compass).
+386 proves ordinàries i compilació correctes. Revisió de la interfície a
+1280×720 i 1600×900. La maqueta de Rajadell amb l'opció marcada conserva
+l'exportació habilitada.
+
 ## v0.19.7 — Catastre per blocs
 
 RO-044 descarta els identificadors contradictoris i conserva la resta

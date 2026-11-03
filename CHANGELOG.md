@@ -1,5 +1,11 @@
 # Canvis
 
+## v0.19.8 — 2026-11-03
+
+- «Projecte nou» ara és un botó sobre Territori. El tirador del mapa és un cercle i el compàs recupera el nord.
+- RO-051: opció experimental a Vies per arrodonir els canvis de pendent de les carreteres principals i estimar pendents ferroviàries entre extrems. Els perfils amb suport o encaixos invàlids recuperen la representació sobre el terreny.
+- RO-052: els enllaços conserven el centre i les vores de la calçada quan alguns punts transversals coincideixen en convertir les coordenades de la malla.
+
 ## v0.19.7 — 2026-11-03
 
 - El Catastre omet només els identificadors contradictoris i en registra el recompte i els identificadors. La resta d'edificis es conserva.

@@ -83,9 +83,10 @@ export function knownBridgeClearance(item,fit,knownItems,{projection,verticalRef
         }
         if(!overlapCount)return failure(`la font XYZ no té superfície comuna amb la carretera al creuament ${check.featureId}`);
         const aboveThickness=thickness+(source.source.railway?railRise:0);
-        const clearance=minDiff>=0?minDiff-aboveThickness:maxDiff<=0?-maxDiff-thickness:-aboveThickness;
+        const belowThickness=thickness+(item.railway?railRise:0);
+        const clearance=minDiff>=0?minDiff-aboveThickness:maxDiff<=0?-maxDiff-belowThickness:-aboveThickness;
         minimumObserved=Math.min(minimumObserved,clearance);
-        const relation=minDiff>=aboveThickness+minimumClearanceMM-1e-8?'above':maxDiff<=-thickness-minimumClearanceMM+1e-8?'below':null;
+        const relation=minDiff>=aboveThickness+minimumClearanceMM-1e-8?'above':maxDiff<=-belowThickness-minimumClearanceMM+1e-8?'below':null;
         if(!relation)return failure(`llum de ${clearance.toFixed(3)} mm insuficient o canvi de sobre/sota al creuament ${check.featureId}; mínim ${minimumClearanceMM} mm`);
         if(orientation&&orientation!==relation)return failure(`canvi de sobre/sota entre les fonts XYZ del creuament ${check.featureId}`);
         orientation=relation;
