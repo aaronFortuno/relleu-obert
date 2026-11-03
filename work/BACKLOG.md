@@ -13,6 +13,8 @@ Actualitzat: **2026-11-03 · v0.20.1**. Rasants ferroviàries i accessos més pr
 
 Els encàrrecs independents avancen en paral·lel. Cada bloc validat té el seu commit i es manté una sola prova pesada alhora. Els casos que requereixen inspecció al laminador poden quedar pendents mentre avancen altres línies.
 
+Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixes regles de generació. Les correccions han de basar-se en la geometria, les dades disponibles i l’escala, com la col·locació procedimental de pilars. Quan corregim un defecte, cal reproduir-lo en un control petit i contrastar la regla en un altre retall o escala.
+
 **Seguiment:** 19 línies obertes, 6 ajornades i 30 arxivades. «Implementat» vol dir disponible; la validació local, la d’usuari, el laminat i la impressió es registren per separat.
 
 ## Desenvolupament prioritari
@@ -174,6 +176,8 @@ P1: fidelitat i imprimibilitat; P2: funcionalitat i ús; P3: exploració. Només
 ### RO-024 — Unió de volums i validació d’impressió
 
 **Preparació del lot 0.21.** L’auditoria de 3MF de control verifica el muntatge, els materials, els filaments i la topologia indexada. El cupó del Bages i la parella de la Perica passen aquestes comprovacions. El solapament de caixes envolupants només assenyala parells per inspeccionar. [Resultats i com repetir la prova](RO-024-RESULTATS.md)
+
+**Retorn d’usuari.** Bambu Studio lamina bé en general. S’han observat capes puntuals amb un material inesperat, amb origen pendent de determinar. Si es reprodueix, comparar l’assignació del 3MF amb la vista per capes del laminador sobre el mateix fitxer.
 
 **Observació rebuda, 2026-11-02:** al laminador apareixen capes puntuals amb color terra dins de vegetació/arbres i alguns edificis. La causa no està establerta: comprovar encavalcaments, topologia i assignació de materials del 3MF, i després configuració/reparació del laminador. Cal un fitxer i tall concrets abans d’atribuir responsabilitat. Es conserva l’anotació literal a l’historial.
 
