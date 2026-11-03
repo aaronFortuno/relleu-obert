@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.21.4 — 2026-11-03
+
+- La unió de materials reintenta en coordenades locals els components de volum positiu que perden precisió.
+- Els prismes triangulars aïllats conserven l’orientació en la precisió de sortida. El control de Sant Salvador recupera dos perfils de la C-37 i el retall ferroviari de 800 m recupera la rasant constant.
+
 ## v0.21.3 — 2026-11-03
 
 - Els perfils suaus amb MET5 acoten el càlcul al retall i un petit marge. Inclouen els ramals de vies primàries i les vies reservades a motor quan la font les identifica.

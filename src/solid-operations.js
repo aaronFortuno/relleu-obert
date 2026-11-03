@@ -1,7 +1,7 @@
 // RO-024 fase 2: unió booleana de peces DINS de cada material (mateix id),
 // sobre còpies, amb l'API de manifold-3d injectada. Mai s'uneixen ids
 // diferents, encara que comparteixin color. No s'usa encara a l'aplicació.
-import {partComponents,auditPart} from './solid-audit.js';
+import {partComponents,auditPart,signedVolume} from './solid-audit.js';
 
 const label=part=>part?.name??part?.id??'(sense nom)';
 
@@ -29,11 +29,27 @@ function componentManifold(api,part,triangles){
     if(l===undefined){l=remap.size;remap.set(g,l);verts.push(part.vertices[g*3],part.vertices[g*3+1],part.vertices[g*3+2]);}
     faces.push(l);
   }
-  const mesh=new api.Mesh({numProp:3,vertProperties:new Float32Array(verts),triVerts:new Uint32Array(faces)});
-  mesh.merge();
-  const solid=new api.Manifold(mesh);let accepted=false;
+  const indices=new Uint32Array(faces);
+  const makeSolid=vertices=>{
+    const mesh=new api.Mesh({numProp:3,vertProperties:vertices,triVerts:indices});
+    mesh.merge();
+    return new api.Manifold(mesh);
+  };
+  const solid=makeSolid(new Float32Array(verts));let accepted=false;
   try{
     const status=solid.status(),volume=solid.volume();
+    if(status==='NoError'&&Number.isFinite(volume)&&volume<=0){
+      // Retry a positive component close to its own origin, where the native
+      // tolerance can distinguish nearby vertices. Keep its model placement.
+      const origin=verts.slice(0,3),local=verts.map((v,i)=>v-origin[i%3]);
+      if(signedVolume(local,indices)>0){
+        const centered=makeSolid(new Float32Array(local));
+        try{
+          const localVolume=centered.volume();
+          if(centered.status()==='NoError'&&Number.isFinite(localVolume)&&localVolume>0)return centered.translate(origin);
+        }finally{centered.delete();}
+      }
+    }
     if(status!=='NoError'||!Number.isFinite(volume)||volume<=0)
       throw Error(`No es pot unir la capa «${label(part)}»: un component no forma un sòlid vàlid (${status}; volum ${volume}).`);
     accepted=true;return solid;

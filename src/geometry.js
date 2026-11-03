@@ -84,6 +84,14 @@ export class Surface {
     const ix=earcut(flat,holes);for(let i=0;i<ix.length;i+=3){const p=ix.slice(i,i+3).map(j=>[flat[2*j],flat[2*j+1]]),a=area(p);if(Math.abs(a)<1e-8)continue;if(a<0)[p[1],p[2]]=[p[2],p[1]];this.tri(...p.map(([x,y])=>[x,y,height(x,y)]));}
   }
   solid(bottom){
+    if(this.faces.length===3){
+      const [a,b,c]=this.faces.map(id=>this.vertices.slice(id*3,id*3+2));
+      const determinant=([x,y],[u,v],[p,q])=>(u-x)*(q-y)-(v-y)*(p-x);
+      // An isolated thin prism can change winding when its XY is stored in
+      // Float32. Orient the entire shell from its representable footprint.
+      if(determinant(a,b,c)>0&&determinant(a.map(Math.fround),b.map(Math.fround),c.map(Math.fround))<0)
+        [this.faces[1],this.faces[2]]=[this.faces[2],this.faces[1]];
+    }
     const topVertices=this.vertices.slice(),topFaces=this.faces.slice(),edges=new Map();
     const counts=new Map(),degree=new Map();
     for(let i=0;i<topFaces.length;i+=3)for(let j=0;j<3;j++){const a=topFaces[i+j],b=topFaces[i+(j+1)%3],key=[Math.min(a,b),Math.max(a,b)].join(',');counts.set(key,(counts.get(key)||0)+1);}

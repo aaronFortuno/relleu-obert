@@ -7,6 +7,8 @@ import {selectSurfaceComponents,removeCollapsedSurfaceComponents} from '../src/s
 import {carveTransportDecks} from '../src/transport-carving.js';
 import {carveTerrainTunnels} from '../src/tunnel-operations.js';
 import {auditPart} from '../src/solid-audit.js';
+import {uniteMaterials} from '../src/solid-operations.js';
+import {Surface} from '../src/geometry.js';
 const api=await Module();api.setup();
 const fixture=JSON.parse(await readFile(new URL('./fixtures/rajadell-surface-slivers.json',import.meta.url)));
 const part=name=>({id:'roads',name:'Camins',color:'#123456',vertices:new Float32Array(fixture[name].vertices),faces:new Uint32Array(fixture[name].faces)});
@@ -17,6 +19,23 @@ function combine(parts){
   return {...parts[0],vertices,faces};
 }
 const cornerDeck={...bridgeDeck([[0,0,12],[100,0,12],[100,150,12]],2,.6),id:'deck',color:'#123456'},mask=[[[[-1,-1],[101,-1],[101,150],[99,150],[99,1],[-1,1],[-1,-1]]]];
+
+test('material union recovers a positive thin component in its original position',()=>{
+  const positive=part('positive');
+  const [recovered]=uniteMaterials({parts:[positive]},api).parts;
+  assert.equal(recovered.faces.length,positive.faces.length);
+  assert.deepEqual(auditPart(recovered).bbox,auditPart(positive).bbox);
+  assert.throws(()=>uniteMaterials({parts:[part('collapsed')]},api),/sòlid vàlid/);
+});
+
+test('a thin terrain prism uses the winding of its Float32 footprint',()=>{
+  const surface=new Surface();
+  surface.tri([4.1667,77.1389,15.69],[2.7713,77.2374,15.52],[2.2726,77.2726,15.45]);
+  const mesh=surface.solid((_x,_y,z)=>z-.65);
+  assert.deepEqual(auditPart(mesh).errors,[]);
+  const [united]=uniteMaterials({parts:[{id:'railways',...mesh}]},api).parts;
+  assert(auditPart(united).signedVolume>0);
+});
 
 test('real positive Float32 sliver outside a conservative deck footprint bypasses booleans unchanged',()=>{
   const positive=part('positive'),v=positive.vertices,det=(v[3]-v[0])*(v[7]-v[1])-(v[4]-v[1])*(v[6]-v[0]);

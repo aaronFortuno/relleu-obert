@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-03. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.21.4 — Unió de paviment
+
+La unió en coordenades locals i la correcció del sentit de cares en prismes aïllats recuperen perfils en els dos retalls afectats de la bateria. [Resultats](RO-051-PERFILS-VIARIS.md#repetició-amb-v0214)
+
 ## v0.21.3 — Perfils de vies principals amb MET5
 
 Els eixos de superfície es retallen abans de mostrejar el MET5. El planificador conserva cinc perfils troncals al retall sud-oest de Sant Salvador de Guardiola, un més que abans. El resultat integrat i el laminat del túnel i el pont queden pendents. [Control de la C-37](RO-051-PERFILS-VIARIS.md)

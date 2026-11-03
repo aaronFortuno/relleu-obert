@@ -129,3 +129,12 @@ Sis models complets amb dades remotes, peça de 150 mm, detall Ràpid de la inte
 Sant Salvador a 1:10.000 i el ferrocarril a 1:5.333 fallen en la mateixa etapa, en unir els components de la capa de paviment abans de la resta booleana. El motor n’informa amb volums calculats lleugerament negatius. Cal capturar els components i provar si el càlcul en coordenades locals conserva els sòlids vàlids. Un control preexistent de Rajadell mostra que traslladar un prisma petit a l’origen recupera un volum positiu i manté col·lapsat el control degenerat. L’efecte sobre els dos errors reals encara és pendent. La falta de coberta del túnel a 1:20.000 és una incidència separada.
 
 Reproducció amb `node --max-old-space-size=512 scripts/diagnose-transport-battery.mjs guardiola 1.5`. Els casos són `guardiola` i `millau` amb 1,5 o 3 km, i `rail` amb 0,4 o 0,8 km. Executar-los seqüencialment i controlar el marge de memòria segons `AGENTS.md`. Els informes JSON i 3MF es desen a `output/transport-battery/`.
+
+### Repetició amb v0.21.4
+
+La unió reintenta en coordenades locals els components amb volum geomètric positiu que Manifold valora com a no positius. El retall ferroviari també presentava un prisma aïllat que invertia l’orientació en convertir el contorn a Float32. L’extrusió d’aquests prismes comprova ara l’orientació amb la precisió de sortida abans de tancar la peça. Són regles de geometria compartides.
+
+- **Sant Salvador, 1:10.000.** Dos perfils troncals aplicats, amb pendents màxims del 10,69% i el 4,63%. Pont i túnel presents. Quatre omissions al conjunt del retall, incloses transicions de la C-37.
+- **Ferrocarril, 800 m, 1:5.333.** Perfil aplicat amb pendent constant de l’1,56% i zero omissions.
+
+Tots dos controls s’han repetit amb MET5 i els mateixos ajustos de model, amb un termini ampliat només al diagnòstic per obtenir la mateixa font. Les malles finals passen l’auditoria. El contrast visual i el laminat són pendents.
