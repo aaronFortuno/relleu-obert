@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.19.13 — 2026-11-03
+
+- RO-053: les guies de les peces segueixen la superfície de la maqueta als plans de tall del 3MF o STL.
+- El model visible es pot descarregar quan el mapa té canvis pendents de generar. El visor indica quina maqueta s’exportarà.
+
 ## v0.19.12 — 2026-11-03
 
 - RO-053: el visor mostra el pas de generació i el recompte de l’operació quan té un total conegut.

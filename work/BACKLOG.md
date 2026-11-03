@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-03 · v0.19.12**. RO-053 mostra el progrés de generació i previsualitza les capes a mesura que es calculen. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
+Actualitzat: **2026-11-03 · v0.19.13**. RO-053 adapta la guia de tall a la superfície i conserva la descàrrega de la maqueta visible. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
 
 ## Ordre de treball
 
@@ -8,27 +8,33 @@ Actualitzat: **2026-11-03 · v0.19.12**. RO-053 mostra el progrés de generació
 
 **RO-053 — primera integració en producció.** Ordre validat per l'usuari: Peça → Territori → Terreny → Vegetació → Vies → Edificis. Botons compactes al títol actiu, navegació lliure i traços conservats durant la sessió. [Disseny, invalidacions i pas següent](RO-053-UX.md). El visor rep capes parcials i recomptes de feina. El substrat i les vies encara comparteixen part de la preparació. Una sola cua pesada alhora.
 
-1. **RO-051 — Primera optimització validada localment.** 3 km: 189,3 → 56,6 s; màscares sota demanda, de 14 unions a 2, amb mateixos perfils/omissions/pilars/llums. 344 proves i build correctes. Següent: component nul d'1,5 km / detall 12 i màscares multipart; prototip desactivat. [Informe i controls](RO-051-RENDIMENT.md).
-2. **RO-034 / RO-050 — Validació del lot.** Revisar túnels arquejats i suports a Rajadell; comparar +0,5 / +1 mm ferroviaris i materials. Distingir control geomètric local de laminat i impressió.
-3. **RO-024 — Qualitat abans d'impressions llargues.** Analitzar els canvis de material observats en algunes capes al laminador; no atribuir-ne encara la causa al programa. Cupó reduït abans de maquetes de 2–3 dies.
-4. **RO-032 — Cobertes i singulars, P1.** Acreditar accés remot reeixit i obtenir dades de coberta de Tamariu. Nucli de sis formes i fixture Torre Glòries verificats; cobertura general i altres singulars encara oberts.
-5. **RO-033 / RO-052 — Contrast fora de Rajadell.** Pas inferior verificat en tres retalls i cupó 3MF preparat. Millau conserva dues calçades i les mateixes cotes a 3 km i 1,4 km. Prioritat: revisar llums i accessos al laminador. [Controls i diagnòstic](RO-033-CONTROLS-PROCEDIMENTALS.md).
+**Retocs de RO-053, v0.19.13.** Les guies de tall segueixen la superfície i es pot descarregar la maqueta calculada amb canvis pendents al mapa. [Detall](#ro-053--flux-de-treball-per-etapes).
 
-**Seguiment:** 17 línies obertes, 6 ajornades i 30 arxivades. «Implementat» vol dir disponible; la validació local, la d’usuari, el laminat i la impressió es registren per separat.
+1. **RO-053 / RO-051 — Mesurar i agilitzar.** Registrar el temps fins al primer relleu visible, la durada de cada fase i el pic de memòria a Millau i en un retall més curt. Optimitzar primer l’etapa que domina l’espera. [Mesures anteriors](RO-051-RENDIMENT.md).
+2. **RO-051 / RO-052 — Perfils i amplada de les vies.** Reproduir els bonys dels accessos de Millau i comparar la llegibilitat de diferents classes de via en una peça local i un retall ampli. Revisar amplades i mínims imprimibles conjuntament.
+3. **RO-055 — Relleu pur.** Provar una peça de gran extensió dels Pirineus amb un pressupost de resolució i memòria propi. El primer resultat ha de mostrar què es guanya en extensió i temps de càrrega.
+4. **RO-054 — Galeria local.** Desar i recuperar configuracions en un mateix navegador. Valorar després una còpia del model acabat quan calgui recuperar exactament la mateixa geometria.
+5. **RO-032 — Cobertes i singulars.** Mesurar la cobertura real de formes de coberta en un retall abans d’ampliar el modelatge. Verificar els volums singulars amb fonts i llicències concretes.
+
+Continuen oberts el laminat dels controls de ponts, túnels i ferrocarrils (RO-033/034/050/052) i el diagnòstic de materials (RO-024).
+
+**Seguiment:** 19 línies obertes, 6 ajornades i 30 arxivades. «Implementat» vol dir disponible; la validació local, la d’usuari, el laminat i la impressió es registren per separat.
 
 ## Desenvolupament prioritari
 
 | ID                                                                 | Prioritat | Estat                                                                                                                                                                                                                                                                                                                                 | Proper resultat comprovable                             |
 | ------------------------------------------------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| [RO-053](#ro-053--flux-de-treball-per-etapes) | P1 | Previsualització i progrés per fases integrats | Contrastar retalls lents i mesurar temps i memòria |
-| [RO-033](#ro-033--ponts-i-viaductes) | P1 | Pas inferior validat visualment; Millau continu en dos retalls | Revisar accessos i llums al laminador, contrastar altres ponts |
+| [RO-053](#ro-053--flux-de-treball-per-etapes) | P1 | Previsualització i progrés validats en diversos llocs | Mesurar temps i memòria; validar guies i descàrrega |
+| [RO-033](#ro-033--ponts-i-viaductes) | P1 | Millau i el cupó del Bages validats al visor | Revisar accessos i llums al laminador, contrastar altres ponts |
 | [RO-034](#ro-034--túnels-imprimibles) | P1 | Corregit en controls locals; pendent d'usuari/laminat | Revisar portals amb mode experimental activat |
-| [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | Perfil ferroviari d’1,22% verificat en un segon retall | Contrastar suports i laminat en altres escales |
-| [RO-052](#ro-052--continuïtat-i-amplada-del-traçat-viari) | P1 | Unions de perfils experimentals verificades; dos extrems de pont oberts | Contrastar extrems i revisar al laminador |
+| [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | Perfil ferroviari verificat; bonys en vies principals pendents | Reproduir ondulacions als accessos de Millau i mesurar fases |
+| [RO-052](#ro-052--continuïtat-i-amplada-del-traçat-viari) | P1 | Accessos de Millau visualment acceptables; camins massa amples en retalls grans | Comparar amplades a dues escales i revisar el laminat |
 | [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió) | P1 | Artefactes de materials pendents de diagnòstic | Distingir malla/exportació de configuració del laminador |
 | [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts)     | P1        | Fonts en estudi                                                                                                                                                                                                                                                                                                                       | Comparació de parts i petjades en segona zona           |
 | [RO-032](#ro-032--cobertes-i-volums-singulars) | P1 | Nucli verificat; servei remot pendent de validar | Consulta real reeixida i dades de coberta de Tamariu |
 | [RO-023](#ro-023--relleu-local-i-fonts-vectorials-de-més-precisió) | P2        | Fonts remotes pendents                                                                                                                                                                                                                                                                                                                | MDT més precís accessible al navegador                  |
+| [RO-055](#ro-055--mode-de-relleu-pur) | P2 | Proposat | Pilot del Pirineu amb relleu i pressupost de resolució propis |
+| [RO-054](#ro-054--galeria-local-de-projectes) | P2 | Proposat | Desar i recuperar una configuració en el mateix navegador |
 
 ## Validació i retocs acotats
 
@@ -36,7 +42,7 @@ Actualitzat: **2026-11-03 · v0.19.12**. RO-053 mostra el progrés de generació
 | ------------------------------------------------------------------------ | --------- | ------------------------------------ | --------------------------------------------------------------- |
 | [RO-050](#ro-050--ferrocarrils-diferenciats) | P2 | Implementat i comprovat localment | Usuari: realç ferroviari i assignació de material; laminat |
 | [RO-046](#ro-046--catàleg-de-llocs-recomanats)                           | P2        | Catàleg validat; canvi aplicat       | Càrrega en seleccionar exemple; comprovar transició             |
-| [RO-044](#ro-044--catastre-per-seccions-i-recuperació-de-configuracions) | P1        | Implementat; casos límit pendents    | Buit/mixt, subdivisions i recuperació després d’error           |
+| [RO-044](#ro-044--catastre-per-seccions-i-recuperació-de-configuracions) | P1 | Vista progressiva validada a Tamariu | Buit/mixt, subdivisions i recuperació després d’error |
 | [RO-045](#ro-045--coherència-visual-dels-sidebars)                       | P2        | Implementat; pendent d’usuari        | Coherència de controls i scroll a escriptori                    |
 
 ## Després del nucli imprimible
@@ -233,6 +239,8 @@ Estudiar roof:shape, roof:height, roof:direction/angle i parts d’OSM original,
 
 ### RO-033 — Ponts i viaductes
 
+**Validació d’usuari a v0.19.12.** A Millau el tauler i els pilars simulats es veuen bé. En el retall provat, els pilars deixen lliures edificis i camins, i la unió amb la carretera és relativament neta. El laminat i les llums continuen pendents. Els bonys de les vies principals es mantenen a RO-051.
+
 **v0.19.10.** Millau conserva dos perfils de tauler amb cotes idèntiques entre retalls. S’han ajuntat els fragments solapats de cada via i s’ha carregat el context dels estreps que quedaven fora. L’usuari confirma la vista del cupó del Bages. Queden la revisió de Millau per l’usuari i el laminat. [Controls](RO-033-CONTROLS-PROCEDIMENTALS.md).
 
 **2026-11-03.** Un pont procedimental sobre una carretera del Bages conserva cota i pas inferior en tres retalls. La llum mostrejada de 15,29 mm a la peça sencera de 84 mm queda oberta. A Millau, un retall petit perd els taulers quan falta DEM als extrems dels fragments vectorials; el retall ampli genera tres fragments per calçada. [Controls, cupó i diagnòstic](RO-033-CONTROLS-PROCEDIMENTALS.md).
@@ -279,6 +287,8 @@ Un MDT d’una altura per XY no descriu cavitats ni voladissos. Investigar núvo
 
 ### RO-044 — Catastre per seccions i recuperació de configuracions
 
+**Validació d’usuari a v0.19.12.** A Tamariu, en el retall per defecte, els edificis del Catastre apareixen bloc a bloc i el resultat és l’esperat. La validació cobreix aquest retall.
+
 **v0.19.11.** Una entitat invàlida d’una resposta WFS vàlida s’omet amb un avís. El constructor tracta també les petjades per entitat, omet geometries invàlides i conserva la primera còpia usable de la mateixa petjada i identificador.
 
 **v0.19.7.** El flux interactiu consulta quatre blocs, amb un màxim de dues connexions. La vista provisional es reemplaça per una capa validada. Les contradiccions d'identificador s'ometen per entitat i queden registrades a la procedència. Un error de bloc recupera l'última capa vàlida.
@@ -323,6 +333,8 @@ Abans d’implementar: cua limitada, cancel·lació per canvi de regió, memòri
 
 ### RO-051 — Perfils de carreteres principals
 
+**Validació d’usuari a v0.19.12.** El tauler de Millau es veu bé i l’enllaç és relativament net. Encara es veuen bonys a les vies principals. Cal comparar el perfil longitudinal i la transició amb el relleu abans i després de l’accés, en més d’una escala.
+
 **v0.19.8.** Opció experimental a Vies, desactivada d'entrada. Les vies principals incorporen l'arrodoniment de l'envolupant i els ferrocarrils proven un pendent constant entre extrems. Es mantenen els controls de separació, creuaments, suports i unions. Falta contrastar més retalls ferroviaris i validar el laminat.
 
 **Represa autoritzada (2026-11-02), primer lot completat localment:** diagnòstic i optimització seqüencial en l'equip de 64 GB. El prototip continua sense activar-se a la UI. Ordre i responsables:
@@ -353,6 +365,8 @@ Primer prototip local: perfil longitudinal regularitzat amb tall/terraplè acota
 
 ### RO-052 — Continuïtat i amplada del traçat viari
 
+**Amplada a zoom llunyà.** En retalls de diversos quilòmetres quadrats, alguns camins queden visualment massa amples. Comparar les amplades físiques i els mínims imprimibles per classe de via a dues escales. Valorar presets adaptats a l’escala i un ajust manual, compartits per superfície, ponts i túnels quan siguin aplicables.
+
 **v0.19.11.** Aïllat l’error «Les seccions de paviment es pleguen o es creuen» notificat a Millau. Un extrem defectuós conserva el tauler i l’altre extrem vàlid. Validació de l’usuari amb el retall original pendent.
 
 **v0.19.9.** Transicions calculades dins del traçat cartografiat, amb la cota de la malla al punt d’unió. Es conserva la via sobre el terreny quan no hi ha una unió admissible. [Control ferroviari, regressió i límits](RO-052-CONTINUITAT.md).
@@ -377,6 +391,10 @@ Primer prototip local: perfil longitudinal regularitzat amb tall/terraplè acota
 
 ### RO-053 — Flux de treball per etapes
 
+**Validació d’usuari a v0.19.12.** El progrés i les capes parcials es veuen bé en dos o tres llocs, inclòs Millau. Tamariu confirma el flux per blocs del Catastre. El següent treball de rendiment és mesurar càrrega de dades, temps fins al primer relleu visible, temps per etapa i pic de memòria amb els mateixos retalls i opcions.
+
+**v0.19.13.** La guia de tall segueix les cares de la superfície als mateixos plans que l’exportació. La descàrrega i les mides de les peces corresponen a la maqueta visible mentre el mapa té una selecció pendent. Relacionat amb les proves de partició de RO-024.
+
 **v0.19.12.** La generació completa publica relleu, vies, edificis i vegetació al visor. Les operacions que tenen un total conegut indiquen el recompte i percentatge local. Els lots són provisionals i el model exportable es fixa al final. Les fonts inicials es carreguen abans del càlcul; la consulta del Catastre conserva el seu flux per blocs. Pendent contrastar retalls lents i mesurar el cost de les actualitzacions.
 
 **v0.19.6.** Mides proporcionals al centre i generació des de Territori, primer apartat. Escala i zoom limitats a 1:20.000. «Projecte nou» al header torna a la tria inicial. Ajornats els fitxers propis i el canvi de mida dins d'un projecte.
@@ -387,7 +405,7 @@ Primer prototip local: perfil longitudinal regularitzat amb tall/terraplè acota
 
 **v0.19.3.** Aplicació automàtica dels ajustos de vies en un retall ja generat. El càlcul encara reconstrueix les malles a partir de les dades carregades. Panell dret amb scroll intern i descàrrega fixa. Seleccionar format el descarrega i el manté durant la sessió.
 
-**P1, ordre validat el 2026-11-03 i primer pilot integrat a v0.19.2.** [Informe, matriu d'impacte i pilot](RO-053-UX.md). Sis apartats i accions al títol. Els traços es recuperen en tornar al mateix retall i mida, dins la sessió. La generació encara és conjunta per a terreny i vies; el càlcul per capes de la demostració és il·lustratiu.
+**P1, ordre validat el 2026-11-03 i primer pilot integrat a v0.19.2.** [Informe, matriu d'impacte i pilot](RO-053-UX.md). Sis apartats i accions al títol. Els traços es recuperen en tornar al mateix retall i mida, dins la sessió. A v0.19.12, la primera generació ja presenta les capes en fases.
 
 **Ordre de treball validat; objectius de cada pas:**
 
@@ -420,8 +438,22 @@ La preparació de mida i territori precedeix les quatre capes. En separar el mot
 - [x] Agent: proposar límits i primer pilot: estat de projecte, revisions i conservació de traços davant error de mida/lloc. Separació de transport posterior, dependent de RO-052.
 - [x] Agent: integrar els sis apartats i conservar els traços fins que la generació d'un retall nou sigui reeixida.
 - [x] Agent: separar l'actualització de vies del càlcul de terreny, amb reutilització del substrat original.
-- [ ] Agent: separar la primera generació per capes i mesurar-ne temps i memòria en diversos retalls.
+- [x] Agent: presentar la primera generació per capes i mostrar recomptes quan es coneix el total.
+- [ ] Agent: mesurar el temps de cada fase i el pic de memòria en diversos retalls.
 - [ ] Agent: comprovar temps/memòria per etapa, reutilització de capes no afectades, conservació del pinzell i configuració, continuïtat del transport i igualtat preview/exportació. Provar avançar/retrocedir i errors, no només la construcció final.
-- [ ] Usuari: validar claredat, agilitat, control i absència de soroll mental amb un recorregut real complet; després, laminat/impressió dels nous controls quan la geometria estigui estabilitzada.
+- [x] Usuari: validar el feedback de progrés i les capes parcials en diversos retalls.
+- [ ] Usuari: comprovar el laminat i la impressió dels controls quan la geometria estigui estabilitzada.
 
-**Proper resultat revisable:** recorregut amb el producte, sobretot els botons al títol. Següent pas de motor: generar terreny i aplicar les vies a part, preservant el terreny vàlid i els traços.
+**Proper resultat revisable:** comparar el temps fins a veure el relleu i el cost de cada fase a Millau i en un retall curt, preservant la geometria final i el progrés validat.
+
+### RO-054 — Galeria local de projectes
+
+**P2, proposat.** Desar amb un nom el retall, les coordenades, l’orientació, la mida, l’escala, les capes, les opcions i els traços necessaris per regenerar una maqueta. Recuperació al mateix navegador i emmagatzematge local.
+
+**Primer control.** Desar dues configuracions, recarregar l’aplicació i recuperar-ne una amb les mateixes opcions. La regeneració pot donar un resultat diferent quan canvien les fonts. Valorar en una segona etapa si convé conservar també el model acabat, amb límit d’espai i eliminació per projecte, per recuperar-ne exactament la geometria.
+
+### RO-055 — Mode de relleu pur
+
+**P2, proposat.** Oferir un mode orientat a serralades i grans regions on es carregui només el relleu necessari. La representació detallada conserva les vies i els edificis amb els límits adequats per a aquestes capes.
+
+**Primer control.** Construir una maqueta d’un sector ampli del Pirineu amb menys peticions, mesurar extensió, resolució i memòria, i comprovar el 3MF. L’extensió admissible s’ha de decidir amb aquestes mesures i els límits del proveïdor d’elevació.
