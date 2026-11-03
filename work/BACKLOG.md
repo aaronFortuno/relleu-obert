@@ -9,7 +9,8 @@ Actualitzat: **2026-11-03 · v0.21.0**. Auditoria per altura i primera millora d
 | **0.21 · Exportació comprovable** | RO-024, RO-033, RO-034, RO-050, RO-052, RO-055 | Auditar els 3MF amb controls petits i identificar el primer defecte reproduïble. Les comprovacions de Bambu Studio i d’impressió es registren a banda. |
 | **0.22 · Vies i rendiment** | RO-051, RO-052, RO-053 | Comparar els accessos de Millau i Rajadell i un segon retall ferroviari. Mesurar cada canvi amb el mateix retall, escala i ajustos. |
 | **Retocs en paral·lel** | RO-046, RO-054 | Validar la càrrega dels exemples i la recuperació de projectes girats, amb els dos modes i traços. Reproduir qualsevol pèrdua d’ajustos abans de tocar el flux. |
-| **Després** | RO-023, RO-026, RO-032 | Comparar les fonts d’elevació i edificis en dues zones, amb proves d’accés i cobertura abans de fer canvis al model. |
+| **Pilot de relleu rocós** | RO-023, RO-035 | Comparar el perfil d’agulles amb un MDT de detall i comprovar la viabilitat d’un pedaç 3D en un espadat mesurat. |
+| **Després** | RO-026, RO-032 | Comparar les fonts d’edificis en dues zones, amb proves d’accés i cobertura abans de fer canvis al model. |
 
 Els encàrrecs independents avancen en paral·lel. Cada bloc validat té el seu commit i es manté una sola prova pesada alhora. Els casos que requereixen inspecció al laminador poden quedar pendents mentre avancen altres línies.
 
@@ -98,7 +99,7 @@ Infraestructura preparada amb català. Migrar els textos i incorporar traduccion
 
 ### RO-023 — Relleu local i fonts vectorials de més precisió
 
-Comparar un model digital del terreny de més resolució accessible des del navegador, amb un segon retall i un cas fora de cobertura. [Fonts i interfície](RO-023-FONTS-UX.md)
+Comparar la font actual i un MDT de detall al mateix retall de Montserrat, a dues escales i amb la mateixa exageració. Incloure un retall del Cavall Bernat i un segon cas al Pedraforca o a Riglos. Conservar carenes, colls i agulles amb refinament local de la malla segons el relleu i la mida impresa. Mesurar fidelitat del perfil, triangles i temps. Verificar accés des del navegador i retorn a la font general fora de cobertura. [Fonts i interfície](RO-023-FONTS-UX.md) · [Models d’elevacions ICGC](https://www.icgc.cat/ca/Geoinformacio-i-mapes/Dades-i-productes/Elevacions/Elevacions-territorial/Models-delevacions) · [Productes PNOA-LiDAR](https://pnoa.ign.es/web/portal/pnoa-lidar/productos-a-descarga)
 
 ### RO-024 — Unió de volums i validació d’impressió
 
@@ -126,7 +127,7 @@ Obertures estimades amb volta parabòlica i paviment del material de la via. Rev
 
 ### RO-035 — Cavitats i relleus amb voladissos
 
-Investigar dades 3D obertes que descriguin l’interior d’una cova, balma o arc. Començar amb una geometria petita i una llicència comprovada. [Pla](PAISATGE-3D.md)
+Per a parets verticals, voladissos i balmes, provar una malla 3D georeferenciada que substitueixi un sector del MDT. Primer candidat: LiDAR terrestre dels Degotalls. Comprovar llicència, cobertura lateral, dades de la cara inferior i unió amb el terreny. Validar el perfil des de diversos angles, el volum tancat i un cupó al laminador. Aplicar la mateixa regla allà on hi hagi dades equivalents i conservar el MDT quan la cobertura 3D sigui insuficient. [Pla](PAISATGE-3D.md) · [Núvol de punts dels Degotalls](https://doi.org/10.34810/DATA201)
 
 ### RO-044 — Catastre per seccions i recuperació de configuracions
 
