@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.21.2 — 2026-11-03
+
+- El navegador conserva la graella MET5 en enviar el retall al motor de geometria. Corregit l’error «No hi ha dades d’elevació».
+- La càrrega del MET5 admet fins a 15 segons abans de passar a la font general.
+
 ## v0.21.1 — 2026-11-03
 
 - MET5 de l’ICGC com a primera font per als retalls amb cobertura completa, amb retorn automàtic a la font general.

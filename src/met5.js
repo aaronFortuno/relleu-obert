@@ -43,7 +43,7 @@ export async function loadMet5(bbox,fetcher=fetch){
   if(bounds[2]-bounds[0]>maxSide*cellSize||bounds[3]-bounds[1]>maxSide*cellSize)return null;
   const query=new URLSearchParams({SERVICE:'WCS',VERSION:'1.0.0',REQUEST:'GetCoverage',
     COVERAGE:'met',CRS:'EPSG:25831',BBOX:bounds.join(','),RESX:'5',RESY:'5',FORMAT:'ArcGrid'});
-  const response=await fetcher(endpoint+'?'+query,{signal:AbortSignal.timeout(8000)});
+  const response=await fetcher(endpoint+'?'+query,{signal:AbortSignal.timeout(15000)});
   if(!response.ok||!response.body)throw Error('Resposta ICGC no disponible.');
   const reader=response.body.getReader(),decoder=new TextDecoder();
   let size=0,text='';

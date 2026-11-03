@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-03. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.21.2 — Lliurament de la graella MET5
+
+El missatge del navegador al procés de geometria conserva el ràster numèric. Prova de regressió amb còpia estructurada en tots dos modes. El cupó local dels Degotalls té un resultat satisfactori segons l’usuari.
+
 ## v0.21.1 — MET5 al Pedraforca
 
 MET5 seleccionat automàticament en retalls amb cobertura completa. Dos 3MF auditats al Pedraforca. Als Degotalls falta la transformació del núvol terrestre. [Resultats i comprovacions](RELLEU-ROCOS.md)

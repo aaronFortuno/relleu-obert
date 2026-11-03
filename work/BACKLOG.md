@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-03 · v0.21.1**. MET5 integrat i comprovat al Pedraforca. [Historial](HISTORIAL.md).
+Actualitzat: **2026-11-03 · v0.21.2**. Corregit el lliurament del MET5 al motor i afegida la Roca Foradada com a control de RO-035. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -127,7 +127,7 @@ Obertures estimades amb volta parabòlica i paviment del material de la via. Rev
 
 ### RO-035 — Cavitats i relleus amb voladissos
 
-Per a parets verticals, voladissos i balmes, provar una malla 3D georeferenciada que substitueixi un sector del MDT. Primer candidat: LiDAR terrestre dels Degotalls. Comprovar llicència, cobertura lateral, dades de la cara inferior i unió amb el terreny. Validar el perfil des de diversos angles, el volum tancat i un cupó al laminador. Aplicar la mateixa regla allà on hi hagi dades equivalents i conservar el MDT quan la cobertura 3D sigui insuficient. [Pla](PAISATGE-3D.md) · [Núvol de punts dels Degotalls](https://doi.org/10.34810/DATA201)
+El cupó local dels Degotalls a 1:200 té bon resultat segons l’usuari. Falta la transformació per integrar-lo al terreny. La Roca Foradada serà el control d’obertura passant. Cal trobar dades 3D de les boques i la volta, validar l’encaix i comprovar la llum al laminador. El mateix flux ha de servir en altres retalls amb dades equivalents. [Pilot i fonts](RELLEU-ROCOS.md)
 
 ### RO-044 — Catastre per seccions i recuperació de configuracions
 
