@@ -1,5 +1,11 @@
 # RO-053 — Proposta de flux per etapes
 
+**2026-11-03 · v0.19.4.** Els ajustos de vies ja tenen un càlcul propi sobre
+el terreny preparat. La base original, el camp d'altures i els edificis
+es reutilitzen. Els túnels es tornen a excavar sobre la base original.
+Els traços es reapliquen amb les màscares de vies i la vista manté la
+càmera. La primera generació encara prepara el conjunt de capes.
+
 **2026-11-03 · ordre validat per l'usuari i primera integració a v0.19.2.**
 El producte ja presenta sis apartats i l'acció del pas al costat del títol.
 Es pot tornar a qualsevol pas i plegar el panell de vegetació per recuperar

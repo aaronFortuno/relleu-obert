@@ -2,6 +2,18 @@
 
 Actualitzat: 2026-11-03. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.19.4 — Actualització de vies sobre el terreny preparat
+
+RO-053 separa el càlcul incremental de vies. Es reutilitzen el camp
+d'altures, les malles de base sense excavar i els edificis. Les unions
+i els túnels es recalculen quan canvien les cotes de la via. Els traços
+es reapliquen i el navegador substitueix les malles noves sense reenquadrar.
+
+381 proves ordinàries i compilació correctes. La regressió comprova
+reutilització de terreny i edificis, traços, obertura i tancament de
+túnels, i recuperació de la base. A Rajadell s'ha comprovat l'actualització
+automàtica de camins i ferrocarrils, amb la vista zenital conservada.
+
 ## v0.19.3 — Ajustos de vies automàtics i descàrrega fixa
 
 RO-053 aplica els canvis de vies automàticament sobre les dades del retall

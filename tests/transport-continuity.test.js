@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import Module from 'manifold-3d';
 import {unzipSync,strFromU8} from 'fflate';
-import {buildModel} from '../src/geometry.js';
+import {buildModel,updateBuildings,updateTransport} from '../src/geometry.js';
 import {threeMF} from '../src/export.js';
 import {physicalBBox,selectionPose} from '../src/selection.js';
 
@@ -24,6 +24,38 @@ function chain(){
     infrastructure:{provider:'Synthetic measured-top control',items:[deck]},
     features:[line('before',[-450,-300]),line('bridge',[-300,-100],'bridge'),line('between',[-100,100]),line('tunnel',[100,200,300],'tunnel'),line('after',[300,450])]};
 }
+
+test('transport updates reuse the original substrate and keep painted trees and newer buildings',()=>{
+  const data=chain();
+  const strokes=[{mode:'add',x:25,y:25,radius:5,density:1,gesture:1}];
+  const options={size:100,resolution:12,estimatedTunnels:false,trees:true,strokes};
+  const initial=buildModel(data,options,()=>{},api);
+  const building={type:'Feature',id:'new-building',properties:{sourceLayer:'building',render_height:5},
+    geometry:{type:'Polygon',coordinates:[[[200,200],[215,200],[215,215],[200,215],[200,200]].map(([x,y])=>geo(x,y))]}};
+  const edited=updateBuildings(initial,{features:[building]});
+  assert(edited.provenance.vegetationBudget.manual>0);
+  assert.equal(edited.buildingCount,1);
+  const part=(model,id)=>model.categories.find(category=>category.id===id);
+
+  const raised=updateTransport(edited,{roadRise:.5});
+  assert.equal(raised.context.ground,edited.context.ground);
+  assert.equal(part(raised,'terrain'),part(edited,'terrain'));
+  assert.equal(part(raised,'buildings'),part(edited,'buildings'));
+  assert.notEqual(part(raised,'roads'),part(edited,'roads'));
+  assert.deepEqual(raised.provenance.options.strokes,strokes);
+  assert.deepEqual(raised.context.placements,edited.context.placements);
+
+  const opened=updateTransport(raised,{estimatedTunnels:true});
+  assert.equal(opened.provenance.tunnels.applied,true);
+  assert.equal(opened.context.ground,initial.context.ground);
+  const closed=updateTransport(opened,{estimatedTunnels:false,roadRise:0});
+  assert.equal(closed.provenance.tunnels.applied??false,false);
+  assert.equal(part(closed,'terrain'),part(edited,'terrain'));
+  assert.equal(part(closed,'buildings'),part(edited,'buildings'));
+  assert.deepEqual(closed.context.placements,edited.context.placements);
+  assert.throws(()=>updateTransport(opened,{roadRise:2}),/Relleu dels camins/);
+  assert.equal(opened.provenance.tunnels.applied,true);
+});
 
 // Read the geometry actually stored in the exported file, including six-place
 // coordinate rounding, rather than trusting its metadata or live source arrays.

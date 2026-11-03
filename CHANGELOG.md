@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.19.4 — 2026-11-03
+
+- RO-053: canviar el realç de camins o ferrocarrils, o activar els túnels, reutilitza el camp d'altures, les malles de base i els edificis del retall vigent. El motor recalcula les vies i els encaixos i, quan cal, excava sobre el terreny original.
+- L'actualització conserva la càmera i reaplica els traços del pinzell. El navegador rep només les capes amb malla nova.
+
 ## v0.19.3 — 2026-11-03
 
 - RO-053: els ajustos de carreteres, ferrocarrils i túnels s'apliquen automàticament quan la maqueta correspon al retall i al terreny seleccionats. La vista es conserva durant el càlcul.

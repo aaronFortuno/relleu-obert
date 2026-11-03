@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-03 · v0.19.3**. RO-053 incorpora ajustos de vies automàtics, scroll intern al panell dret i descàrrega fixa. RO-050 parteix de 0 mm d'increment ferroviari. RO-052 conserva l'avís dels dos extrems del quadrat de Rajadell. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
+Actualitzat: **2026-11-03 · v0.19.4**. RO-053 separa l'actualització de vies de la preparació del relleu i conserva la vista i els traços. RO-052 conserva l'avís dels dos extrems del quadrat de Rajadell. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
 
 ## Ordre de treball
 
@@ -363,6 +363,8 @@ Primer prototip local: perfil longitudinal regularitzat amb tall/terraplè acota
 
 ### RO-053 — Flux de treball per etapes
 
+**v0.19.4.** El Worker reutilitza el camp d'altures, la base sense excavar i els edificis quan només canvia la configuració de vies. Recalcula paviment, connexions, suports i excavació si cal. Reaplica els traços i conserva la càmera. En canviar de retall, escala o detall cal preparar un terreny nou.
+
 **v0.19.3.** Aplicació automàtica dels ajustos de vies en un retall ja generat. El càlcul encara reconstrueix les malles a partir de les dades carregades. Panell dret amb scroll intern i descàrrega fixa. Seleccionar format el descarrega i el manté durant la sessió.
 
 **P1, ordre validat el 2026-11-03 i primer pilot integrat a v0.19.2.** [Informe, matriu d'impacte i pilot](RO-053-UX.md). Sis apartats i accions al títol. Els traços es recuperen en tornar al mateix retall i mida, dins la sessió. La generació encara és conjunta per a terreny i vies; el càlcul per capes de la demostració és il·lustratiu.
@@ -397,7 +399,8 @@ La preparació de mida i territori precedeix les quatre capes. En separar el mot
 - [x] Usuari: validar l'ordre del flux i proposar accions al títol per millorar la navegació.
 - [x] Agent: proposar límits i primer pilot: estat de projecte, revisions i conservació de traços davant error de mida/lloc. Separació de transport posterior, dependent de RO-052.
 - [x] Agent: integrar els sis apartats i conservar els traços fins que la generació d'un retall nou sigui reeixida.
-- [ ] Agent: separar el càlcul de terreny i transport, amb substrat original i revisions aplicades de cada capa.
+- [x] Agent: separar l'actualització de vies del càlcul de terreny, amb reutilització del substrat original.
+- [ ] Agent: separar la primera generació per capes i mesurar-ne temps i memòria en diversos retalls.
 - [ ] Agent: comprovar temps/memòria per etapa, reutilització de capes no afectades, conservació del pinzell i configuració, continuïtat del transport i igualtat preview/exportació. Provar avançar/retrocedir i errors, no només la construcció final.
 - [ ] Usuari: validar claredat, agilitat, control i absència de soroll mental amb un recorregut real complet; després, laminat/impressió dels nous controls quan la geometria estigui estabilitzada.
 

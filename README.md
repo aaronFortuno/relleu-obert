@@ -2,7 +2,9 @@
 
 Prototip educatiu separat de Terrology: generació de maquetes geogràfiques amb JavaScript, íntegrament al navegador, publicable a GitHub Pages. No s’ha copiat codi de Terrology.
 
-**v0.19.3 experimental · 3 de novembre de 2026**
+**v0.19.4 experimental · 3 de novembre de 2026**
+
+RO-053 separa el càlcul de vies de la preparació del relleu. Els canvis de realç i túnels reutilitzen el terreny i els edificis del retall vigent. El motor revisa les unions i reaplica els traços del pinzell, mantenint la càmera.
 
 Els ajustos de vies s'apliquen automàticament a la maqueta generada. El panell dret manté la descàrrega al peu i permet triar i descarregar el format en una sola acció. Els ferrocarrils parteixen de l'altura de les carreteres i, en la paleta de vuit materials, del color dels edificis.
 

@@ -140,16 +140,8 @@ export function treeMesh({x,y,ground,rx,ry,rz,rotation=0,phase=0}){
   for(let i=0;i<rings;i++)for(let j=0;j<segments;j++){surf.tri(p(i,j),p(i+1,j),p(i+1,j+1));surf.tri(p(i,j),p(i+1,j+1),p(i,j+1));}
   return {vertices:surf.vertices,faces:surf.faces};
 }
-export function buildModel(data,options={},progress=()=>{},infrastructureApi=null,diagnostics=null){
-  // Optional synchronous diagnostics stay out of worker options/provenance.
-  const measure=(phase,run,details={})=>{
-    if(!diagnostics)return run();
-    const start=performance.now();diagnostics({phase,event:'start',...details});
-    try{return run();}finally{diagnostics({phase,event:'end',milliseconds:performance.now()-start,...details});}
-  };
+function prepareTerrain(data,options,progress){
   const {size=160,exaggeration=1.5,density=2.5,resolution=36}=options,proj=makeProjection(data.meta.bbox,size,options),{width,height,project,scale}=proj,rect=box(width,height),warnings=[];
-  const roadRise=options.roadRise??0;if(![0,.5,1].includes(roadRise))throw Error('Relleu dels camins invàlid.');
-  const {railRise}=railwayOptions(options);
   if(!Number.isFinite(density)||density<.25||density>5||!Number.isInteger(resolution)||resolution<2||resolution>100||!Number.isFinite(exaggeration)||exaggeration<1||exaggeration>5||!Number.isFinite(size)||size<50||size>450||width>450||height>450)throw Error('Els ajustos de la maqueta són fora del rang admès.');
   if(options.targetScale!=null&&Math.abs(1000/scale-validateScale(options.targetScale))>options.targetScale*1e-6)throw Error('El retall no concorda amb l’escala demanada. Torna a seleccionar la regió.');
   const prepared=data.localDEM?{tiles:[],diagnostics:{invalid:0,spikes:0,repaired:0,source:'local GeoTIFF'}}:prepareElevationTiles(data.dem),localHeight=data.localDEM?localRasterSampler(data.localDEM):null;
@@ -165,8 +157,7 @@ export function buildModel(data,options={},progress=()=>{},infrastructureApi=nul
   }
   const generated=generateProceduralBridgeItems(candidates,elevationAt,{scale,bbox:data.meta.bbox});warnings.push(...generated.warnings);
   const deckItems=[...knownItems,...generated.items],deckFootprints=deckItems.flatMap(item=>item.outlines.map(r=>[r.map(project)]));
-  let deckMask=merge(deckFootprints.map(p=>intersect([p],rect)).filter(p=>p.length)),containsDeck=polygonTester(deckMask);
-  const mappedDeckMask=deckMask;
+  const deckMask=merge(deckFootprints.map(p=>intersect([p],rect)).filter(p=>p.length));
   for(const [featureIndex,f]of data.features.entries()){const p=f.properties,layer=p.sourceLayer,polys=geoPolys(f,project);
     if(layer==='water'){water.push(...polys.map(p=>[p]));if(p.class==='ocean')ocean.push(...polys.map(p=>[p]));}
     if((layer==='landcover'&&['wood','grass','scrub'].includes(p.class))||(layer==='landuse'&&['park','forest','grass','cemetery','recreation_ground'].includes(p.class)))green.push(...polys.map(p=>[p]));
@@ -189,7 +180,6 @@ export function buildModel(data,options={},progress=()=>{},infrastructureApi=nul
   const cropped=polys=>polys.map(p=>intersect(p,rect)).filter(p=>p.length);
   const waterPoly=merge(cropped(water)),land=subtract(rect,waterPoly),railPoly=intersect(merge(cropped(rails)),land);
   let roadOnlyPoly=subtract(intersect(merge(cropped(roads)),land),railPoly),roadPoly=merge([roadOnlyPoly,railPoly].filter(p=>p.length)),forest=subtract(intersect(merge(cropped(green)),land),roadPoly),bare=subtract(subtract(land,roadPoly),forest);
-  const sourceRoadPoly=roadPoly;
   const oceanPoly=merge(cropped(ocean)),hasOcean=oceanPoly.length>0;
   progress('Calculant el camp d’altures…');
   const field=createTerrainField({width,height,resolution,at:(x,y)=>{const[lon,lat]=proj.unproject([x,y]);const h=localHeight?localHeight(lon,lat):sampleHeight(prepared.tiles,lon,lat);return hasOcean?Math.max(0,h):h;}});
@@ -198,6 +188,73 @@ export function buildModel(data,options={},progress=()=>{},infrastructureApi=nul
   const verticalReference={originMeters,minimumSurfaceMM:5,seaLevelMM:hasOcean?5:null,method:hasOcean?'sea level at 5 mm; no bathymetry':'lowest generated-terrain sample at 5 mm'};
   for(let i=0;i<field.values.length;i++)field.values[i]=5+(field.values[i]-originMeters)*scale*exaggeration;
   const ground=field.sample;
+  const terrain={size,exaggeration,resolution,proj,rect,warnings,elevationAt,deckItems,deckMask,transport,roadPieces,
+    roadOnlyPoly,roadPoly,forest,bare,railPoly,waterPoly,land,oceanPoly,green,cropped,ground,verticalReference,diagnostics:prepared.diagnostics,
+    woodsMask:merge(cropped(woods))};
+  terrain.surfaces=terrainCover(forest,bare,terrain,progress);
+  const sea=new Surface();
+  for(const polygon of oceanPoly)sea.polygon(polygon,()=>5);
+  terrain.surfaces[1]=surfacePart(1,sea.solid(()=>0));
+  terrain.surfaces[7]=surfacePart(7,terrainSolid(subtract(waterPoly,oceanPoly),(x,y)=>Math.max(3,ground(x,y)-.3),()=>0,width,height,resolution));
+  return terrain;
+}
+
+function terrainCover(forest,bare,terrain,progress){
+  const {ground,land,woodsMask,proj:{width,height},resolution}=terrain;
+  const base={vertices:[],faces:[]};
+  append(base,terrainSolid(land,(x,y)=>ground(x,y)-.65,()=>0,width,height,resolution));
+  append(base,terrainSolid(bare,ground,(x,y)=>ground(x,y)-.65,width,height,resolution));
+  const forestGround=intersect(forest,woodsMask),grassGround=subtract(forest,forestGround);
+  progress('Construint superfícies amb límits vectorials…');
+  const parts=CATEGORIES.map((_,index)=>surfacePart(index,{vertices:[],faces:[]}));
+  parts[0]=surfacePart(0,base);
+  parts[4]=roadSurface(4,forestGround,0,terrain);
+  parts[6]=roadSurface(6,grassGround,0,terrain);
+  return parts;
+}
+
+function surfacePart(index,{vertices,faces}){
+  return {...CATEGORIES[index],
+    vertices:vertices instanceof Float32Array?vertices:new Float32Array(vertices),
+    faces:faces instanceof Uint32Array?faces:new Uint32Array(faces)};
+}
+
+function roadSurface(index,polygons,rise,terrain){
+  const {ground,proj:{width,height},resolution}=terrain;
+  return surfacePart(index,terrainSolid(polygons,(x,y)=>ground(x,y)+rise,(x,y)=>ground(x,y)-.65,width,height,resolution));
+}
+
+export function buildModel(data,options={},progress=()=>{},infrastructureApi=null,diagnostics=null){
+  return buildTransport(data,options,prepareTerrain(data,options,progress),progress,infrastructureApi,diagnostics);
+}
+
+export function updateTransport(previous,changes={},progress=()=>{},infrastructureApi=previous.context?.infrastructureApi){
+  const ctx=previous.context;
+  if(!ctx?.terrain)throw Error('Cal generar primer el terreny.');
+  const {roadRise=ctx.options.roadRise,railRise=ctx.options.railRise,estimatedTunnels=ctx.options.estimatedTunnels}=changes;
+  const options={...ctx.options,roadRise,railRise,estimatedTunnels};
+  const updated=buildTransport({...ctx.transportSource,meta:ctx.meta},options,ctx.terrain,progress,infrastructureApi,null,ctx.buildingGeometry);
+  if(updated.provenance.tunnels.error)throw Error(updated.provenance.tunnels.error);
+  return updated;
+}
+
+function buildTransport(data,options,terrain,progress,infrastructureApi,diagnostics,buildingGeometry){
+  // Optional synchronous diagnostics stay out of worker options/provenance.
+  const measure=(phase,run,details={})=>{
+    if(!diagnostics)return run();
+    const start=performance.now();diagnostics({phase,event:'start',...details});
+    try{return run();}finally{diagnostics({phase,event:'end',milliseconds:performance.now()-start,...details});}
+  };
+  const {size,exaggeration,resolution,proj,rect,elevationAt,transport,roadPieces,railPoly,waterPoly,land,green,cropped,ground,verticalReference}=terrain;
+  const {width,height,project,scale}=proj,{originMeters}=verticalReference;
+  const warnings=terrain.warnings.slice(),deckItems=terrain.deckItems.slice();
+  let {deckMask,roadOnlyPoly,roadPoly,forest,bare}=terrain;
+  let containsDeck=polygonTester(deckMask);
+  const mappedDeckMask=deckMask,sourceRoadPoly=roadPoly;
+  const roadRise=options.roadRise??0;
+  if(![0,.5,1].includes(roadRise))throw Error('Relleu dels camins invàlid.');
+  const {railRise}=railwayOptions(options);
+  const knownItems=data.infrastructure?.items||[];
   const knownCrossingSources=knownItems.filter(item=>!item.estimated).map(item=>({item,contains:polygonTester(item.outlines.map(r=>[r.map(project)]))}));
   const representedElevationAt=(lon,lat)=>{
     const [x,y]=project([lon,lat]);if(x<0||y<0||x>width||y>height)return elevationAt(lon,lat);
@@ -228,10 +285,9 @@ export function buildModel(data,options={},progress=()=>{},infrastructureApi=nul
     deckItems.push(...acceptedMajor);deckMask=merge([deckMask,majorMask].filter(p=>p.length));containsDeck=polygonTester(deckMask);
   }
   const fallbackMajor=message=>{
-    const restored=measure('major.fallback',()=>buildModel(data,{...options,majorRoads:false},progress,infrastructureApi,diagnostics),{reason:message});restored.warnings.unshift(message);
+    const restored=measure('major.fallback',()=>buildTransport(data,{...options,majorRoads:false},terrain,progress,infrastructureApi,diagnostics,buildingGeometry),{reason:message});restored.warnings.unshift(message);
     restored.provenance.majorRoads={...majorMetadata,attempted:majorMetadata.count,count:0,applied:false,error:message};restored.context.meta.majorRoads=restored.provenance.majorRoads;return restored;
   };
-  const aggregates=CATEGORIES.map(m=>({...m,vertices:[],faces:[]}));const add=(id,mesh)=>append(aggregates[id],mesh);
   const bridges=[];
   for(const item of deckItems){
     const mask=intersect(item.outlines.map(r=>[r.map(project)]),rect),contains=polygonTester(mask);
@@ -285,15 +341,13 @@ export function buildModel(data,options={},progress=()=>{},infrastructureApi=nul
   if(proceduralCount)warnings.push(`${proceduralCount} ponts procedimentals: perfil estimat entre les cotes DEM dels extrems cartografiats, sense seguir el fons de la vall. No són altures mesurades de l’estructura.`);
   if(railPoly.length||bridges.some(b=>b.railway))warnings.push(`Ferrocarrils realçats ${railRise.toLocaleString('ca')} mm sobre el nivell dels camins; és una plataforma simplificada de la maqueta, no una cota real.`);
   if(roadRise)warnings.push(`Camins realçats ${roadRise.toLocaleString('ca')} mm sobre el terreny; és un efecte de la maqueta, no una altura real.`);
-  progress('Construint superfícies amb límits vectorials…');
-  add(0,terrainSolid(land,(x,y)=>ground(x,y)-.65,()=>0,width,height,resolution));
-  const forestGround=intersect(forest,merge(cropped(woods))),grassGround=subtract(forest,forestGround);
-  for(const [id,polys]of [[0,bare],[3,roadOnlyPoly],[8,railPoly],[4,forestGround],[6,grassGround]]){progress(`Construint ${CATEGORIES[id].name.toLowerCase()}…`);add(id,terrainSolid(polys,(x,y)=>ground(x,y)+(id===8?roadRise+railRise:id===3?roadRise:0),(x,y)=>ground(x,y)-.65,width,height,resolution));}
-  const inlandWater=subtract(waterPoly,oceanPoly);
-  const seaSurf=new Surface();for(const p of oceanPoly)seaSurf.polygon(p,()=>5);add(1,seaSurf.solid(()=>0));
-  // A swimming pool or lake on a hillside must not be extruded down to sea level.
-  add(7,terrainSolid(inlandWater,(x,y)=>Math.max(3,ground(x,y)-.3),()=>0,width,height,resolution));
-  let staticBase=aggregates.map(p=>({...p,vertices:new Float32Array(p.vertices),faces:new Uint32Array(p.faces)}));
+  let staticBase=terrain.surfaces.slice();
+  if(acceptedMajor.length){
+    const cover=terrainCover(forest,bare,terrain,progress);
+    for(const index of [0,4,6])staticBase[index]=cover[index];
+  }
+  staticBase[3]=roadSurface(3,roadOnlyPoly,roadRise,terrain);
+  staticBase[8]=roadSurface(8,railPoly,roadRise+railRise,terrain);
   const majorDecks=bridges.filter(b=>b.mainRoad);
   if(majorDecks.length){
     progress('Assignant el paviment de les vies principals…');const carved=measure('major.material-replacement',()=>carveTransportDecks(staticBase,majorDecks,infrastructureApi));
@@ -337,21 +391,19 @@ export function buildModel(data,options={},progress=()=>{},infrastructureApi=nul
   warnings.push('Els arbres són una representació procedimental dins de zones verdes, no posicions d’arbres mesurades.');
   warnings.push('Les tessel·les vectorials estan generalitzades. Aquesta prova no substitueix cartografia topogràfica de precisió.');
   const containsGroundRoad=polygonTester(roadPoly),approachMask=merge(bridges.flatMap(b=>b.approaches.plans.map(p=>intersect(p.footprint,rect))).filter(p=>p.length)),containsApproach=polygonTester(approachMask);
-  const context={ground,verticalReference,proj,rect,forest,land,roadPoly,roadOnlyPoly,railPoly,waterPoly,bridges,tunnelMask,infrastructureApi,containsForest:polygonTester(forest),containsLand:polygonTester(land),containsRoad:p=>containsDeck(p)||containsApproach(p)||containsGroundRoad(p),width,height,scale,staticWarnings:warnings,options:{...options,size,exaggeration,resolution,roadRise,railRise},meta:{...data.meta,tunnels:tunnelMetadata,railways:{incrementMM:railRise,surfaceRiseMM:roadRise+railRise,method:'cartographic railway platform; physical millimetres, no vertical exaggeration',groundPresent:railPoly.length>0,bridges:bridges.filter(b=>b.railway).length},infrastructure:deckCount?{...data.infrastructure,provider:knownCount?'Specific overrides and estimated transport platforms':'Estimated transport platforms from OSM/DEM',items:undefined,count:deckCount,knownCount,proceduralCount,deckProfiles:bridges.map(b=>({id:b.id,mainRoad:b.mainRoad,generatedSurfaceAdjustmentMM:b.generatedSurfaceAdjustmentMM,estimated:b.estimated,elevationMethod:b.elevationMethod,widthMetres:b.widthMetres,sourceFeatureIds:b.sourceFeatureIds,railway:b.railway,surfaceRiseMM:b.surfaceRise,printableThicknessMM:b.thickness})),printableThicknessMM:.6+roadRise,railwayPrintableThicknessMM:bridges.some(b=>b.railway)?.6+roadRise+railRise:undefined}:null},diagnostics:prepared.diagnostics,staticBase};
+  const context={ground,verticalReference,proj,rect,forest,land,roadPoly,roadOnlyPoly,railPoly,waterPoly,bridges,tunnelMask,infrastructureApi,containsForest:polygonTester(forest),containsLand:polygonTester(land),containsRoad:p=>containsDeck(p)||containsApproach(p)||containsGroundRoad(p),width,height,scale,staticWarnings:warnings,options:{...options,size,exaggeration,resolution,roadRise,railRise},meta:{...data.meta,tunnels:tunnelMetadata,railways:{incrementMM:railRise,surfaceRiseMM:roadRise+railRise,method:'cartographic railway platform; physical millimetres, no vertical exaggeration',groundPresent:railPoly.length>0,bridges:bridges.filter(b=>b.railway).length},infrastructure:deckCount?{...data.infrastructure,provider:knownCount?'Specific overrides and estimated transport platforms':'Estimated transport platforms from OSM/DEM',items:undefined,count:deckCount,knownCount,proceduralCount,deckProfiles:bridges.map(b=>({id:b.id,mainRoad:b.mainRoad,generatedSurfaceAdjustmentMM:b.generatedSurfaceAdjustmentMM,estimated:b.estimated,elevationMethod:b.elevationMethod,widthMetres:b.widthMetres,sourceFeatureIds:b.sourceFeatureIds,railway:b.railway,surfaceRiseMM:b.surfaceRise,printableThicknessMM:b.thickness})),printableThicknessMM:.6+roadRise,railwayPrintableThicknessMM:bridges.some(b=>b.railway)?.6+roadRise+railRise:undefined}:null},diagnostics:terrain.diagnostics,staticBase,terrain,transportSource:{infrastructure:data.infrastructure,features:data.features},buildingGeometry,buildingFeatures:buildingGeometry?.features??data.features};
   context.meta.majorRoads=majorMetadata;
   context.meta.transportContinuity={widthPolicy:'shared width, then lanes, then road class; carriageway independent of structural deck and bore',minimumCarriagewayMM:.44,connections:bridges.map(b=>({id:b.id,identity:b.identity,carriagewayWidthMM:b.roadWidth,joins:b.approaches.plans.map(p=>({startWidthMM:p.startWidthMM,endWidthMM:p.endWidthMM,targetFeatureIds:p.targetFeatureIds,routingRepairs:p.routingRepairs})),unconnectedEnds:b.approaches.missed})),portals:tunnelMetadata.applied?tunnelVoids.items.flatMap(t=>t.portalConnections||[]):[]};
   if(context.meta.infrastructure)context.meta.infrastructure.mainRoadCount=majorDecks.length;
-  const model=measure('model.buildings-supports',()=>updateBuildings({context},{features:data.features,meta:context.meta},options,progress));
+  const model=measure('model.buildings-supports',()=>updateBuildings({context},{},options,progress));
   if(model.provenance.majorRoads?.completion?.some(p=>p.unsupportedSpans?.length))return fallbackMajor('Algunes vies principals no tenen espai segur per als suports; es recuperen els camins sobre el terreny.');
   return model;
 }
 
-export function updateBuildings(previous,layer={},changes={},progress=()=>{}){
-  if(!previous.context)throw Error('Cal generar primer el terreny.');
-  const old=previous.context,options={...old.options,...changes},config=buildingOptions(options),{buildingMode,maxBuildingHeight}=config;
-  const ctx={...old,options:{...options,...config},meta:{...(layer.meta||old.meta),infrastructure:old.meta.infrastructure,tunnels:old.meta.tunnels,railways:old.meta.railways,majorRoads:old.meta.majorRoads,transportContinuity:old.meta.transportContinuity},buildingFeatures:layer.features||old.buildingFeatures,vegetationCache:null};
-  const {width,height,ground,scale,rect,land}=ctx,res=options.resolution;
-  const mesh={vertices:[],faces:[]},clipped=[],warnings=[...ctx.staticWarnings,...(ctx.meta.sourceWarnings||[])];
+function prepareBuildingGeometry(ctx,config,progress){
+  const {buildingMode,maxBuildingHeight}=config;
+  const {width,height,ground,scale,rect,land,options}=ctx,res=options.resolution;
+  const mesh={vertices:[],faces:[]},clipped=[],warnings=[];
   let buildingCount=0,approximate=0,limited=0,shapedRoofs=0,fallbackRoofs=0;const volumes=[];
   progress('Actualitzant la capa d’edificis…');
   if(buildingMode!=='none')for(const f of ctx.buildingFeatures){
@@ -368,15 +420,34 @@ export function updateBuildings(previous,layer={},changes={},progress=()=>{}){
     }
   }
   if(approximate)warnings.push(approximate+' fragments d’edificis amb alçària estimada; consulta la procedència de la font.');
-  if(ctx.meta.buildings?.officialCount)warnings.push('Algunes petjades ICGC agrupen diverses cases sense divisions interiors. Pots comparar-les amb parts del Catastre.');
   if(buildingMode==='limited')warnings.push('Edificis amb coberta horitzontal, com a màxim '+maxBuildingHeight+' m reals sobre el punt més alt de la petjada. La façana del costat baix pot superar aquest valor. '+limited+' fragments limitats en altura.');
   if(buildingMode==='source')warnings.push('Altures de la font sobre el punt més alt de la petjada; coberta plana quan falten dades de forma.');
   if(shapedRoofs)warnings.push(shapedRoofs+' cobertes inclinades o corbes segons els atributs de la font; consulta els criteris derivats a la procedència.');
   if(fallbackRoofs)warnings.push(fallbackRoofs+' cobertes simplificades a planes perquè falten paràmetres o la forma encara no s’admet.');
   if(buildingMode==='flat')warnings.push('Petjades de color de 0,12 mm, sense volum.');
   if(buildingMode==='none')warnings.push('Edificis omesos; es conserva el relleu actual, sense reconstrucció històrica.');
-  ctx.base=ctx.staticBase.slice();ctx.base[2]={...CATEGORIES[2],vertices:new Float32Array(mesh.vertices),faces:new Uint32Array(mesh.faces)};
-  ctx.buildingMask=merge(clipped.map(poly=>[poly]));ctx.containsBuilding=polygonTester(ctx.buildingMask);ctx.buildingCount=buildingCount;ctx.warnings=warnings;ctx.buildingVolumes=volumes;
+  const mask=merge(clipped.map(poly=>[poly]));
+  return {features:ctx.buildingFeatures,mode:buildingMode,height:maxBuildingHeight,part:surfacePart(2,mesh),
+    mask,contains:polygonTester(mask),count:buildingCount,volumes,warnings};
+}
+
+export function updateBuildings(previous,layer={},changes={},progress=()=>{}){
+  if(!previous.context)throw Error('Cal generar primer el terreny.');
+  const old=previous.context,options={...old.options,...changes},config=buildingOptions(options),{buildingMode,maxBuildingHeight}=config;
+  const ctx={...old,options:{...options,...config},meta:{...(layer.meta||old.meta),infrastructure:old.meta.infrastructure,tunnels:old.meta.tunnels,railways:old.meta.railways,majorRoads:old.meta.majorRoads,transportContinuity:old.meta.transportContinuity},buildingFeatures:layer.features||old.buildingFeatures,vegetationCache:null};
+  const {width,height,ground,scale,rect}=ctx;
+  const cached=old.buildingGeometry;
+  const buildings=cached&&cached.features===ctx.buildingFeatures&&cached.mode===buildingMode&&cached.height===maxBuildingHeight
+    ?cached:prepareBuildingGeometry(ctx,config,progress);
+  ctx.buildingGeometry=buildings;
+  ctx.base=ctx.staticBase.slice();
+  ctx.base[2]=buildings.part;
+  ctx.buildingMask=buildings.mask;
+  ctx.containsBuilding=buildings.contains;
+  ctx.buildingCount=buildings.count;
+  ctx.buildingVolumes=buildings.volumes;
+  ctx.warnings=[...ctx.staticWarnings,...(ctx.meta.sourceWarnings||[]),...buildings.warnings];
+  if(ctx.meta.buildings?.officialCount)ctx.warnings.push('Algunes petjades ICGC agrupen diverses cases sense divisions interiors. Pots comparar-les amb parts del Catastre.');
   if(ctx.bridges?.length){
     const pierBuildings=buildingMode==='none'?merge(ctx.buildingFeatures.filter(f=>f.properties.sourceLayer==='building'&&!f.properties.hide_3d).flatMap(f=>geoPolys(f,ctx.proj.project).map(p=>intersect([p],rect))).filter(p=>p.length)):ctx.buildingMask;
     const bridgeKey=JSON.stringify(pierBuildings);

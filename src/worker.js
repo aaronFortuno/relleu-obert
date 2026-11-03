@@ -1,4 +1,4 @@
-import {buildModel,updateVegetation,updateBuildings} from './geometry.js';
+import {buildModel,updateVegetation,updateBuildings,updateTransport} from './geometry.js';
 import {threeMF,stlZip} from './export.js';
 import {groupMaterials} from './materials.js';
 import {splitModel,tileArchive} from './mesh-tiles.js';
@@ -17,6 +17,18 @@ self.onmessage=async({data})=>{try{
     current=data.type==='build'?buildModel(data.region,data.options,progress,api):updateVegetation(current,data.options,progress);self.postMessage({type:'model',model:{...current,parts:undefined,categories:data.type==='vegetation'?current.categories.filter(p=>p.id==='trees'):current.categories},vegetation:data.type==='vegetation'});
   }
   if(data.type==='buildings'){current=updateBuildings(current,data.layer,data.options,progress);self.postMessage({type:'model',model:{...current,parts:undefined,categories:current.categories.filter(p=>['buildings','trees','roads','railways'].includes(p.id))},buildings:true});}
+  if(data.type==='transport'){
+    if(!api&&data.options.estimatedTunnels){
+      progress('Preparant les infraestructures…');
+      api=await Module({locateFile:()=>wasmURL});api.setup();
+    }
+    const next=updateTransport(current,data.options,progress,api);
+    const changedCategories=new Set();
+    for(const part of current.categories)if(!next.categories.includes(part))changedCategories.add(part.id);
+    for(const part of next.categories)if(!current.categories.includes(part))changedCategories.add(part.id);
+    current=next;
+    self.postMessage({type:'model',model:{...current,parts:undefined,categories:current.categories.filter(p=>changedCategories.has(p.id))},changedCategories:[...changedCategories]});
+  }
   if(data.type==='accessory'){
     if(!current)throw Error('Genera primer el model.');
     if(data.kind!=='marc'&&!api){api=await Module({locateFile:()=>wasmURL});api.setup();}
