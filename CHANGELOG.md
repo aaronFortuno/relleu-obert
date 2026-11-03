@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.19.20 — 2026-11-03
+
+- Selector segmentat Model complet / Relleu pur.
+- Rius i rierols cartografiats activats per defecte, amb una amplada mínima de 0,45 mm i un multiplicador de fins a ×3.
+
 ## v0.19.19 — 2026-11-03
 
 - Selector de modes Paisatge complet i Relleu pur i exemple dels llacs glacials de l’Aneto.

@@ -69,3 +69,12 @@
 #scale-ticks span {position:relative;width:0;text-align:center;white-space:nowrap}
 #scale-ticks span::before {content:'';position:absolute;left:0;top:-5px;height:3px;border-left:1px solid var(--muted)}
 #scale-ticks span:last-child {direction:rtl}
+.mode-switch{padding:0;margin:0;border:0;min-inline-size:0}
+.mode-switch legend{padding:0;margin-bottom:6px;color:var(--ui-control-text);font-size:var(--ui-label)}
+.mode-segments{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--ui-control-border);border-radius:5px;background:var(--ui-control-bg)}
+.mode-segments label{display:flex;justify-content:center;align-items:center;gap:5px;min-height:34px;margin:0;padding:6px 3px;border-bottom:2px solid transparent;border-radius:4px;color:var(--ui-control-text);font-size:var(--ui-control);cursor:pointer}
+.mode-segments label:last-child{border-left:1px solid var(--ui-control-border);border-radius:0 4px 4px 0}
+.mode-segments input:checked+label{background:#e6edde;color:var(--green);font-weight:650;border-bottom-color:var(--green)}
+.mode-segments input:checked+label::before{content:'✓';font-size:var(--ui-label)}
+.mode-segments input:focus-visible+label{outline:2px solid var(--green);outline-offset:-3px}
+.mode-segments input:disabled+label{cursor:wait;opacity:.6}

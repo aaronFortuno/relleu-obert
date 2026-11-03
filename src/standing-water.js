@@ -1,8 +1,12 @@
 const flowing=new Set(['river','stream','canal','ditch','drain','waterfall','rapids']);
 const standing=new Set(['lake','reservoir','pond','basin','swimming_pool','lagoon']);
 
+export function isFlowingWater(properties){
+  return [properties.class,properties.water,properties.waterway].some(value=>flowing.has(value));
+}
+
 export function isStandingWater(properties){
-  return ![properties.class,properties.water,properties.waterway].some(value=>flowing.has(value))&&
+  return !isFlowingWater(properties)&&
     [properties.class,properties.water,properties.natural,properties.landuse].some(value=>standing.has(value));
 }
 

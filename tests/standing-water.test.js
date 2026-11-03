@@ -37,3 +37,17 @@ test('lake tile fragments form a single flat water surface, while rivers retain 
   assert(river.size>1);
   assert.deepEqual(auditPart(water).errors,[]);
 });
+
+test('a mapped stream below grid resolution retains a printable width and can be hidden',()=>{
+  const stream={type:'Feature',properties:{sourceLayer:'waterway',class:'stream'},
+    geometry:{type:'LineString',coordinates:[[.001,.005],[.009,.005]]}};
+  const data={meta:{bbox:[0,0,.01,.01]},features:[stream],
+    localDEM:{epsg:4326,width:2,height:2,affine:[.01,0,0,0,-.01,.01],pixelIsArea:false,
+      values:new Float32Array([100,140,100,140]),metadata:{provider:'synthetic'}}};
+  const model=options=>buildModel(data,{size:100,resolution:8,trees:false,...options}).categories.find(part=>part.id==='inland-water');
+  const water=auditPart(model({})),wide=auditPart(model({streamWidth:2}));
+  assert.deepEqual(water.errors,[]);
+  assert(Math.abs(water.bbox.max[1]-water.bbox.min[1]-.45)<.001);
+  assert(Math.abs(wide.bbox.max[1]-wide.bbox.min[1]-.90)<.001);
+  assert.equal(model({streams:false}),undefined);
+});

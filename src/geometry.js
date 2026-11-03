@@ -1,6 +1,8 @@
 import {sampleCoverage} from './relief-contours.js';
 import {levelReliefLakes} from './relief-lakes.js';
 import {reliefDiagonals,reliefParts,PURE_RELIEF_RESOLUTIONS} from './pure-relief-mesh.js';
+import {reliefStreamStrips} from './relief-streams.js';
+import {waterwayPolygons} from './waterways.js';
 import {polygonOps} from './polygon-ops.js';
 import earcut from 'earcut';
 import {sampleHeight,prepareElevationTiles,createTerrainField,createElevationSampler} from './elevation.js';
@@ -29,7 +31,7 @@ import {transportIdentity,compatibleTransport,continuationRoute} from './transpo
 import {crossSectionFractions} from './transport-sections.js';
 import {fitMajorRoadItem,knownBridgeClearance} from './major-road-fit.js';
 import {carveTransportDecks} from './transport-carving.js';
-import {isStandingWater,shorelineLevel} from './standing-water.js';
+import {isFlowingWater,isStandingWater,shorelineLevel} from './standing-water.js';
 export {sampleHeight} from './elevation.js';
 const pc=polygonOps();
 
@@ -206,7 +208,7 @@ function prepareTerrain(data,options,progress,preview,measure){
   const deckMask=merge(deckFootprints);
   for(const [featureIndex,f]of data.features.entries()){const p=f.properties,layer=p.sourceLayer,polys=layer==='building'?[]:geoPolys(f,project);
     if(preview&&featureIndex%128===0)preview.stage('terrain','Classificant la cartografia del retall…',featureIndex,data.features.length);
-    if(layer==='water'){
+    if(layer==='water'&&(options.streams!==false||!isFlowingWater(p))){
       const entries=polys.map(polygon=>[polygon]);
       water.push(...entries);
       if(p.class==='ocean')ocean.push(...entries);
@@ -240,7 +242,9 @@ function prepareTerrain(data,options,progress,preview,measure){
   progress('Delimitant costa i capes…');
   const cropped=polys=>polys.map(p=>intersect(p,rect)).filter(p=>p.length);
   const boundedRoads=polys=>polys.map(p=>p.every(poly=>poly.every(ring=>ring.every(([x,y])=>x>=0&&x<=width&&y>=0&&y<=height)))?p:intersect(p,rect)).filter(p=>p.length);
-  const waterPoly=measure('terrain.water',()=>merge(cropped(water)),{inputs:water.length}),land=subtract(rect,waterPoly);
+  const waterways=options.streams!==false?waterwayPolygons(data.features.filter(f=>f.properties?.sourceLayer==='waterway'),project,
+    {width,height,scale,multiplier:options.streamWidth}).flatMap(line=>line.map(poly=>[poly])):[];
+  const waterPoly=measure('terrain.water',()=>mergeLayer(cropped([...water,...waterways])),{inputs:water.length+waterways.length}),land=subtract(rect,waterPoly);
   const railPoly=measure('terrain.railways',()=>intersect(mergeLayer(boundedRoads(rails)),land),{inputs:rails.length});
   const roadOnlyPoly=measure('terrain.roads',()=>subtract(intersect(mergeLayer(boundedRoads(roads)),land),railPoly),{inputs:roads.length});
   const roadPoly=merge([roadOnlyPoly,railPoly].filter(p=>p.length));
@@ -346,14 +350,19 @@ function buildPureRelief(data,options,progress,preview){
       else if(centre[2]>centre[0])cells[1]++;
     }
   }
+  if(options.streams!==false&&data.waterways?.length)progress('Traçant els rius i rierols…');
+  const streams=options.streams!==false&&data.waterways?.length
+    ?waterwayPolygons(data.waterways,project,{width,height,scale,multiplier:options.streamWidth}):[];
+  const streamStrips=reliefStreamStrips(streams,width,height,resolution);
+  const reliefGrid={resolution,width,height,heights,diagonals,scores,lakeWeights:lakes?.count?lakes.weights:null,streamStrips};
   progress('Construint el sòlid del relleu…');
-  const reliefGrid={resolution,width,height,heights,diagonals,scores,lakeWeights:lakes?.count?lakes.weights:null};
   const categories=reliefParts(reliefGrid);
   preview?.parts('terrain',categories,{width,height});
   const verticalReference={originMeters,minimumSurfaceMM:5,seaLevelMM:null,method:'lowest generated-terrain sample at 5 mm'};
   const warnings=[...(data.meta.sourceWarnings||[])];
   const provenance={...data.meta,options:{...options,pureRelief:true,trees:false},verticalExaggeration:exaggeration,verticalReference,
-    units:'millimeters',coverageCells:{bare:cells[0],snow:cells[1],total:resolution**2},lakeCount:lakes?.count??0};
+    units:'millimeters',coverageCells:{bare:cells[0],snow:cells[1],total:resolution**2},lakeCount:lakes?.count??0,
+    streamCount:streams.length};
   return groupMaterials({width,height,scale:Math.round(1000/scale),treeCount:0,buildingCount:0,categories,warnings,reliefGrid,
     triangles:categories.reduce((n,p)=>n+p.faces.length/3,0),elevationDiagnostics:prepared.diagnostics,provenance});
 }

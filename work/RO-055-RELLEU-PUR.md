@@ -12,6 +12,12 @@ El retall inclòs s’ha derivat d’ESA WorldCover 2021 v200 (Zanaga et al., 20
 
 ## Mesures locals
 
+### Rius i rierols a la v0.19.20
+
+El selector segmentat de Territori permet triar Model complet o Relleu pur. En tots dos modes es poden activar els rius i rierols cartografiats i fixar una amplada mínima de 0,45 a 1,35 mm. El multiplicador actua sobre el mínim i conserva les amplades cartogràfiques més grans. Els cursos segueixen el pendent i les superfícies dels llacs es mantenen planes.
+
+A Relleu pur, la cobertura de cursos d’aigua correspon al retall local de l’Aneto. El sector central utilitza tessel·les de més detall que la perifèria. El retall de 3 × 3 km conserva 11 trams. El de 40 × 40 km processa 4.493 traçats en uns 25 s abans d’auditar i exportar. Cal validar al laminador la passada mínima i els contactes dels trams amb els llacs. [Font i llicència](https://www.openstreetmap.org/copyright)
+
 ### Aigua a la v0.19.19
 
 A Territori, **Paisatge complet** és el mode inicial. L’exemple **Llacs glacials de l’Aneto** permet generar el mateix sector en tots dos modes. En una peça de 15 cm a 1:20.000, el retall és de 3 × 3 km i el pas de malla amb detall Alt a Paisatge complet és d’uns 31 m.

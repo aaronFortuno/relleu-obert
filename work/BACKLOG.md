@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-03 · v0.19.19**. Selector de modes, llacs plans i malla més fina a Paisatge complet. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
+Actualitzat: **2026-11-03 · v0.19.20**. Selector segmentat de modes i amplada mínima per a rius i rierols. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
 
 ## Ordre de treball
 
@@ -469,5 +469,7 @@ La preparació de mida i territori precedeix les quatre capes. En separar el mot
 **v0.19.18.** Cobertura cartogràfica de l’Aneto a uns 30 m per píxel, contorns de materials interpolats i malla més fina en detall Equilibrat i Alt. Pendent de validació d’usuari abans d’abordar la vegetació.
 
 **v0.19.19.** Selector de modes, exemple dels llacs glacials, llacs plans amb cota estimada i malla de fins a 96 cel·les per costat a Paisatge complet. La cobertura de llacs de Relleu pur correspon al pilot de l’Aneto. Pendent de validació al laminador.
+
+**v0.19.20.** Rius i rierols cartografiats en tots dos modes, amb un mínim de 0,45 mm configurable. Pendent de validar la continuïtat d’una sola passada i els contactes amb llacs al laminador.
 
 **Vegetació pendent.** Representar boscos cartografiats i provar formes arrodonides proporcionades a l’escala de la maqueta. A escales on els arbres individuals quedin per sota de la resolució d’impressió, estudiar una representació contínua del bosc.

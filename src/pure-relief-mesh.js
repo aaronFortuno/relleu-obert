@@ -1,6 +1,7 @@
 import {coverageSkins,RELIEF_SKIN_DEPTH} from './relief-contours.js';
 import {RELIEF_MATERIALS} from './materials.js';
 import {tilePlan} from './selection.js';
+import {reliefStreamPart} from './relief-streams.js';
 
 export const PURE_RELIEF_RESOLUTIONS={24:240,36:384,56:540};
 
@@ -80,7 +81,9 @@ export function reliefParts(grid,bounds={left:0,bottom:0,right:grid.resolution,t
   const base=reliefBase(grid,bounds,layered);
   const terrain=layered?combine(base,skins[0]):base;
   const parts=[{...RELIEF_MATERIALS[0],...terrain}];
-  if(layered)for(let kind=1;kind<skins.length;kind++)if(skins[kind])parts.push({...RELIEF_MATERIALS[kind],...skins[kind]});
+  for(let kind=1;kind<3;kind++)if(skins[kind])parts.push({...RELIEF_MATERIALS[kind],...skins[kind]});
+  const stream=reliefStreamPart(grid,bounds),lake=skins[3];
+  if(lake||stream)parts.push({...RELIEF_MATERIALS[3],...(lake?combine(lake,stream):stream)});
   return parts;
 }
 

@@ -6,6 +6,7 @@ import {auditPart} from '../src/solid-audit.js';
 import {physicalBBox} from '../src/selection.js';
 import {groupMaterials} from '../src/materials.js';
 import {reliefDiagonals,reliefParts,splitPureRelief} from '../src/pure-relief-mesh.js';
+import {reliefStreamPart} from '../src/relief-streams.js';
 
 const bbox=physicalBBox([0,0],10,10);
 const dem=[{z:0,x:0,y:0,size:2,elev:new Float32Array([100,200,500,650])}];
@@ -69,4 +70,38 @@ test('pure relief keeps separate mapped lake heights flat and closed across prin
   for(const part of model.parts)assert.deepEqual(auditPart(part).errors,[]);
   for(const piece of splitPureRelief(model,200,()=>{}))for(const part of piece.parts)
     assert.deepEqual(auditPart(part).errors,[]);
+});
+
+test('pure relief prints a stream narrower than a terrain cell, including both sides of a cut',()=>{
+  const [w,s,e,n]=bbox,at=(x,y)=>[w+(e-w)*x,s+(n-s)*y];
+  const waterways=[{properties:{sourceLayer:'waterway',class:'stream'},geometry:{type:'LineString',
+    coordinates:[at(.1,.37),at(.9,.37)]}}];
+  const data={meta:{bbox},dem,waterways};
+  const rendered=multiplier=>buildModel(data,{...options,resolution:8,size:400,streamWidth:multiplier});
+  const model=rendered(1),part=model.parts.find(p=>p.id==='inland-water');
+  assert.equal(model.provenance.streamCount,1);
+  assert(part);
+  const audit=auditPart(part);
+  assert.deepEqual(audit.errors,[]);
+  assert(audit.dimensions[1]>=.449&&audit.dimensions[1]<.5);
+  assert(audit.dimensions[2]>.36);
+  const widened=auditPart(rendered(2).parts.find(p=>p.id==='inland-water'));
+  assert(widened.dimensions[1]>=.899);
+  assert(!buildModel(data,{...options,streams:false}).parts.some(p=>p.id==='inland-water'));
+  const pieces=splitPureRelief(model,200,()=>{}).filter(piece=>piece.parts.some(p=>p.id==='inland-water'));
+  assert.equal(pieces.length,2);
+  for(const piece of pieces)assert.deepEqual(auditPart(piece.parts.find(p=>p.id==='inland-water')).errors,[]);
+});
+
+test('pure relief leaves a lake flat where a mapped stream crosses it',()=>{
+  const [w,s,e,n]=bbox,at=(x,y)=>[w+(e-w)*x,s+(n-s)*y];
+  const lake={geometry:{type:'Polygon',coordinates:[[at(.4,.3),at(.6,.3),at(.6,.7),at(.4,.7),at(.4,.3)]]}};
+  const stream={properties:{sourceLayer:'waterway',class:'stream'},geometry:{type:'LineString',
+    coordinates:[at(.1,.5),at(.9,.5)]}};
+  const {reliefGrid}=buildModel({meta:{bbox},dem,lakes:[lake],waterways:[stream]},{...options,resolution:24});
+  const part=reliefStreamPart(reliefGrid,{left:0,bottom:0,right:24,top:24});
+  const xs=part.vertices.filter((_,i)=>i%3===0);
+  assert(xs.some(x=>x<38)&&xs.some(x=>x>62));
+  assert(!xs.some(x=>x>44&&x<56));
+  assert.deepEqual(auditPart(part).errors,[]);
 });

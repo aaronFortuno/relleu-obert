@@ -9,6 +9,7 @@ import {loadBuildingsRecoverably} from './building-recovery.js';
 import {recommendedPlace} from './recommended-places.js';
 import {loadInfrastructureOverrides} from './infrastructure-registry.js';
 import {fetchOSMBuildings} from './roof-sources.js';
+import {loadReliefWaterways,RELIEF_WATERWAY_SOURCE,overlapsWaterwayCoverage} from './relief-waterways.js';
 
 export {lonLatTile} from './elevation.js';
 import {lonLatTile} from './elevation.js';
@@ -18,9 +19,9 @@ export function tileList(bbox,z=14){
   for(let x=Math.floor(a[0]);x<=Math.floor(b[0]);x++)for(let y=Math.floor(a[1]);y<=Math.floor(b[1]);y++)out.push({z,x,y});
   return out;
 }
-export function readVector(bytes,{x,y,z}){
+export function readVector(bytes,{x,y,z},layers=['water','waterway','landcover','landuse','transportation','building']){
   const tile=new VectorTile(new Pbf(bytes)),features=[];
-  for(const name of ['water','landcover','landuse','transportation','building']){
+  for(const name of layers){
     const layer=tile.layers[name];if(!layer)continue;
     for(let i=0;i<layer.length;i++){const f=layer.feature(i).toGeoJSON(x,y,z);f.properties.sourceLayer=name;features.push(f);}
   }return features;
@@ -77,7 +78,7 @@ export async function loadRegion({sample=true,bbox,buildingSource,decodeElevatio
     const terrain=await time('source.terrain',()=>loadTerrain(bbox,decodeElevation,fetch,progress,undefined,{
       zooms:[14,13,12,11,10],maxTiles:96,maxSamples:8*1024**2
     }));
-    let coverage=[],lakes=[];
+    let coverage=[],lakes=[],waterways=[];
     const warnings=terrain.warnings.slice();
     progress('Carregant la cobertura de sòl nu i neu o gel…');
     try{
@@ -92,11 +93,16 @@ export async function loadRegion({sample=true,bbox,buildingSource,decodeElevatio
       lakes=await time('source.relief-lakes',()=>loadReliefLakes(bbox));
       if(lakes.length)warnings.push('Llacs i estanys del pilot de l’Aneto: © OpenStreetMap contributors, via OpenFreeMap. Cota estimada del model d’elevacions.');
     }catch{warnings.push('No s’ha pogut carregar la cartografia de llacs del pilot de l’Aneto.');}
+    if(overlapsWaterwayCoverage(bbox)){
+      try{waterways=await time('source.relief-waterways',()=>loadReliefWaterways(bbox));}
+      catch{warnings.push('No s’ha pogut carregar la cartografia de rius i rierols del pilot de l’Aneto.');}
+    }else warnings.push('Aquest retall és fora de la cobertura de rius i rierols de Relleu pur.');
     const meta={bbox,name:'Relleu pur',date:new Date().toISOString(),terrain:terrain.metadata,tiles:terrain.tiles.map(({z,x,y})=>({z,x,y})),
       coverage:{...RELIEF_COVERAGE_SOURCE,available:!!coverage.length,tiles:coverage.map(t=>t.tile)},
       lakes:{count:lakes.length,...(lakes.length?RELIEF_LAKE_SOURCE:{})},
+      waterways:{count:waterways.length,...(waterways.length?RELIEF_WATERWAY_SOURCE:{})},
       buildings:{count:0},buildingSource:null,sourceWarnings:warnings,pureRelief:true};
-    return {meta,features:[],dem:terrain.tiles,coverage,lakes,terrainWarnings:warnings};
+    return {meta,features:[],dem:terrain.tiles,coverage,lakes,waterways,terrainWarnings:warnings};
   }
   const base=(import.meta.env?.BASE_URL||'./')+'data/';
   if(typeof sample==='string'&&!recommendedPlace(sample))throw Error('Exemple desconegut.');
