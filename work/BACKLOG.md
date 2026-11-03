@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-03 · v0.19.6**. RO-053 situa la tria de mida al centre i la generació a Territori. El retall es limita a 1:20.000. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
+Actualitzat: **2026-11-03 · v0.19.7**. RO-044 incorpora previsualització del Catastre per blocs i descarta els identificadors contradictoris individualment. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
 
 ## Ordre de treball
 
@@ -274,6 +274,8 @@ Escombrar una secció sobre un eix 3D i restar-la dels volums de terreny i capes
 Un MDT d’una altura per XY no descriu cavitats ni voladissos. Investigar núvols de punts o malles d’aixecaments amb cobertura de la cavitat; LiDAR aeri no garanteix veure’n l’interior. Començar per un arc petit amb malla oberta i llicència comprovada. Pla a PAISATGE-3D.md.
 
 ### RO-044 — Catastre per seccions i recuperació de configuracions
+
+**v0.19.7.** El flux interactiu consulta quatre blocs, amb un màxim de dues connexions. La vista provisional es reemplaça per una capa validada. Les contradiccions d'identificador s'ometen per entitat i queden registrades a la procedència. Un error de bloc recupera l'última capa vàlida.
 
 [Diagnòstic i comprovacions](RO-044-CATASTRE-RECUPERACIO.md). Reproduït a Tamariu: el servidor rebutja l’àrea inicial (3,18 km²) amb «Area of extension out of limits». Ara es subdivideix només davant límits reconeguts, fins a dos nivells 2×2, 42 consultes lògiques i dues connexions simultànies, amb pressupost total de tres minuts. Duplicats coherents eliminats; cap resultat parcial acceptat.
 

@@ -30,7 +30,7 @@ async function decodeDEM(blob,t){
 }
 export const defaultBuildingSource=bbox=>inCatalonia(bbox)?'icgc':'osm';
 const buildingLayers=new WeakMap();
-export async function loadBuildingLayer(region,{source=defaultBuildingSource(region.meta.bbox),localBuildings}={},progress=()=>{}){
+export async function loadBuildingLayer(region,{source=defaultBuildingSource(region.meta.bbox),localBuildings,onBatch}={},progress=()=>{}){
   if(localBuildings)return {features:localBuildings.features,metadata:localBuildings.metadata,source:'local',warnings:['Els edificis del GeoJSON local substitueixen tota la capa: els que faltin al fitxer no es completen automàticament.']};
   if(source==='auto')source=defaultBuildingSource(region.meta.bbox);
   let cache=buildingLayers.get(region);if(!cache){cache=new Map();buildingLayers.set(region,cache);}if(cache.has(source))return cache.get(source);
@@ -46,7 +46,7 @@ export async function loadBuildingLayer(region,{source=defaultBuildingSource(reg
     if(!official.features.length)throw Error('ICGC: no hi ha edificis disponibles. Pots triar OpenStreetMap.');
     const combined=combineBuildings(osm,official);result={features:combined.features,metadata:combined.metadata,warnings:[]};
   }else if(source==='catastre'){
-    progress('Carregant edificis i parts del Catastre…');const {fetchCadastralBuildings}=await import('./cadastre.js');result=await fetchCadastralBuildings(region.meta.bbox,fetch,{onProgress:progress});
+    progress('Carregant edificis i parts del Catastre…');const {fetchCadastralBuildings}=await import('./cadastre.js');result=await fetchCadastralBuildings(region.meta.bbox,fetch,{onProgress:progress,onBatch});
   }else throw Error('Font d’edificis desconeguda.');
   result={...result,source};if(!result.metadata?.roofSourceUnavailable)cache.set(source,result);return result;
 }

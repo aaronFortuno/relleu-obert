@@ -2,6 +2,17 @@
 
 Actualitzat: 2026-11-03. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.19.7 — Catastre per blocs
+
+RO-044 descarta els identificadors contradictoris i conserva la resta
+d'edificis. Un conflicte detectat després d'un bloc retira l'element
+de la vista provisional. El motor valida la capa final abans d'habilitar
+l'exportació. Si falla un bloc, es recupera l'última capa confirmada.
+
+383 proves ordinàries i compilació correctes. A Tamariu s'ha verificat
+la primera generació amb Catastre, la vista provisional i l'avís final
+amb respostes controlades del servei.
+
 ## v0.19.6 — Tria de mida al centre i límit d'escala
 
 RO-053 situa les set mides proporcionals al centre. La tria obre Territori,

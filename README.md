@@ -2,7 +2,9 @@
 
 Prototip educatiu separat de Terrology: generació de maquetes geogràfiques amb JavaScript, íntegrament al navegador, publicable a GitHub Pages. No s’ha copiat codi de Terrology.
 
-**v0.19.6 experimental · 3 de novembre de 2026**
+**v0.19.7 experimental · 3 de novembre de 2026**
+
+El Catastre mostra els edificis per blocs sobre la maqueta. Quan dues respostes discrepen sobre un identificador, s'omet l'element afectat i es conserva la resta. Els avisos apareixen a «Dades i limitacions».
 
 Tria la mida amb els botons proporcionals de la vista inicial. A Territori pots triar un exemple, situar el retall i ajustar l'escala fins a 1:20.000, el gir, l'exageració i el detall. Prem «Genera el model» des del mateix apartat. «Projecte nou» recupera el selector de mides.
 

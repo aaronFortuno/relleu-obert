@@ -39,12 +39,37 @@ test('permanent area rejection has a finite recursion budget',async()=>{
  await assert.rejects(()=>fetchCadastralBuildings(bbox,async()=>{calls++;return new Response(exception('Area of extension out of limits'));}),/ExceptionReport/);
  assert(calls<=21,'at most the first kind’s 1+4+16 nodes');
 });
-test('duplicate IDs with conflicting attributes reject, rather than dropping a building',async()=>{
+test('conflicting IDs are excluded without dropping unrelated buildings',async()=>{
  let child=0;
- await assert.rejects(()=>fetchCadastralBuildings(bbox,async url=>{
-  const b=new URL(url).searchParams.get('bbox').split(',').map(Number);
-  return new Response((b[2]-b[0])*(b[3]-b[1])>1e6?exception('Area of extension out of limits'):gml('Building',['A']).replace('>2</numberOfFloors',`>${++child}</numberOfFloors`));
- }),/contradictoris/);
+ const result=await fetchCadastralBuildings(bbox,async url=>{
+  const params=new URL(url).searchParams,b=params.get('bbox').split(',').map(Number);
+  if(params.get('typenames')==='BU.BUILDINGPART')return new Response(gml('BuildingPart'));
+  return new Response((b[2]-b[0])*(b[3]-b[1])>1e6?exception('Area of extension out of limits'):gml('Building',['A','B']).replace('>2</numberOfFloors',`>${++child}</numberOfFloors`));
+ });
+ assert.deepEqual(result.features.map(f=>f.id),['B']);
+ assert.deepEqual(result.metadata.query.conflictingIds,[{kind:'Building',id:'A'}]);
+ assert(result.warnings.some(message=>message.includes('1 element omès')));
+});
+test('quadrants publish coherent snapshots and retract conflicting parts',async()=>{
+ const batches=[];
+ let child=0;
+ const result=await fetchCadastralBuildings(bbox,async url=>{
+  if(new URL(url).searchParams.get('typenames')==='BU.BUILDING')return new Response(gml('Building',['A','B']));
+  return new Response(gml('BuildingPart',['A_part1','C_part1']).replace('>2</numberOfFloors',`>${++child}</numberOfFloors`));
+ },{onBatch:batch=>batches.push(batch)});
+ assert.deepEqual(batches.map(batch=>batch.completed),[1,2,3,4]);
+ assert.deepEqual(batches[0].features.map(f=>f.id),['A_part1','C_part1','B']);
+ assert.deepEqual(batches[1].features.map(f=>f.id),['C_part1','B']);
+ assert.deepEqual(batches.at(-1).features,result.features);
+ assert.equal(result.metadata.query.requests,8);
+});
+test('a conflict within one response is quarantined too',async()=>{
+ const result=await fetchCadastralBuildings(bbox,async url=>new Response(
+  new URL(url).searchParams.get('typenames')==='BU.BUILDING'
+    ?gml('Building',['A','A','B']).replace('>2</numberOfFloors','>3</numberOfFloors')
+    :gml('BuildingPart')
+ ));
+ assert.deepEqual(result.features.map(f=>f.id),['B']);
 });
 test('full-region fallback is explicit, uses the actual selected source and keeps diagnostic provenance',async()=>{
  const calls=[];

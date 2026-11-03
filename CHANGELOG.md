@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.19.7 — 2026-11-03
+
+- El Catastre omet només els identificadors contradictoris i en registra el recompte i els identificadors. La resta d'edificis es conserva.
+- La maqueta mostra el progrés de quatre blocs i una capa provisional d'edificis. L'exportació espera la capa confirmada. Si falla una consulta, es recuperen el model i la font vàlids.
+
 ## v0.19.6 — 2026-11-03
 
 - RO-053: botons proporcionals de mida al centre. La tria obre Territori, ara el primer apartat i el punt des d'on es genera la maqueta.

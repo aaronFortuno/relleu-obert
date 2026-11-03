@@ -1,4 +1,4 @@
-import {buildModel,updateVegetation,updateBuildings,updateTransport} from './geometry.js';
+import {buildModel,updateVegetation,updateBuildings,updateTransport,previewBuildingLayer} from './geometry.js';
 import {threeMF,stlZip} from './export.js';
 import {groupMaterials} from './materials.js';
 import {splitModel,tileArchive} from './mesh-tiles.js';
@@ -8,6 +8,13 @@ import {majorRoadWidthMetres} from './major-roads.js';
 let current,api;
 const progress=message=>self.postMessage({type:'progress',message});
 self.onmessage=async({data})=>{try{
+  if(data.type==='preview-buildings'){
+    let part;
+    try{part=previewBuildingLayer(current,data.features,data.options);}
+    catch{ /* A preview failure leaves the previous layer visible. */ }
+    self.postMessage({type:'building-preview',id:data.id,completed:data.completed,total:data.total,part});
+    return;
+  }
   if(data.type==='import-dem'||data.type==='import-buildings'){
     const decoder=await import('./local-import.js'),value=data.type==='import-dem'?await decoder.importDEM(data.buffer,data.name):decoder.importBuildings(data.text,data.name);
     self.postMessage({type:'imported',kind:data.type,value},value.values?[value.values.buffer]:[]);return;

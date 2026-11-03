@@ -13,7 +13,7 @@ export function cadastreQuery(bbox){
   const zone=Math.max(29,Math.min(31,Math.floor(((w+e)/2+180)/6)+1)),epsg=25800+zone,t=coordinateTransform(epsg),corners=[[w,s],[e,s],[e,n],[w,n]].map(p=>t.inverse(p));
   return {epsg,bbox:[Math.min(...corners.map(p=>p[0])),Math.min(...corners.map(p=>p[1])),Math.max(...corners.map(p=>p[0])),Math.max(...corners.map(p=>p[1]))]};
 }
-export function parseCadastreGML(text,{kind='BuildingPart',epsg=25831}={}){
+export function parseCadastreGML(text,{kind='BuildingPart',epsg=25831,allowDuplicates=false}={}){
   if(typeof text!=='string'||text.length>20_000_000||/<!DOCTYPE|<!ENTITY/i.test(text))throw Error('Catastre: resposta XML no admesa o massa gran.');
   if(!['Building','BuildingPart'].includes(kind)||XMLValidator.validate(text)!==true)throw Error('Catastre: XML de geometries invàlid.');
   const json=new XMLParser({removeNSPrefix:true,ignoreAttributes:false,parseTagValue:false,processEntities:false}).parse(text);
@@ -36,7 +36,7 @@ export function parseCadastreGML(text,{kind='BuildingPart',epsg=25831}={}){
   const transform=coordinateTransform(epsg),ids=new Set();let vertices=0;
   return members.map(member=>{
     const f=member[kind];if(!f)throw Error('Catastre: tipus de geometria inesperat.');
-    const id=f['@_id'];if(typeof id!=='string'||!id||ids.has(id))throw Error('Catastre: identificadors absents o duplicats.');ids.add(id);
+    const id=f['@_id'];if(typeof id!=='string'||!id||!allowDuplicates&&ids.has(id))throw Error('Catastre: identificadors absents o duplicats.');ids.add(id);
     const surfaces=array(f.geometry?.BuildingGeometry?.geometry?.Surface);
     if(!surfaces.length)throw Error('Catastre: geometria de superfície no admesa.');
     const coordinates=[];
@@ -58,8 +58,8 @@ export function parseCadastreGML(text,{kind='BuildingPart',epsg=25831}={}){
     return {type:'Feature',id,geometry:{type:'MultiPolygon',coordinates},properties:{sourceLayer:'building',provider:'Dirección General del Catastro · INSPIRE BU',source_id:id,family:id.replace(/_part[^_]*$/i,''),is_part:kind==='BuildingPart',above_ground_floors:Number.isFinite(floors)?floors:null,render_height:knownFloors?floors*3:6,height_estimated:true,height_method:knownFloors?'above-ground floors × 3m estimate':'6m fallback estimate',source_version:value(f.beginLifespanVersion)||null}};
   });
 }
-export function cadastralVolumes(buildings,parts){
-  const families=new Set(parts.map(f=>f.properties.family));
+export function cadastralVolumes(buildings,parts,excludedPartFamilies=[]){
+  const families=new Set([...parts.map(f=>f.properties.family),...excludedPartFamilies]);
   // Keep a coherent family: never extrude its envelope over its component parts.
   return [...parts.filter(f=>f.properties.above_ground_floors!==0),...buildings.filter(f=>!families.has(f.properties.family))];
 }
@@ -85,7 +85,9 @@ async function wfsGet(url,fetcher,{retries=1,backoff=()=>sleep(1500),deadline=In
   }
 }
 export async function fetchCadastralBuildings(bbox,fetcher=fetch,options={}){
-  const query=cadastreQuery(bbox),datasets=[],diagnostics={requests:0,subdivisions:0,duplicates:0},deadline=Date.now()+180000,controller=new AbortController();
+  const query=cadastreQuery(bbox),diagnostics={requests:0,subdivisions:0,duplicates:0},deadline=Date.now()+180000,controller=new AbortController();
+  const kinds=['Building','BuildingPart'];
+  const datasets=kinds.map(()=>new Map()),conflicts=kinds.map(()=>new Map());
   let active=0,received=0,receivedVertices=0;const waiting=[];
   async function request(url){
     if(active>=2)await new Promise(resolve=>waiting.push(resolve));else active++;
@@ -97,7 +99,7 @@ export async function fetchCadastralBuildings(bbox,fetcher=fetch,options={}){
     if(++diagnostics.requests>maxRequests)throw Error('Catastre: límit de consultes assolit; no es retornen dades parcials.');
     const params=new URLSearchParams({service:'wfs',version:'2.0.0',request:'getfeature',typenames:'BU.'+kind.toUpperCase(),bbox:box.join(','),srsname:'EPSG::'+query.epsg});
     try{
-      const features=parseCadastreGML(await request(CADASTRE_URL+'?'+params),{kind,epsg:query.epsg});
+      const features=parseCadastreGML(await request(CADASTRE_URL+'?'+params),{kind,epsg:query.epsg,allowDuplicates:true});
       received+=features.length;
       for(const f of features)for(const polygon of f.geometry.coordinates)for(const ring of polygon)receivedVertices+=ring.length;
       if(received>20000||receivedVertices>600000)throw Error('Catastre: el conjunt de zones supera el pressupost de dades. Redueix la regió.');
@@ -106,22 +108,53 @@ export async function fetchCadastralBuildings(bbox,fetcher=fetch,options={}){
     catch(e){
       if(e.code!=='CADASTRE_LIMIT'||depth>=2)throw e;
       diagnostics.subdivisions++;options.onProgress?.('Catastre: dividint la consulta en zones més petites…');
-      const [w,s,east,n]=box,x=(w+east)/2,y=(s+n)/2;
-      return (await Promise.all([[w,s,x,y],[x,s,east,y],[w,y,x,n],[x,y,east,n]].map(sub=>section(sub,kind,depth+1)))).flat();
+      return (await Promise.all(quadrants(box).map(sub=>section(sub,kind,depth+1)))).flat();
     }
   }
-  try{for(const kind of ['Building','BuildingPart']){
-    const unique=new Map();
-    for(const f of await section(query.bbox,kind)){
+  function collect(index,features){
+    const unique=datasets[index],rejected=conflicts[index];
+    for(const f of features){
+      if(rejected.has(f.id))continue;
       const previous=unique.get(f.id);
       if(previous){
-        if(JSON.stringify(previous)!==JSON.stringify(f))throw Error('Catastre: un element duplicat té geometries o atributs contradictoris; no es retornen dades parcials.');
-        diagnostics.duplicates++;
+        if(JSON.stringify(previous)===JSON.stringify(f))diagnostics.duplicates++;
+        else{
+          unique.delete(f.id);
+          rejected.set(f.id,f.properties.family);
+        }
       }else {unique.set(f.id,f);if(unique.size>10000)throw Error('Catastre: massa elements en el conjunt de zones. Redueix la regió.');}
     }
-    datasets.push([...unique.values()]);
-  }}catch(e){controller.abort(e);throw e;}
-  const [buildings,parts]=datasets,features=cadastralVolumes(buildings,parts),warnings=['Catastre: parts de volum, no habitatges identificats. Altures estimades a partir de plantes; no conté formes de coberta. La font substitueix tota la capa d’edificis, sense afegir-hi les envolupants ICGC.'];
+  }
+  const volumes=()=>cadastralVolumes([...datasets[0].values()],[...datasets[1].values()],conflicts[1].values());
+  try{
+    if(options.onBatch){
+      const blocks=quadrants(query.bbox);
+      for(const [index,box] of blocks.entries()){
+        options.onProgress?.(`Catastre: consultant el bloc ${index+1} de ${blocks.length}…`);
+        const pair=await Promise.all(kinds.map(kind=>section(box,kind,1)));
+        pair.forEach((features,kind)=>collect(kind,features));
+        const features=volumes();
+        options.onBatch({features,completed:index+1,total:blocks.length});
+      }
+    }else{
+      for(const [index,kind] of kinds.entries()){
+        options.onProgress?.(index?'Catastre: consultant les parts dels edificis…':'Catastre: consultant els edificis…');
+        collect(index,await section(query.bbox,kind));
+      }
+    }
+  }catch(e){controller.abort(e);throw e;}
+  const [buildings,parts]=datasets.map(dataset=>[...dataset.values()]),features=volumes(),warnings=['Catastre: parts de volum, no habitatges identificats. Altures estimades a partir de plantes; no conté formes de coberta. La font substitueix tota la capa d’edificis, sense afegir-hi les envolupants ICGC.'];
+  const conflictingIds=conflicts.flatMap((ids,index)=>[...ids.keys()].map(id=>({kind:kinds[index],id})));
+  if(conflictingIds.length){
+    diagnostics.conflictingIds=conflictingIds;
+    const omitted=conflictingIds.length===1?'1 element omès':`${conflictingIds.length} elements omesos`;
+    warnings.push(`Catastre: ${omitted} per geometries o atributs contradictoris amb el mateix identificador.`);
+  }
   if(!features.length)warnings.push('Catastre: el servei no ha retornat volums d’edificis sobre rasant per a aquesta àrea (dada absent, no prova d’absència real). El terreny i la resta del model es generen sense edificis; si l’àrea n’hauria de tenir, tria la font ICGC o OpenStreetMap.');
   return {features,metadata:{provider:'Dirección General del Catastro · INSPIRE BU',url:CADASTRE_URL,license:CADASTRE_LICENSE,retrievedAt:new Date().toISOString(),buildingCount:buildings.length,partCount:parts.length,query:diagnostics,zeroFloorPartsOmitted:parts.filter(p=>p.properties.above_ground_floors===0).length,count:features.length,heightMethod:'floors × 3m or 6m fallback; estimates, not measured heights',roofData:false},warnings};
+}
+
+function quadrants([w,s,e,n]){
+  const x=(w+e)/2,y=(s+n)/2;
+  return [[w,s,x,y],[x,s,e,y],[w,y,x,n],[x,y,e,n]];
 }

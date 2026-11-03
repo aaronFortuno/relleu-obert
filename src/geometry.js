@@ -431,6 +431,13 @@ function prepareBuildingGeometry(ctx,config,progress){
     mask,contains:polygonTester(mask),count:buildingCount,volumes,warnings};
 }
 
+export function previewBuildingLayer(previous,features,changes={}){
+  const context=previous?.context;
+  if(!context)throw Error('Cal generar primer el terreny.');
+  const options={...context.options,...changes};
+  return prepareBuildingGeometry({...context,options,buildingFeatures:features},buildingOptions(options),()=>{}).part;
+}
+
 export function updateBuildings(previous,layer={},changes={},progress=()=>{}){
   if(!previous.context)throw Error('Cal generar primer el terreny.');
   const old=previous.context,options={...old.options,...changes},config=buildingOptions(options),{buildingMode,maxBuildingHeight}=config;
