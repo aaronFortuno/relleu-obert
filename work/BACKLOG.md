@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-03 · v0.19.4**. RO-053 separa l'actualització de vies de la preparació del relleu i conserva la vista i els traços. RO-052 conserva l'avís dels dos extrems del quadrat de Rajadell. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
+Actualitzat: **2026-11-03 · v0.19.5**. RO-053 incorpora l'inici guiat i reorganitza Territori amb escala sincronitzada i gir directe al mapa. RO-052 conserva l'avís dels dos extrems del quadrat de Rajadell. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
 
 ## Ordre de treball
 
@@ -362,6 +362,8 @@ Primer prototip local: perfil longitudinal regularitzat amb tall/terraplè acota
 - [ ] Usuari: revisar els enllaços i les transicions d'amplada dels nous controls abans de validar laminat/impressió. Els fitxers de v0.18.2 documenten el problema i no el donen per resolt.
 
 ### RO-053 — Flux de treball per etapes
+
+**v0.19.5.** Inici estàtic amb confirmació de peça i territori abans de generar. Exemples a l'inici de Territori, tirador de gir, escala sincronitzada amb el zoom i ajustos d'exageració i detall sota el mapa.
 
 **v0.19.4.** El Worker reutilitza el camp d'altures, la base sense excavar i els edificis quan només canvia la configuració de vies. Recalcula paviment, connexions, suports i excavació si cal. Reaplica els traços i conserva la càmera. En canviar de retall, escala o detall cal preparar un terreny nou.
 

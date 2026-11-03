@@ -2,6 +2,19 @@
 
 Actualitzat: 2026-11-03. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.19.5 — Inici guiat i controls del territori
+
+RO-053 demana confirmar peça i territori abans de la primera generació.
+La vista inicial mostra una invitació estàtica. Triar un exemple situa el
+mapa. Territori inclou el tirador amb control de teclat, el retorn al nord,
+un selector d'escala per passos i els ajustos d'exageració i detall.
+El zoom pot situar el selector entre dos passos.
+
+Sis proves de selecció, exemples i historial del pinzell superades.
+Compilació correcta. Revisió local a 1280×720 i 1600×900 amb arrencada
+sense generació, confirmacions, canvi d'exemple després de fer zoom,
+arrossegament, gir amb teclat, retorn al nord i escala intermèdia.
+
 ## v0.19.4 — Actualització de vies sobre el terreny preparat
 
 RO-053 separa el càlcul incremental de vies. Es reutilitzen el camp

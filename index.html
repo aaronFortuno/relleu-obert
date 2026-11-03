@@ -20,19 +20,23 @@
     </section>
     <section class="config-section" data-step="place">
       <div class="step-header"><h2 class="config-heading"><button type="button" class="section-toggle" id="step-place" aria-expanded="false" aria-controls="panel-place"><span aria-hidden="true">02</span><span data-i18n="section.place">Territori</span><i aria-hidden="true">+</i></button></h2><button type="button" class="secondary step-action" data-step-action="place" hidden>Terreny →</button></div>
-      <div id="panel-place" class="config-content" role="region" aria-labelledby="step-place" hidden><form id="search-form" class="search-form"><label class="sr-only" for="place-search">Adreça o coordenades</label><div class="search-field"><input id="place-search" placeholder="Adreça o latitud, longitud" autocomplete="off"><button type="submit" aria-label="Cerca el lloc">⌕</button></div><div id="search-results" class="search-results" aria-live="polite"></div></form>
-      <div id="place-map" aria-label="Mapa per seleccionar la regió"></div>
-      <div class="map-orientation" role="group" aria-label="Orientació del retall"><button type="button" id="rotate-left" aria-label="Gira el retall 15 graus a l’esquerra">↶ 15°</button><button type="button" id="rotation-north" title="Posa el nord a dalt">Nord ↑</button><button type="button" id="rotate-right" aria-label="Gira el retall 15 graus a la dreta">15° ↷</button></div><output id="rotation-value" class="rotation-caption" aria-live="polite">Nord a dalt</output><label for="recommended-place" class="sr-only">Llocs recomanats</label><select id="recommended-place" aria-label="Llocs recomanats"></select><div class="map-caption"><span id="selection-info">Mou el mapa per triar la regió</span></div>
-      <p id="map-hint" class="hint">Mou el mapa per situar el retall.</p>
-      <p id="location" class="hint">Viaducte de l’Eix Diagonal (Bages)</p>
-
-      <label for="model-scale">Escala</label><input id="model-scale" type="text" list="scale-suggestions" placeholder="Segons el mapa" autocomplete="off" spellcheck="false" aria-describedby="scale-info"><datalist id="scale-suggestions"><option value="Segons el mapa"></option><option value="1:1000"></option><option value="1:1500"></option><option value="1:2000"></option><option value="1:5000"></option><option value="1:10000"></option></datalist><p id="scale-info" class="hint" aria-live="polite"></p>
+      <div id="panel-place" class="config-content" role="region" aria-labelledby="step-place" hidden>
+        <label for="recommended-place">Llocs d’exemple</label><select id="recommended-place"><option value="">Tria un exemple…</option></select>
+        <form id="search-form" class="search-form"><label class="sr-only" for="place-search">Adreça o coordenades</label><div class="search-field"><input id="place-search" placeholder="Adreça o latitud, longitud" autocomplete="off"><button type="submit" aria-label="Cerca el lloc">⌕</button></div><div id="search-results" class="search-results" aria-live="polite"></div></form>
+        <div id="place-map" aria-label="Mapa per seleccionar la regió"></div>
+        <div class="map-caption"><span id="selection-info"></span></div>
+        <label for="model-scale">Escala <output id="scale-value" for="model-scale">—</output></label>
+        <input id="model-scale" type="range" min="0" max="8" step="any" aria-describedby="scale-info">
+        <div id="scale-ticks" aria-hidden="true"></div>
+        <p id="scale-info" class="hint" role="status" hidden></p>
+        <label for="exag">Exageració vertical <output id="exag-value">×1,5</output></label><input id="exag" type="range" min="1" max="3" step=".25" value="1.5">
+        <label for="detail">Detall</label><select id="detail"><option value="24">Ràpid</option><option value="36" selected>Equilibrat</option><option value="56">Alt</option></select>
       </div>
     </section>
     <section class="config-section" data-step="terrain">
       <div class="step-header"><h2 class="config-heading"><button type="button" class="section-toggle" id="step-terrain" aria-expanded="false" aria-controls="panel-terrain"><span aria-hidden="true">03</span><span data-i18n="section.terrain">Terreny</span><i aria-hidden="true">+</i></button></h2><button type="button" class="secondary step-action" data-step-action="terrain" hidden>Genera</button></div>
-      <div id="panel-terrain" class="config-content" role="region" aria-labelledby="step-terrain" hidden><label for="exag">Exageració vertical <output id="exag-value">×1,5</output></label><input id="exag" type="range" min="1" max="3" step=".25" value="1.5">
-      <div id="source-summary" class="source-summary" aria-live="polite"><p><strong>Relleu del terreny</strong> <span id="terrain-source-name">Mapterhorn / Mapzen (fonts remotes)</span></p></div><label for="detail">Detall</label><select id="detail"><option value="24">Ràpid</option><option value="36" selected>Equilibrat</option><option value="56">Alt</option></select><details class="local-data"><summary>Fitxers propis · avançat</summary><p class="hint">Opcional: substitueix les fonts remotes per fitxers del dispositiu. Es llegeixen al navegador i no surten de l’ordinador. No cal per al flux normal.</p>
+      <div id="panel-terrain" class="config-content" role="region" aria-labelledby="step-terrain" hidden>
+      <div id="source-summary" class="source-summary" aria-live="polite"><p><strong>Relleu del terreny</strong> <span id="terrain-source-name">Mapterhorn / Mapzen (fonts remotes)</span></p></div><details class="local-data"><summary>Fitxers propis · avançat</summary><p class="hint">Opcional: substitueix les fonts remotes per fitxers del dispositiu. Es llegeixen al navegador i no surten de l’ordinador. No cal per al flux normal.</p>
       <label for="local-dem">Terreny sense edificis (GeoTIFF)</label><input id="local-dem" type="file" accept=".tif,.tiff">
       <label for="local-buildings">Edificis (GeoJSON)</label><input id="local-buildings" type="file" accept=".geojson,.json">
       <details class="local-data-help"><summary>Requisits tècnics i límits</summary><p class="hint">GeoTIFF: una banda, elevacions en metres. Fins a 100 MB i 4 milions de cel·les. CRS: WGS84, Web Mercator o UTM WGS84 / ETRS89 29–31. Ha de cobrir tot el retall.</p><p class="hint">GeoJSON: substitueix tota la capa d’edificis. Polygon/MultiPolygon, fins a 10.000 elements. Altures: render_height, altura o height en metres.</p></details>
@@ -70,10 +74,15 @@
   <section class="workspace" aria-label="Model tridimensional">
     <div id="viewport" aria-label="Previsualització tridimensional del model">
       <div id="brush-cursor" hidden></div>
-      <div class="preview-toolbar"><div class="viewer-tools"><button id="reset" title="Restablir la vista">↺ Restablir</button><button id="top">Vista zenital ↑</button><button id="presentation-toggle" type="button" aria-pressed="false" data-i18n="preview.presentation" disabled>Presentació</button><details class="viewer-help"><summary aria-label="Ajuda dels controls del model">?</summary><p id="viewer-hint">Arrossega per girar · Roda per apropar · Botó dret per desplaçar</p></details></div><span id="model-badge" role="status" aria-live="polite" hidden></span></div>
+      <div class="preview-toolbar" hidden><div class="viewer-tools"><button id="reset" title="Restablir la vista">↺ Restablir</button><button id="top">Vista zenital ↑</button><button id="presentation-toggle" type="button" aria-pressed="false" data-i18n="preview.presentation" disabled>Presentació</button><details class="viewer-help"><summary aria-label="Ajuda dels controls del model">?</summary><p id="viewer-hint">Arrossega per girar · Roda per apropar · Botó dret per desplaçar</p></details></div><span id="model-badge" role="status" aria-live="polite" hidden></span></div>
       <span id="presentation-note" class="presentation-note" hidden data-i18n="preview.presentationNote">Escena il·lustrativa · els acabats de la impressió poden variar.</span>
       <div id="work-indicator" role="status" aria-live="polite" hidden><span class="work-spinner" aria-hidden="true"></span><span id="work-label">Preparant el model…</span></div>
-      <div id="status" role="status" aria-live="polite">Preparant la mostra del viaducte…</div>
+      <div id="welcome">
+        <h2>Prepara una maqueta</h2>
+        <p id="welcome-instruction">Tria la mida de la peça i situa el retall al mapa.</p>
+        <button id="start-project" type="button" class="primary">Comença un projecte</button>
+      </div>
+      <div id="status" role="status" aria-live="polite"></div>
     </div>
   </section>
   <aside class="sidebar sidebar-right" aria-label="Informació i exportació">
@@ -104,7 +113,7 @@
     </section>
   </aside>
 </main>
-<footer class="app-footer"><span data-i18n="footer.tagline">Un tros del món, a les teves mans.</span><div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions">v0.19.4</button><button data-open="about-dialog" class="v4v-button">♡ Sobre el projecte · V4V</button></div></footer>
+<footer class="app-footer"><span data-i18n="footer.tagline">Un tros del món, a les teves mans.</span><div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions">v0.19.5</button><button data-open="about-dialog" class="v4v-button">♡ Sobre el projecte · V4V</button></div></footer>
 
 <dialog id="changelog-dialog" aria-labelledby="changelog-title"><div class="dialog-heading"><h2 id="changelog-title">Historial de versions</h2><button data-close aria-label="Tanca">×</button></div><div class="dialog-content"><div id="release-list"></div><a class="dialog-link" href="https://github.com/aaronFortuno/relleu-obert/blob/main/CHANGELOG.md" target="_blank" rel="noreferrer">Changelog complet al repositori ↗</a><p class="hint">Versions experimentals 0.x fins que es declari explícitament una versió estable.</p></div></dialog>
 <dialog id="help-dialog" aria-labelledby="help-title"><div class="dialog-heading"><h2 id="help-title">Geografia que pots tocar.</h2><button data-close aria-label="Tanca">×</button></div><div class="dialog-content"><p>Relleu Obert transforma dades de llocs reals en maquetes per explorar el paisatge i imprimir-lo en 3D.</p><ol class="help-steps"><li><strong>Peça i territori.</strong> Tria la mida, situa el retall al mapa i revisa l’escala.</li><li><strong>Terreny.</strong> Ajusta el relleu i prem «Genera el model». La primera generació inclou les capes amb els ajustos actuals.</li><li><strong>Vegetació, vies i edificis.</strong> Afina cada apartat. Torna a qualsevol pas des del seu títol. Els canvis a les vies s’apliquen amb una nova generació del model.</li><li><strong>Descarrega.</strong> Tria 3MF o STL, assigna els filaments i revisa el laminat abans d’imprimir.</li></ol><p class="hint">La cerca d’adreces i la cartografia consulten serveis públics. La geometria i els fitxers es calculen al navegador. Els arbres són una representació del bosc, no individus mesurats.</p></div></dialog>

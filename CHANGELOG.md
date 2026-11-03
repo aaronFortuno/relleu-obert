@@ -1,5 +1,11 @@
 # Canvis
 
+## v0.19.5 — 2026-11-03
+
+- RO-053: pantalla inicial estàtica amb «Comença un projecte». La primera generació s'inicia des de Terreny després de confirmar la peça i el territori.
+- Territori reuneix els exemples, la cerca, el mapa, l'escala, l'exageració i el detall. Triar un exemple situa el retall al mapa.
+- El retall es gira arrossegant el tirador de la cantonada o amb les fletxes del teclat. El botó del mapa recupera el nord. El control d'escala salta entre valors rodons i reflecteix els valors intermedis del zoom.
+
 ## v0.19.4 — 2026-11-03
 
 - RO-053: canviar el realç de camins o ferrocarrils, o activar els túnels, reutilitza el camp d'altures, les malles de base i els edificis del retall vigent. El motor recalcula les vies i els encaixos i, quan cal, excava sobre el terreny original.
