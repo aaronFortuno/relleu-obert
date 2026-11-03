@@ -45,7 +45,16 @@
 #welcome {position:absolute;inset:0;z-index:2;display:grid;align-content:center;justify-items:center;text-align:center;padding:24px;pointer-events:none}
 #welcome h2 {font-size:17px;color:var(--green)}
 #welcome p {margin:8px 0 16px;color:#65755d;font-size:var(--ui-control)}
-#start-project {width:auto;pointer-events:auto}
+#piece-sizes {
+  --piece-unit:2.5px;
+  display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-end;
+  gap:10px;max-width:100%;pointer-events:auto;
+}
+#piece-sizes .piece-size {
+  width:calc(var(--piece-unit) * var(--piece-width));height:calc(var(--piece-unit) * var(--piece-height));
+  padding:0;margin:0;background:var(--paper);color:var(--green);white-space:nowrap;font-variant-numeric:tabular-nums;
+}
+#piece-sizes .piece-size:hover {border-color:var(--green);background:#eef3e7}
 #recommended-place {margin-bottom:8px}
 .map-rotation-handle,.map-rotation-reset {
   display:grid;place-items:center;width:26px;height:26px;padding:0;border:1px solid var(--ui-control-border);

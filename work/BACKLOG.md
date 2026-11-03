@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-03 · v0.19.5**. RO-053 incorpora l'inici guiat i reorganitza Territori amb escala sincronitzada i gir directe al mapa. RO-052 conserva l'avís dels dos extrems del quadrat de Rajadell. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
+Actualitzat: **2026-11-03 · v0.19.6**. RO-053 situa la tria de mida al centre i la generació a Territori. El retall es limita a 1:20.000. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
 
 ## Ordre de treball
 
@@ -362,6 +362,8 @@ Primer prototip local: perfil longitudinal regularitzat amb tall/terraplè acota
 - [ ] Usuari: revisar els enllaços i les transicions d'amplada dels nous controls abans de validar laminat/impressió. Els fitxers de v0.18.2 documenten el problema i no el donen per resolt.
 
 ### RO-053 — Flux de treball per etapes
+
+**v0.19.6.** Mides proporcionals al centre i generació des de Territori, primer apartat. Escala i zoom limitats a 1:20.000. «Projecte nou» al header torna a la tria inicial. Ajornats els fitxers propis i el canvi de mida dins d'un projecte.
 
 **v0.19.5.** Inici estàtic amb confirmació de peça i territori abans de generar. Exemples a l'inici de Territori, tirador de gir, escala sincronitzada amb el zoom i ajustos d'exageració i detall sota el mapa.
 

@@ -2,6 +2,9 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import {parseCoordinates,scaledBBox,physicalBBox,selectionPose} from './selection.js';
 import {recommendedPlace,DEFAULT_PLACE,placeSelection} from './recommended-places.js';
+import {maxRegionScale,regionTileCount,MAX_REGION_TILES} from './region-limits.js';
+
+export const MAX_PROJECT_SCALE=20000;
 
 export function createPlaceMap(container,{onChange,onName,width=150,height=150}){
   const map=L.map(container,{zoomControl:true,attributionControl:true,zoomSnap:0,zoomAnimation:false,scrollWheelZoom:true,minZoom:4,maxZoom:18}).setView(recommendedPlace(DEFAULT_PLACE).center,15);
@@ -22,13 +25,50 @@ export function createPlaceMap(container,{onChange,onName,width=150,height=150})
   let physical=[width,height],lastBBox,lastBase=placeSelection(DEFAULT_PLACE,width,height),pendingFit,rotation=0,lastRotation,restoring=false,retainedBase=null,gesture=null,locked=false;
   map.on('zoomstart',()=>{if(!restoring)retainedBase=null;});
   function frameSize(){const w=container.clientWidth,h=container.clientHeight,r=physical[0]/physical[1],a=rotation*Math.PI/180,c=Math.abs(Math.cos(a)),s=Math.abs(Math.sin(a)),fw=Math.min((w-46)/(c+s/r),(h-54)/(s+c/r));return [fw,fw/r];}
+  function scaleBox(center,denominator){
+    return physicalBBox(center,physical[0]*denominator/1e6,physical[1]*denominator/1e6);
+  }
+  function getScaleLimit(center){
+    if(Math.abs(center[0])>70)return MAX_PROJECT_SCALE;
+    const envelope=selectionPose(scaleBox(center,MAX_PROJECT_SCALE),rotation).bbox;
+    if(regionTileCount(envelope)<=MAX_REGION_TILES)return MAX_PROJECT_SCALE;
+    return Math.min(MAX_PROJECT_SCALE,maxRegionScale(center,...physical,rotation)||MAX_PROJECT_SCALE);
+  }
+  function widestBox(center){
+    return scaleBox(center,getScaleLimit(center));
+  }
+  function limitZoom(center){
+    if(!container.clientWidth||!container.clientHeight)return;
+    const [w,s,e,n]=widestBox(center),[fw,fh]=frameSize();
+    const span=map.project([s,e],0).subtract(map.project([n,w],0));
+    const minimum=Math.max(4,map.getScaleZoom(Math.min(fw/span.x,fh/span.y),0));
+    const prior=restoring;
+    restoring=true;
+    map.setMinZoom(minimum);
+    restoring=prior;
+  }
   function baseSelection(){
     if(!container.clientWidth||!container.clientHeight)return pendingFit||lastBase;
-    if(retainedBase){const a=map.latLngToContainerPoint([retainedBase[1],retainedBase[0]]),b=map.latLngToContainerPoint([retainedBase[3],retainedBase[2]]);frame.style.width=Math.abs(b.x-a.x)+'px';frame.style.height=Math.abs(b.y-a.y)+'px';return retainedBase;}
+    function drawBounds([w,s,e,n]){
+      const a=map.latLngToContainerPoint([s,w]),b=map.latLngToContainerPoint([n,e]);
+      frame.style.width=Math.abs(b.x-a.x)+'px';frame.style.height=Math.abs(b.y-a.y)+'px';
+    }
+    if(retainedBase){
+      const p=selectionPose(retainedBase);
+      if(p.widthM*1000/physical[0]>getScaleLimit(p.center)+1e-6)retainedBase=widestBox(p.center);
+      drawBounds(retainedBase);return retainedBase;
+    }
     // A collapsed accordion has no pixel dimensions. Keep its geographic selection.
     const w=container.clientWidth,h=container.clientHeight,[fw,fh]=frameSize();
     frame.style.width=fw+'px';frame.style.height=fh+'px';
-    const a=map.containerPointToLatLng([(w-fw)/2,(h+fh)/2]),b=map.containerPointToLatLng([(w+fw)/2,(h-fh)/2]);return [a.lng,a.lat,b.lng,b.lat];
+    const a=map.containerPointToLatLng([(w-fw)/2,(h+fh)/2]),b=map.containerPointToLatLng([(w+fw)/2,(h-fh)/2]);
+    const bounds=[a.lng,a.lat,b.lng,b.lat],p=selectionPose(bounds);
+    if(p.widthM*1000/physical[0]>getScaleLimit(p.center)){
+      const limited=widestBox(p.center);
+      drawBounds(limited);
+      return limited;
+    }
+    return bounds;
   }
   function pose(){const b=baseSelection();if(!b)return null;lastBase=b;return selectionPose(b,rotation);}
   const selection=()=>pose()?.bbox;
@@ -38,7 +78,7 @@ export function createPlaceMap(container,{onChange,onName,width=150,height=150})
     handle.setAttribute('aria-valuetext',value+' graus');
     reset.disabled=locked||value===0;
   }
-  const changed=()=>{if(restoring||gesture)return;const p=pose();drawRotation(rotation);if(p&&(!lastBBox||rotation!==lastRotation||p.bbox.some((v,i)=>Math.abs(v-lastBBox[i])>1e-12))){lastBBox=p.bbox;lastRotation=rotation;onChange(p.bbox,map.getCenter(),p);}};
+  const changed=()=>{if(restoring||gesture)return;const {lat,lng}=map.getCenter();limitZoom([lat,lng]);const p=pose();drawRotation(rotation);if(p&&(!lastBBox||rotation!==lastRotation||p.bbox.some((v,i)=>Math.abs(v-lastBBox[i])>1e-12))){lastBBox=p.bbox;lastRotation=rotation;onChange(p.bbox,map.getCenter(),p);}};
   map.on('moveend',()=>{
     if(restoring||!retainedBase)return;
     const {lat,lng}=map.getCenter(),old=selectionPose(retainedBase);
@@ -46,9 +86,14 @@ export function createPlaceMap(container,{onChange,onName,width=150,height=150})
   });
   map.on('moveend zoomend',changed);
   function fit(bbox){
+    const p=selectionPose(bbox);
+    if(p.widthM*1000/physical[0]>getScaleLimit(p.center)+1e-6)bbox=widestBox(p.center);
     retainedBase=bbox;if(!container.clientWidth||!container.clientHeight){pendingFit=bbox;changed();return;}
     const w=container.clientWidth,h=container.clientHeight,[fw,fh]=frameSize();
-    const prior=restoring;restoring=true;pendingFit=null;map.fitBounds([[bbox[1],bbox[0]],[bbox[3],bbox[2]]],{padding:[(w-fw)/2,(h-fh)/2],animate:false});map.setView([(bbox[1]+bbox[3])/2,(bbox[0]+bbox[2])/2],map.getZoom(),{animate:false});restoring=prior;changed();
+    const prior=restoring;restoring=true;pendingFit=null;
+    limitZoom(p.center);
+    map.fitBounds([[bbox[1],bbox[0]],[bbox[3],bbox[2]]],{padding:[(w-fw)/2,(h-fh)/2],animate:false});
+    map.setView(p.center,map.getZoom(),{animate:false});restoring=prior;changed();
   }
   new ResizeObserver(()=>{if(!container.clientWidth||!container.clientHeight)return;const previous=pendingFit||lastBase;restoring=true;map.invalidateSize({pan:false});if(previous)fit(previous);restoring=false;changed();}).observe(container);
   function setRotation(value){
@@ -90,7 +135,7 @@ export function createPlaceMap(container,{onChange,onName,width=150,height=150})
   };
   reset.onclick=()=>setRotation(0);
   drawRotation(0);
-  return {map,getBBox:selection,getPose:pose,setRotation,setLocked(value){locked=value;handle.disabled=value;reset.disabled=value||rotation===0;},setScale(value){fit(scaledBBox(pose().center,...physical,value));},setSize(w,h){const previous=pose();physical=[w,h];fit(physicalBBox(previous.center,previous.heightM*w/h/1000,previous.heightM/1000));},setRegion:fit,async search(text){
+  return {map,getBBox:selection,getPose:pose,getScaleLimit,setRotation,setLocked(value){locked=value;handle.disabled=value;reset.disabled=value||rotation===0;},setScale(value){fit(scaledBBox(pose().center,...physical,value));},setSize(w,h){const previous=pose();physical=[w,h];fit(physicalBBox(previous.center,previous.heightM*w/h/1000,previous.heightM/1000));},setRegion:fit,async search(text){
     const coordinate=parseCoordinates(text);if(coordinate){map.setView([coordinate.lat,coordinate.lon],map.getZoom(),{animate:false});onName(text);return null;}
     const cacheKey='relleu-search:'+text.trim().toLowerCase();let cached;try{cached=JSON.parse(sessionStorage.getItem(cacheKey));}catch{}
     if(cached)return cached;

@@ -1,5 +1,11 @@
 # Canvis
 
+## v0.19.6 — 2026-11-03
+
+- RO-053: botons proporcionals de mida al centre. La tria obre Territori, ara el primer apartat i el punt des d'on es genera la maqueta.
+- L'escala arriba a 1:20.000. El selector i el zoom s'aturen abans si la mida, la ubicació o l'orientació del retall esgoten el límit de tessel·les.
+- «Projecte nou» al header recupera el selector de mides. La importació de fitxers propis queda ajornada.
+
 ## v0.19.5 — 2026-11-03
 
 - RO-053: pantalla inicial estàtica amb «Comença un projecte». La primera generació s'inicia des de Terreny després de confirmar la peça i el territori.

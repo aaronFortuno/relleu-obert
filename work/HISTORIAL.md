@@ -2,6 +2,18 @@
 
 Actualitzat: 2026-11-03. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.19.6 — Tria de mida al centre i límit d'escala
+
+RO-053 situa les set mides proporcionals al centre. La tria obre Territori,
+primer de quatre apartats i punt de generació. «Projecte nou» reinicia la
+vista i els ajustos. La divisió en peces passa al panell dret i s'activa
+per defecte a les mides grans. La importació pròpia queda ajornada.
+
+21 proves dirigides i compilació correctes. Revisió a 1280×720 i 1600×900,
+generació de 150×200 mm i reinici. A Rajadell, el límit general d'1:20.000
+s'aplica a 15×15 cm. A 40×40 cm el selector s'atura a 1:15.900 i ajusta
+el topall amb el gir segons les tessel·les disponibles.
+
 ## v0.19.5 — Inici guiat i controls del territori
 
 RO-053 demana confirmar peça i territori abans de la primera generació.

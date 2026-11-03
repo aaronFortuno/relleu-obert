@@ -2,9 +2,9 @@
 
 Prototip educatiu separat de Terrology: generació de maquetes geogràfiques amb JavaScript, íntegrament al navegador, publicable a GitHub Pages. No s’ha copiat codi de Terrology.
 
-**v0.19.5 experimental · 3 de novembre de 2026**
+**v0.19.6 experimental · 3 de novembre de 2026**
 
-«Comença un projecte» obre el pas Peça. A Territori pots triar un exemple, situar el retall i ajustar-ne l'escala, el gir, l'exageració i el detall. La primera maqueta es genera quan prems «Genera el model» a Terreny.
+Tria la mida amb els botons proporcionals de la vista inicial. A Territori pots triar un exemple, situar el retall i ajustar l'escala fins a 1:20.000, el gir, l'exageració i el detall. Prem «Genera el model» des del mateix apartat. «Projecte nou» recupera el selector de mides.
 
 RO-053 separa el càlcul de vies de la preparació del relleu. Els canvis de realç i túnels reutilitzen el terreny i els edificis del retall vigent. El motor revisa les unions i reaplica els traços del pinzell, mantenint la càmera.
 
