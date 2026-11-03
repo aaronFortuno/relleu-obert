@@ -24,11 +24,11 @@ export function sampleCoverage(coverage,lon,lat,out,offset){
   out[offset+2]+=.0002;
 }
 
-function clip(poly,kind,other){
+function clip(poly,score){
   const result=[];
-  let a=poly.at(-1),da=a[3+kind]-a[3+other];
+  let a=poly.at(-1),da=score(a);
   for(const b of poly){
-    const db=b[3+kind]-b[3+other];
+    const db=score(b);
     if((da>=0)!==(db>=0)){
       const t=da/(da-db);
       result.push(a.map((value,i)=>value+(b[i]-value)*t));
@@ -80,8 +80,10 @@ function skinBuilder(kind,bounds,grid){
       }
       for(let i=0;i<poly.length;i++){
         const j=(i+1)%poly.length,a=poly[i],b=poly[j];
-        if(outer(a,b)||!interior&&[0,1,2].some(other=>other!==kind&&
-          near(a[3+kind],a[3+other])&&near(b[3+kind],b[3+other])))wall(ids[i],ids[j]);
+        const shore=near(a[6],0)&&near(b[6],0);
+        const materialBoundary=kind<3&&!interior&&[0,1,2].some(other=>other!==kind&&
+          near(a[3+kind],a[3+other])&&near(b[3+kind],b[3+other]));
+        if(outer(a,b)||shore||materialBoundary)wall(ids[i],ids[j]);
       }
     },
     finish(){return nf?{vertices:vertices.slice(0,nv),faces:faces.slice(0,nf)}:null;}
@@ -90,21 +92,28 @@ function skinBuilder(kind,bounds,grid){
 
 export function coverageSkins(grid,bounds){
   const {left,bottom,right,top}=bounds;
-  const {resolution:n,heights,diagonals,scores}=grid,builders=[0,1,2].map(kind=>skinBuilder(kind,bounds,grid));
+  const {resolution:n,heights,diagonals,scores,lakeWeights}=grid,builders=[0,1,2,3].map(kind=>skinBuilder(kind,bounds,grid));
   const point=(x,y)=>{
     const i=y*(n+1)+x;
-    return [x,y,heights[i],scores[i*3],scores[i*3+1],scores[i*3+2]];
+    return [x,y,heights[i],scores?.[i*3]??1,scores?.[i*3+1]??0,scores?.[i*3+2]??0,lakeWeights?.[i]??-1];
   };
   const kindAt=p=>p[3]>p[4]?(p[3]>p[5]?0:2):(p[4]>p[5]?1:2);
   function triangle(a,b,c){
-    const poly=[a,b,c],first=kindAt(a);
+    let poly=[a,b,c];
+    if(a[6]>0||b[6]>0||c[6]>0){
+      const water=clip(poly,p=>p[6]);
+      if(water.length>=3)builders[3].patch(water,true);
+      poly=clip(poly,p=>-p[6]);
+      if(poly.length<3)return;
+    }
+    const first=kindAt(a);
     if(first===kindAt(b)&&first===kindAt(c)){
       builders[first].patch(poly,true);
       return;
     }
     for(let kind=0;kind<3;kind++){
       let region=poly;
-      for(let other=0;other<3&&region.length;other++)if(kind!==other)region=clip(region,kind,other);
+      for(let other=0;other<3&&region.length;other++)if(kind!==other)region=clip(region,p=>p[3+kind]-p[3+other]);
       if(region.length>=3)builders[kind].patch(region,false);
     }
   }

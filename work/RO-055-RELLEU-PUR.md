@@ -12,6 +12,12 @@ El retall inclòs s’ha derivat d’ESA WorldCover 2021 v200 (Zanaga et al., 20
 
 ## Mesures locals
 
+### Aigua a la v0.19.19
+
+A Territori, **Paisatge complet** és el mode inicial. L’exemple **Llacs glacials de l’Aneto** permet generar el mateix sector en tots dos modes. En una peça de 15 cm a 1:20.000, el retall és de 3 × 3 km i el pas de malla amb detall Alt a Paisatge complet és d’uns 31 m.
+
+Paisatge complet agrupa els fragments de cada llac i n’estima la cota a partir de la riba. L’aigua corrent conserva el perfil del relleu. Relleu pur fa servir un retall local d’OpenStreetMap via OpenFreeMap a l’Aneto. El contorn es projecta sobre la malla i els llacs més petits depenen del pas de mostreig. [Atribució i llicència OpenStreetMap](https://www.openstreetmap.org/copyright)
+
 Retalls centrats a 42,635° N i 0,650° E, escala 1:100.000 i exageració ×1,5. Amb detall Alt, la malla té 432 × 432 cel·les. Cada cel·la pren una mostra central per triar la diagonal que s’hi ajusta millor. El visor calcula normals contínues sobre la superfície indexada. L’exportació en peces conserva les cotes i la triangulació als talls, que es reconstrueixen sobre línies de la mateixa malla.
 
 ### Contorns de la v0.19.18

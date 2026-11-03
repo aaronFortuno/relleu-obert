@@ -76,11 +76,11 @@ function combine(a,b){
 }
 
 export function reliefParts(grid,bounds={left:0,bottom:0,right:grid.resolution,top:grid.resolution}){
-  const skins=grid.scores?coverageSkins(grid,bounds):[],layered=!!(skins[1]||skins[2]);
+  const skins=grid.scores||grid.lakeWeights?coverageSkins(grid,bounds):[],layered=skins.slice(1).some(Boolean);
   const base=reliefBase(grid,bounds,layered);
   const terrain=layered?combine(base,skins[0]):base;
   const parts=[{...RELIEF_MATERIALS[0],...terrain}];
-  if(layered)for(let kind=1;kind<=2;kind++)if(skins[kind])parts.push({...RELIEF_MATERIALS[kind],...skins[kind]});
+  if(layered)for(let kind=1;kind<skins.length;kind++)if(skins[kind])parts.push({...RELIEF_MATERIALS[kind],...skins[kind]});
   return parts;
 }
 

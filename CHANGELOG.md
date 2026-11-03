@@ -1,5 +1,11 @@
 # Canvis
 
+## v0.19.19 — 2026-11-03
+
+- Selector de modes Paisatge complet i Relleu pur i exemple dels llacs glacials de l’Aneto.
+- Llacs plans a Paisatge complet i al retall de l’Aneto de Relleu pur.
+- Malla més fina a Paisatge complet i ombrejat continu del terreny.
+
 ## v0.19.18 — 2026-11-03
 
 - Relleu pur amb contorns de materials interpolats i cobertura de l’Aneto a uns 30 m per píxel.

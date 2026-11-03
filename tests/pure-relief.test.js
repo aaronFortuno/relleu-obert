@@ -53,3 +53,20 @@ test('relief diagonals follow the measured centre and interpolated materials clo
       ?vertices[i*3+1]+','+vertices[i*3+2]:null).filter(Boolean)))].sort();
   assert.deepEqual(seam(tiles[0],200),seam(tiles[1],0));
 });
+
+test('pure relief keeps separate mapped lake heights flat and closed across print cuts',()=>{
+  const rect=(x0,y0,x1,y1)=>({geometry:{type:'Polygon',
+    coordinates:[[[x0,y0],[x1,y0],[x1,y1],[x0,y1],[x0,y0]]]}});
+  const [w,s,e,n]=bbox,at=(x,y)=>[w+(e-w)*x,s+(n-s)*y];
+  const left=rect(...at(.14,.25),...at(.56,.52)),right=rect(...at(.68,.67),...at(.85,.88));
+  const model=buildModel({meta:{bbox},dem,lakes:[left,right],
+    coverage:[{bbox,width:2,height:2,values:new Uint8Array([60,70,70,60])}]},{...options,resolution:48,size:400});
+  assert.equal(model.provenance.lakeCount,2);
+  const water=model.parts.find(p=>p.id==='inland-water');
+  const levels=new Set();
+  for(let i=0;i<water.vertices.length;i+=6)levels.add(water.vertices[i+2]);
+  assert.equal(levels.size,2);
+  for(const part of model.parts)assert.deepEqual(auditPart(part).errors,[]);
+  for(const piece of splitPureRelief(model,200,()=>{}))for(const part of piece.parts)
+    assert.deepEqual(auditPart(part).errors,[]);
+});

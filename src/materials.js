@@ -13,7 +13,8 @@ export const PALETTES={1:['#c6b38d'],2:['#c6b38d','#8dc5ca'],4:['#c6b38d','#8dc5
 export const RELIEF_MATERIALS=[
   {id:'terrain',name:'Relleu',color:'#aba397'},
   {id:'rock',name:'Sòl nu cartografiat',color:'#787d82'},
-  {id:'snow',name:'Neu o gel cartografiat',color:'#f7f8fa'}
+  {id:'snow',name:'Neu o gel cartografiat',color:'#f7f8fa'},
+  CATEGORIES.find(category=>category.id==='inland-water')
 ];
 export function defaultAssignments(count){
   if(count===1)return CATEGORIES.map(()=>0);

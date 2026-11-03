@@ -13,10 +13,11 @@ import {tileArchive} from '../src/mesh-tiles.js';
 import {PURE_RELIEF_RESOLUTIONS,splitPureRelief} from '../src/pure-relief-mesh.js';
 
 const name=process.argv[2];
-if(!['tamariu','millau','aneto20','aneto40'].includes(name))throw Error('Ús: node --max-old-space-size=512 scripts/measure-processing.mjs tamariu|millau|aneto20|aneto40');
+if(!['tamariu','millau','aneto-lakes','aneto20','aneto40'].includes(name))throw Error('Ús: node --max-old-space-size=512 scripts/measure-processing.mjs tamariu|millau|aneto-lakes|aneto20|aneto40');
 if(freemem()/2**30<2.5)throw Error('Calen almenys 2,5 GiB lliures.');
-const sample=name==='tamariu',pureRelief=name.startsWith('aneto'),extent=pureRelief?Number(name.slice(5)):null;
-const bbox=pureRelief?physicalBBox([42.635,.65],extent,extent):sample?physicalBBox([41.918,3.2075],.65,.65):physicalBBox([44.0797,3.0226],3,3);
+const sample=name==='tamariu',landscapeLakes=name==='aneto-lakes',pureRelief=name==='aneto20'||name==='aneto40';
+const extent=pureRelief?Number(name.slice(5)):null;
+const bbox=pureRelief||landscapeLakes?physicalBBox([42.635,.65],extent??3,extent??3):sample?physicalBBox([41.918,3.2075],.65,.65):physicalBBox([44.0797,3.0226],3,3);
 const startedAt=new Date().toISOString(),started=performance.now(),sources=[];
 const nativeFetch=globalThis.fetch;
 globalThis.fetch=async (url,options)=>{
@@ -26,7 +27,7 @@ globalThis.fetch=async (url,options)=>{
 };
 await init(await WebAssembly.compile(await readFile(new URL('../node_modules/@jsquash/webp/codec/dec/webp_dec.wasm',import.meta.url))));
 const data=await loadRegion({sample,bbox,pureRelief,buildingSource:'osm',decodeElevation:async(blob,t)=>decodeDEMTile(await blob.arrayBuffer(),t,decode),onTiming:event=>sources.push(event)});
-const settings={size:pureRelief?extent*10:150,resolution:pureRelief?PURE_RELIEF_RESOLUTIONS[56]:12,exaggeration:1.5,trees:false,estimatedTunnels:!pureRelief,pureRelief};
+const settings={size:pureRelief?extent*10:150,resolution:pureRelief?PURE_RELIEF_RESOLUTIONS[56]:landscapeLakes?96:12,exaggeration:1.5,trees:false,estimatedTunnels:!pureRelief,pureRelief};
 const timing=createProcessingTiming();
 timing.mark('initialization','Preparant el motor de geometria…');
 const api=pureRelief?null:await Module();api?.setup();

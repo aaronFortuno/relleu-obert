@@ -1,4 +1,5 @@
 import {sampleCoverage} from './relief-contours.js';
+import {levelReliefLakes} from './relief-lakes.js';
 import {reliefDiagonals,reliefParts,PURE_RELIEF_RESOLUTIONS} from './pure-relief-mesh.js';
 import {polygonOps} from './polygon-ops.js';
 import earcut from 'earcut';
@@ -28,6 +29,7 @@ import {transportIdentity,compatibleTransport,continuationRoute} from './transpo
 import {crossSectionFractions} from './transport-sections.js';
 import {fitMajorRoadItem,knownBridgeClearance} from './major-road-fit.js';
 import {carveTransportDecks} from './transport-carving.js';
+import {isStandingWater,shorelineLevel} from './standing-water.js';
 export {sampleHeight} from './elevation.js';
 const pc=polygonOps();
 
@@ -94,18 +96,29 @@ export class Surface {
 }
 function* terrainPatches(polys,width,heightMM,res){
   if(!polys.length)return;
-  // Clip into columns once. Intersecting a whole road network for every triangle
-  // is both slow and numerically fragile; each cell then sees only local edges.
   let minX=width,minY=heightMM,maxX=0,maxY=0;for(const poly of polys)for(const [x,y]of poly[0]){minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);}
   const i0=Math.max(0,Math.floor(minX/width*res)),i1=Math.min(res-1,Math.floor(maxX/width*res)),j0=Math.max(0,Math.floor(minY/heightMM*res)),j1=Math.min(res-1,Math.floor(maxY/heightMM*res)),columns=[];
-  for(let i=i0;i<=i1;i++)columns[i]=intersect(polys,[[[[i*width/res,0],[(i+1)*width/res,0],[(i+1)*width/res,heightMM],[i*width/res,heightMM],[i*width/res,0]]]]);
+  const contains=polygonTester(polys),boundary=new Uint8Array(res*res);
+  // Only cells crossed by a polygon boundary need clipping. Include both
+  // sides of grid-aligned edges and the boundaries of holes.
+  const gridX=x=>x*res/width,gridY=y=>y*res/heightMM;
+  for(const polygon of polys)for(const ring of polygon)for(let k=1;k<ring.length;k++){
+    const a=ring[k-1],b=ring[k],left=Math.min(gridX(a[0]),gridX(b[0])),right=Math.max(gridX(a[0]),gridX(b[0]));
+    const bottom=Math.min(gridY(a[1]),gridY(b[1])),top=Math.max(gridY(a[1]),gridY(b[1]));
+    for(let j=Math.max(j0,Math.floor(bottom-1e-7));j<=Math.min(j1,Math.floor(top+1e-7));j++)
+      for(let i=Math.max(i0,Math.floor(left-1e-7));i<=Math.min(i1,Math.floor(right+1e-7));i++)boundary[j*res+i]=1;
+  }
   for(let j=j0;j<=j1;j++)for(let i=i0;i<=i1;i++){
     const x=i*width/res,y=j*heightMM/res,x1=(i+1)*width/res,y1=(j+1)*heightMM/res;
+    const tris=[[[x,y],[x1,y],[x1,y1],[x,y]],[[x,y],[x1,y1],[x,y1],[x,y]]];
+    if(!boundary[j*res+i]){
+      if(contains([(x+x1)/2,(y+y1)/2]))for(const tri of tris)yield [tri];
+      continue;
+    }
+    columns[i]??=intersect(polys,[[[[x,0],[x1,0],[x1,heightMM],[x,heightMM],[x,0]]]]);
     const candidates=intersect(columns[i],[[[[x,y],[x1,y],[x1,y1],[x,y1],[x,y]]]]);
     if(!candidates.length)continue;
-    for(const tri of [[[x,y],[x1,y],[x1,y1],[x,y]],[[x,y],[x1,y1],[x,y1],[x,y]]]){
-      yield* intersect(candidates,[[tri]]);
-    }
+    for(const tri of tris)yield* intersect(candidates,[[tri]]);
   }
 }
 function solidPatches(patches,height,bottom){
@@ -162,7 +175,7 @@ function prepareTerrain(data,options,progress,preview,measure){
   const prepared=data.localDEM?{tiles:[],diagnostics:{invalid:0,spikes:0,repaired:0,source:'local GeoTIFF'}}:prepareElevationTiles(data.dem),localHeight=data.localDEM?localRasterSampler(data.localDEM):null;
   const elevationAt=(lon,lat)=>localHeight?localHeight(lon,lat):sampleHeight(prepared.tiles,lon,lat);
   if(prepared.diagnostics.repaired)warnings.push(`S’han reconstruït ${prepared.diagnostics.repaired} mostres d’altitud invàlides o pics aïllats a partir dels veïns.`);
-  const water=[],ocean=[],green=[],woods=[],roads=[],rails=[],transport=[],roadPieces=[],railPieces=[];
+  const water=[],ocean=[],stillWater=[],green=[],woods=[],roads=[],rails=[],transport=[],roadPieces=[],railPieces=[];
   const knownItems=[],knownFootprints=[];
   const deckFootprint=item=>intersect(item.outlines.map(r=>[r.map(project)]),rect);
   for(const item of data.infrastructure?.items||[]){
@@ -193,7 +206,12 @@ function prepareTerrain(data,options,progress,preview,measure){
   const deckMask=merge(deckFootprints);
   for(const [featureIndex,f]of data.features.entries()){const p=f.properties,layer=p.sourceLayer,polys=layer==='building'?[]:geoPolys(f,project);
     if(preview&&featureIndex%128===0)preview.stage('terrain','Classificant la cartografia del retall…',featureIndex,data.features.length);
-    if(layer==='water'){water.push(...polys.map(p=>[p]));if(p.class==='ocean')ocean.push(...polys.map(p=>[p]));}
+    if(layer==='water'){
+      const entries=polys.map(polygon=>[polygon]);
+      water.push(...entries);
+      if(p.class==='ocean')ocean.push(...entries);
+      else if(isStandingWater(p))stillWater.push(...entries);
+    }
     if((layer==='landcover'&&['wood','grass','scrub'].includes(p.class))||(layer==='landuse'&&['park','forest','grass','cemetery','recreation_ground'].includes(p.class)))green.push(...polys.map(p=>[p]));
     if(['wood','forest','scrub'].includes(p.class))woods.push(...polys.map(p=>[p]));
     if(layer==='transportation'&&!isInactiveRailway(p)&&f.geometry.type.includes('LineString')){
@@ -244,7 +262,17 @@ function prepareTerrain(data,options,progress,preview,measure){
   const sea=new Surface();
   for(const polygon of oceanPoly)sea.polygon(polygon,()=>5);
   terrain.surfaces[1]=surfacePart(1,sea.solid(()=>0));
-  terrain.surfaces[7]=surfacePart(7,terrainSolid(subtract(waterPoly,oceanPoly),(x,y)=>Math.max(3,ground(x,y)-.3),()=>0,width,height,resolution));
+  const inland=subtract(waterPoly,oceanPoly),lakes=intersect(inland,mergeLayer(cropped(stillWater)));
+  const running=terrainSolid(subtract(inland,lakes),(x,y)=>Math.max(3,ground(x,y)-.3),()=>0,width,height,resolution);
+  const standing=new Surface();
+  for(const polygon of lakes){
+    const level=Math.max(3,shorelineLevel(polygon,ground,width,height)-.3);
+    standing.polygon(polygon,()=>level);
+  }
+  const inlandWater={vertices:[],faces:[]};
+  append(inlandWater,running);
+  append(inlandWater,standing.solid(()=>0));
+  terrain.surfaces[7]=surfacePart(7,inlandWater);
   return terrain;
 }
 
@@ -283,7 +311,7 @@ export function buildModel(data,options={},progress=()=>{},infrastructureApi=nul
 
 function buildPureRelief(data,options,progress,preview){
   const {size=160,exaggeration=1.5,resolution=56}=options;
-  const {width,height,scale,unproject}=makeProjection(data.meta.bbox,size,options);
+  const {width,height,scale,project,unproject}=makeProjection(data.meta.bbox,size,options);
   if(![width,height,exaggeration].every(Number.isFinite)||Math.min(width,height)<=0||Math.max(width,height)>450||exaggeration<1||exaggeration>5||
       !Number.isInteger(resolution)||resolution<2||resolution>PURE_RELIEF_RESOLUTIONS[56]||1000/scale<9999.9||1000/scale>100001)
     throw Error('El mode Relleu pur admet escales d’1:10.000 a 1:100.000.');
@@ -298,6 +326,7 @@ function buildPureRelief(data,options,progress,preview){
     heights[row*(resolution+1)+col]=z;
     originMeters=Math.min(originMeters,z);
   }
+  const lakes=data.lakes?.length?levelReliefLakes(data.lakes,project,heights,resolution,width,height):null;
   const diagonals=reliefDiagonals(heights,resolution,(col,row)=>heightAt(col+.5,row+.5));
   for(let i=0;i<heights.length;i++)heights[i]=5+(heights[i]-originMeters)*scale*exaggeration;
   const cells=[0,0],coverage=data.coverage||[];
@@ -318,13 +347,13 @@ function buildPureRelief(data,options,progress,preview){
     }
   }
   progress('Construint el sòlid del relleu…');
-  const reliefGrid={resolution,width,height,heights,diagonals,scores};
+  const reliefGrid={resolution,width,height,heights,diagonals,scores,lakeWeights:lakes?.count?lakes.weights:null};
   const categories=reliefParts(reliefGrid);
   preview?.parts('terrain',categories,{width,height});
   const verticalReference={originMeters,minimumSurfaceMM:5,seaLevelMM:null,method:'lowest generated-terrain sample at 5 mm'};
   const warnings=[...(data.meta.sourceWarnings||[])];
   const provenance={...data.meta,options:{...options,pureRelief:true,trees:false},verticalExaggeration:exaggeration,verticalReference,
-    units:'millimeters',coverageCells:{bare:cells[0],snow:cells[1],total:resolution**2}};
+    units:'millimeters',coverageCells:{bare:cells[0],snow:cells[1],total:resolution**2},lakeCount:lakes?.count??0};
   return groupMaterials({width,height,scale:Math.round(1000/scale),treeCount:0,buildingCount:0,categories,warnings,reliefGrid,
     triangles:categories.reduce((n,p)=>n+p.faces.length/3,0),elevationDiagnostics:prepared.diagnostics,provenance});
 }

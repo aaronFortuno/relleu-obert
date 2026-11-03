@@ -2,7 +2,7 @@ import {VectorTile} from '@mapbox/vector-tile';
 import Pbf from 'pbf';
 import {inCatalonia,fetchOfficialBuildings,combineBuildings} from './buildings.js';
 import {loadTerrain,loadBridgeTerrain,oceanTilePredicate} from './terrain-provider.js';
-import {loadReliefCoverage,RELIEF_COVERAGE_SOURCE} from './relief-coverage.js';
+import {loadReliefCoverage,loadReliefLakes,RELIEF_COVERAGE_SOURCE,RELIEF_LAKE_SOURCE} from './relief-coverage.js';
 import {extendBridgeTiles} from './bridge-tile-coverage.js';
 import {regionTileCount,MAX_REGION_TILES} from './region-limits.js';
 import {loadBuildingsRecoverably} from './building-recovery.js';
@@ -77,7 +77,7 @@ export async function loadRegion({sample=true,bbox,buildingSource,decodeElevatio
     const terrain=await time('source.terrain',()=>loadTerrain(bbox,decodeElevation,fetch,progress,undefined,{
       zooms:[14,13,12,11,10],maxTiles:96,maxSamples:8*1024**2
     }));
-    let coverage=[];
+    let coverage=[],lakes=[];
     const warnings=terrain.warnings.slice();
     progress('Carregant la cobertura de sòl nu i neu o gel…');
     try{
@@ -88,10 +88,15 @@ export async function loadRegion({sample=true,bbox,buildingSource,decodeElevatio
         if(bbox[0]<w||bbox[1]<s||bbox[2]>e||bbox[3]>n)warnings.push('Fora del retall cartografiat del pilot, el relleu es mostra en un color neutre.');
       }else warnings.push('Aquest retall és fora de la cobertura de colors del pilot de l’Aneto.');
     }catch{warnings.push('No s’ha pogut carregar la cobertura de sòl nu i neu o gel. Es mostra el relleu en un color neutre.');}
+    try{
+      lakes=await time('source.relief-lakes',()=>loadReliefLakes(bbox));
+      if(lakes.length)warnings.push('Llacs i estanys del pilot de l’Aneto: © OpenStreetMap contributors, via OpenFreeMap. Cota estimada del model d’elevacions.');
+    }catch{warnings.push('No s’ha pogut carregar la cartografia de llacs del pilot de l’Aneto.');}
     const meta={bbox,name:'Relleu pur',date:new Date().toISOString(),terrain:terrain.metadata,tiles:terrain.tiles.map(({z,x,y})=>({z,x,y})),
       coverage:{...RELIEF_COVERAGE_SOURCE,available:!!coverage.length,tiles:coverage.map(t=>t.tile)},
+      lakes:{count:lakes.length,...(lakes.length?RELIEF_LAKE_SOURCE:{})},
       buildings:{count:0},buildingSource:null,sourceWarnings:warnings,pureRelief:true};
-    return {meta,features:[],dem:terrain.tiles,coverage,terrainWarnings:warnings};
+    return {meta,features:[],dem:terrain.tiles,coverage,lakes,terrainWarnings:warnings};
   }
   const base=(import.meta.env?.BASE_URL||'./')+'data/';
   if(typeof sample==='string'&&!recommendedPlace(sample))throw Error('Exemple desconegut.');
