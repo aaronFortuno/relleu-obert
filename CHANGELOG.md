@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.19.12 — 2026-11-03
+
+- RO-053: el visor mostra el pas de generació i el recompte de l’operació quan té un total conegut.
+- El relleu i les vies apareixen abans del model complet. Els taulers, edificis i arbres poden aparèixer per lots. La càmera es conserva entre previsualitzacions i la descàrrega queda reservada al model final.
+
 ## v0.19.11 — 2026-11-03
 
 - RO-052: els enllaços de pont amb seccions plegades s’ometen individualment. El relleu, el tauler i els altres enllaços i vies es poden generar amb un avís.

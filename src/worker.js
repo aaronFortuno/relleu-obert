@@ -6,6 +6,25 @@ import Module from 'manifold-3d';
 import wasmURL from 'manifold-3d/manifold.wasm?url';
 let current,api;
 const progress=message=>self.postMessage({type:'progress',message});
+const BUILD_STAGES=['terrain','transport','buildings','vegetation'];
+function buildObserver(){
+  let stage='terrain',lastMessage,lastUpdate=-Infinity;
+  const report=(next,message,completed,total)=>{
+    const now=performance.now();
+    if(next===stage&&message===lastMessage&&now-lastUpdate<150&&completed!==total)return;
+    if(next===stage&&message===lastMessage&&completed==null&&total==null)return;
+    stage=next;lastMessage=message;lastUpdate=now;
+    self.postMessage({type:'build-progress',stage,step:BUILD_STAGES.indexOf(stage)+1,totalSteps:BUILD_STAGES.length,completed,total,message});
+  };
+  return {
+    stage:report,
+    progress:message=>report(stage,message),
+    parts:(stage,parts,{width,height},mode='replace')=>{
+      const categories=parts.filter(part=>part.faces.length);
+      if(categories.length||mode==='replace')self.postMessage({type:'build-preview',stage,mode,categories,width,height});
+    }
+  };
+}
 self.onmessage=async({data})=>{try{
   if(data.type==='preview-buildings'){
     let part;
@@ -19,8 +38,9 @@ self.onmessage=async({data})=>{try{
     self.postMessage({type:'imported',kind:data.type,value},value.values?[value.values.buffer]:[]);return;
   }
   if(data.type==='build'||data.type==='vegetation'){
-    if(data.type==='build'&&!api&&(data.options.estimatedTunnels||data.options.majorRoads||data.region.infrastructure?.items?.length||data.region.features?.some(f=>f.properties?.sourceLayer==='transportation'&&f.properties.brunnel==='bridge'))){progress('Preparant les infraestructures…');api=await Module({locateFile:()=>wasmURL});api.setup();}
-    current=data.type==='build'?buildModel(data.region,data.options,progress,api):updateVegetation(current,data.options,progress);self.postMessage({type:'model',model:{...current,parts:undefined,categories:data.type==='vegetation'?current.categories.filter(p=>p.id==='trees'):current.categories},vegetation:data.type==='vegetation'});
+    const observer=data.type==='build'?buildObserver():null;
+    if(observer&&!api&&(data.options.estimatedTunnels||data.options.majorRoads||data.region.infrastructure?.items?.length||data.region.features?.some(f=>f.properties?.sourceLayer==='transportation'&&f.properties.brunnel==='bridge'))){observer.progress('Preparant el motor de geometria…');api=await Module({locateFile:()=>wasmURL});api.setup();}
+    current=observer?buildModel(data.region,data.options,observer.progress,api,null,observer):updateVegetation(current,data.options,progress);self.postMessage({type:'model',model:{...current,parts:undefined,categories:data.type==='vegetation'?current.categories.filter(p=>p.id==='trees'):current.categories},vegetation:data.type==='vegetation'});
   }
   if(data.type==='buildings'){current=updateBuildings(current,data.layer,data.options,progress);self.postMessage({type:'model',model:{...current,parts:undefined,categories:current.categories.filter(p=>['buildings','trees','roads','railways'].includes(p.id))},buildings:true});}
   if(data.type==='transport'){

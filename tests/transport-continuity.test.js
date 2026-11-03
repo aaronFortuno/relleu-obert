@@ -25,6 +25,33 @@ function chain(){
     features:[line('before',[-450,-300]),line('bridge',[-300,-100],'bridge'),line('between',[-100,100]),line('tunnel',[100,200,300],'tunnel'),line('after',[300,450])]};
 }
 
+test('initial build streams relief, roads and buildings without changing final geometry',()=>{
+  const data=chain();
+  const polygon=(id,sourceLayer,x,y,w)=>({id,properties:{sourceLayer,class:'grass',render_height:7},
+    geometry:{type:'Polygon',coordinates:[[[x,y],[x+w,y],[x+w,y+w],[x,y+w],[x,y]].map(([x,y])=>geo(x,y))]}});
+  data.features.push(polygon('green','landcover',-400,100,200),polygon('house','building',200,200,20));
+  const events=[],observer={
+    stage:(stage,message,completed,total)=>events.push({stage,message,completed,total}),
+    parts:(stage,parts,dimensions,mode='replace')=>events.push({stage,mode,ids:parts.filter(p=>p.faces.length).map(p=>p.id),width:dimensions.width})
+  };
+  const options={size:100,resolution:12,trees:true};
+  const model=buildModel(data,options,()=>{},api,null,observer);
+  const plain=buildModel(data,options,()=>{},api);
+  const frames=events.filter(e=>e.ids);
+  assert.deepEqual([...new Set(events.map(e=>e.stage))],['terrain','transport','buildings','vegetation']);
+  assert(frames[0].ids.includes('terrain')&&!frames[0].ids.includes('roads'));
+  assert(frames.some(e=>e.stage==='transport'&&e.ids.includes('roads')));
+  assert(frames.some(e=>e.stage==='buildings'&&e.mode==='append'&&e.ids.includes('buildings')));
+  assert(frames.some(e=>e.stage==='vegetation'&&e.mode==='append'&&e.ids.includes('trees')));
+  assert(events.some(e=>e.stage==='buildings'&&e.completed===1&&e.total===1));
+  assert.deepEqual(model.categories.map(p=>p.id),plain.categories.map(p=>p.id));
+  for(const [index,part] of model.categories.entries()){
+    const expected=plain.categories[index];
+    assert(part.faces.length===expected.faces.length&&part.faces.every((v,i)=>v===expected.faces[i]),part.id+' faces changed');
+    assert(part.vertices.length===expected.vertices.length&&part.vertices.every((v,i)=>v===expected.vertices[i]),part.id+' vertices changed');
+  }
+});
+
 test('a defective bridge mesh and a malformed line preserve the other transport and terrain',()=>{
   const data=chain(),[valid]=data.infrastructure.items;
   data.infrastructure.items.unshift({...valid,id:'invalid-deck',faces:[-1,1,2]});

@@ -1,12 +1,12 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-03 · v0.19.11**. El model conserva el relleu i les entitats vàlides quan falla un enllaç, un túnel o una geometria d’edifici. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
+Actualitzat: **2026-11-03 · v0.19.12**. RO-053 mostra el progrés de generació i previsualitza les capes a mesura que es calculen. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
 
 ## Ordre de treball
 
 **RO-052 — terminacions dels perfils experimentals.** Les unions amb la via sobre el terreny comparteixen cota i tangent. Es mantenen oberts els dos extrems dels taulers mesurats de Rajadell, el contrast en altres territoris i el laminat.
 
-**RO-053 — primera integració en producció.** Ordre validat per l'usuari: Peça → Territori → Terreny → Vegetació → Vies → Edificis. Botons compactes al títol actiu, navegació lliure i traços conservats durant la sessió. [Disseny, invalidacions i pas següent](RO-053-UX.md). La UI ja segueix el flux; terreny i vies encara comparteixen càlcul. Una sola cua pesada alhora.
+**RO-053 — primera integració en producció.** Ordre validat per l'usuari: Peça → Territori → Terreny → Vegetació → Vies → Edificis. Botons compactes al títol actiu, navegació lliure i traços conservats durant la sessió. [Disseny, invalidacions i pas següent](RO-053-UX.md). El visor rep capes parcials i recomptes de feina. El substrat i les vies encara comparteixen part de la preparació. Una sola cua pesada alhora.
 
 1. **RO-051 — Primera optimització validada localment.** 3 km: 189,3 → 56,6 s; màscares sota demanda, de 14 unions a 2, amb mateixos perfils/omissions/pilars/llums. 344 proves i build correctes. Següent: component nul d'1,5 km / detall 12 i màscares multipart; prototip desactivat. [Informe i controls](RO-051-RENDIMENT.md).
 2. **RO-034 / RO-050 — Validació del lot.** Revisar túnels arquejats i suports a Rajadell; comparar +0,5 / +1 mm ferroviaris i materials. Distingir control geomètric local de laminat i impressió.
@@ -20,7 +20,7 @@ Actualitzat: **2026-11-03 · v0.19.11**. El model conserva el relleu i les entit
 
 | ID                                                                 | Prioritat | Estat                                                                                                                                                                                                                                                                                                                                 | Proper resultat comprovable                             |
 | ------------------------------------------------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| [RO-053](#ro-053--flux-de-treball-per-etapes) | P1 | Sis apartats i conservació de traços integrats | Revisar accions al títol; separar terreny i transport |
+| [RO-053](#ro-053--flux-de-treball-per-etapes) | P1 | Previsualització i progrés per fases integrats | Contrastar retalls lents i mesurar temps i memòria |
 | [RO-033](#ro-033--ponts-i-viaductes) | P1 | Pas inferior validat visualment; Millau continu en dos retalls | Revisar accessos i llums al laminador, contrastar altres ponts |
 | [RO-034](#ro-034--túnels-imprimibles) | P1 | Corregit en controls locals; pendent d'usuari/laminat | Revisar portals amb mode experimental activat |
 | [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | Perfil ferroviari d’1,22% verificat en un segon retall | Contrastar suports i laminat en altres escales |
@@ -376,6 +376,8 @@ Primer prototip local: perfil longitudinal regularitzat amb tall/terraplè acota
 - [ ] Usuari: revisar els enllaços i les transicions d'amplada dels nous controls abans de validar laminat/impressió. Els fitxers de v0.18.2 documenten el problema i no el donen per resolt.
 
 ### RO-053 — Flux de treball per etapes
+
+**v0.19.12.** La generació completa publica relleu, vies, edificis i vegetació al visor. Les operacions que tenen un total conegut indiquen el recompte i percentatge local. Els lots són provisionals i el model exportable es fixa al final. Les fonts inicials es carreguen abans del càlcul; la consulta del Catastre conserva el seu flux per blocs. Pendent contrastar retalls lents i mesurar el cost de les actualitzacions.
 
 **v0.19.6.** Mides proporcionals al centre i generació des de Territori, primer apartat. Escala i zoom limitats a 1:20.000. «Projecte nou» al header torna a la tria inicial. Ajornats els fitxers propis i el canvi de mida dins d'un projecte.
 

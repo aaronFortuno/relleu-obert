@@ -140,7 +140,7 @@ export function treeMesh({x,y,ground,rx,ry,rz,rotation=0,phase=0}){
   for(let i=0;i<rings;i++)for(let j=0;j<segments;j++){surf.tri(p(i,j),p(i+1,j),p(i+1,j+1));surf.tri(p(i,j),p(i+1,j+1),p(i,j+1));}
   return {vertices:surf.vertices,faces:surf.faces};
 }
-function prepareTerrain(data,options,progress){
+function prepareTerrain(data,options,progress,preview){
   const {size=160,exaggeration=1.5,density=2.5,resolution=36}=options,proj=makeProjection(data.meta.bbox,size,options),{width,height,project,scale}=proj,rect=box(width,height),warnings=[];
   if(!Number.isFinite(density)||density<.25||density>5||!Number.isInteger(resolution)||resolution<2||resolution>100||!Number.isFinite(exaggeration)||exaggeration<1||exaggeration>5||!Number.isFinite(size)||size<50||size>450||width>450||height>450)throw Error('Els ajustos de la maqueta són fora del rang admès.');
   if(options.targetScale!=null&&Math.abs(1000/scale-validateScale(options.targetScale))>options.targetScale*1e-6)throw Error('El retall no concorda amb l’escala demanada. Torna a seleccionar la regió.');
@@ -176,6 +176,7 @@ function prepareTerrain(data,options,progress){
   }
   const deckMask=merge(deckFootprints);
   for(const [featureIndex,f]of data.features.entries()){const p=f.properties,layer=p.sourceLayer,polys=layer==='building'?[]:geoPolys(f,project);
+    if(preview&&featureIndex%128===0)preview.stage('terrain','Classificant la cartografia del retall…',featureIndex,data.features.length);
     if(layer==='water'){water.push(...polys.map(p=>[p]));if(p.class==='ocean')ocean.push(...polys.map(p=>[p]));}
     if((layer==='landcover'&&['wood','grass','scrub'].includes(p.class))||(layer==='landuse'&&['park','forest','grass','cemetery','recreation_ground'].includes(p.class)))green.push(...polys.map(p=>[p]));
     if(['wood','forest','scrub'].includes(p.class))woods.push(...polys.map(p=>[p]));
@@ -250,8 +251,11 @@ function roadSurface(index,polygons,rise,terrain){
   return surfacePart(index,terrainSolid(polygons,(x,y)=>ground(x,y)+rise,(x,y)=>ground(x,y)-.65,width,height,resolution));
 }
 
-export function buildModel(data,options={},progress=()=>{},infrastructureApi=null,diagnostics=null){
-  return buildTransport(data,options,prepareTerrain(data,options,progress),progress,infrastructureApi,diagnostics);
+export function buildModel(data,options={},progress=()=>{},infrastructureApi=null,diagnostics=null,preview){
+  preview?.stage('terrain','Preparant el relleu…');
+  const terrain=prepareTerrain(data,options,progress,preview);
+  preview?.parts('terrain',terrain.surfaces,terrain.proj);
+  return buildTransport(data,options,terrain,progress,infrastructureApi,diagnostics,undefined,undefined,preview);
 }
 
 export function updateTransport(previous,changes={},progress=()=>{},infrastructureApi=previous.context?.infrastructureApi){
@@ -262,7 +266,8 @@ export function updateTransport(previous,changes={},progress=()=>{},infrastructu
   return buildTransport({...ctx.transportSource,meta:ctx.meta},options,ctx.terrain,progress,infrastructureApi,null,ctx.buildingGeometry);
 }
 
-function buildTransport(data,options,terrain,progress,infrastructureApi,diagnostics,buildingGeometry,excludedProfiles=new Map()){
+function buildTransport(data,options,terrain,progress,infrastructureApi,diagnostics,buildingGeometry,excludedProfiles=new Map(),preview){
+  preview?.stage('transport','Calculant les vies…');
   // Optional synchronous diagnostics stay out of worker options/provenance.
   const measure=(phase,run,details={})=>{
     if(!diagnostics)return run();
@@ -293,7 +298,9 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
       majorOmissions.push({sourceFeatureIds:profile.sourceFeatureIds,reason:excludedProfiles.get(profile.id)});
       continue;
     }
-    progress(`Comprovant la via principal ${itemIndex+1} de ${majorPlan.items.length}…`);
+    const message='Comprovant els perfils de les vies principals…';
+    if(preview)preview.stage('transport',message,itemIndex,majorPlan.items.length);
+    else progress(`Comprovant la via principal ${itemIndex+1} de ${majorPlan.items.length}…`);
     try{
       const item=options.smoothProfiles?reserveProfileEnds(profile,proj):profile;
       if(!item){
@@ -349,7 +356,7 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
     containsDeck=polygonTester(deckMask);
   }
   const fallbackMajor=message=>{
-    const restored=measure('major.fallback',()=>buildTransport(data,{...options,majorRoads:false},terrain,progress,infrastructureApi,diagnostics,buildingGeometry),{reason:message});restored.warnings.unshift(message);
+    const restored=measure('major.fallback',()=>buildTransport(data,{...options,majorRoads:false},terrain,progress,infrastructureApi,diagnostics,buildingGeometry,undefined,preview),{reason:message});restored.warnings.unshift(message);
     restored.provenance.majorRoads={...majorMetadata,attempted:majorMetadata.count,count:0,applied:false,error:message};
     restored.context.meta.majorRoads=restored.provenance.majorRoads;
     restored.context.options.majorRoads=options.majorRoads;
@@ -358,10 +365,25 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
   };
   const recoverProfiles=(ids,message)=>{
     if(excludedProfiles.size||ids.length>=acceptedMajor.length)return fallbackMajor(message);
-    return buildTransport(data,options,terrain,progress,infrastructureApi,diagnostics,buildingGeometry,new Map(ids.map(id=>[id,message])));
+    return buildTransport(data,options,terrain,progress,infrastructureApi,diagnostics,buildingGeometry,new Map(ids.map(id=>[id,message])),preview);
   };
+  let staticBase=terrain.surfaces.slice();
+  if(acceptedMajor.length){
+    const cover=terrainCover(forest,bare,terrain,progress);
+    for(const index of [0,4,6])staticBase[index]=cover[index];
+  }
+  staticBase[3]=roadSurface(3,roadOnlyPoly,roadRise,terrain);
+  staticBase[8]=roadSurface(8,railPoly,roadRise+railRise,terrain);
+  preview?.parts('transport',staticBase,proj);
   const bridges=[];
-  for(const item of deckItems){
+  let publishedDecks=0,lastDeckPreview=performance.now();
+  for(const [index,item] of deckItems.entries()){
+    preview?.stage('transport','Construint els taulers…',index,deckItems.length);
+    if(preview&&publishedDecks<bridges.length&&performance.now()-lastDeckPreview>=180){
+      preview.parts('transport',bridges.slice(publishedDecks).map(b=>({...CATEGORIES[b.category],...b.mesh})),proj,'append');
+      publishedDecks=bridges.length;
+      lastDeckPreview=performance.now();
+    }
     try{
     const mask=intersect(item.outlines.map(r=>[r.map(project)]),rect),contains=polygonTester(mask);
     const matches=transport.filter(t=>t.brunnel==='bridge').map(t=>({t,score:t.points.slice(1).reduce((n,p,i)=>n+(contains([(p[0]+t.points[i][0])/2,(p[1]+t.points[i][1])/2])?Math.hypot(p[0]-t.points[i][0],p[1]-t.points[i][1]):0),0)})).sort((a,b)=>b.score-a.score);
@@ -384,6 +406,9 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
       if(item.mainRoad)return recoverProfiles([item.id],error.message);
       warnings.push(`Pont ${item.id} omès: ${error.message}`);
     }
+  }
+  if(preview&&publishedDecks<bridges.length){
+    preview.parts('transport',bridges.slice(publishedDecks).map(b=>({...CATEGORIES[b.category],...b.mesh})),proj,'append');
   }
   for(const bridge of bridges){
     if(!bridge.mainRoad){bridge.supportRoadPoly=sourceRoadPoly;continue;}
@@ -419,13 +444,6 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
   if(proceduralCount)warnings.push(`${proceduralCount} ponts procedimentals: perfil estimat entre les cotes DEM dels extrems cartografiats, sense seguir el fons de la vall. No són altures mesurades de l’estructura.`);
   if(railPoly.length||bridges.some(b=>b.railway))warnings.push(`Ferrocarrils realçats ${railRise.toLocaleString('ca')} mm sobre el nivell dels camins; és una plataforma simplificada de la maqueta, no una cota real.`);
   if(roadRise)warnings.push(`Camins realçats ${roadRise.toLocaleString('ca')} mm sobre el terreny; és un efecte de la maqueta, no una altura real.`);
-  let staticBase=terrain.surfaces.slice();
-  if(acceptedMajor.length){
-    const cover=terrainCover(forest,bare,terrain,progress);
-    for(const index of [0,4,6])staticBase[index]=cover[index];
-  }
-  staticBase[3]=roadSurface(3,roadOnlyPoly,roadRise,terrain);
-  staticBase[8]=roadSurface(8,railPoly,roadRise+railRise,terrain);
   const majorDecks=bridges.filter(b=>b.mainRoad);
   if(majorDecks.length){
     progress('Assignant el paviment de les vies principals…');const carved=measure('major.material-replacement',()=>carveTransportDecks(staticBase,majorDecks,infrastructureApi));
@@ -477,9 +495,12 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
   context.meta.majorRoads=majorMetadata;
   context.meta.transportContinuity={widthPolicy:'shared width, then lanes, then road class; carriageway independent of structural deck and bore',minimumCarriagewayMM:.44,connections:bridges.map(b=>({id:b.id,identity:b.identity,carriagewayWidthMM:b.roadWidth,joins:b.approaches.plans.map(p=>({startWidthMM:p.startWidthMM,endWidthMM:p.endWidthMM,targetFeatureIds:p.targetFeatureIds,routingRepairs:p.routingRepairs})),unconnectedEnds:b.approaches.missed})),portals:openedTunnels.flatMap(t=>t.portalConnections||[])};
   if(context.meta.infrastructure)context.meta.infrastructure.mainRoadCount=majorDecks.length;
+  if(preview&&(openedTunnels.length||majorDecks.length)){
+    preview.parts('transport',[...staticBase,...bridges.map(b=>({...CATEGORIES[b.category],...b.mesh}))],proj);
+  }
   let model;
   try{
-    model=measure('model.buildings-supports',()=>updateBuildings({context},{},options,progress));
+    model=measure('model.buildings-supports',()=>updateBuildings({context},{},options,progress,preview));
   }catch(error){
     if(!options.smoothProfiles||!acceptedMajor.length)throw error;
     return fallbackMajor('No s’han pogut tancar les unions dels perfils suaus. '+error.message);
@@ -492,13 +513,23 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
   return model;
 }
 
-function prepareBuildingGeometry(ctx,config,progress){
+function prepareBuildingGeometry(ctx,config,progress,preview){
   const {buildingMode,maxBuildingHeight}=config;
   const {width,height,ground,scale,rect,land,options}=ctx,res=options.resolution;
   const mesh={vertices:[],faces:[]},warnings=[],prepared=[],seen=new Set(),volumes=[];
   let buildingCount=0,approximate=0,limited=0,shapedRoofs=0,fallbackRoofs=0,omitted=0,duplicates=0;
   progress('Actualitzant la capa d’edificis…');
-  for(const f of ctx.buildingFeatures){
+  const features=ctx.buildingFeatures.filter(f=>f?.properties?.sourceLayer==='building'&&!f.properties.hide_3d);
+  let batch={vertices:[],faces:[]},lastPreview=performance.now();
+  for(const [index,f] of features.entries()){
+    if(preview&&(index===0||index%32===0)){
+      preview.stage('buildings','Preparant les petjades i cobertes…',index,features.length);
+      if(batch.faces.length&&performance.now()-lastPreview>=180){
+        preview.parts('buildings',[surfacePart(2,batch)],ctx,'append');
+        batch={vertices:[],faces:[]};
+        lastPreview=performance.now();
+      }
+    }
     const p=f?.properties;if(p?.sourceLayer!=='building'||p.hide_3d)continue;
     try{
       const id=f.id??p.source_id,polygons=geoPolys(f,ctx.proj.project);
@@ -521,9 +552,12 @@ function prepareBuildingGeometry(ctx,config,progress){
       }
       if(!footprints.length)continue;
       prepared.push({p,id,h,valid,fragments,footprints});
+      if(preview)for(const {solid} of fragments)append(batch,solid);
       if(key!=null)seen.add(key);
     }catch{omitted++;}
   }
+  if(preview&&batch.faces.length)preview.parts('buildings',[surfacePart(2,batch)],ctx,'append');
+  preview?.stage('buildings','Integrant els edificis…',features.length,features.length);
   let mask,accepted=prepared;
   try{mask=merge(prepared.flatMap(b=>b.footprints.map(poly=>[poly])));}
   catch{
@@ -562,14 +596,15 @@ export function previewBuildingLayer(previous,features,changes={}){
   return prepareBuildingGeometry({...context,options,buildingFeatures:features},buildingOptions(options),()=>{}).part;
 }
 
-export function updateBuildings(previous,layer={},changes={},progress=()=>{}){
+export function updateBuildings(previous,layer={},changes={},progress=()=>{},preview){
   if(!previous.context)throw Error('Cal generar primer el terreny.');
   const old=previous.context,options={...old.options,...changes},config=buildingOptions(options),{buildingMode,maxBuildingHeight}=config;
   const ctx={...old,options:{...options,...config},meta:{...(layer.meta||old.meta),infrastructure:old.meta.infrastructure,tunnels:old.meta.tunnels,railways:old.meta.railways,majorRoads:old.meta.majorRoads,transportContinuity:old.meta.transportContinuity},buildingFeatures:layer.features||old.buildingFeatures,vegetationCache:null};
   const {width,height,ground,scale,rect}=ctx;
   const cached=old.buildingGeometry;
+  preview?.stage('buildings','Calculant els edificis…');
   const buildings=cached&&cached.features===ctx.buildingFeatures&&cached.mode===buildingMode&&cached.height===maxBuildingHeight
-    ?cached:prepareBuildingGeometry(ctx,config,progress);
+    ?cached:prepareBuildingGeometry(ctx,config,progress,preview);
   ctx.buildingGeometry=buildings;
   ctx.base=ctx.staticBase.slice();
   ctx.base[2]=buildings.part;
@@ -585,7 +620,8 @@ export function updateBuildings(previous,layer={},changes={},progress=()=>{}){
     if(ctx.bridgeCache?.key!==bridgeKey){
       progress('Connectant viaductes i situant pilars…');
       const roads={vertices:[],faces:[]},rails={vertices:[],faces:[]};append(roads,ctx.staticBase[3]);append(rails,ctx.staticBase[8]);const stats=[],failures=[];
-      for(const bridge of ctx.bridges){
+      for(const [index,bridge] of ctx.bridges.entries()){
+        preview?.stage('buildings','Completant els suports de les vies amb els edificis…',index,ctx.bridges.length);
         try{
         const thickness=bridge.thickness,under=(x,y)=>{const z=bridge.top(x,y);return z==null?null:z-thickness;},support=planPiers({axis:bridge.axis,top:under,containsDeck:bridge.contains,ground,blocked:[bridge.supportRoadPoly||ctx.roadPoly,pierBuildings,ctx.waterPoly,ctx.tunnelMask||[]],scale,widthMM:width,heightMM:height,layout:bridge.layout,minimumClearanceMM:bridge.mainRoad?.25:.8});
         const pieces=[bridge.mesh,...bridge.approaches.plans.map(p=>p.mesh),...support.piers.map(p=>columnSolid(p.ring,ground,under,p.topRing))];
@@ -624,7 +660,10 @@ export function updateBuildings(previous,layer={},changes={},progress=()=>{}){
     if(unconnected.length>clipped)ctx.warnings.push(`${unconnected.length-clipped} extrems sense enllaç suau dins del retall.`);
     if(stats.some(s=>s.connectedComponents>1))ctx.warnings.push('Alguns ponts contenen fragments separats. Revisa les unions i els extrems al laminador abans d’imprimir.');
   }
-  if(!previous.categories)return updateVegetation({context:ctx},ctx.options,progress);
+  if(!previous.categories){
+    preview?.parts('buildings',ctx.base,ctx);
+    return updateVegetation({context:ctx},ctx.options,progress,preview);
+  }
   // Keep surviving crowns and all terrain/land-cover buffers unchanged. Only
   // trees that collide with the new footprints need to disappear.
   const placements=old.placements.filter(tree=>{
@@ -639,11 +678,12 @@ export function updateBuildings(previous,layer={},changes={},progress=()=>{}){
   return finishModel(ctx,ctx.options,placements,categories,budget);
 }
 
-export function updateVegetation(previous,changes={},progress=()=>{}){
+export function updateVegetation(previous,changes={},progress=()=>{},preview){
   if(!previous.context)throw Error('Cal generar primer el terreny.');const ctx={...previous.context};
   const options={...ctx.options,...changes}, {density=2.5,trees=true,treeType='mixed',strokes=[]}=options;
   if(!Number.isFinite(density)||density<.25||density>5)throw Error('Densitat fora del rang admès.');
   const {ground,containsForest,containsLand,containsRoad,containsBuilding,width,height}=ctx;
+  preview?.stage('vegetation','Distribuint la vegetació…');
   progress('Actualitzant la capa de vegetació…');
   let seed=7341;const rand=()=>{seed=(1664525*seed+1013904223)>>>0;return seed/4294967296;};
   const dimensions=treeDimensions(ctx.scale),step=dimensions.spacing/Math.sqrt(density);
@@ -662,7 +702,12 @@ export function updateVegetation(previous,changes={},progress=()=>{}){
     if(cached&&cached.density===density&&cached.treeType===treeType){candidates=cached.candidates;eligible=cached.eligible;seed=cached.seed;}
     else{
       const sampler=treeSampler();
-      for(let y=step;y<height-step;y+=step)for(let x=step;x<width-step;x+=step){const tree=make(x+(rand()-.5)*step,y+(rand()-.5)*step*.5);if(tree)sampler.add(tree);}
+      let rows=0,row=0;
+      if(preview)for(let y=step;y<height-step;y+=step)rows++;
+      for(let y=step;y<height-step;y+=step,row++){
+        if(preview&&row%8===0)preview.stage('vegetation','Distribuint la vegetació…',row,rows);
+        for(let x=step;x<width-step;x+=step){const tree=make(x+(rand()-.5)*step,y+(rand()-.5)*step*.5);if(tree)sampler.add(tree);}
+      }
       candidates=sampler.values;eligible=sampler.seen;
       ctx.vegetationCache={density,treeType,candidates,eligible,seed};
     }
@@ -691,7 +736,22 @@ export function updateVegetation(previous,changes={},progress=()=>{}){
   }
   const fitted=fitTrees(automatic,manual),{placements}=fitted;
   const vegetationBudget={limit:MAX_TREES,eligibleAutomatic:eligible,automatic:fitted.automatic,manual:fitted.manual,automaticReduced:fitted.automaticReduced,manualDropped:manualDropped+fitted.manualDropped};
-  const mesh={vertices:[],faces:[]};for(const tree of placements)append(mesh,treeMesh(tree));
+  const mesh={vertices:[],faces:[]};
+  let batch={vertices:[],faces:[]},lastPreview=performance.now();
+  for(const [index,tree] of placements.entries()){
+    if(preview&&index%128===0){
+      preview.stage('vegetation','Construint les capçades…',index,placements.length);
+      if(batch.faces.length&&performance.now()-lastPreview>=180){
+        preview.parts('vegetation',[surfacePart(5,batch)],ctx,'append');
+        batch={vertices:[],faces:[]};
+        lastPreview=performance.now();
+      }
+    }
+    const part=treeMesh(tree);
+    append(mesh,part);
+    if(preview)append(batch,part);
+  }
+  if(preview&&batch.faces.length)preview.parts('vegetation',[surfacePart(5,batch)],ctx,'append');
   const categories=ctx.base.slice();categories[5]={...CATEGORIES[5],vertices:new Float32Array(mesh.vertices),faces:new Uint32Array(mesh.faces)};
   return finishModel(ctx,options,placements,categories,vegetationBudget);
 }
