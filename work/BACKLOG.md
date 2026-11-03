@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-03 · v0.19.9**. RO-051 i RO-052 enllacen els perfils suaus amb la via sobre el terreny i incorporen un segon control ferroviari real. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
+Actualitzat: **2026-11-03 · v0.19.10**. RO-033 i RO-052 reconstrueixen les calçades solapades abans del retall i completen el relleu dels estreps. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
 
 ## Ordre de treball
 
@@ -12,7 +12,7 @@ Actualitzat: **2026-11-03 · v0.19.9**. RO-051 i RO-052 enllacen els perfils sua
 2. **RO-034 / RO-050 — Validació del lot.** Revisar túnels arquejats i suports a Rajadell; comparar +0,5 / +1 mm ferroviaris i materials. Distingir control geomètric local de laminat i impressió.
 3. **RO-024 — Qualitat abans d'impressions llargues.** Analitzar els canvis de material observats en algunes capes al laminador; no atribuir-ne encara la causa al programa. Cupó reduït abans de maquetes de 2–3 dies.
 4. **RO-032 — Cobertes i singulars, P1.** Acreditar accés remot reeixit i obtenir dades de coberta de Tamariu. Nucli de sis formes i fixture Torre Glòries verificats; cobertura general i altres singulars encara oberts.
-5. **RO-033 / RO-052 — Contrast fora de Rajadell.** Pas inferior verificat en tres retalls i cupó 3MF preparat. Millau reprodueix l’omissió amb el zoom. Prioritat: reconstruir els eixos tallats per tessel·les i revisar llums amb el laminador. [Controls i diagnòstic](RO-033-CONTROLS-PROCEDIMENTALS.md).
+5. **RO-033 / RO-052 — Contrast fora de Rajadell.** Pas inferior verificat en tres retalls i cupó 3MF preparat. Millau conserva dues calçades i les mateixes cotes a 3 km i 1,4 km. Prioritat: revisar llums i accessos al laminador. [Controls i diagnòstic](RO-033-CONTROLS-PROCEDIMENTALS.md).
 
 **Seguiment:** 17 línies obertes, 6 ajornades i 30 arxivades. «Implementat» vol dir disponible; la validació local, la d’usuari, el laminat i la impressió es registren per separat.
 
@@ -21,7 +21,7 @@ Actualitzat: **2026-11-03 · v0.19.9**. RO-051 i RO-052 enllacen els perfils sua
 | ID                                                                 | Prioritat | Estat                                                                                                                                                                                                                                                                                                                                 | Proper resultat comprovable                             |
 | ------------------------------------------------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
 | [RO-053](#ro-053--flux-de-treball-per-etapes) | P1 | Sis apartats i conservació de traços integrats | Revisar accions al títol; separar terreny i transport |
-| [RO-033](#ro-033--ponts-i-viaductes) | P1 | Pas inferior verificat fora de Rajadell; omissió de Millau reproduïda | Unir fragments de tessel·la, recuperar les cotes dels estreps i laminar el cupó |
+| [RO-033](#ro-033--ponts-i-viaductes) | P1 | Pas inferior validat visualment; Millau continu en dos retalls | Revisar accessos i llums al laminador, contrastar altres ponts |
 | [RO-034](#ro-034--túnels-imprimibles) | P1 | Corregit en controls locals; pendent d'usuari/laminat | Revisar portals amb mode experimental activat |
 | [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | Perfil ferroviari d’1,22% verificat en un segon retall | Contrastar suports i laminat en altres escales |
 | [RO-052](#ro-052--continuïtat-i-amplada-del-traçat-viari) | P1 | Unions de perfils experimentals verificades; dos extrems de pont oberts | Contrastar extrems i revisar al laminador |
@@ -232,6 +232,8 @@ Estudiar roof:shape, roof:height, roof:direction/angle i parts d’OSM original,
 **Actualització v0.9.0:** Primer suport de cobertes gabled/skillion amb forma, altura i direcció explícites en dades locals. Respecta el gir, els patis, el retall i el mode limitat pla. Falten fonts automàtiques de cobertes i formes corbes/complexes; Catastre no les aporta.
 
 ### RO-033 — Ponts i viaductes
+
+**v0.19.10.** Millau conserva dos perfils de tauler amb cotes idèntiques entre retalls. S’han ajuntat els fragments solapats de cada via i s’ha carregat el context dels estreps que quedaven fora. L’usuari confirma la vista del cupó del Bages. Queden la revisió de Millau per l’usuari i el laminat. [Controls](RO-033-CONTROLS-PROCEDIMENTALS.md).
 
 **2026-11-03.** Un pont procedimental sobre una carretera del Bages conserva cota i pas inferior en tres retalls. La llum mostrejada de 15,29 mm a la peça sencera de 84 mm queda oberta. A Millau, un retall petit perd els taulers quan falta DEM als extrems dels fragments vectorials; el retall ampli genera tres fragments per calçada. [Controls, cupó i diagnòstic](RO-033-CONTROLS-PROCEDIMENTALS.md).
 

@@ -44,6 +44,88 @@ function widthFromProperties(props,warnings,label){
 
 const groupOf=props=>JSON.stringify([String(props.class??''),String(props.layer??0),String(props.name??''),String(props.ref??''),String(props.oneway??''),props.railway??'',props.subclass??'',isRailway(props)?railwayWidthMetres(props):roadWidthMetres(props)]);
 
+// MVT tiles include a buffer. Two copies of one way can overlap by tens of
+// metres without sharing a vertex at the seam. Work in metres for matching.
+const SEAM_TOLERANCE=1, MIN_SEAM_OVERLAP=3;
+function seamPath(points,kx){
+  const xy=points.map(([x,y])=>[x*kx,y*LAT_METRES]),stations=[0];
+  for(let i=1;i<xy.length;i++)stations.push(stations[i-1]+Math.hypot(xy[i][0]-xy[i-1][0],xy[i][1]-xy[i-1][1]));
+  return {points,xy,stations,length:stations.at(-1)};
+}
+
+function nearestStation(point,path){
+  let nearest={distance:Infinity};
+  for(let i=1;i<path.xy.length;i++){
+    const a=path.xy[i-1],b=path.xy[i],dx=b[0]-a[0],dy=b[1]-a[1],length=path.stations[i]-path.stations[i-1];
+    if(!length)continue;
+    const t=Math.max(0,Math.min(1,((point[0]-a[0])*dx+(point[1]-a[1])*dy)/(length*length)));
+    const distance=Math.hypot(point[0]-a[0]-t*dx,point[1]-a[1]-t*dy);
+    if(distance<nearest.distance)nearest={distance,station:path.stations[i-1]+t*length};
+  }
+  return nearest;
+}
+
+function stationPoint(path,station){
+  const next=path.stations.findIndex(s=>s>=station);
+  if(next<0)return path.xy.at(-1);
+  if(next===0)return path.xy[0];
+  const t=(station-path.stations[next-1])/(path.stations[next]-path.stations[next-1]);
+  return path.xy[next-1].map((v,i)=>v+(path.xy[next][i]-v)*t);
+}
+
+function overlapTail(left,right){
+  const start=nearestStation(right.xy[0],left),end=nearestStation(left.xy.at(-1),right);
+  if(start.distance>SEAM_TOLERANCE||end.distance>SEAM_TOLERANCE||
+      left.length-start.station<MIN_SEAM_OVERLAP||end.station<MIN_SEAM_OVERLAP||
+      start.station<MIN_SEAM_OVERLAP||right.length-end.station<MIN_SEAM_OVERLAP)return null;
+  const length=left.length-start.station;
+  if(Math.abs(length-end.station)>2*SEAM_TOLERANCE)return null;
+  // Both oriented overlap intervals must follow the same geometry. An
+  // intersection, reversed traversal or same-ID fork is insufficient.
+  for(let i=1;i<8;i++){
+    const fraction=i/8,a=stationPoint(left,start.station+fraction*length),b=stationPoint(right,fraction*end.station);
+    if(Math.hypot(a[0]-b[0],a[1]-b[1])>SEAM_TOLERANCE)return null;
+  }
+  return right.points.filter((_,i)=>right.stations[i]>end.station+SEAM_TOLERANCE);
+}
+
+function joinTileOverlaps(fragments){
+  const byIdentity=new Map();
+  for(const fragment of fragments){
+    const key=JSON.stringify([fragment.group,fragment.id]);
+    if(!byIdentity.has(key))byIdentity.set(key,[]);
+    byIdentity.get(key).push(fragment);
+  }
+  const result=[];
+  for(const group of byIdentity.values()){
+    // A single stable feature ID normally appears once per tile. Keep
+    // anomalous groups bounded before doing pairwise geometric checks.
+    if(group.length<2||group.length>32){result.push(...group);continue;}
+    const parts=group.map(f=>{
+      const reversed=f.points.slice().reverse(),points=lineKey(f.points)<lineKey(reversed)?f.points:reversed;
+      return {...f,points};
+    }).sort((a,b)=>lineKey(a.points).localeCompare(lineKey(b.points)));
+    const kx=LAT_METRES*Math.cos(parts[0].points[0][1]*Math.PI/180);
+    while(parts.length>1){
+      const paths=parts.map(f=>[seamPath(f.points,kx),seamPath(f.points.slice().reverse(),kx)]),candidates=[];
+      for(let a=0;a<parts.length;a++)for(let b=a+1;b<parts.length;b++){
+        for(const left of [0,1])for(const right of [0,1]){
+          const tail=overlapTail(paths[a][left],paths[b][right]);
+          if(tail?.length)candidates.push({a,b,endA:1-left,endB:right,points:[...paths[a][left].points,...tail]});
+        }
+      }
+      const ends=new Map();
+      for(const {a,b,endA,endB}of candidates)for(const key of [2*a+endA,2*b+endB])ends.set(key,(ends.get(key)||0)+1);
+      const join=candidates.find(({a,b,endA,endB})=>ends.get(2*a+endA)===1&&ends.get(2*b+endB)===1);
+      if(!join)break;
+      parts[join.a]={...parts[join.a],points:join.points};
+      parts.splice(join.b,1);
+    }
+    result.push(...parts);
+  }
+  return result;
+}
+
 // Join only compatible route/level/width fragments at unambiguous degree-2
 // endpoints. A width change stays explicit instead of inheriting A.props.
 function joinFragments(fragments){
@@ -123,7 +205,7 @@ export function generateProceduralBridgeItems(features,elevationAt,{scale=.1,min
     }
   });
   if(droppedFragments)warnings.push(`Pressupost d'unió aplicat: ${droppedFragments} fragments omesos (límits de ${MAX_FRAGMENTS} fragments i ${MAX_TOTAL_POINTS} punts).`);
-  const axes=joinFragments(fragments);
+  const axes=joinFragments(joinTileOverlaps(fragments));
   // Orientació canònica per coordenades d'extrems: invertir l'ordre dels
   // fragments d'entrada no pot canviar la posició dels pilars entre retalls.
   for(const axis of axes){

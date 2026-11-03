@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.19.10 — 2026-11-03
+
+- RO-033 / RO-052: els fragments solapats d’una mateixa via es poden reunir en un tauler abans d’estimar-ne el pendent. En retalls remots, una càrrega addicional acotada recupera el traçat i el relleu dels estreps si queden fora de la selecció.
+- Millau s’utilitza com a control de continuïtat i estabilitat del perfil en canviar el retall. [Controls i límits](work/RO-033-CONTROLS-PROCEDIMENTALS.md).
+
 ## v0.19.9 — 2026-11-03
 
 - RO-051 / RO-052: els perfils suaus reserven tram cartografiat als extrems interiors i l’enllacen amb la superfície de la via. Si no hi cap una transició amb pendent i recolzament admissibles, aquell perfil es manté sobre el terreny.

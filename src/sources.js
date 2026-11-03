@@ -1,7 +1,8 @@
 import {VectorTile} from '@mapbox/vector-tile';
 import Pbf from 'pbf';
 import {inCatalonia,fetchOfficialBuildings,combineBuildings} from './buildings.js';
-import {loadTerrain,oceanTilePredicate} from './terrain-provider.js';
+import {loadTerrain,loadBridgeTerrain,oceanTilePredicate} from './terrain-provider.js';
+import {extendBridgeTiles} from './bridge-tile-coverage.js';
 import {regionTileCount,MAX_REGION_TILES} from './region-limits.js';
 import {loadBuildingsRecoverably} from './building-recovery.js';
 import {recommendedPlace} from './recommended-places.js';
@@ -61,22 +62,41 @@ export async function loadRegion({sample=true,bbox,buildingSource,decodeElevatio
   let meta=sample?await(await get(base+(recommendedPlace(sample)?.file||'tamariu.json'))).json():{name:'Regió seleccionada',bbox,tiles:tileList(bbox),date:new Date().toISOString()};
   if(sample&&bbox)meta={...meta,bbox};
   let template;if(!sample)template=(await(await get('https://tiles.openfreemap.org/planet')).json()).tiles[0];
-  let features=[],dem=[],terrainWarnings=[...(meta.sourceWarnings||[])];
+  let features=[],dem=[],bridgeDem=[],bridgeFeatures=[],incompleteBridgeIds=[],terrainWarnings=[...(meta.sourceWarnings||[])];
+  const vectorEntries=[];
   // Sequential tile pairs keep resource use and public-service load bounded.
   for(let i=0;i<meta.tiles.length;i++){
     const t=meta.tiles[i];progress(`Carregant dades ${i+1}/${meta.tiles.length}…`);
     const vectorURL=sample?base+t.vector:template.replace('{z}',t.z).replace('{x}',t.x).replace('{y}',t.y);
-    features.push(...readVector(new Uint8Array(await(await get(vectorURL)).arrayBuffer()),t));
+    const vectors=readVector(new Uint8Array(await(await get(vectorURL)).arrayBuffer()),t);
+    features.push(...vectors);
+    if(!sample)vectorEntries.push({tile:t,features:vectors});
     if(sample&&!localDEM)dem.push(await decodeElevation(await(await get(base+t.dem)).blob(),t));
   }
-  if(!sample&&!localDEM){const terrain=await loadTerrain(meta.bbox,decodeElevation,fetch,progress,oceanTilePredicate(features,meta.bbox));dem=terrain.tiles;meta.terrain=terrain.metadata;terrainWarnings=terrain.warnings;}
+  if(!sample&&!localDEM){
+    const terrain=await loadTerrain(meta.bbox,decodeElevation,fetch,progress,oceanTilePredicate(features,meta.bbox));dem=terrain.tiles;meta.terrain=terrain.metadata;terrainWarnings=terrain.warnings;
+    const bridgeDeadline=AbortSignal.timeout(16000);
+    const fetchBridge=(url,options)=>fetch(url,{...options,signal:AbortSignal.any([bridgeDeadline,options.signal])});
+    const extension=await extendBridgeTiles(vectorEntries,meta.bbox,async t=>{
+      progress('Completant traçats de ponts fora del retall…');
+      const url=template.replace('{z}',t.z).replace('{x}',t.x).replace('{y}',t.y);
+      const response=await fetchBridge(url,{signal:AbortSignal.timeout(8000)});
+      if(!response.ok)throw Error(`HTTP ${response.status}`);
+      return readVector(new Uint8Array(await response.arrayBuffer()),t);
+    });
+    bridgeFeatures=extension.features;incompleteBridgeIds=[...extension.missing];
+    const extra=await loadBridgeTerrain(extension.tiles,terrain,decodeElevation,fetchBridge);
+    bridgeDem=extra.tiles;
+    if(incompleteBridgeIds.length||extra.failed)terrainWarnings.push('No s’ha pogut completar tota la cartografia de ponts i el relleu dels estreps fora del retall.');
+    if(extension.tiles.length||incompleteBridgeIds.length)meta.bridgeCoverage={vectorTiles:extension.tiles,demTiles:bridgeDem.map(({z,x,y})=>({z,x,y})),incompleteBridgeIds,demFailures:extra.failed};
+  }
   if(localDEM){meta.terrain=localDEM.metadata;terrainWarnings.push('MDT GeoTIFF local: altituds en metres, datum vertical de la font sense transformar. No es completen buits amb relleu inventat.');}
   meta.elevationDecoding=localDEM?{method:'numeric GeoTIFF raster; no canvas readback',file:localDEM.metadata}:{method:'binary RGB; no canvas readback',tiles:dem.map(t=>({z:t.z,x:t.x,y:t.y,...t.decoding}))};
   meta.localSources={dem:localDEM?.metadata||null,buildings:localBuildings?.metadata||null};
   let infrastructure=null;
   try{infrastructure=await loadInfrastructureOverrides(meta.bbox,infrastructureJSON);}
   catch(error){terrainWarnings.push('No s’han pogut carregar els detalls específics dels ponts; s’ha omès aquesta millora. '+error.message);}
-  const region={meta,features,vectorFeatures:features,terrainWarnings,dem,localDEM,infrastructure};
+  const region={meta,features,vectorFeatures:features,terrainWarnings,dem,bridgeDem,bridgeFeatures,incompleteBridgeIds,localDEM,infrastructure};
   const layer=await loadBuildingsRecoverably(source=>loadBuildingLayer(region,{source,localBuildings},progress),buildingSource||defaultBuildingSource(meta.bbox),localBuildings?[]:buildingFallbacks);
   if(layer.recovery){region.recovery=layer.recovery;region.meta={...region.meta,buildingRecovery:layer.recovery};}
   return applyBuildingLayer(region,layer);

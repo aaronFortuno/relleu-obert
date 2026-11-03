@@ -150,12 +150,14 @@ function prepareTerrain(data,options,progress){
   const water=[],ocean=[],green=[],woods=[],roads=[],rails=[],transport=[],roadPieces=[],railPieces=[];
   const knownItems=data.infrastructure?.items||[],knownMask=merge(knownItems.flatMap(item=>item.outlines.map(r=>intersect([[r.map(project)]],rect))).filter(p=>p.length));
   const overlapsKnown=line=>knownMask.length&&intersect(lineBuffer(line.map(project),.05,[width,height]),knownMask).length;
-  const candidates=[];
-  for(const f of data.features)if(f.properties?.sourceLayer==='transportation'&&f.properties.brunnel==='bridge'&&!isInactiveRailway(f.properties)&&f.geometry.type.includes('LineString')){
+  const candidates=[],incompleteBridges=new Set(data.incompleteBridgeIds);
+  for(const f of [...data.features,...(data.bridgeFeatures||[])])if(f.properties?.sourceLayer==='transportation'&&f.properties.brunnel==='bridge'&&!isInactiveRailway(f.properties)&&!incompleteBridges.has(f.id)&&f.geometry.type.includes('LineString')){
     const lines=f.geometry.type==='LineString'?[f.geometry.coordinates]:f.geometry.coordinates;
     for(const line of lines)if(!overlapsKnown(line))candidates.push({...f,geometry:{type:'LineString',coordinates:line}});
   }
-  const generated=generateProceduralBridgeItems(candidates,elevationAt,{scale,bbox:data.meta.bbox});warnings.push(...generated.warnings);
+  const bridgeTiles=data.bridgeDem?.length?[...prepared.tiles,...prepareElevationTiles(data.bridgeDem).tiles]:null;
+  const bridgeElevation=bridgeTiles?(lon,lat)=>sampleHeight(bridgeTiles,lon,lat):elevationAt;
+  const generated=generateProceduralBridgeItems(candidates,bridgeElevation,{scale,bbox:data.meta.bbox});warnings.push(...generated.warnings);
   const deckItems=[...knownItems,...generated.items],deckFootprints=deckItems.flatMap(item=>item.outlines.map(r=>[r.map(project)]));
   const deckMask=merge(deckFootprints.map(p=>intersect([p],rect)).filter(p=>p.length));
   for(const [featureIndex,f]of data.features.entries()){const p=f.properties,layer=p.sourceLayer,polys=geoPolys(f,project);

@@ -15,11 +15,19 @@ globalThis.fetch=(url,opts)=>{
   return nativeFetch(url,opts);
 };
 const ids=new Set([42968122,42968132]),centre=[44.0797,3.0226];
+const mesh=process.argv.includes('--mesh');
+let api,buildModel,auditPart;
+if(mesh){
+  const {default:Module}=await import('manifold-3d');
+  api=await Module();api.setup();
+  ({buildModel}=await import('../src/geometry.js'));
+  ({auditPart}=await import('../src/solid-audit.js'));
+}
 for(const km of [3,1.4]){
   const bbox=physicalBBox(centre,km,km);
   const data=await loadRegion({sample:false,bbox,buildingSource:'osm',decodeElevation:async(blob,t)=>decodeDEMTile(await blob.arrayBuffer(),t,decode)});
-  const at=(lon,lat)=>sampleHeight(data.dem,lon,lat);
-  const ways=data.features.filter(f=>ids.has(f.id)&&f.properties.brunnel==='bridge');
+  const at=(lon,lat)=>sampleHeight([...data.dem,...data.bridgeDem],lon,lat);
+  const ways=[...data.features,...data.bridgeFeatures].filter(f=>ids.has(f.id)&&f.properties.brunnel==='bridge'&&!data.incompleteBridgeIds.includes(f.id));
   const {items,warnings}=generateProceduralBridgeItems(ways,at,{bbox,scale:150/(1000*km)});
   const fragments=ways.flatMap(({id,geometry})=>{
     const lines=geometry.type==='MultiLineString'?geometry.coordinates:[geometry.coordinates];
@@ -28,6 +36,16 @@ for(const km of [3,1.4]){
       catch(error){return {point,error:error.message};}
     })}));
   });
-  console.log(JSON.stringify({centre,km,vectorSource,tiles:data.meta.tiles.length,dem:data.dem.length,fragments,
-    decks:items.map(i=>({ids:i.sourceFeatureIds,ends:[i.axis[0],i.axis.at(-1)]})),warnings},null,2));
+  const decks=items.map(i=>({ids:i.sourceFeatureIds,ends:[i.axis[0],i.axis.at(-1)],elevations:[at(...i.axis[0]),at(...i.axis.at(-1))]}));
+  let model;
+  if(mesh){
+    const result=buildModel(data,{size:150,resolution:12,trees:false,estimatedTunnels:true},()=>{},api);
+    const stats=result.provenance.infrastructure?.completion?.details||[];
+    model={decks:result.context.bridges.filter(b=>b.sourceFeatureIds?.some(id=>ids.has(id))).map(b=>{
+      const detail=stats.find(d=>d.id===b.id);
+      return {id:b.id,sourceFeatureIds:b.sourceFeatureIds,joins:detail.approaches.length,piers:detail.piers.length,unsupported:detail.maxUnsupportedSpanMM,unconnected:detail.unconnectedEnds};
+    }),audit:result.categories.map(auditPart).map(({id,errors})=>({id,errors}))};
+    if(model.decks.length!==2||model.audit.some(a=>a.errors.length))process.exitCode=1;
+  }
+  console.log(JSON.stringify({centre,km,vectorSource,tiles:data.meta.tiles.length,dem:data.dem.length,coverage:data.meta.bridgeCoverage,fragments,decks,model,warnings},null,2));
 }

@@ -32,7 +32,24 @@ el contingut del 3MF. El laminat i la impressió queden pendents.
 node --max-old-space-size=512 scripts/check-procedural-overpass.mjs
 ```
 
-## Millau — diagnòstic de fonts i perfil
+## Millau — continuïtat del perfil
+
+**v0.19.10.** Amb el mateix centre i els mateixos dos retalls, la
+reconstrucció obté una sola plataforma per calçada. Les cotes dels
+extrems són idèntiques entre retalls (587,96–671,66 m i 588,84–668,31 m).
+El retall d’1,4 km ha carregat dues tessel·les vectorials i les dues de
+relleu corresponents per completar el pont. La malla completa
+(detall 12, edificis OSM i túnels actius) supera l’auditoria en ambdós
+retalls. Al de 3 km, les dues calçades tenen dos enllaços cadascuna.
+Les llums màximes mostrejades (10,76 i 13,77 mm al retall de 3 km)
+queden pendents de revisar al laminador.
+
+La continuació fora del retall segueix la identitat de la via, amb un
+màxim de vuit consultes vectorials addicionals i un temps d’espera
+compartit. Les cotes noves procedeixen del mateix proveïdor i nivell
+del relleu que la maqueta. El tauler continua sent una estimació DEM.
+
+### Diagnòstic de la v0.19.9
 
 Centre 44.0797, 3.0226 i peça de 150 mm. Consulta del 3 de novembre de
 2026 amb OpenFreeMap (`20261101_080013_pt`) i el proveïdor de relleu
@@ -44,13 +61,10 @@ habitual de l’aplicació. Dues calçades amb identificadors vectorials
 | 3 km (1:20.000) | 9 | Tres fragments solapats per calçada, cadascun amb el seu perfil estimat. |
 | 1,4 km (1:9.333) | 1 | Les dues calçades són presents a la cartografia. Els quatre extrems dels fragments cauen fora del DEM disponible i el motor omet els dos taulers. |
 
-El diagnòstic identifica la desaparició amb el zoom i un mecanisme
-que pot produir angles al retall ampli, perquè el motor
-interpreta els fragments solapats com a trams separats. Queda pendent
-mesurar aquests angles a la malla. El següent pas és reconstruir un
-eix únic per calçada abans del retall i obtenir les cotes als estreps
-reals quan calgui anar més enllà de les tessel·les visibles.
+La v0.19.9 interpretava els fragments solapats com a trams separats,
+cadascun amb les seves cotes. La v0.19.10 resol aquests dos mecanismes
+en els retalls de control.
 
 ```sh
-node --max-old-space-size=512 scripts/diagnose-millau.mjs
+node --max-old-space-size=512 scripts/diagnose-millau.mjs --mesh
 ```

@@ -11,8 +11,33 @@ export function oceanTilePredicate(features,bbox){
     return w<e&&s<north&&pc.difference(rectangle(w,s,e,north),ocean).length===0;
   };
 }
+const providers=[
+  {provider:'Mapterhorn',url:t=>`https://tiles.mapterhorn.com/${t.z}/${t.x}/${t.y}.webp`},
+  {provider:'Mapzen Terrain Tiles · AWS',url:t=>`https://s3.amazonaws.com/elevation-tiles-prod/terrarium/${t.z}/${t.x}/${t.y}.png`}
+];
+
+export async function loadBridgeTerrain(vectorTiles,terrain,decode,fetcher=fetch){
+  if(!vectorTiles.length)return {tiles:[],failed:0};
+  const z=terrain.metadata.zoom,provider=providers.find(p=>p.provider===terrain.metadata.provider);
+  const loaded=new Set(terrain.tiles.map(t=>`${t.x}/${t.y}`)),tiles=[];
+  let failed=0;
+  for(const v of vectorTiles){
+    const factor=2**(v.z-z),t={z,x:Math.floor(v.x/factor),y:Math.floor(v.y/factor)},key=`${t.x}/${t.y}`;
+    if(loaded.has(key))continue;
+    loaded.add(key);
+    try{
+      const r=await fetcher(provider.url(t),{signal:AbortSignal.timeout(8000)});
+      if(!r.ok)throw Error(`HTTP ${r.status}`);
+      const decoded=await decode(await r.blob(),t);
+      if(!decoded.elev.some(Number.isFinite))throw Error('DEM buit.');
+      tiles.push(decoded);
+    }catch{failed++;}
+  }
+  return {tiles,failed};
+}
+
 export async function loadTerrain(bbox,decode,fetcher=fetch,progress=()=>{},isOcean=()=>false){
-  const attempts=[{provider:'Mapterhorn',z:14,url:t=>`https://tiles.mapterhorn.com/${t.z}/${t.x}/${t.y}.webp`},{provider:'Mapzen Terrain Tiles · AWS',z:14,url:t=>`https://s3.amazonaws.com/elevation-tiles-prod/terrarium/${t.z}/${t.x}/${t.y}.png`},{provider:'Mapterhorn',z:12,url:t=>`https://tiles.mapterhorn.com/${t.z}/${t.x}/${t.y}.webp`},{provider:'Mapzen Terrain Tiles · AWS',z:12,url:t=>`https://s3.amazonaws.com/elevation-tiles-prod/terrarium/${t.z}/${t.x}/${t.y}.png`}];
+  const attempts=[14,12].flatMap(z=>providers.map(p=>({...p,z})));
   const failures=[];
   for(const attempt of attempts){
     try{

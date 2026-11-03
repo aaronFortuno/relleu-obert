@@ -77,6 +77,34 @@ test('duplicate and reversed fragments dedupe; contiguous fragments of one road 
   assert.deepEqual([...items[0].sourceFeatureIds].sort(),['a','b']);
 });
 
+test('overlapping copies of the same tiled bridge use its two outer elevations in any input order',()=>{
+  const id='same-way';
+  const a=bridge([[0,0],[.001,0],[.002,0]],{},id);
+  const b=bridge([[.004,.0002],[.002,0],[.0015,.000004]],{},id);
+  const c=bridge([[.0037,.00017],[.0048,.00028],[.005,.0003]],{},id);
+  const queried=[];
+  const {items,warnings}=generateProceduralBridgeItems([a,b,c],(lon,lat)=>{
+    queried.push([lon,lat]);
+    return lon===0?180:190;
+  });
+  assert.deepEqual(warnings,[]);
+  assert.equal(items.length,1);
+  assert.deepEqual(queried,[[0,0],[.005,.0003]]);
+  assert.deepEqual(items[0].sourceFeatureIds,[id]);
+  assert.deepEqual(generateProceduralBridgeItems([c,b,a],lon=>lon===0?180:190).items,items);
+});
+
+test('overlap stitching rejects distinct IDs, lateral offsets and a same-ID fork',()=>{
+  const a=bridge([[0,0],[.002,0]],{},'a');
+  const b=bridge([[.001,0],[.003,0]],{},'b');
+  const parallel=bridge([[.001,.00002],[.003,.00002]],{},'a');
+  const matching={...b,id:'a'};
+  const fork=bridge([[.0011,0],[.0022,0],[.003,.0003]],{},'a');
+  assert.equal(generateProceduralBridgeItems([a,b],flat).items.length,2);
+  assert.equal(generateProceduralBridgeItems([a,parallel],flat).items.length,2);
+  assert.equal(generateProceduralBridgeItems([a,matching,fork],flat).items.length,3);
+});
+
 test('connected fragments keep real width changes and route identities independent of input order',()=>{
   const a=bridge([[0,0],[.002,0]],{name:'Same road',ref:'C-1',width:6},'narrow');
   const b=bridge([[.002,0],[.004,0]],{name:'Same road',ref:'C-1',width:10},'wide');
