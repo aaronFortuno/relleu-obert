@@ -7,7 +7,7 @@ Actualitzat: **2026-11-03 · v0.21.3**. Perfils amb MET5 contrastats al planific
 | Lot | Línies | Resultat que permet avançar |
 | --- | --- | --- |
 | **0.21 · Exportació comprovable** | RO-024, RO-033, RO-034, RO-050, RO-052, RO-055 | Auditar els 3MF amb controls petits i identificar el primer defecte reproduïble. Les comprovacions de Bambu Studio i d’impressió es registren a banda. |
-| **0.22 · Vies i rendiment** | RO-033, RO-034, RO-050, RO-051, RO-052, RO-053 | Bateria de retalls amb C-37, Millau i un corredor ferroviari. Registrar classificació, pendents, omissions, unions i temps a dues escales. |
+| **0.22 · Vies i rendiment** | RO-033, RO-034, RO-050, RO-051, RO-052, RO-053 | Bateria inicial completada. Aïllar el defecte de la unió de paviment que fa perdre els perfils a Sant Salvador i al retall ferroviari de 800 m. Verificar la coberta del túnel a 1:20.000. [Resultats](RO-051-PERFILS-VIARIS.md#bateria-de-la-022--control-inicial-amb-v0213) |
 | **Retocs en paral·lel** | RO-046, RO-054 | Validar la càrrega dels exemples i la recuperació de projectes girats, amb els dos modes i traços. Reproduir qualsevol pèrdua d’ajustos abans de tocar el flux. |
 | **Pilot de relleu rocós** | RO-023, RO-035 | Quatre controls del Cavall Bernat i un cupó local dels Degotalls auditats. Contrastar un segon lloc i resoldre la georeferenciació del cupó. [Resultats](RELLEU-ROCOS.md) |
 | **Després** | RO-026, RO-032 | Comparar les fonts d’edificis en dues zones, amb proves d’accés i cobertura abans de fer canvis al model. |

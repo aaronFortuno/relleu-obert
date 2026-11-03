@@ -112,3 +112,20 @@ incompleta no garanteixen evitar obstacles reals absents de les dades.
 OpenFreeMap classifica la C-37 com a via troncal. Al retall sud-oest, centrat a 41,68075 N, 1,754 E, el túnel 317900732 i el pont 317898440 tenen etiquetes pròpies. Amb MET5, el planificador passa de quatre a cinc perfils troncals en un retall d’1,5 km per a una peça de 150 mm. Al retall de Salelles, centrat a 41,706 N, 1,781 E, es conserva un perfil troncal. Les omissions per manca de DEM passen de dues a zero en cadascun dels retalls. Les altres causes d’omissió, incloses les de pendent o encaix, continuen subjectes a les comprovacions geomètriques.
 
 El planificador del túnel sud-oest troba una obertura elegible. Queda pendent comprovar l’excavació i el pont al model complet de Sant Salvador, i repetir la bateria amb altres escales i corredors. [Avaluació ambiental del tram Sant Salvador–Manresa](https://www.gencat.cat/mediamb/dia/dia_guardiola.pdf)
+
+## Bateria de la 0.22 · control inicial amb v0.21.3
+
+Sis models complets amb dades remotes, peça de 150 mm, detall Ràpid de la interfície (36 cel·les), exageració ×1,5, edificis OSM i arbres desactivats. Perfils suaus i túnels estimats activats. Totes les malles passen l’auditoria topològica. El pendent correspon als eixos dels perfils acceptats abans de l’exageració vertical, i el canvi és la diferència màxima de pendent entre dos intervals consecutius. Els enllaços del tauler es comproven a banda.
+
+| Control | Escala | Perfils aplicats | Pendent màxim / canvi màxim | Resultat |
+| --- | --- | ---: | --- | --- |
+| Sant Salvador, 1,5 km | 1:10.000 | 0 | — | Pont i túnel presents. La unió de paviment falla i recupera els camins sobre el terreny. |
+| Sant Salvador, 3 km | 1:20.000 | 3 | 8,30% / 1,71 punts | Pont present. Túnel 317900732 omès per coberta discontínua. |
+| Millau, 1,5 km | 1:10.000 | 3 | 7,67% / 0,31 punts | Dos taulers. Cap enllaç resolt al retall curt. |
+| Millau, 3 km | 1:20.000 | 7 | 10,47% / 0,54 punts | Dos taulers, amb els quatre enllaços. |
+| Ferrocarril, 400 m | 1:2.667 | 1 | 1,51% / 0,00 punts | Rasant ferroviària constant. |
+| Ferrocarril, 800 m | 1:5.333 | 0 | — | La unió de paviment ferroviari falla i recupera la via sobre el terreny. |
+
+Sant Salvador a 1:10.000 i el ferrocarril a 1:5.333 fallen en la mateixa etapa, en unir els components de la capa de paviment abans de la resta booleana. El motor n’informa amb volums calculats lleugerament negatius. Cal capturar els components i provar si el càlcul en coordenades locals conserva els sòlids vàlids. Un control preexistent de Rajadell mostra que traslladar un prisma petit a l’origen recupera un volum positiu i manté col·lapsat el control degenerat. L’efecte sobre els dos errors reals encara és pendent. La falta de coberta del túnel a 1:20.000 és una incidència separada.
+
+Reproducció amb `node --max-old-space-size=512 scripts/diagnose-transport-battery.mjs guardiola 1.5`. Els casos són `guardiola` i `millau` amb 1,5 o 3 km, i `rail` amb 0,4 o 0,8 km. Executar-los seqüencialment i controlar el marge de memòria segons `AGENTS.md`. Els informes JSON i 3MF es desen a `output/transport-battery/`.
