@@ -83,6 +83,18 @@ test('unambiguous railway fragments use a constant grade, while an unmapped leve
   assert(crossed.metadata.omissions.some(o=>o.reason.includes('carretera crossing')));
 });
 
+test('coarse railway profiles smooth crests when a straight grade would lift the track too far',()=>{
+  const rail=feature([[0,0],[1200,0]],{class:'rail',ref:'R1'});
+  const crest=lon=>120-.035*Math.abs(lon*M-600);
+  const [profile]=generateMajorRoadItems([rail],crest,{projection:projection(.05),smoothProfiles:true,allowEndpointLift:true}).items;
+  assert.equal(profile.elevationMethod,'rounded-upper-envelope-dem');
+  assert.equal(profile.smoothingRadiusMetres,80);
+  const grades=profile.elevations.slice(1).map((z,i)=>(z-profile.elevations[i])/(profile.stations[i+1]-profile.stations[i]));
+  assert(Math.max(...grades.slice(1).map((grade,i)=>Math.abs(grade-grades[i])))<.005);
+  assert(profile.maximumGrade<=.04);
+  assert(profile.maximumSectionLiftMetres<=12);
+});
+
 test('deck item topology has one flat cross-section per station and upward triangle winding',()=>{
   const p=generateMajorRoadItems([road],terrain,options).items[0];
   assert.equal(p.coordinates.length,p.stations.length*2);assert.equal(p.faces.length,(p.stations.length-1)*6);

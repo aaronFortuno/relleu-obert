@@ -16,6 +16,7 @@ globalThis.fetch=(url,opts)=>{
 };
 const ids=new Set([42968122,42968132]),centre=[44.0797,3.0226];
 const mesh=process.argv.includes('--mesh');
+const profiles=process.argv.includes('--profiles');
 const resolution=Number(process.argv.find(arg=>arg.startsWith('--detail='))?.slice(9)??12);
 const requestedKm=process.argv.find(arg=>arg.startsWith('--km='))?.slice(5);
 let api,buildModel,auditPart;
@@ -41,12 +42,12 @@ for(const km of requestedKm?[Number(requestedKm)]:[3,1.4]){
   const decks=items.map(i=>({ids:i.sourceFeatureIds,ends:[i.axis[0],i.axis.at(-1)],elevations:[at(...i.axis[0]),at(...i.axis.at(-1))]}));
   let model;
   if(mesh){
-    const result=buildModel(data,{size:150,resolution,trees:false,estimatedTunnels:true},()=>{},api);
+    const result=buildModel(data,{size:150,resolution,trees:false,estimatedTunnels:true,majorRoads:profiles,smoothProfiles:profiles},()=>{},api);
     const stats=result.provenance.infrastructure?.completion?.details||[];
     model={decks:result.context.bridges.filter(b=>b.sourceFeatureIds?.some(id=>ids.has(id))).map(b=>{
       const detail=stats.find(d=>d.id===b.id);
       return {id:b.id,sourceFeatureIds:b.sourceFeatureIds,joins:detail.approaches.length,piers:detail.piers.length,unsupported:detail.maxUnsupportedSpanMM,unconnected:detail.unconnectedEnds};
-    }),audit:result.categories.map(auditPart).map(({id,errors})=>({id,errors}))};
+    }),profiles:profiles?result.provenance.majorRoads:undefined,audit:result.categories.map(auditPart).map(({id,errors})=>({id,errors}))};
     if(model.decks.length!==2||model.audit.some(a=>a.errors.length))process.exitCode=1;
   }
   console.log(JSON.stringify({centre,km,resolution,vectorSource,tiles:data.meta.tiles.length,dem:data.dem.length,coverage:data.meta.bridgeCoverage,fragments,decks,model,warnings},null,2));

@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.20.1 — 2026-11-03
+
+- Les rasants ferroviàries corbes adapten la finestra de suavitzat a l’escala.
+- Els accessos de perfil limitat comparen punts d’enllaç propers i trien el que reparteix millor el canvi de pendent.
+
 ## v0.20.0 — 2026-11-03
 
 - Galeria local de projectes amb retall, orientació, mida, capes, materials i traços. Els ajustos es poden recuperar per regenerar una maqueta.

@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-03 · v0.20.0**. Galeria local i ordre de treball per blocs. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
+Actualitzat: **2026-11-03 · v0.20.1**. Rasants ferroviàries i accessos més progressius. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
 
 ## Ordre de treball
 
@@ -330,6 +330,8 @@ Abans d’implementar: cua limitada, cancel·lació per canvi de regió, memòri
 
 ### RO-051 — Perfils de carreteres principals
 
+**v0.20.1.** Les rasants ferroviàries corbes utilitzen una finestra adaptada a l’escala. Al control d’un canvi de pendent a 1:20.000, la variació màxima entre estacions passa d’1,46 a 0,44 punts percentuals.
+
 **v0.19.15.** La finestra de suavitzat dels perfils experimentals s’adapta a l’escala. Els accessos de vies principals limiten les tangents que provocaven canvis de sentit del pendent. Pendent de contrast al visor en els accessos de Millau.
 
 **Validació d’usuari a v0.19.12.** El tauler de Millau es veu bé i l’enllaç és relativament net. Encara es veuen bonys a les vies principals. Cal comparar el perfil longitudinal i la transició amb el relleu abans i després de l’accés, en més d’una escala.
@@ -363,6 +365,8 @@ Primer prototip local: perfil longitudinal regularitzat amb tall/terraplè acota
 **Criteris:** perfil menys ondulat, continuïtat amb ponts/túnels i extrems, malles tancades, absència de col·lisions amb vies/edificis carregats, escala i retall coherents, avisos quan no hi ha una solució segura, mateixa geometria en preview i fitxer, laminat pendent d'usuari. La simplificació no és un aixecament real de la carretera.
 
 ### RO-052 — Continuïtat i amplada del traçat viari
+
+**v0.20.1.** Els accessos amb límit de pendent comparen punts d’enllaç propers i minimitzen la variació màxima de pendent per mil·límetre. Es conserva la comprovació de llum, cotes i límit de pendent. El control local de Millau (3 km, detall 36) passa l’auditoria i conserva els dos enllaços de cada tauler. El diagnòstic registra set perfils aplicats i 21 omissions. Pendent de contrast visual i laminat.
 
 **v0.19.15.** Amplades compartides per classe i escala. A 1:20.000, mínims modelats de 0,44 mm en principals i rails, 0,40 mm en secundàries i 0,36 mm en camins menors. Pendent de laminat.
 

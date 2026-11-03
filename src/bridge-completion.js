@@ -122,9 +122,11 @@ export function planApproaches({axis,points,faces,containsDeck,roads,ground,road
     const landing=(sample,x=sample.p[0],y=sample.p[1])=>destinationSurface?destinationSurface(x,y,lineAt(sample)):ground(x,y);
     const firstExternal=samples.find(s=>s.segment>0)||samples[0];
     if(!forceConnections&&startZ<=landing(firstExternal)+roadRise+.03&&Math.abs(width-roadWidth)<.05)continue;
-    const gap=Math.abs(startZ-landing(firstExternal)-roadRise),minimum=Math.max(width*2,2,gap/.12);let end=-1,targetGrade=null;
+    const gap=Math.abs(startZ-landing(firstExternal)-roadRise),minimum=Math.max(width*2,2,gap/.12);
+    let end=-1,targetGrade=null,bestCurvature=Infinity,searchEnd=Infinity;
     for(let i=1;i<samples.length;i++){
       const sample=samples[i],{s}=sample,delta=landing(sample)+roadRise-(startZ+grade*s);
+      if(s>searchEnd)break;
       if(s<Math.max(width*2,2)||terminalRoad&&i===samples.length-1)continue;
       if(maxGrade!=null){
         if(i===samples.length-1||sample.segment!==samples[i+1].segment)continue;
@@ -148,7 +150,15 @@ export function planApproaches({axis,points,faces,containsDeck,roads,ground,road
           if(clearance<-.02||unsupported>10){clear=false;break;}
         }
         if(!clear)continue;
-        targetGrade=endGrade;
+        // Compare nearby safe landings by peak rate of grade change.
+        // Choosing the first feasible cubic can concentrate the bend at
+        // a single end, even if its grade never exceeds the limit.
+        if(end<0)searchEnd=s+Math.max(2,width*2);
+        const curvature=Math.max(Math.abs(b),Math.abs(2*a+b))/s;
+        if(curvature<bestCurvature){
+          bestCurvature=curvature;targetGrade=endGrade;end=i;
+        }
+        continue;
       }else if(delta<0&&(s<minimum||Math.abs(delta)/s>=.15))continue;
       end=i;break;
     }

@@ -124,11 +124,11 @@ function roundEnvelope(stations,elevations,radius){
   return smoothed.map(height=>height+lift);
 }
 
-function roundedProfile(stations,envelope,sectionMinima,scale,maxLiftMetres,railway){
+function roundedProfile(stations,envelope,sectionMinima,scale,maxLiftMetres){
   const baseRadius=24;
   // At coarse scales the original window can occupy barely a millimetre.
   // Aim for a visible curve, keeping the window local to the mapped axis.
-  const targetRadius=railway?baseRadius:Math.max(baseRadius,Math.min(120,stations.at(-1)/5,4/scale));
+  const targetRadius=Math.max(baseRadius,Math.min(120,stations.at(-1)/5,4/scale));
   const radii=targetRadius===baseRadius?[baseRadius]:[targetRadius,(targetRadius+baseRadius)/2,baseRadius];
   for(const radius of radii){
     const elevations=roundEnvelope(stations,envelope,radius);
@@ -297,7 +297,7 @@ export function generateMajorRoadItems(features,elevationAt,options={}){
     const constraintFloors=allowEndpointLift?limitedSlopeMajorant(stations,originalConstraintFloors,maxGrade):originalConstraintFloors.slice();
     const {elevations:envelope,hull}=upperEnvelope(stations,constraintFloors);
     const railLine=f.railway?straightRailProfile(stations,originalConstraintFloors,sectionMinima,length,maxGrade,maxLiftMetres):null;
-    const rounded=smooth&&!railLine?roundedProfile(stations,envelope,sectionMinima,projection.scale,maxLiftMetres,f.railway):null;
+    const rounded=smooth&&!railLine?roundedProfile(stations,envelope,sectionMinima,projection.scale,maxLiftMetres):null;
     const elevations=railLine||rounded?.elevations||envelope;
     const maxObservedGrade=Math.max(...elevations.slice(1).map((z,i)=>Math.abs(z-elevations[i])/(stations[i+1]-stations[i])));
     if(maxObservedGrade>maxGrade+1e-8){fail(f.ids,`pendent de l’envolupant ${(maxObservedGrade*100).toFixed(2)}% superior al límit ${(maxGrade*100).toFixed(0)}%`);continue;}
