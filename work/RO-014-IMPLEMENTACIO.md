@@ -1,6 +1,6 @@
 # RO-014 — Implementació del nucli geomètric (fase 1, només geometria)
 
-2026-11-01 · Delegació acotada a Kimi dins [DELEGACIONS-011.md](DELEGACIONS-011.md) (ordre 5). **Això no tanca RO-014**: és la fase 1 de [RO-014-PROPOSTA.md](RO-014-PROPOSTA.md) §8. La integració UI/Worker/descàrrega i el `muntatge-marc.json` els farà l'agent principal després de la revisió.
+2026-11-01 · Implementació inicial del nucli del marc. **Això no tanca RO-014**: és la fase 1 de [RO-014-PROPOSTA.md](RO-014-PROPOSTA.md) §8. La integració UI/Worker/descàrrega i el `muntatge-marc.json` els farà l'agent principal després de la revisió.
 
 ## Abast entregat
 

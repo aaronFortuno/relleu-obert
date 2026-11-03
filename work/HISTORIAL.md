@@ -916,13 +916,7 @@ RO-036–039 han passat a [l’historial](HISTORIAL.md), perquè l’usuari els 
 
 
 
-**Reprès el2026-11-02:** [lot v0.12](DELEGACIONS-012.md). RO-012 ja té nucli i integració local en validació; RO-023 reprèn UX de fonts i RO-024 els fonaments de sòlids. Quota real comprovada abans de delegar i vigilant actiu durant cada encàrrec.
-
 **Antecedent v0.11:** publicar les correccions i els tres complements ja integrats. RO-012(escena), RO-023(UX de fonts) i RO-024(sòlids per a infraestructures) continuen pendents; les cobertes reals depenen de dades/accés de RO-032. No es dona cap línia pendent per completada.
-
-**Antecedent del lot v0.11:** [DELEGACIONS-011.md](DELEGACIONS-011.md), Kimi 100% disponible comunicat ara. Acceptar Catastre buit, millorar pinzell/navegació i actualització d’edificis, investigar dades de cobertes i implementar propostes. RO-023 prioritza fonts remotes entenedores; RO-033 inclou viaductes ferroviaris. RO-024 s’executa com a fonament de ponts/cavitats, sense atribuir dades 3D inexistents.
-
-**Lot anterior completat:** execució seqüencial delegada a Kimi, amb revisió i proves obligatòries; cua i abast a [DELEGACIONS.md](DELEGACIONS.md). Primer RO-039, després setup de RO-019 i propostes de RO-014/016/017/012. RO-033–035 mantenen la dependència de RO-024.
 
 1. Validar les correccions de respostes buides del Catastre i interacció del pinzell (RO-040–RO-042), l’actualització automàtica (RO-043) i les novetats de v0.12.
 2. Comparar fidelitat de parts i cobertes, segona zona i noves fonts (RO-026 / RO-032).
