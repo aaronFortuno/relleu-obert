@@ -109,3 +109,15 @@ node --max-old-space-size=512 scripts/audit-3mf.mjs public/controls/ro-033/RO-03
 | La Perica, unió per material | 4 | 6 |
 
 Els tres fitxers passen les comprovacions. El recompte de parells és una indicació per orientar la inspecció i no mesura el volum d’intersecció. Queda pendent obrir els fitxers a Bambu Studio i registrar el primer defecte que es pugui reproduir amb la configuració de laminat. L’eina està acotada a controls de fins a 8 MiB de ZIP, 12 MiB d’XML, 100.000 triangles i 16 peces.
+
+### Controls per a la 0.21
+
+- **Rajadell.** El [retall de 150 mm amb túnels](../public/controls/ro-051/RO-051-Rajadell-tunels-150mm.3mf) permet inspeccionar el paviment, la volta i el contacte dels pilars amb el tauler i el terreny. El [control rectangular girat](../public/controls/ro-052/RO-052-Rajadell-150x200mm-gir25.3mf) permet contrastar les terminacions amb un altre retall. Són exportacions de referència de versions anteriors.
+- **Rasos–Gallina Pelada.** Amb el retall conjunt en Relleu pur, obrir les quatre peces amb el mateix perfil de laminat. Usar les files i columnes de `muntatge.json` per comparar les vores adjacents i revisar si els rierols i arbres prop dels talls apareixen a la vista per capes.
+- **Material inesperat.** Conservar el 3MF original, el perfil de laminat i l’altura Z en mil·límetres de la primera capa afectada. Comparar el filament de la peça abans de laminar amb el color per filament després de laminar. Si es pot reproduir, usar un control petit amb el mateix tipus de geometria.
+
+```powershell
+node --max-old-space-size=512 scripts/audit-3mf.mjs --z=5 public/controls/ro-033/RO-033-cupo-pas-inferior.3mf
+```
+
+Al cupó del Bages hi ha triangles de terreny, camins i sòl de bosc que toquen el pla a 5 mm. La consulta inclou les cares coplanàries i mostra les assignacions del fitxer. La comparació amb les trajectòries d’impressió es fa al laminador. El 3MF complet de Rajadell supera el límit de triangles d’aquesta eina acotada.

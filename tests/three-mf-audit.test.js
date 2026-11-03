@@ -27,7 +27,25 @@ test('audits core and Bambu assembly and reports possible overlaps separately',(
     assert.equal(report.parts[1].geometry.closed,true);
     assert.equal(report.parts[1].material.extruder,bambu?2:null);
     assert.equal(report.parts[1].material.paint,bambu?'8':null);
+    assert.equal(Object.hasOwn(report,'heightQuery'),false);
   }
+});
+
+test('queries material at an exact model height, including coplanar faces and excluding empty gaps',()=>{
+  const [terrain,trees]=parts;
+  const separatedTrees={...trees,
+    vertices:new Float32Array([...trees.vertices,...trees.vertices.map((v,i)=>i%3===2?v+2:v)]),
+    faces:new Uint32Array([...trees.faces,...trees.faces.map(i=>i+4)])
+  };
+  const bytes=threeMF({parts:[terrain,separatedTrees],provenance:{name:'Control d’alçades'}},{bambu:true});
+  const query=heightMm=>auditThreeMF(bytes,{heightMm}).heightQuery;
+  assert.deepEqual(query(1.5).parts,[]);
+  assert.deepEqual(query(.5).parts.map(part=>part.crossingTriangles),[3,3]);
+  assert.deepEqual(query(0).parts.map(part=>part.crossingTriangles),[4,4]);
+  const high=query(2.5);
+  assert.equal(high.heightMm,2.5);
+  assert.deepEqual(high.parts.map(part=>[part.name,part.material.extruder,part.crossingTriangles]),[['bosc',2,3]]);
+  assert.throws(()=>auditThreeMF(bytes,{heightMm:Infinity}),/nombre finit/);
 });
 
 test('rejects a mismatched Bambu extruder, filament or paint even if all values exist',()=>{

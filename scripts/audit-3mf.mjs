@@ -1,11 +1,22 @@
 import {open} from 'node:fs/promises';
+import {parseArgs} from 'node:util';
 import {auditThreeMF,MAX_3MF_AUDIT_BYTES} from '../src/three-mf-audit.js';
 
-const paths=process.argv.slice(2);
-if(!paths.length){
-  console.error('Ús: node scripts/audit-3mf.mjs control.3mf [altre-control.3mf …]');
+let paths,heightMm;
+try{
+  const {values,positionals}=parseArgs({options:{z:{type:'string'}},allowPositionals:true});
+  if(values.z!==undefined){
+    heightMm=Number(values.z);
+    if(!values.z.trim()||!Number.isFinite(heightMm))throw Error('L’alçada de consulta ha de ser un nombre finit en mil·límetres.');
+  }
+  if(!positionals.length)throw Error('Cal indicar almenys un 3MF de control.');
+  paths=positionals;
+}catch(error){
+  console.error(error.message);
+  console.error('Ús: node scripts/audit-3mf.mjs [--z=alçada_mm] control.3mf [altre-control.3mf …]');
   process.exitCode=2;
-}else{
+}
+if(paths){
   const reports=[];
   for(const path of paths){
     let file;
@@ -20,7 +31,7 @@ if(!paths.length){
         if(!bytesRead)throw Error('No s’ha pogut llegir tot el fitxer.');
         read+=bytesRead;
       }
-      const report=auditThreeMF(bytes);
+      const report=auditThreeMF(bytes,{heightMm});
       reports.push({file:path,...report});
       if(!report.valid)process.exitCode=1;
     }catch(error){

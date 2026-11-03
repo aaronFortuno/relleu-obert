@@ -32,7 +32,7 @@ function byId(nodes,label,errors){
   return result;
 }
 
-function meshReport(mesh,id,name){
+function meshReport(mesh,id,name,heightMm){
   const coords=many(mesh.vertices?.vertex),triangles=many(mesh.triangles?.triangle);
   const vertices=new Float32Array(coords.length*3),faces=new Uint32Array(triangles.length*3);
   for(let i=0;i<coords.length;i++)for(const [j,key] of ['x','y','z'].entries())vertices[i*3+j]=decimal(attr(coords[i],key));
@@ -40,10 +40,18 @@ function meshReport(mesh,id,name){
     const index=integer(attr(triangles[i],key));
     faces[i*3+j]=index!==null&&index<coords.length?index:0xffffffff;
   }
-  return auditPart({id,name,vertices,faces});
+  let crossingTriangles=0;
+  if(heightMm!==undefined){
+    for(let i=0;i<faces.length;i+=3){
+      const a=vertices[faces[i]*3+2],b=vertices[faces[i+1]*3+2],c=vertices[faces[i+2]*3+2];
+      if(Math.min(a,b,c)<=heightMm&&Math.max(a,b,c)>=heightMm)crossingTriangles++;
+    }
+  }
+  return {geometry:auditPart({id,name,vertices,faces}),crossingTriangles};
 }
 
-export function auditThreeMF(bytes){
+export function auditThreeMF(bytes,{heightMm}={}){
+  if(heightMm!==undefined&&!Number.isFinite(heightMm))throw Error('L’alçada de consulta ha de ser un nombre finit en mil·límetres.');
   if(!(bytes instanceof Uint8Array)||bytes.length>MAX_3MF_AUDIT_BYTES)throw Error('Cal un 3MF de fins a 8 MiB comprimits.');
   const found=new Set();
   const files=unzipSync(bytes,{filter:({name,originalSize})=>{
@@ -60,6 +68,8 @@ export function auditThreeMF(bytes){
   const report={schemaVersion:1,dialect:files[CONFIG]||files[PROJECT]||bambuMarker?'bambu':'3mf-core',
     valid:false,errors,parts,overlapCandidates,
     scope:'Malla indexada i assignació de materials de Relleu Obert. Els encavalcaments de caixes són candidats, sense mesura d’intersecció. No simula el laminador.'};
+  if(heightMm!==undefined)report.heightQuery={heightMm,parts:[],
+    scope:'Triangles que toquen el pla Z a les coordenades del model. Inclou les cares coplanàries. No calcula la secció del laminador.'};
   if(attr(model,'unit')!=='millimeter')errors.push('La unitat del model ha de ser el mil·límetre.');
   if(!many(rels.Relationship).some(r=>attr(r,'Target')==='/'+MODEL&&attr(r,'Type')==='http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel'))
     errors.push('Falta la relació principal del model 3MF.');
@@ -103,7 +113,7 @@ export function auditThreeMF(bytes){
   for(const [id,object] of meshes){
     const name=attr(object,'name')||'Peça '+id,groupId=integer(attr(object,'pid')),index=integer(attr(object,'pindex'));
     const group=many(materials.get(groupId)?.base),base=index===null?undefined:group[index],color=attr(base,'displaycolor');
-    const partErrors=[],geometry=meshReport(object.mesh,id,name);
+    const partErrors=[],{geometry,crossingTriangles}=meshReport(object.mesh,id,name,heightMm);
     if(!base||!/^#[\da-f]{8}$/i.test(color??'')||index>=meshes.length)partErrors.push('Material 3MF absent o invàlid.');
     const assignment=groupId+':'+index;
     if(assigned.has(assignment))partErrors.push('Assignació de material repetida.');
@@ -124,7 +134,9 @@ export function auditThreeMF(bytes){
       }
     }
     if(geometry.empty)partErrors.push('La peça no conté triangles.');
-    parts.push({id,name,material:{groupId,index,color:color??null,extruder,paint},geometry,errors:partErrors});
+    const material={groupId,index,color:color??null,extruder,paint};
+    parts.push({id,name,material,geometry,errors:partErrors});
+    if(crossingTriangles)report.heightQuery.parts.push({id,name,material,crossingTriangles});
   }
   for(let i=0;i<parts.length;i++)for(let j=i+1;j<parts.length;j++){
     const a=parts[i],b=parts[j],box=a.geometry.bbox,other=b.geometry.bbox;
