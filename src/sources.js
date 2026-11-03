@@ -2,6 +2,7 @@ import {VectorTile} from '@mapbox/vector-tile';
 import Pbf from 'pbf';
 import {inCatalonia,fetchOfficialBuildings,combineBuildings} from './buildings.js';
 import {loadTerrain,loadBridgeTerrain,oceanTilePredicate} from './terrain-provider.js';
+import {loadReliefCoverage,RELIEF_COVERAGE_SOURCE} from './relief-coverage.js';
 import {extendBridgeTiles} from './bridge-tile-coverage.js';
 import {regionTileCount,MAX_REGION_TILES} from './region-limits.js';
 import {loadBuildingsRecoverably} from './building-recovery.js';
@@ -56,7 +57,7 @@ export function applyBuildingLayer(region,layer){
   region.meta={...region.meta,buildings:layer.metadata,buildingSource:layer.source,sourceWarnings:[...(region.terrainWarnings||[]),...layer.warnings],localSources:{...region.meta.localSources,buildings:layer.source==='local'?layer.metadata:null}};
   return region;
 }
-export async function loadRegion({sample=true,bbox,buildingSource,decodeElevation=decodeDEM,localDEM,localBuildings,buildingFallbacks=[],onTiming},progress=()=>{}){
+export async function loadRegion({sample=true,bbox,buildingSource,decodeElevation=decodeDEM,localDEM,localBuildings,buildingFallbacks=[],onTiming,pureRelief=false},progress=()=>{}){
   async function time(phase,run,details={}){
     if(!onTiming)return run();
     const start=performance.now();
@@ -68,6 +69,27 @@ export async function loadRegion({sample=true,bbox,buildingSource,decodeElevatio
     }finally{
       onTiming({phase,milliseconds:performance.now()-start,ok,...details});
     }
+  }
+  if(pureRelief){
+    if(!Array.isArray(bbox)||bbox.length!==4||!bbox.every(Number.isFinite)||bbox[0]>=bbox[2]||bbox[1]>=bbox[3]||
+      bbox[0]<-180||bbox[2]>180||bbox[1]<-70||bbox[3]>70||bbox[2]-bbox[0]>2||bbox[3]-bbox[1]>1)
+      throw Error('Retall fora dels límits de Relleu pur.');
+    const terrain=await time('source.terrain',()=>loadTerrain(bbox,decodeElevation,fetch,progress,undefined,{zooms:[14,13,12,11,10],maxTiles:16}));
+    let coverage=[];
+    const warnings=terrain.warnings.slice();
+    progress('Carregant la cobertura de sòl nu i neu o gel…');
+    try{
+      coverage=await time('source.relief-coverage',()=>loadReliefCoverage(bbox));
+      if(coverage.length){
+        warnings.push('ESA WorldCover 2021: gris per sòl nu o amb vegetació escassa i blanc per neu o gel cartografiat.');
+        const [w,s,e,n]=coverage[0].bbox;
+        if(bbox[0]<w||bbox[1]<s||bbox[2]>e||bbox[3]>n)warnings.push('Fora del retall cartografiat del pilot, el relleu es mostra en un color neutre.');
+      }else warnings.push('Aquest retall és fora de la cobertura de colors del pilot de l’Aneto.');
+    }catch{warnings.push('No s’ha pogut carregar la cobertura de sòl nu i neu o gel. Es mostra el relleu en un color neutre.');}
+    const meta={bbox,name:'Relleu pur',date:new Date().toISOString(),terrain:terrain.metadata,tiles:terrain.tiles.map(({z,x,y})=>({z,x,y})),
+      coverage:{...RELIEF_COVERAGE_SOURCE,available:!!coverage.length,tiles:coverage.map(t=>t.tile)},
+      buildings:{count:0},buildingSource:null,sourceWarnings:warnings,pureRelief:true};
+    return {meta,features:[],dem:terrain.tiles,coverage,terrainWarnings:warnings};
   }
   const base=(import.meta.env?.BASE_URL||'./')+'data/';
   if(typeof sample==='string'&&!recommendedPlace(sample))throw Error('Exemple desconegut.');

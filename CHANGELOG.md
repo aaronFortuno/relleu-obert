@@ -1,5 +1,11 @@
 # Canvis
 
+## v0.19.16 — 2026-11-03
+
+- Mode Relleu pur d’1:10.000 a 1:100.000, sense consultes de vies ni edificis.
+- Mostra de l’Aneto amb sòl nu i neu o gel segons ESA WorldCover 2021. [Mesures del pilot](work/RO-055-RELLEU-PUR.md).
+- Perfils suaus activats per defecte al model complet.
+
 ## v0.19.15 — 2026-11-03
 
 - RO-053: les unions de grans capes viàries es fan per grups i s’evita tornar a retallar les petjades completament interiors. L’informe de temps separa les operacions de polígons.

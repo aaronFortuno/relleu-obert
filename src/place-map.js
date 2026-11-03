@@ -5,6 +5,7 @@ import {recommendedPlace,DEFAULT_PLACE,placeSelection} from './recommended-place
 import {maxRegionScale,regionTileCount,MAX_REGION_TILES} from './region-limits.js';
 
 export const MAX_PROJECT_SCALE=20000;
+export const PURE_SCALE_RANGE=[10000,100000];
 
 export function createPlaceMap(container,{onChange,onName,width=150,height=150}){
   const map=L.map(container,{zoomControl:true,attributionControl:true,zoomSnap:0,zoomAnimation:false,scrollWheelZoom:true,minZoom:4,maxZoom:18}).setView(recommendedPlace(DEFAULT_PLACE).center,15);
@@ -23,29 +24,36 @@ export function createPlaceMap(container,{onChange,onName,width=150,height=150})
   container.append(reset);
   L.DomEvent.disableClickPropagation(handle);
   L.DomEvent.disableClickPropagation(reset);
-  let physical=[width,height],lastBBox,lastBase=placeSelection(DEFAULT_PLACE,width,height),pendingFit,rotation=0,lastRotation,restoring=false,retainedBase=null,gesture=null,locked=false;
+  let physical=[width,height],lastBBox,lastBase=placeSelection(DEFAULT_PLACE,width,height),pendingFit,rotation=0,lastRotation,restoring=false,retainedBase=null,gesture=null,locked=false,pureRelief=false;
   map.on('zoomstart',()=>{if(!restoring)retainedBase=null;});
   function frameSize(){const w=container.clientWidth,h=container.clientHeight,r=physical[0]/physical[1],a=rotation*Math.PI/180,c=Math.abs(Math.cos(a)),s=Math.abs(Math.sin(a)),fw=Math.min((w-46)/(c+s/r),(h-54)/(s+c/r));return [fw,fw/r];}
   function scaleBox(center,denominator){
     return physicalBBox(center,physical[0]*denominator/1e6,physical[1]*denominator/1e6);
   }
   function getScaleLimit(center){
+    if(pureRelief)return PURE_SCALE_RANGE[1];
     if(Math.abs(center[0])>70)return MAX_PROJECT_SCALE;
     const envelope=selectionPose(scaleBox(center,MAX_PROJECT_SCALE),rotation).bbox;
     if(regionTileCount(envelope)<=MAX_REGION_TILES)return MAX_PROJECT_SCALE;
     return Math.min(MAX_PROJECT_SCALE,maxRegionScale(center,...physical,rotation)||MAX_PROJECT_SCALE);
   }
-  function widestBox(center){
-    return scaleBox(center,getScaleLimit(center));
+  function limitBox(bbox){
+    const p=selectionPose(bbox),scale=p.widthM*1000/physical[0],maximum=getScaleLimit(p.center);
+    if(scale>maximum+1e-6)return scaleBox(p.center,maximum);
+    if(pureRelief&&scale<PURE_SCALE_RANGE[0]-1e-6)return scaleBox(p.center,PURE_SCALE_RANGE[0]);
+    return bbox;
   }
   function limitZoom(center){
     if(!container.clientWidth||!container.clientHeight)return;
-    const [w,s,e,n]=widestBox(center),[fw,fh]=frameSize();
-    const span=map.project([s,e],0).subtract(map.project([n,w],0));
-    const minimum=Math.max(4,map.getScaleZoom(Math.min(fw/span.x,fh/span.y),0));
+    const [fw,fh]=frameSize();
+    const zoomAt=denominator=>{
+      const [w,s,e,n]=scaleBox(center,denominator),span=map.project([s,e],0).subtract(map.project([n,w],0));
+      return map.getScaleZoom(Math.min(fw/span.x,fh/span.y),0);
+    };
     const prior=restoring;
     restoring=true;
-    map.setMinZoom(minimum);
+    map.setMinZoom(Math.max(4,zoomAt(getScaleLimit(center))));
+    map.setMaxZoom(pureRelief?Math.min(18,zoomAt(PURE_SCALE_RANGE[0])):18);
     restoring=prior;
   }
   function baseSelection(){
@@ -55,21 +63,16 @@ export function createPlaceMap(container,{onChange,onName,width=150,height=150})
       frame.style.width=Math.abs(b.x-a.x)+'px';frame.style.height=Math.abs(b.y-a.y)+'px';
     }
     if(retainedBase){
-      const p=selectionPose(retainedBase);
-      if(p.widthM*1000/physical[0]>getScaleLimit(p.center)+1e-6)retainedBase=widestBox(p.center);
+      retainedBase=limitBox(retainedBase);
       drawBounds(retainedBase);return retainedBase;
     }
     // A collapsed accordion has no pixel dimensions. Keep its geographic selection.
     const w=container.clientWidth,h=container.clientHeight,[fw,fh]=frameSize();
     frame.style.width=fw+'px';frame.style.height=fh+'px';
     const a=map.containerPointToLatLng([(w-fw)/2,(h+fh)/2]),b=map.containerPointToLatLng([(w+fw)/2,(h-fh)/2]);
-    const bounds=[a.lng,a.lat,b.lng,b.lat],p=selectionPose(bounds);
-    if(p.widthM*1000/physical[0]>getScaleLimit(p.center)){
-      const limited=widestBox(p.center);
-      drawBounds(limited);
-      return limited;
-    }
-    return bounds;
+    const bounds=[a.lng,a.lat,b.lng,b.lat],limited=limitBox(bounds);
+    if(limited!==bounds)drawBounds(limited);
+    return limited;
   }
   function pose(){const b=baseSelection();if(!b)return null;lastBase=b;return selectionPose(b,rotation);}
   const selection=()=>pose()?.bbox;
@@ -88,7 +91,7 @@ export function createPlaceMap(container,{onChange,onName,width=150,height=150})
   map.on('moveend zoomend',changed);
   function fit(bbox){
     const p=selectionPose(bbox);
-    if(p.widthM*1000/physical[0]>getScaleLimit(p.center)+1e-6)bbox=widestBox(p.center);
+    bbox=limitBox(bbox);
     retainedBase=bbox;if(!container.clientWidth||!container.clientHeight){pendingFit=bbox;changed();return;}
     const w=container.clientWidth,h=container.clientHeight,[fw,fh]=frameSize();
     const prior=restoring;restoring=true;pendingFit=null;
@@ -136,7 +139,7 @@ export function createPlaceMap(container,{onChange,onName,width=150,height=150})
   };
   reset.onclick=()=>setRotation(0);
   drawRotation(0);
-  return {map,getBBox:selection,getPose:pose,getScaleLimit,setRotation,setLocked(value){locked=value;handle.disabled=value;reset.disabled=value||rotation===0;},setScale(value){fit(scaledBBox(pose().center,...physical,value));},setSize(w,h){const previous=pose();physical=[w,h];fit(physicalBBox(previous.center,previous.heightM*w/h/1000,previous.heightM/1000));},setRegion:fit,async search(text){
+  return {map,getBBox:selection,getPose:pose,getScaleLimit,setRotation,setLocked(value){locked=value;handle.disabled=value;reset.disabled=value||rotation===0;},setPureRelief(value){const previous=baseSelection();pureRelief=value;fit(previous);},setScale(value){fit(scaledBBox(pose().center,...physical,value));},setSize(w,h){const previous=pose();physical=[w,h];fit(physicalBBox(previous.center,previous.heightM*w/h/1000,previous.heightM/1000));},setRegion:fit,async search(text){
     const coordinate=parseCoordinates(text);if(coordinate){map.setView([coordinate.lat,coordinate.lon],map.getZoom(),{animate:false});onName(text);return null;}
     const cacheKey='relleu-search:'+text.trim().toLowerCase();let cached;try{cached=JSON.parse(sessionStorage.getItem(cacheKey));}catch{}
     if(cached)return cached;

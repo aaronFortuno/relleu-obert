@@ -1,5 +1,6 @@
 import {lonLatTile} from './elevation.js';
 import {polygonOps} from './polygon-ops.js';
+import {regionTileCount} from './region-limits.js';
 function tilesAt(bbox,z){const a=lonLatTile(bbox[0],bbox[3],z),b=lonLatTile(bbox[2],bbox[1],z),out=[];for(let x=Math.floor(a[0]);x<=Math.floor(b[0]);x++)for(let y=Math.floor(a[1]);y<=Math.floor(b[1]);y++)out.push({z,x,y});return out;}
 export function oceanTilePredicate(features,bbox){
   const pc=polygonOps(1e-10),polygons=[];
@@ -36,13 +37,14 @@ export async function loadBridgeTerrain(vectorTiles,terrain,decode,fetcher=fetch
   return {tiles,failed};
 }
 
-export async function loadTerrain(bbox,decode,fetcher=fetch,progress=()=>{},isOcean=()=>false){
-  const attempts=[14,12].flatMap(z=>providers.map(p=>({...p,z})));
+export async function loadTerrain(bbox,decode,fetcher=fetch,progress=()=>{},isOcean=()=>false,{zooms=[14,12],maxTiles=Infinity}={}){
+  const attempts=zooms.filter(z=>maxTiles===Infinity||regionTileCount(bbox,z)<=maxTiles).map(z=>({z,coordinates:tilesAt(bbox,z)}))
+    .flatMap(({z,coordinates})=>providers.map(p=>({...p,z,coordinates})));
   const failures=[];
   for(const attempt of attempts){
     try{
-      const tiles=[];let oceanTiles=0;for(const t of tilesAt(bbox,attempt.z)){
-        progress(`Carregant relleu · ${attempt.provider}…`);
+      const tiles=[];let oceanTiles=0;for(const t of attempt.coordinates){
+        progress(`Carregant relleu ${tiles.length+1}/${attempt.coordinates.length} · ${attempt.provider}…`);
         const r=await fetcher(attempt.url(t),{signal:AbortSignal.timeout(15000)});if(!r.ok){if(r.status===404&&isOcean(t)){tiles.push({...t,size:512,elev:new Float32Array(512*512)});oceanTiles++;continue;}throw Error(`HTTP ${r.status}`);}
         const decoded=await decode(await r.blob(),t);
         if(!decoded.elev.some(Number.isFinite)){if(isOcean(t)){tiles.push({...t,size:512,elev:new Float32Array(512*512)});oceanTiles++;continue;}throw Error('La font no conté altituds vàlides.');}

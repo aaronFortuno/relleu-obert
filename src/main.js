@@ -2,9 +2,9 @@ import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {loadRegion,loadBuildingLayer,applyBuildingLayer,defaultBuildingSource} from './sources.js';
 import {inCatalonia} from './buildings.js';
-import {createPlaceMap,MAX_PROJECT_SCALE} from './place-map.js';
+import {createPlaceMap,MAX_PROJECT_SCALE,PURE_SCALE_RANGE} from './place-map.js';
 import {CATEGORIES,PALETTES,defaultAssignments} from './materials.js';
-import {SIZE_PRESETS,tilePlan} from './selection.js';
+import {SIZE_PRESETS,tilePlan,scaledBBox} from './selection.js';
 import {cutGuideSegments} from './cut-guides.js';
 import {regionLimitMessage} from './region-limits.js';
 import {initDialogs} from './dialogs.js';
@@ -50,10 +50,12 @@ let materialCount=4,assignments=defaultAssignments(4);
 let selectedSize=null,exampleSelection=null;
 let selectedPose,tooLargeRegion=false,pendingBuildingLayer=null,icgcAvailable=true,buildingSourceExplicit=false;
 const size=()=>SIZE_PRESETS[selectedSize];
+const pureSelected=()=>$('#pure-relief').checked;
+const isPure=m=>!!m?.provenance.options.pureRelief;
 const vegetation=()=>({trees:$('#trees').checked,density:2.5,brushDensity:Number($('#density').value),treeType:$('#tree-type').value,strokes});
 const say=(message,error=false)=>{$('#status').textContent=message;$('#status').classList.toggle('error',error);};
 const badge=message=>{$('#model-badge').textContent=message;$('#model-badge').hidden=!message;};
-function lock(value){busy=value;const updating=value||pendingVegetation;syncStepActions(updating);$('#road-rise').disabled=updating;$('#rail-rise').disabled=updating;$('#estimated-tunnels').disabled=updating;$('#major-profiles').disabled=updating;$('#building-source').disabled=updating;$('#building-mode').disabled=updating;$('#building-height').disabled=updating||$('#building-mode').value!=='limited';$('#model-scale').disabled=updating;placeMap.setLocked(updating);$('#recommended-place').disabled=updating;$('#new-project').disabled=updating;syncExport(updating||!model);for(const b of document.querySelectorAll('[data-brush]'))b.disabled=b.dataset.brush!=='navigate'&&(updating||needsBuild||!model||!$('#trees').checked||model?.provenance.treeRepresentation?.omittedBelowThreshold);view.setAttribute('aria-busy',String(updating));$('#work-indicator').hidden=!updating;$('#work-label').textContent=drawing?'Acaba el traç per aplicar-lo':value?(stagedBuild?.label||(job==='vegetation'?'Actualitzant la vegetació…':job==='buildings'?'Actualitzant els edificis…':job==='transport'?'Actualitzant les vies…':job==='accessory'?'Preparant el complement…':job==='export'?'Preparant el fitxer…':'Generant el model…')):'Aplicant el traç de vegetació…';view.classList.toggle('is-working',updating&&!drawing);if(updating&&!drawing)$('#brush-cursor').hidden=true;editButtons();syncPresentationUI();}
+function lock(value){busy=value;const updating=value||pendingVegetation;syncStepActions(updating);$('#pure-relief').disabled=updating;$('#road-rise').disabled=updating;$('#rail-rise').disabled=updating;$('#estimated-tunnels').disabled=updating;$('#major-profiles').disabled=updating;$('#building-source').disabled=updating;$('#building-mode').disabled=updating;$('#building-height').disabled=updating||$('#building-mode').value!=='limited';$('#model-scale').disabled=updating;placeMap.setLocked(updating);$('#recommended-place').disabled=updating;$('#new-project').disabled=updating;syncExport(updating||!model);for(const b of document.querySelectorAll('[data-brush]'))b.disabled=b.dataset.brush!=='navigate'&&(updating||needsBuild||!model||!$('#trees').checked||model?.provenance.treeRepresentation?.omittedBelowThreshold);view.setAttribute('aria-busy',String(updating));$('#work-indicator').hidden=!updating;$('#work-label').textContent=drawing?'Acaba el traç per aplicar-lo':value?(stagedBuild?.label||(job==='vegetation'?'Actualitzant la vegetació…':job==='buildings'?'Actualitzant els edificis…':job==='transport'?'Actualitzant les vies…':job==='accessory'?'Preparant el complement…':job==='export'?'Preparant el fitxer…':'Generant el model…')):'Aplicant el traç de vegetació…';view.classList.toggle('is-working',updating&&!drawing);if(updating&&!drawing)$('#brush-cursor').hidden=true;editButtons();syncPresentationUI();}
 function markDirty(){
   dirty=!!region&&!sameBounds(selection,region.meta.bbox);
   if(dirty||model&&selectedPose.rotation!==model.provenance.options.selectionPose?.rotation)requireBuild('Selecció pendent de generar');
@@ -98,9 +100,19 @@ controls.addEventListener('change',invalidateView);
 $('#presentation-toggle').onclick=()=>{if(!model||busy||pendingVegetation||drawing||contextLost)return;try{if(presentationMode.isActive()){leavePresentation();return;}endVegetationEditing();renderer.setAnimationLoop(null);presentationMode.enter(model);presentationReduced=false;demandRenderer.start();syncPresentationUI();say('Vista de presentació activada.');}catch(e){leavePresentation(e);}};
 renderer.domElement.addEventListener('webglcontextlost',event=>{event.preventDefault();contextLost=true;demandRenderer.stop();renderer.setAnimationLoop(null);syncPresentationUI();say('La previsualització està recuperant-se. El model numèric es conserva.',true);});
 renderer.domElement.addEventListener('webglcontextrestored',()=>{contextLost=false;if(presentationMode.isActive()){presentationMode.refreshBounds(stagedBuild?.preview||model);demandRenderer.start();}else if(model||stagedBuild?.preview)renderer.setAnimationLoop(renderWorkshop);syncPresentationUI();say('Previsualització recuperada.');});
-function recolor(){for(const mesh of group.children){const index=CATEGORIES.findIndex(c=>c.id===mesh.name);if(index>=0)mesh.material.color.set(PALETTES[materialCount][assignments[index]]);}legend();metrics();invalidateView();}
-function legend(){const root=$('#material-legend');root.replaceChildren();CATEGORIES.forEach((category,i)=>{const row=document.createElement('div');row.className='material-row'+(model&&!model.categories.some(p=>p.id===category.id)?' absent':'');const swatch=document.createElement('i');swatch.style.setProperty('--swatch',PALETTES[materialCount][assignments[i]]);const label=document.createElement('span');label.textContent=category.name;const select=document.createElement('select');select.setAttribute('aria-label','Material de '+category.name);for(let j=0;j<materialCount;j++)select.add(new Option('Mat. '+(j+1),String(j)));select.value=assignments[i];select.onchange=()=>{assignments[i]=Number(select.value);recolor();};row.append(swatch,label,select);root.appendChild(row);});}
-function metrics(){if(!model)return;const used=new Set(model.categories.map(p=>assignments[CATEGORIES.findIndex(c=>c.id===p.id)])).size;$('#metrics').innerHTML=`<div><strong>${model.width.toFixed(0)} × ${model.height.toFixed(0)}</strong><span>Mida final · mm</span></div><div><strong>1:${model.scale.toLocaleString('ca')}</strong><span>Escala horitzontal</span></div><div><strong>${model.treeCount.toLocaleString('ca')}</strong><span>Volums de vegetació</span></div><div><strong>${used} / ${materialCount}</strong><span>Materials amb geometria</span></div><div><strong>${model.buildingCount.toLocaleString('ca')}</strong><span>Fragments d’edificis</span></div><div><strong>×${Number(model.provenance.verticalExaggeration).toLocaleString('ca')}</strong><span>Exageració vertical</span></div><div class="metric-wide"><strong>${model.triangles.toLocaleString('ca')}</strong><span>Triangles · complexitat de la malla</span></div>`;}
+function recolor(){if(!(stagedBuild?.preview?stagedBuild.pureRelief:isPure(model)))for(const mesh of group.children){const index=CATEGORIES.findIndex(c=>c.id===mesh.name);if(index>=0)mesh.material.color.set(PALETTES[materialCount][assignments[index]]);}legend();metrics();invalidateView();}
+function legend(){const root=$('#material-legend');root.replaceChildren();const pure=isPure(model);
+  $('#material-count').hidden=$('#material-count-label').hidden=pure;
+  if(pure){
+    for(const part of model.categories){
+      const row=document.createElement('div'),swatch=document.createElement('i'),label=document.createElement('span');
+      row.className='material-row';swatch.style.setProperty('--swatch',part.color);label.textContent=part.name;
+      row.append(swatch,label);root.append(row);
+    }
+    return;
+  }
+  CATEGORIES.forEach((category,i)=>{const row=document.createElement('div');row.className='material-row'+(model&&!model.categories.some(p=>p.id===category.id)?' absent':'');const swatch=document.createElement('i');swatch.style.setProperty('--swatch',PALETTES[materialCount][assignments[i]]);const label=document.createElement('span');label.textContent=category.name;const select=document.createElement('select');select.setAttribute('aria-label','Material de '+category.name);for(let j=0;j<materialCount;j++)select.add(new Option('Mat. '+(j+1),String(j)));select.value=assignments[i];select.onchange=()=>{assignments[i]=Number(select.value);recolor();};row.append(swatch,label,select);root.appendChild(row);});}
+function metrics(){if(!model)return;const pure=isPure(model),used=pure?model.categories.length:new Set(model.categories.map(p=>assignments[CATEGORIES.findIndex(c=>c.id===p.id)])).size;$('#metrics').innerHTML=`<div><strong>${model.width.toFixed(0)} × ${model.height.toFixed(0)}</strong><span>Mida final · mm</span></div><div><strong>1:${model.scale.toLocaleString('ca')}</strong><span>Escala horitzontal</span></div><div><strong>${model.treeCount.toLocaleString('ca')}</strong><span>Volums de vegetació</span></div><div><strong>${pure?used:used+' / '+materialCount}</strong><span>Materials amb geometria</span></div><div><strong>${model.buildingCount.toLocaleString('ca')}</strong><span>Fragments d’edificis</span></div><div><strong>×${Number(model.provenance.verticalExaggeration).toLocaleString('ca')}</strong><span>Exageració vertical</span></div><div class="metric-wide"><strong>${model.triangles.toLocaleString('ca')}</strong><span>Triangles · complexitat de la malla</span></div>`;}
 function dispose(mesh){mesh.geometry.dispose();mesh.material.dispose();group.remove(mesh);}
 function addModelMesh(part){
   const geometry=new THREE.BufferGeometry();
@@ -108,7 +120,7 @@ function addModelMesh(part){
   geometry.setIndex(new THREE.BufferAttribute(part.faces,1));
   geometry.computeVertexNormals();
   const index=CATEGORIES.findIndex(category=>category.id===part.id);
-  const mesh=new THREE.Mesh(geometry,new THREE.MeshStandardMaterial({color:PALETTES[materialCount][assignments[index]],roughness:.85,flatShading:true}));
+  const mesh=new THREE.Mesh(geometry,new THREE.MeshStandardMaterial({color:(stagedBuild?.pureRelief??isPure(model))?part.color:PALETTES[materialCount][assignments[index]],roughness:.85,flatShading:true}));
   mesh.name=part.id;mesh.castShadow=true;mesh.receiveShadow=true;
   group.add(mesh);
   return mesh;
@@ -198,17 +210,17 @@ function tiling(){
   if(seams&&!presentationMode?.isActive())seams.visible=!stagedBuild?.preview;
   refreshPresentation(stagedBuild?.preview||model);
 }
-function modelOptions(){const [widthMM,heightMM]=size();return {size:Math.max(widthMM,heightMM),widthMM,heightMM,exaggeration:Number($('#exag').value),resolution:Number($('#detail').value),roadRise:Number($('#road-rise').value),railRise:Number($('#rail-rise').value),estimatedTunnels:$('#estimated-tunnels').checked,majorRoads:$('#major-profiles').checked,smoothProfiles:true,targetScale:null,selectionPose:selectedPose,buildingMode:$('#building-mode').value,maxBuildingHeight:Number($('#building-height').value),...vegetation()};}
-function configurationKey(o){return JSON.stringify([o.widthMM,o.heightMM,o.exaggeration,o.resolution,o.roadRise??0,o.railRise??0,o.estimatedTunnels??true,o.majorRoads??false,o.targetScale,o.selectionPose?.center,o.selectionPose?.widthM,o.selectionPose?.heightM,o.selectionPose?.rotation,o.buildingMode,o.maxBuildingHeight]);}
+function modelOptions(){const [widthMM,heightMM]=size(),pureRelief=pureSelected(),detail=Number($('#detail').value);return {pureRelief,size:Math.max(widthMM,heightMM),widthMM,heightMM,exaggeration:Number($('#exag').value),resolution:pureRelief?({24:56,36:72,56:96})[detail]:detail,roadRise:Number($('#road-rise').value),railRise:Number($('#rail-rise').value),estimatedTunnels:!pureRelief&&$('#estimated-tunnels').checked,majorRoads:!pureRelief&&$('#major-profiles').checked,smoothProfiles:true,targetScale:null,selectionPose:selectedPose,buildingMode:pureRelief?'none':$('#building-mode').value,maxBuildingHeight:Number($('#building-height').value),...vegetation(),...(pureRelief?{trees:false,strokes:[]}:{})};}
+function configurationKey(o){return JSON.stringify([!!o.pureRelief,o.widthMM,o.heightMM,o.exaggeration,o.resolution,o.roadRise??0,o.railRise??0,o.estimatedTunnels??true,o.majorRoads??false,o.targetScale,o.selectionPose?.center,o.selectionPose?.widthM,o.selectionPose?.heightM,o.selectionPose?.rotation,o.buildingMode,o.maxBuildingHeight]);}
 function sameTerrain(options,includeTransport=true){
-  const old=model?.provenance.options;if(!old||dirty)return false;
+  const old=model?.provenance.options;if(!old||dirty||options.pureRelief!==!!old.pureRelief)return false;
   const a=options.selectionPose,b=old.selectionPose;return ['widthMM','heightMM','exaggeration','resolution','targetScale',...(includeTransport?['roadRise','railRise','estimatedTunnels','majorRoads']:[])].every(k=>options[k]===old[k])&&a&&b&&['widthM','heightM','rotation'].every(k=>Math.abs(a[k]-b[k])<1e-6)&&a.center.every((v,i)=>Math.abs(v-b.center[i])<1e-10);
 }
 function syncBuildingSources(bbox){
   const available=inCatalonia(bbox),select=$('#building-source');select.querySelector('[value=icgc]').disabled=!available;
   if(available!==icgcAvailable){const before=select.value;if(!buildingSourceExplicit||select.value==='icgc'&&!available)select.value=defaultBuildingSource(bbox);if(region&&before!==select.value)buildingSourceDirty=true;icgcAvailable=available;}
 }
-function buildingInfo(){sourceSummary();const b=region.meta.buildings;if(region.meta.buildingSource==='osm3d'){$('#building-info').textContent=b.roofSourceUnavailable?'Cobertes originals no disponibles; alternativa OSM simplificada.':'OpenStreetMap original · cobertes i parts segons dades disponibles.';return;}$('#building-info').textContent=b.officialCount?'ICGC: '+b.officialCount+' elements; '+b.osmRetained+' fragments OSM complementaris.':b.provider==='GeoJSON local'?'GeoJSON local: '+b.count+' elements.':b.partCount!=null?'Catastre: '+b.partCount+' parts consultades; '+b.count+' volums sobre rasant. Altures estimades; sense dades de coberta.':'OpenStreetMap via OpenFreeMap.';}
+function buildingInfo(){sourceSummary();if(isPure(model)){$('#building-info').textContent='Relleu pur · cobertura del sòl.';return;}const b=region.meta.buildings;if(region.meta.buildingSource==='osm3d'){$('#building-info').textContent=b.roofSourceUnavailable?'Cobertes originals no disponibles; alternativa OSM simplificada.':'OpenStreetMap original · cobertes i parts segons dades disponibles.';return;}$('#building-info').textContent=b.officialCount?'ICGC: '+b.officialCount+' elements; '+b.osmRetained+' fragments OSM complementaris.':b.provider==='GeoJSON local'?'GeoJSON local: '+b.count+' elements.':b.partCount!=null?'Catastre: '+b.partCount+' parts consultades; '+b.count+' volums sobre rasant. Altures estimades; sense dades de coberta.':'OpenStreetMap via OpenFreeMap.';}
 async function generate(autoTransport=false){
   if(busy||pendingVegetation||drawing||tooLargeRegion||!selection||!selectedSize)return;
   if(processingRun)finishProcessing(Error('La generació següent ha substituït l’actualització pendent.'));
@@ -218,36 +230,36 @@ async function generate(autoTransport=false){
   job=autoTransport?'transport':'build';lock(true);pendingVegetation=false;pendingBuildingLayer=null;pendingFullRegion=null;pendingCadastralBuild=false;recoveryNotice='';
   pendingBrushFrame=null;
   const options=modelOptions(),requestedName=placeName;
-  const reload=dirty||!region;
-  const useSample=exampleSelection?.id||false;
+  const reload=dirty||!region||options.pureRelief!==isPure(model);
+  const useSample=!options.pureRelief&&(exampleSelection?.id||false);
   const applied=model?.provenance.options;
-  const transportOnly=autoTransport&&!reload&&!buildingSourceDirty&&sameTerrain(options,false)&&
+  const transportOnly=!options.pureRelief&&autoTransport&&!reload&&!buildingSourceDirty&&sameTerrain(options,false)&&
     ['buildingMode','maxBuildingHeight','trees','treeType'].every(key=>options[key]===applied[key]);
   if(transportOnly){
     say('Actualitzant les vies sobre el terreny actual…');
     worker.postMessage({type:'transport',options:{roadRise:options.roadRise,railRise:options.railRise,estimatedTunnels:options.estimatedTunnels,majorRoads:options.majorRoads}});
     return;
   }
-  const incremental=!reload&&sameTerrain(options);
-  if(!incremental){pendingBrushFrame=brushHistory.prepare(options,strokes);options.strokes=pendingBrushFrame.strokes;}
+  const incremental=!options.pureRelief&&!reload&&sameTerrain(options);
+  if(!incremental&&!options.pureRelief){pendingBrushFrame=brushHistory.prepare(options,strokes);options.strokes=pendingBrushFrame.strokes;}
   if(!incremental){
     const {strokes:brushStrokes,...settings}=options;
     processingRun={started:performance.now(),startedAt:new Date().toISOString(),schemaVersion:1,
       appVersion:$('#version-open').textContent.trim(),environment:'browser',
       selection:{name:requestedName,bbox:selection.slice(),mapZoom:placeMap.map.getZoom(),sample:useSample||null},
-      settings:{...settings,brushStrokeCount:brushStrokes.length,requestedBuildingSource:$('#building-source').value},
+      settings:{...settings,brushStrokeCount:brushStrokes.length,requestedBuildingSource:options.pureRelief?null:$('#building-source').value},
       reusedRegion:!reload,sources:[]};
   }
   try{
     if(reload){
       say(t('status.loadingTerrain'));
       const source=$('#building-source').value;
-      pendingCadastralBuild=source==='catastre';
-      pendingFullRegion=await loadRegion({sample:useSample,bbox:selection,buildingSource:pendingCadastralBuild?'osm':source,buildingFallbacks:[lastValidBuildings?.source,defaultBuildingSource(selection),'osm'].filter(Boolean),onTiming:event=>processingRun?.sources.push(event)},say);
+      pendingCadastralBuild=!options.pureRelief&&source==='catastre';
+      pendingFullRegion=await loadRegion({sample:useSample,bbox:selection,pureRelief:options.pureRelief,buildingSource:pendingCadastralBuild?'osm':source,buildingFallbacks:[lastValidBuildings?.source,defaultBuildingSource(selection),'osm'].filter(Boolean),onTiming:event=>processingRun?.sources.push(event)},say);
       pendingFullRegion.meta.name=requestedName;recoveryNotice=pendingFullRegion.recovery?.notice||'';
     }
     if(incremental){job='buildings';lock(true);}
-    if(!reload&&buildingSourceDirty){
+    if(!options.pureRelief&&!reload&&buildingSourceDirty){
       const source=$('#building-source').value;
       pendingBuildingLayer=await loadProjectBuildings(region,source,options,()=>incremental&&sameTerrain(options));
     }
@@ -261,12 +273,13 @@ async function generate(autoTransport=false){
       }
       const target=pendingFullRegion||region;
       needsBuild=false;say(t('status.building'));
-      const {meta,features,dem,bridgeDem,bridgeFeatures,incompleteBridgeIds,infrastructure}=target;
+      const {meta,features,dem,bridgeDem,bridgeFeatures,incompleteBridgeIds,infrastructure,coverage}=target;
       processingRun.data={bbox:meta.bbox,vectorFeatures:features.length,demTiles:dem.length,
-        extraBridgeTiles:bridgeDem?.length??0,terrainProvider:meta.terrain?.provider??(useSample?'sample':null),buildingSource:meta.buildingSource};
+        extraBridgeTiles:bridgeDem?.length??0,terrainProvider:meta.terrain?.provider??(useSample?'sample':null),buildingSource:meta.buildingSource,
+        ...(options.pureRelief?{demZoom:meta.terrain?.zoom,coverage:meta.coverage}:{})};
       processingRun.workerStartMilliseconds=performance.now()-processingRun.started;
-      stagedBuild={bbox:meta.bbox,pose:options.selectionPose};
-      worker.postMessage({type:'build',region:{meta,features,dem,bridgeDem,bridgeFeatures,incompleteBridgeIds,infrastructure},options});
+      stagedBuild={bbox:meta.bbox,pose:options.selectionPose,pureRelief:options.pureRelief};
+      worker.postMessage({type:'build',region:{meta,features,dem,bridgeDem,bridgeFeatures,incompleteBridgeIds,infrastructure,coverage},options});
     }
   }catch(e){pendingVegetation=false;recoverBuildings(e);}
 }
@@ -297,7 +310,7 @@ function recoverBuildings(error){
   say(error.message+(model?' S’han conservat el model i els ajustos d’edificis anteriors.':''),true);
 }
 
-function updateTrees(){if(!model&&!busy)return;pendingVegetation=true;lock(busy);clearTimeout(timer);if(!drawing){say('Aplicant els canvis de vegetació… Espera abans de començar un altre traç.');timer=setTimeout(flushTrees,170);}}
+function updateTrees(){if(pureSelected()||isPure(model)||!model&&!busy)return;pendingVegetation=true;lock(busy);clearTimeout(timer);if(!drawing){say('Aplicant els canvis de vegetació… Espera abans de començar un altre traç.');timer=setTimeout(flushTrees,170);}}
 function flushTrees(){if(!pendingVegetation||drawing||busy||!model)return;pendingVegetation=false;job='vegetation';lock(true);worker.postMessage({type:'vegetation',options:vegetation()});}
 let buildingsSettle=null,buildingsToken=0;
 let previewRequest=null,previewSerial=0;
@@ -365,7 +378,7 @@ async function autoBuildings(state,token){
   worker.postMessage({type:'buildings',layer,options,measureBuildings:!!processingRun?.awaitingBuildings});
   return new Promise((resolve,reject)=>{buildingsSettle={resolve,reject};});
 }
-const scheduler=createBuildingUpdateScheduler({delay:300,canAutoUpdate:()=>!!model&&!!region&&!tooLargeRegion&&sameTerrain(modelOptions()),isBusy:()=>busy||pendingVegetation||drawing,run:autoBuildings});
+const scheduler=createBuildingUpdateScheduler({delay:300,canAutoUpdate:()=>!pureSelected()&&!!model&&!!region&&!tooLargeRegion&&sameTerrain(modelOptions()),isBusy:()=>busy||pendingVegetation||drawing,run:autoBuildings});
 function requestBuildingsAuto(message){
   const phase=scheduler.notify();
   if(phase==='manual'||phase==='disposed'){requireBuild(message);return;}
@@ -388,7 +401,7 @@ worker.onmessage=({data})=>{
       region=pendingFullRegion;pendingFullRegion=null;buildingSourceDirty=false;
       startCadastre=pendingCadastralBuild;
       pendingCadastralBuild=false;
-      if(region.meta.buildingSource!=='local')$('#building-source').value=region.meta.buildingSource;
+      if(!data.model.provenance.options.pureRelief&&region.meta.buildingSource!=='local')$('#building-source').value=region.meta.buildingSource;
     }
     if(!data.vegetation){dirty=selection.some((v,i)=>Math.abs(v-region.meta.bbox[i])>1e-9);needsBuild=tooLargeRegion||dirty||configurationKey(data.model.provenance.options)!==configurationKey(modelOptions());}
     if(data.buildings&&buildingsToken&&!scheduler.isCurrent(buildingsToken)){
@@ -409,7 +422,7 @@ worker.onmessage=({data})=>{
       if(!contextLost)renderer.setAnimationLoop(renderWorkshop);
     }
     model=data.model;
-    if(!data.vegetation){acceptBuildings();buildingInfo();buildingControls();}
+    if(!data.vegetation){if(!isPure(model))acceptBuildings();buildingInfo();buildingControls();}
     const displayStarted=performance.now();
     display(model,changed,refit);
     if(processingRun&&data.timing){
@@ -418,7 +431,8 @@ worker.onmessage=({data})=>{
       else report.worker=data.timing;
       (report.displayMilliseconds??=[]).push(performance.now()-displayStarted);
       report.result={widthMM:model.width,heightMM:model.height,scale:model.scale,triangles:model.triangles,buildings:model.buildingCount,
-        trees:model.treeCount,buildingSource:region.meta.buildingSource,warnings:model.warnings};
+        trees:model.treeCount,buildingSource:region.meta.buildingSource,warnings:model.warnings,
+        coverageCells:model.provenance.coverageCells};
       if(startCadastre){report.awaitingBuildings=true;report.cadastralBlocks=[];}
       else finishProcessing();
     }
@@ -447,12 +461,34 @@ worker.onmessage=({data})=>{
   if(data.type==='download'){const zipped=data.archive||data.format==='stl',blob=new Blob([data.bytes],{type:zipped?'application/zip':'model/3mf'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=data.filename||`relleu-obert-${data.archive?'peces-':''}${data.format}${zipped?'.zip':'.3mf'}`;a.click();setTimeout(()=>URL.revokeObjectURL(url),5000);lock(false);say(data.accessory?'Complement preparat en 3MF i STL. Comprova’n el laminat i les mides.':data.archive?'Peces preparades amb els talls tancats. Consulta el plànol de muntatge del ZIP.':'Fitxer preparat. Comprova els filaments i el laminat abans d’imprimir.');flushTrees();scheduler.flush();}
 };worker.onerror=e=>{pendingVegetation=false;const error=Error('No s’ha pogut generar la maqueta: '+e.message);if(job==='build'||job==='buildings'||job==='transport')recoverBuildings(error);else{lock(false);say(error.message,true);}settleBuildings(error);};
 $('#search-form').onsubmit=async e=>{e.preventDefault();const text=$('#place-search').value.trim();if(!text)return;$('#search-results').replaceChildren();try{say(t('status.searching'));const results=await placeMap.search(text);if(results===null){say(t('status.regionChosen'));return;}for(const result of results){const b=document.createElement('button');b.type='button';b.textContent=result.label;b.onclick=()=>{placeMap.choose(result);$('#place-search').value=result.label;$('#search-results').replaceChildren();say(t('status.regionChosen'));};$('#search-results').appendChild(b);}say(results.length?t('status.chooseResult'):t('status.noResults'));}catch(error){say(error.message,true);}};
-for(const place of RECOMMENDED_PLACES)$('#recommended-place').add(new Option(place.name,place.id));
+const reliefPilot={id:'pirineus-relleu',name:'Pirineus · sector de l’Aneto',center:[42.635,.65]};
+for(const place of [...RECOMMENDED_PLACES,reliefPilot])$('#recommended-place').add(new Option(place.name,place.id));
+function applyPureRelief(){
+  const pure=pureSelected();
+  scheduler.cancel();
+  clearTimeout(transportTimer);
+  transportTimer=null;
+  endVegetationEditing();
+  $('#pure-relief-note').hidden=!pure;
+  for(const step of ['vegetation','transport','buildings'])document.querySelector(`[data-step="${step}"]`).hidden=pure;
+  if(!pure&&exampleSelection?.id===reliefPilot.id){
+    exampleSelection=null;
+    $('#recommended-place').value='';
+  }
+  placeMap.setPureRelief(pure);
+  openStep('place');
+  requireBuild('Mode de maqueta pendent de generar');
+}
+$('#pure-relief').onchange=applyPureRelief;
 $('#recommended-place').onchange=()=>{
-  const place=recommendedPlace($('#recommended-place').value);
+  const id=$('#recommended-place').value,place=id===reliefPilot.id?reliefPilot:recommendedPlace(id);
   if(!place){exampleSelection=null;placeName='Regió seleccionada';return;}
+  if(place===reliefPilot&&!pureSelected()){
+    $('#pure-relief').checked=true;
+    applyPureRelief();
+  }
   placeMap.setRotation(0);
-  const bbox=placeSelection(place.id,...size());
+  const bbox=place===reliefPilot?scaledBBox(place.center,...size(),PURE_SCALE_RANGE[1]):placeSelection(place.id,...size());
   exampleSelection={id:place.id,bbox};
   placeName=place.name;
   $('#recommended-place').value=place.id;
@@ -491,7 +527,7 @@ function scaleHint(){
   if(!selectedSize){lock(busy);return;}
   const [width,height]=size();
   const limit=selectedPose
-    ?Math.abs(selectedPose.center[0])>70?'Tria un centre entre 70° sud i 70° nord.':regionLimitMessage(selectedPose,width,height)
+    ?Math.abs(selectedPose.center[0])>70?'Tria un centre entre 70° sud i 70° nord.':pureSelected()?'':regionLimitMessage(selectedPose,width,height)
     :'';
   tooLargeRegion=!!limit;
   const info=$('#scale-info');
@@ -518,14 +554,15 @@ function scaleHint(){
 }
 const scaleInput=$('#model-scale');
 function showScaleStops(limit){
-  const ticks=$('#scale-ticks');
-  if(ticks.children.length&&scaleStops.at(-1)===limit)return;
-  scaleStops=[...preferredScaleStops.filter(stop=>stop<limit),limit];
+  const ticks=$('#scale-ticks'),preferred=pureSelected()?[PURE_SCALE_RANGE[0],20000,30000,50000,75000]:preferredScaleStops;
+  const next=[...preferred.filter(stop=>stop<limit),limit];
+  if(ticks.children.length&&next.join()===scaleStops.join())return;
+  scaleStops=next;
   scaleInput.max=scaleStops.length-1;
   ticks.replaceChildren();
   for(const [index,stop] of scaleStops.entries()){
     const mark=document.createElement('span');
-    if(index===0||index===scaleStops.length-1||index%2===0)mark.textContent=stop.toLocaleString('ca');
+    if(index===0||index===scaleStops.length-1||index%2===0&&(!pureSelected()||index<scaleStops.length-2))mark.textContent=stop.toLocaleString('ca');
     ticks.append(mark);
   }
 }
@@ -547,7 +584,7 @@ scaleInput.onkeydown=event=>{
 function sourceSummary(){
   const sources=describeSources({terrainProvider:region?.meta?.terrain?.provider,buildingSource:$('#building-source').value,pendingBuildings:buildingSourceDirty});
   $('#terrain-source-name').textContent=sources.terrain.label;
-  $('#building-source-name').textContent=sources.buildings.label+(sources.buildings.pending?' · pendent d’actualitzar':'');
+  $('#building-source-name').textContent=pureSelected()?'—':sources.buildings.label+(sources.buildings.pending?' · pendent d’actualitzar':'');
 }
 const stepNext={place:['vegetation','Vegetació'],vegetation:['transport','Vies'],transport:['buildings','Edificis']};
 function syncStepActions(updating){
@@ -555,9 +592,10 @@ function syncStepActions(updating){
   for(const button of document.querySelectorAll('[data-step-action]')){
     const step=button.dataset.stepAction;
     const autoApplying=transportTimer!==null||(busy&&job==='transport');
+    const next=pureSelected()?null:stepNext[step];
     const build=pending&&!autoApplying&&(step==='place'||!!model&&['transport','buildings'].includes(step));
-    button.hidden=!button.closest('.config-section').classList.contains('is-open')||(!build&&!stepNext[step]);
-    const label=build?(step==='place'?'Genera el model':step==='buildings'&&model&&sameTerrain(modelOptions())?'Aplica edificis':'Aplica al model'):stepNext[step]?`${stepNext[step][1]} →`:'';
+    button.hidden=!button.closest('.config-section').classList.contains('is-open')||(!build&&!next);
+    const label=build?(step==='place'?'Genera el model':step==='buildings'&&model&&sameTerrain(modelOptions())?'Aplica edificis':'Aplica al model') :next?`${next[1]} →`:'';
     if(button.textContent!==label)button.textContent=label;
     button.classList.toggle('is-build',build);
     button.disabled=updating||invalid&&(build||step==='place')||!selectedSize;
@@ -584,6 +622,7 @@ for(const button of document.querySelectorAll('[data-step-action]'))button.oncli
 };
 $('#exag').oninput=()=>{$('#exag-value').textContent='×'+Number($('#exag').value).toLocaleString('ca');requireBuild('Relleu pendent de generar');};$('#detail').onchange=()=>requireBuild('Detall pendent de generar');for(const id of ['road-rise','rail-rise','estimated-tunnels','major-profiles'])$('#'+id).onchange=requestTransport;
 function requestTransport(){
+  if(pureSelected()||isPure(model))return;
   clearTimeout(transportTimer);
   transportTimer=null;
   if(!tooLargeRegion&&sameTerrain(modelOptions(),false)){
@@ -675,7 +714,7 @@ function paint(e){if(brush==='navigate'||!model||busy||needsBuild||pendingVegeta
 function finishStroke(){if(!drawing)return;drawing=false;lastPoint=null;if(pendingVegetation)updateTrees();else lock(busy);}
 renderer.domElement.addEventListener('pointerdown',e=>{if(brush!=='navigate'&&e.button===0&&!busy&&!pendingVegetation&&!needsBuild&&model&&$('#trees').checked&&!model.provenance.treeRepresentation?.omittedBelowThreshold){drawing=true;gesture++;lastPoint=null;renderer.domElement.setPointerCapture(e.pointerId);paint(e);}});renderer.domElement.addEventListener('pointermove',paint);renderer.domElement.addEventListener('pointerup',finishStroke);renderer.domElement.addEventListener('pointercancel',finishStroke);renderer.domElement.addEventListener('lostpointercapture',finishStroke);renderer.domElement.addEventListener('pointerleave',()=>$('#brush-cursor').hidden=true);
 initI18n();initDialogs();
-$('#release-list').innerHTML=[['0.19.15','Unions viàries més ràpides, amplades segons escala i transicions més suaus als accessos.'],['0.19.14','Informe JSON de temps de generació amb retall, ajustos i durada de cada fase.'],['0.19.13','Guies de tall sobre el relleu i descàrrega de la maqueta visible quan el mapa té canvis pendents.'],['0.19.12','Progrés per fases i previsualització de relleu, vies, edificis i vegetació mentre es genera la maqueta.'],['0.19.11','Un enllaç, túnel o edifici amb geometria defectuosa pot quedar omès amb un avís mentre es genera la resta de la maqueta.'],['0.19.10','Els taulers procedimentals recuperen la continuïtat entre tessel·les i les cotes dels estreps fora del retall.'],['0.19.9','Transicions entre perfils suaus i vies sobre el terreny. Segon retall ferroviari verificat.'],['0.19.8','Perfils experimentals de vies principals i ferrocarrils. Projecte nou sobre Territori i compàs al mapa.'],['0.19.7','Catastre per blocs, amb vista provisional i avisos dels elements amb dades contradictòries.'],['0.19.6','Mides proporcionals al centre, generació des de Territori i límit d’escala d’1:20.000.'],['0.19.5','Inici guiat, exemples a Territori i escala sincronitzada amb el mapa. El retall es gira des de la cantonada.'],['0.19.4','Els ajustos de vies reutilitzen el terreny i els edificis. Es conserven els traços del pinzell i la vista.'],['0.19.3','Ajustos de vies automàtics, descàrrega ancorada amb selector de format i ferrocarrils arran de carretera per defecte.'],['0.19.2','Sis passos amb accions al costat del títol. Els traços del pinzell es conserven en canviar de retall durant la sessió. Avís quan falta espai per enllaçar un pont al límit de la maqueta.'],['0.19.1','Corregits el graó de les boques girades i els plecs dels enllaços en revolts. Controls 3MF nous i proposta navegable de flux per etapes RO-053, pendent de revisió abans d’integrar-la.'],['0.19.0','Continuïtat i amplada de la calçada revisades als enllaços amb ponts i túnels. Marc exterior retirat del menú i ajornat per a un desenvolupament posterior.'],['0.18.2','Primera optimització de les vies principals: màscares de pilars calculades només quan calen i reutilitzades. El control de 3 km passa de 189,3 a 56,6 s amb els mateixos 14 perfils. Prototip encara desactivat; controls 3MF disponibles al repositori i cas de detall baix pendent.'],['0.18.1','Túnels activats per defecte, sostre parabòlic i paviment de camí. Envolupant de vies principals preparada com a prototip, pendent d’optimitzar abans d’activar-la.'],['0.18.0','Ferrocarrils amb material propi i realç de +0,5 o +1 mm sobre els camins. Millora dels portals de túnels estimats. Nova font OSM de cobertes i parts originals, amb formes paramètriques quan hi ha dades i preservació del mode limitat pla.'],['0.17.0','Pilars adaptats a l’escala, suports auxiliars i avisos de llums. Túnels estimats amb obertures reals, en una opció experimental desactivada per defecte. Exemples automàtics, marc negre i plaques ajornades.'],['0.16.0','Ponts procedimentals a partir de la cartografia i el relleu, amb pilars i connexions. Perfils estimats entre extrems, diferenciats de les dades específiques de Rajadell. El viaducte es conserva en moure, ampliar o girar el retall.'],['0.15.1','Rajadell es conserva en retalls ampliats o desplaçats: els detalls del pont es carreguen per ubicació, també fora del botó d’exemple. Memòria cau acotada i reintent de lectures fallides. Generalització procedimental en curs.'],['0.15.0','Pilars simplificats que eviten camins i edificis, i enllaços suaus del viaducte amb la carretera. Conjunt unit abans de mostrar-lo i exportar-lo. Realç opcional dels camins de 0,5 o 1 mm de maqueta. Suports i enllaços estimats, pendents de laminat.'],['0.14.0','Primer viaducte amb superfície 3D de l’ICGC a la mostra de Manresa, separada del terreny i conservada al 3MF. Gruix simplificat, sense pilars mesurats. Llibre d’estil per a contribucions i tasques delegades. Túnel pendent de dades suficients.'],['0.13.1','Base corregida: la cota més baixa del relleu queda a 5 mm. Es conserven el desnivell, l’exageració i una referència vertical comuna a totes les capes. A la costa, el mar també queda a 5 mm.'],['0.13.0','Catastre amb consultes per quadrants i recuperació de la font anterior en fallar. Sidebars homogenis, marc coherent amb la seva exportació i sense canvis de zoom. Viaducte de l’Eix Diagonal com a mostra inicial, Tamariu al catàleg. Fletxa del nord retirada i rosa ajornada.'],['0.12.0','Vista de presentació amb taula i llum, render a demanda i retorn al taller. Fonts remotes amb resum clar i fitxers propis dins d’opcions avançades. Proves de sòlids per preparar infraestructures; ponts i coves reals pendents.'],['0.11.0','Catastre buit vàlid, pinzell amb cobertura per gest i retorn a navegació, edificis automàtics i complements independents: marc, placa educativa i fletxa del nord. Cobertes reals en estudi.'],['0.10.0','Catastre amb espera i reintent fitats, errors entenedors i model conservat en fallar. Preparació del sistema d’idiomes, només amb català disponible. Propostes de marc imprimible, etiquetes, rosa dels vents i escena realista.'],['0.9.0','Pinzell aleatori, fonts d’edificis explícites i parts del Catastre. Edificis actualitzats sense reconstruir terreny, i primeres cobertes amb atributs de la font.'],['0.8.0','Vegetació repartida per tota la zona verda, pinzell amb prioritat al límit, densitat per traç i exportació sense selectors de broquet ni tipus de filament. Estudi de parts d’edificis, cobertes, ponts i túnels.'],['0.7.0','Sidebars reorganitzats, escala en un sol camp, orientació al mapa, arbres proporcionats a l’escala i límits de càrrega coherents. Historial de tasques validades separat.'],['0.6.0','Menús sempre visibles amb scroll intern, estadístiques al sidebar, V4V i favicon, transicions, marc visual, retall girat, opcions de filament/broquet i importació local GeoTIFF/GeoJSON.'],['0.5.0','Apartats replegables, controls dins del preview i selecció per escala horitzontal fixa. Diagnòstic dels blocs d’edificis de Tamariu.'],['0.4.2','Lectura numèrica directa del relleu WebP/PNG, sense canvas, i diagnòstics de les tessel·les per investigar els pics intermitents.'],['0.4.1','Cobertes horitzontals: el límit d’altura es mesura sobre el punt més alt del terreny dins de la petjada.'],['0.4.0','Camins amb unions arrodonides, edificis limitats a 5 m per defecte o sense volum, i pinzell amb indicador de treball i un càlcul per traç.'],['0.3.0','Mapa i cerca de llocs, layout d’escriptori estable, 1–8 materials, vegetació editable i exportació en peces.'],['0.2.0','Edificis ICGC, relleu corregit, capçades variades i exportació per a Bambu Studio.'],['0.1.0','Primera maqueta de Tamariu generada al navegador amb costa vectorial i exportació 3D.']].map(([v,text])=>`<article class="release-entry"><div><strong>v${v}</strong><time>${['0.19.15','0.19.14','0.19.13','0.19.12','0.19.11','0.19.10','0.19.9','0.19.8','0.19.7','0.19.6','0.19.5','0.19.4','0.19.3','0.19.2'].includes(v)?'03/11/2026':['0.19.1','0.19.0','0.18.2','0.18.1','0.18.0','0.17.0','0.16.0','0.15.1','0.15.0','0.14.0','0.13.1','0.13.0','0.12.0','0.11.0'].includes(v)?'02/11/2026':v==='0.1.0'?'31/10/2026':'01/11/2026'}</time></div><p>${text}</p></article>`).join('');
+$('#release-list').innerHTML=[['0.19.16','Mode Relleu pur fins a 1:100.000, amb mostra de l’Aneto i cobertura de sòl nu i neu o gel. Perfils suaus activats per defecte.'],['0.19.15','Unions viàries més ràpides, amplades segons escala i transicions més suaus als accessos.'],['0.19.14','Informe JSON de temps de generació amb retall, ajustos i durada de cada fase.'],['0.19.13','Guies de tall sobre el relleu i descàrrega de la maqueta visible quan el mapa té canvis pendents.'],['0.19.12','Progrés per fases i previsualització de relleu, vies, edificis i vegetació mentre es genera la maqueta.'],['0.19.11','Un enllaç, túnel o edifici amb geometria defectuosa pot quedar omès amb un avís mentre es genera la resta de la maqueta.'],['0.19.10','Els taulers procedimentals recuperen la continuïtat entre tessel·les i les cotes dels estreps fora del retall.'],['0.19.9','Transicions entre perfils suaus i vies sobre el terreny. Segon retall ferroviari verificat.'],['0.19.8','Perfils experimentals de vies principals i ferrocarrils. Projecte nou sobre Territori i compàs al mapa.'],['0.19.7','Catastre per blocs, amb vista provisional i avisos dels elements amb dades contradictòries.'],['0.19.6','Mides proporcionals al centre, generació des de Territori i límit d’escala d’1:20.000.'],['0.19.5','Inici guiat, exemples a Territori i escala sincronitzada amb el mapa. El retall es gira des de la cantonada.'],['0.19.4','Els ajustos de vies reutilitzen el terreny i els edificis. Es conserven els traços del pinzell i la vista.'],['0.19.3','Ajustos de vies automàtics, descàrrega ancorada amb selector de format i ferrocarrils arran de carretera per defecte.'],['0.19.2','Sis passos amb accions al costat del títol. Els traços del pinzell es conserven en canviar de retall durant la sessió. Avís quan falta espai per enllaçar un pont al límit de la maqueta.'],['0.19.1','Corregits el graó de les boques girades i els plecs dels enllaços en revolts. Controls 3MF nous i proposta navegable de flux per etapes RO-053, pendent de revisió abans d’integrar-la.'],['0.19.0','Continuïtat i amplada de la calçada revisades als enllaços amb ponts i túnels. Marc exterior retirat del menú i ajornat per a un desenvolupament posterior.'],['0.18.2','Primera optimització de les vies principals: màscares de pilars calculades només quan calen i reutilitzades. El control de 3 km passa de 189,3 a 56,6 s amb els mateixos 14 perfils. Prototip encara desactivat; controls 3MF disponibles al repositori i cas de detall baix pendent.'],['0.18.1','Túnels activats per defecte, sostre parabòlic i paviment de camí. Envolupant de vies principals preparada com a prototip, pendent d’optimitzar abans d’activar-la.'],['0.18.0','Ferrocarrils amb material propi i realç de +0,5 o +1 mm sobre els camins. Millora dels portals de túnels estimats. Nova font OSM de cobertes i parts originals, amb formes paramètriques quan hi ha dades i preservació del mode limitat pla.'],['0.17.0','Pilars adaptats a l’escala, suports auxiliars i avisos de llums. Túnels estimats amb obertures reals, en una opció experimental desactivada per defecte. Exemples automàtics, marc negre i plaques ajornades.'],['0.16.0','Ponts procedimentals a partir de la cartografia i el relleu, amb pilars i connexions. Perfils estimats entre extrems, diferenciats de les dades específiques de Rajadell. El viaducte es conserva en moure, ampliar o girar el retall.'],['0.15.1','Rajadell es conserva en retalls ampliats o desplaçats: els detalls del pont es carreguen per ubicació, també fora del botó d’exemple. Memòria cau acotada i reintent de lectures fallides. Generalització procedimental en curs.'],['0.15.0','Pilars simplificats que eviten camins i edificis, i enllaços suaus del viaducte amb la carretera. Conjunt unit abans de mostrar-lo i exportar-lo. Realç opcional dels camins de 0,5 o 1 mm de maqueta. Suports i enllaços estimats, pendents de laminat.'],['0.14.0','Primer viaducte amb superfície 3D de l’ICGC a la mostra de Manresa, separada del terreny i conservada al 3MF. Gruix simplificat, sense pilars mesurats. Llibre d’estil per a contribucions i tasques delegades. Túnel pendent de dades suficients.'],['0.13.1','Base corregida: la cota més baixa del relleu queda a 5 mm. Es conserven el desnivell, l’exageració i una referència vertical comuna a totes les capes. A la costa, el mar també queda a 5 mm.'],['0.13.0','Catastre amb consultes per quadrants i recuperació de la font anterior en fallar. Sidebars homogenis, marc coherent amb la seva exportació i sense canvis de zoom. Viaducte de l’Eix Diagonal com a mostra inicial, Tamariu al catàleg. Fletxa del nord retirada i rosa ajornada.'],['0.12.0','Vista de presentació amb taula i llum, render a demanda i retorn al taller. Fonts remotes amb resum clar i fitxers propis dins d’opcions avançades. Proves de sòlids per preparar infraestructures; ponts i coves reals pendents.'],['0.11.0','Catastre buit vàlid, pinzell amb cobertura per gest i retorn a navegació, edificis automàtics i complements independents: marc, placa educativa i fletxa del nord. Cobertes reals en estudi.'],['0.10.0','Catastre amb espera i reintent fitats, errors entenedors i model conservat en fallar. Preparació del sistema d’idiomes, només amb català disponible. Propostes de marc imprimible, etiquetes, rosa dels vents i escena realista.'],['0.9.0','Pinzell aleatori, fonts d’edificis explícites i parts del Catastre. Edificis actualitzats sense reconstruir terreny, i primeres cobertes amb atributs de la font.'],['0.8.0','Vegetació repartida per tota la zona verda, pinzell amb prioritat al límit, densitat per traç i exportació sense selectors de broquet ni tipus de filament. Estudi de parts d’edificis, cobertes, ponts i túnels.'],['0.7.0','Sidebars reorganitzats, escala en un sol camp, orientació al mapa, arbres proporcionats a l’escala i límits de càrrega coherents. Historial de tasques validades separat.'],['0.6.0','Menús sempre visibles amb scroll intern, estadístiques al sidebar, V4V i favicon, transicions, marc visual, retall girat, opcions de filament/broquet i importació local GeoTIFF/GeoJSON.'],['0.5.0','Apartats replegables, controls dins del preview i selecció per escala horitzontal fixa. Diagnòstic dels blocs d’edificis de Tamariu.'],['0.4.2','Lectura numèrica directa del relleu WebP/PNG, sense canvas, i diagnòstics de les tessel·les per investigar els pics intermitents.'],['0.4.1','Cobertes horitzontals: el límit d’altura es mesura sobre el punt més alt del terreny dins de la petjada.'],['0.4.0','Camins amb unions arrodonides, edificis limitats a 5 m per defecte o sense volum, i pinzell amb indicador de treball i un càlcul per traç.'],['0.3.0','Mapa i cerca de llocs, layout d’escriptori estable, 1–8 materials, vegetació editable i exportació en peces.'],['0.2.0','Edificis ICGC, relleu corregit, capçades variades i exportació per a Bambu Studio.'],['0.1.0','Primera maqueta de Tamariu generada al navegador amb costa vectorial i exportació 3D.']].map(([v,text])=>`<article class="release-entry"><div><strong>v${v}</strong><time>${['0.19.16','0.19.15','0.19.14','0.19.13','0.19.12','0.19.11','0.19.10','0.19.9','0.19.8','0.19.7','0.19.6','0.19.5','0.19.4','0.19.3','0.19.2'].includes(v)?'03/11/2026':['0.19.1','0.19.0','0.18.2','0.18.1','0.18.0','0.17.0','0.16.0','0.15.1','0.15.0','0.14.0','0.13.1','0.13.0','0.12.0','0.11.0'].includes(v)?'02/11/2026':v==='0.1.0'?'31/10/2026':'01/11/2026'}</time></div><p>${text}</p></article>`).join('');
 $('#copy-lightning').onclick=async()=>{try{await navigator.clipboard.writeText('aptswim903@walletofsatoshi.com');$('#copy-status').textContent='Adreça copiada';}catch{$('#copy-status').textContent='Selecciona i copia l’adreça.';}};
 for(const toggle of document.querySelectorAll('.sidebar-left .section-toggle'))toggle.disabled=true;
 legend();tiling();buildingControls();scaleHint();

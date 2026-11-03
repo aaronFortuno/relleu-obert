@@ -1,6 +1,6 @@
 import {tilePlan} from './selection.js';
 
-const surfaceLayers=new Set(['terrain','water','inland-water','forest','grass','roads','railways']);
+const surfaceLayers=new Set(['terrain','water','inland-water','forest','grass','roads','railways','rock','snow']);
 
 // Intersect the actual top triangles with the same planes used by the export.
 // The renderer depth-tests the lines against the rest of the model.

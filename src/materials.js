@@ -10,6 +10,11 @@ export const CATEGORIES=[
   {id:'railways',name:'Ferrocarrils',color:'#6f7476'}
 ];
 export const PALETTES={1:['#c6b38d'],2:['#c6b38d','#8dc5ca'],4:['#c6b38d','#8dc5ca','#eee9dc','#4e8966'],8:CATEGORIES.slice(0,8).map(c=>c.color)};
+export const RELIEF_MATERIALS=[
+  {id:'terrain',name:'Relleu',color:'#aba397'},
+  {id:'rock',name:'Sòl nu cartografiat',color:'#787d82'},
+  {id:'snow',name:'Neu o gel cartografiat',color:'#f7f8fa'}
+];
 export function defaultAssignments(count){
   if(count===1)return CATEGORIES.map(()=>0);
   if(count===2)return [0,1,0,0,0,0,0,1,0];
@@ -24,6 +29,11 @@ export function normalizeAssignments(count,assignments=defaultAssignments(count)
   return assignments.length===8?[...assignments,assignments[3]]:assignments.slice();
 }
 export function groupMaterials(model,count=4,assignments=defaultAssignments(count)){
+  if(model.provenance?.options?.pureRelief){
+    const parts=(model.categories||model.parts).filter(p=>p.faces.length);
+    return {...model,parts,materialCount:parts.length,materialsUsed:parts.length,
+      provenance:{...model.provenance,materials:{requested:parts.length,colors:parts.map(p=>p.color)}}};
+  }
   assignments=normalizeAssignments(count,assignments);
   const palette=PALETTES[count];
   const groups=palette.map((color,i)=>({id:count===4?['terrain','water','built','green'][i]:`material-${i+1}`,name:`Material ${i+1}`,color,vertices:[],faces:[],labels:[]}));
