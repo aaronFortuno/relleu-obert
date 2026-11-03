@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.19.14 — 2026-11-03
+
+- RO-053: informe local JSON de la darrera generació completa. Inclou retall, zoom, opcions, fonts, temps fins al primer relleu provisional, durades de càrrega i càlcul i seguiment del Catastre per blocs.
+
 ## v0.19.13 — 2026-11-03
 
 - RO-053: les guies de les peces segueixen la superfície de la maqueta als plans de tall del 3MF o STL.

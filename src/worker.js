@@ -4,12 +4,14 @@ import {groupMaterials} from './materials.js';
 import {splitModel,tileArchive} from './mesh-tiles.js';
 import Module from 'manifold-3d';
 import wasmURL from 'manifold-3d/manifold.wasm?url';
+import {createProcessingTiming} from './processing-timing.js';
 let current,api;
 const progress=message=>self.postMessage({type:'progress',message});
 const BUILD_STAGES=['terrain','transport','buildings','vegetation'];
-function buildObserver(){
+function buildObserver(timing){
   let stage='terrain',lastMessage,lastUpdate=-Infinity;
   const report=(next,message,completed,total)=>{
+    timing.mark(next,message);
     const now=performance.now();
     if(next===stage&&message===lastMessage&&now-lastUpdate<150&&completed!==total)return;
     if(next===stage&&message===lastMessage&&completed==null&&total==null)return;
@@ -25,7 +27,9 @@ function buildObserver(){
     }
   };
 }
-self.onmessage=async({data})=>{try{
+self.onmessage=async({data})=>{
+const timing=data.type==='build'||data.measureBuildings?createProcessingTiming():null;
+try{
   if(data.type==='preview-buildings'){
     let part;
     try{part=previewBuildingLayer(current,data.features,data.options);}
@@ -38,11 +42,15 @@ self.onmessage=async({data})=>{try{
     self.postMessage({type:'imported',kind:data.type,value},value.values?[value.values.buffer]:[]);return;
   }
   if(data.type==='build'||data.type==='vegetation'){
-    const observer=data.type==='build'?buildObserver():null;
-    if(observer&&!api&&(data.options.estimatedTunnels||data.options.majorRoads||data.region.infrastructure?.items?.length||data.region.features?.some(f=>f.properties?.sourceLayer==='transportation'&&f.properties.brunnel==='bridge'))){observer.progress('Preparant el motor de geometria…');api=await Module({locateFile:()=>wasmURL});api.setup();}
-    current=observer?buildModel(data.region,data.options,observer.progress,api,null,observer):updateVegetation(current,data.options,progress);self.postMessage({type:'model',model:{...current,parts:undefined,categories:data.type==='vegetation'?current.categories.filter(p=>p.id==='trees'):current.categories},vegetation:data.type==='vegetation'});
+    const observer=data.type==='build'?buildObserver(timing):null;
+    if(observer&&!api&&(data.options.estimatedTunnels||data.options.majorRoads||data.region.infrastructure?.items?.length||data.region.features?.some(f=>f.properties?.sourceLayer==='transportation'&&f.properties.brunnel==='bridge'))){timing.mark('initialization','Preparant el motor de geometria…');progress('Preparant el motor de geometria…');api=await Module({locateFile:()=>wasmURL});api.setup();}
+    current=observer?buildModel(data.region,data.options,observer.progress,api,timing.detail,observer):updateVegetation(current,data.options,progress);self.postMessage({type:'model',model:{...current,parts:undefined,categories:data.type==='vegetation'?current.categories.filter(p=>p.id==='trees'):current.categories},vegetation:data.type==='vegetation',timing:timing?.finish()});
   }
-  if(data.type==='buildings'){current=updateBuildings(current,data.layer,data.options,progress);self.postMessage({type:'model',model:{...current,parts:undefined,categories:current.categories.filter(p=>['buildings','trees','roads','railways'].includes(p.id))},buildings:true});}
+  if(data.type==='buildings'){
+    const report=message=>{timing?.mark('buildings',message);progress(message);};
+    current=updateBuildings(current,data.layer,data.options,report);
+    self.postMessage({type:'model',model:{...current,parts:undefined,categories:current.categories.filter(p=>['buildings','trees','roads','railways'].includes(p.id))},buildings:true,timing:timing?.finish()});
+  }
   if(data.type==='transport'){
     if(!api&&(data.options.estimatedTunnels||data.options.majorRoads)){
       progress('Preparant les infraestructures…');
@@ -67,4 +75,4 @@ self.onmessage=async({data})=>{try{
     else bytes=data.format==='stl'?stlZip(model):threeMF(model,{bambu:data.format==='bambu'});
     self.postMessage({type:'download',format:data.format,archive,bytes},[bytes.buffer]);
   }
-}catch(e){self.postMessage({type:'error',message:e.message,detail:e.stack});}};
+}catch(e){self.postMessage({type:'error',message:e.message,detail:e.stack,timing:timing?.finish()});}};

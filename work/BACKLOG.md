@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-03 · v0.19.13**. RO-053 adapta la guia de tall a la superfície i conserva la descàrrega de la maqueta visible. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
+Actualitzat: **2026-11-03 · v0.19.14**. RO-053 incorpora un informe descarregable amb el retall, els ajustos i els temps de generació. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
 
 ## Ordre de treball
 
@@ -10,7 +10,7 @@ Actualitzat: **2026-11-03 · v0.19.13**. RO-053 adapta la guia de tall a la supe
 
 **Retocs de RO-053, v0.19.13.** Les guies de tall segueixen la superfície i es pot descarregar la maqueta calculada amb canvis pendents al mapa. [Detall](#ro-053--flux-de-treball-per-etapes).
 
-1. **RO-053 / RO-051 — Mesurar i agilitzar.** Registrar el temps fins al primer relleu visible, la durada de cada fase i el pic de memòria a Millau i en un retall més curt. Optimitzar primer l’etapa que domina l’espera. [Mesures anteriors](RO-051-RENDIMENT.md).
+1. **RO-053 / RO-051 — Agilitzar els suports dels ponts.** La primera mesura a Millau atribueix 31,58 de 42,36 s a la cerca i comprovació de suports. Repetir els controls abans i després de cada optimització i comparar la geometria. [Temps de generació](RO-053-TEMPS.md).
 2. **RO-051 / RO-052 — Perfils i amplada de les vies.** Reproduir els bonys dels accessos de Millau i comparar la llegibilitat de diferents classes de via en una peça local i un retall ampli. Revisar amplades i mínims imprimibles conjuntament.
 3. **RO-055 — Relleu pur.** Provar una peça de gran extensió dels Pirineus amb un pressupost de resolució i memòria propi. El primer resultat ha de mostrar què es guanya en extensió i temps de càrrega.
 4. **RO-054 — Galeria local.** Desar i recuperar configuracions en un mateix navegador. Valorar després una còpia del model acabat quan calgui recuperar exactament la mateixa geometria.
@@ -390,6 +390,8 @@ Primer prototip local: perfil longitudinal regularitzat amb tall/terraplè acota
 - [ ] Usuari: revisar els enllaços i les transicions d'amplada dels nous controls abans de validar laminat/impressió. Els fitxers de v0.18.2 documenten el problema i no el donen per resolt.
 
 ### RO-053 — Flux de treball per etapes
+
+**v0.19.14.** «Dades i limitacions» permet descarregar la darrera generació en JSON. Es registren fonts, primer relleu provisional, càlcul per etapes i operacions, resultat i consultes del Catastre per blocs. Les operacions imbricades es mostren per separat per evitar comptar-les dues vegades. [Proves de temps](RO-053-TEMPS.md).
 
 **Validació d’usuari a v0.19.12.** El progrés i les capes parcials es veuen bé en dos o tres llocs, inclòs Millau. Tamariu confirma el flux per blocs del Catastre. El següent treball de rendiment és mesurar càrrega de dades, temps fins al primer relleu visible, temps per etapa i pic de memòria amb els mateixos retalls i opcions.
 
