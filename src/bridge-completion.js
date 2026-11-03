@@ -85,6 +85,7 @@ export function planApproaches({axis,points,faces,containsDeck,roads,ground,road
   for(const reverse of [false,true]){
     const terminalRoad=terminalRoads?.[Number(reverse)];
     if(terminalRoads&&!terminalRoad)continue;
+    try{
     const path=reverse?axis.slice().reverse():axis,dir=unit(path[1],path[0]);
     let inside=null;for(const {p}of resample(path,.05,Math.max(widthMM,heightMM)*2))if(containsDeck(p)){inside=p;break;}
     if(!inside){missed.push('no interior');continue;}
@@ -179,7 +180,9 @@ export function planApproaches({axis,points,faces,containsDeck,roads,ground,road
     });
     if(sections.some(s=>[s.left,s.right].some(([x,y])=>x<0||y<0||x>widthMM||y>heightMM))){missed.push('approach outside crop');continue;}
     const routingRepairs=continuationPath.segments?.slice(0,last.segment).filter(e=>e.estimatedRepair).map(e=>({from:e.from,to:e.to,sourceFeatureIds:e.line.sourceFeatureIds}))||[];
-    plans.push({sections,footprint:footprint(sections),length,grade,endGrade,startZ,endZ,startWidthMM:width,endWidthMM:endWidth,targetFeatureIds:terminal?.line.sourceFeatureIds,routingRepairs,estimated:true});
+    const mesh=stripSolid(sections,.6+roadRise);
+    plans.push({sections,mesh,footprint:footprint(sections),length,grade,endGrade,startZ,endZ,startWidthMM:width,endWidthMM:endWidth,targetFeatureIds:terminal?.line.sourceFeatureIds,routingRepairs,estimated:true});
+    }catch(error){missed.push({reason:'invalid approach pavement',error:error.message});}
   }
   return {plans,missed};
 }

@@ -1,5 +1,11 @@
 # Canvis
 
+## v0.19.11 — 2026-11-03
+
+- RO-052: els enllaços de pont amb seccions plegades s’ometen individualment. El relleu, el tauler i els altres enllaços i vies es poden generar amb un avís.
+- RO-034: si una excavació conjunta falla, es reintenten els túnels per entitat amb un límit de treball i es conserven les excavacions vàlides.
+- RO-026 / RO-044: s’ometen els edificis amb geometries defectuoses i es conserva una entrada per petjada duplicada del mateix identificador.
+
 ## v0.19.10 — 2026-11-03
 
 - RO-033 / RO-052: els fragments solapats d’una mateixa via es poden reunir en un tauler abans d’estimar-ne el pendent. En retalls remots, una càrrega addicional acotada recupera el traçat i el relleu dels estreps si queden fora de la selecció.

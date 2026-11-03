@@ -19,6 +19,16 @@ test('bounded WFS requests load both families and parts, and do not silently swi
  assert.equal(calls.length,2);assert.equal(result.features.length,1);assert.equal(result.features[0].id,'A_part1');assert.equal(result.metadata.partCount,1);assert.equal(calls[0].searchParams.get('srsname'),'EPSG::25831');
  await assert.rejects(()=>fetchCadastralBuildings([3.204,41.917,3.206,41.919],async()=>new Response('',{status:503})),/503/);
 });
+test('a malformed WFS member is reported while its neighbours are loaded',async()=>{
+ const result=await fetchCadastralBuildings([3.204,41.917,3.206,41.919],async url=>{
+  const kind=new URL(url).searchParams.get('typenames')==='BU.BUILDING'?'Building':'BuildingPart';
+  const xml=kind==='Building'?gml(kind,[]):gml(kind,[{id:'bad_part1'},{id:'good_part1'}]).replace(ring,'517000 4640700 1');
+  return new Response(xml);
+ });
+ assert.deepEqual(result.features.map(f=>f.id),['good_part1']);
+ assert.equal(result.metadata.query.invalidMembers,1);
+ assert(result.warnings.some(w=>w.includes('dades invàlides')));
+});
 const ok=url=>{const u=new URL(url);return new Response(gml(u.searchParams.get('typenames')==='BU.BUILDING'?'Building':'BuildingPart',u.searchParams.get('typenames')==='BU.BUILDING'?[{id:'A'}]:undefined));};
 const timeoutError=()=>Object.assign(new Error('signal timed out'),{name:'TimeoutError'});
 const noSleep={backoff:()=>Promise.resolve()};

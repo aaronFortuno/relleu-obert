@@ -25,6 +25,18 @@ function chain(){
     features:[line('before',[-450,-300]),line('bridge',[-300,-100],'bridge'),line('between',[-100,100]),line('tunnel',[100,200,300],'tunnel'),line('after',[300,450])]};
 }
 
+test('a defective bridge mesh and a malformed line preserve the other transport and terrain',()=>{
+  const data=chain(),[valid]=data.infrastructure.items;
+  data.infrastructure.items.unshift({...valid,id:'invalid-deck',faces:[-1,1,2]});
+  data.features.push({...data.features[0],id:'invalid-way',geometry:{type:'LineString',coordinates:[geo(0),null]}});
+  const model=buildModel(data,{size:100,resolution:12,trees:false},()=>{},api);
+  assert.deepEqual(model.context.bridges.map(b=>b.id),[valid.id]);
+  assert(model.categories.find(p=>p.id==='roads')?.faces.length);
+  assert(model.categories.find(p=>p.id==='terrain')?.faces.length);
+  assert(model.warnings.some(w=>w.includes('invalid-deck')));
+  assert(model.warnings.some(w=>w.includes('invalid-way')));
+});
+
 test('transport updates reuse the original substrate and keep painted trees and newer buildings',()=>{
   const data=chain();
   const strokes=[{mode:'add',x:25,y:25,radius:5,density:1,gesture:1}];

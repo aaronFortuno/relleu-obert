@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import Module from 'manifold-3d';
 import {archedTunnelVoid,parabolicTunnelSection,tunnelVoid} from '../src/infrastructure-solids.js';
 import {tunnelPavements,clipTunnelPavements} from '../src/tunnel-pavement.js';
-import {carveTerrainTunnels} from '../src/tunnel-operations.js';
+import {carveTerrainTunnels,carveAvailableTunnels} from '../src/tunnel-operations.js';
 import {auditPart,partComponents,signedVolume} from '../src/solid-audit.js';
 import {generateProceduralTunnelVoids} from '../src/procedural-tunnels.js';
 const api=await Module();api.setup();
@@ -182,4 +182,13 @@ test('a thin pavement cannot eat the protected base; floor or boolean failure ro
   for(const limits of [{maxVoidTriangles:1},{maxTriangles:1}]){
     const result=carveTerrainTunnels(source,[tunnel()],api,limits);assert.strictEqual(result.parts,source);assert.equal(result.metadata.applied,false);assert(result.warnings.length);
   }
+});
+
+test('an invalid tunnel keeps a valid neighbouring excavation',()=>{
+  const source=[box('terrain')],valid=tunnel('roads',undefined,'valid');
+  const invalid=tunnel('roads',[[-1,55,2.7],[101,55,2.7]],'invalid');
+  const recovered=carveAvailableTunnels(source,[invalid,valid],api);
+  assert.deepEqual(recovered.tunnels.map(t=>t.id),[valid.id]);
+  assert.equal(recovered.metadata.applied,true);
+  assert(recovered.warnings.some(w=>w.includes(invalid.id)));
 });

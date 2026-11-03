@@ -16,6 +16,8 @@ globalThis.fetch=(url,opts)=>{
 };
 const ids=new Set([42968122,42968132]),centre=[44.0797,3.0226];
 const mesh=process.argv.includes('--mesh');
+const resolution=Number(process.argv.find(arg=>arg.startsWith('--detail='))?.slice(9)??12);
+const requestedKm=process.argv.find(arg=>arg.startsWith('--km='))?.slice(5);
 let api,buildModel,auditPart;
 if(mesh){
   const {default:Module}=await import('manifold-3d');
@@ -23,7 +25,7 @@ if(mesh){
   ({buildModel}=await import('../src/geometry.js'));
   ({auditPart}=await import('../src/solid-audit.js'));
 }
-for(const km of [3,1.4]){
+for(const km of requestedKm?[Number(requestedKm)]:[3,1.4]){
   const bbox=physicalBBox(centre,km,km);
   const data=await loadRegion({sample:false,bbox,buildingSource:'osm',decodeElevation:async(blob,t)=>decodeDEMTile(await blob.arrayBuffer(),t,decode)});
   const at=(lon,lat)=>sampleHeight([...data.dem,...data.bridgeDem],lon,lat);
@@ -39,7 +41,7 @@ for(const km of [3,1.4]){
   const decks=items.map(i=>({ids:i.sourceFeatureIds,ends:[i.axis[0],i.axis.at(-1)],elevations:[at(...i.axis[0]),at(...i.axis.at(-1))]}));
   let model;
   if(mesh){
-    const result=buildModel(data,{size:150,resolution:12,trees:false,estimatedTunnels:true},()=>{},api);
+    const result=buildModel(data,{size:150,resolution,trees:false,estimatedTunnels:true},()=>{},api);
     const stats=result.provenance.infrastructure?.completion?.details||[];
     model={decks:result.context.bridges.filter(b=>b.sourceFeatureIds?.some(id=>ids.has(id))).map(b=>{
       const detail=stats.find(d=>d.id===b.id);
@@ -47,5 +49,5 @@ for(const km of [3,1.4]){
     }),audit:result.categories.map(auditPart).map(({id,errors})=>({id,errors}))};
     if(model.decks.length!==2||model.audit.some(a=>a.errors.length))process.exitCode=1;
   }
-  console.log(JSON.stringify({centre,km,vectorSource,tiles:data.meta.tiles.length,dem:data.dem.length,coverage:data.meta.bridgeCoverage,fragments,decks,model,warnings},null,2));
+  console.log(JSON.stringify({centre,km,resolution,vectorSource,tiles:data.meta.tiles.length,dem:data.dem.length,coverage:data.meta.bridgeCoverage,fragments,decks,model,warnings},null,2));
 }

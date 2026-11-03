@@ -35,6 +35,20 @@ test('road continuation preserves the main route at a branch and does not use a 
  const sample=topSampler([[0,0,10],[10,0,20],[0,10,10]],[0,1,2]);assert.equal(sample(2,2),12);assert.equal(sample(20,20),null);
 });
 
+test('a folded pavement omits only its own approach',()=>{
+ const points=[[40,49,10],[60,49,10],[60,51,10],[40,51,10]],axis=[[40,50],[60,50]];
+ axis.identity=transportIdentity({class:'trunk',ref:'C-1'});
+ const road=points=>({points,class:'trunk',ref:'C-1',width:1});
+ const result=planApproaches({axis,points,faces:[0,1,2,0,2,3],
+   roads:[road([[40,50],[10,50]]),road([[60,50],[60.1,50.25],[59.1,54.25],[90,58.25]])],
+   ground:()=>10,containsDeck:([x,y])=>x>=40&&x<=60&&y>=49&&y<=51,
+   widthMM:100,heightMM:100,roadWidth:1,forceConnections:true});
+ assert.equal(result.plans.length,1);
+ assert(result.plans[0].sections.at(-1).centre[0]<40);
+ assert.match(result.missed[0].error,/es pleguen o es creuen/);
+ const mesh=solid(result.plans[0].mesh);mesh.delete();
+});
+
 test('an unresolved approach distinguishes a crop boundary from a short mapped route',()=>{
  const axis=[[40,50],[99,50]];axis.roadClass='trunk';axis.identity=transportIdentity({class:'trunk',ref:'C-1'});
  const options={axis,points:[[40,49.5,6],[99,49.5,6],[99,50.5,6],[40,50.5,6]],faces:[0,1,2,0,2,3],ground:()=>5,containsDeck:([x,y])=>x>=40&&x<=99&&Math.abs(y-50)<=.5,widthMM:100,heightMM:100,roadWidth:1};

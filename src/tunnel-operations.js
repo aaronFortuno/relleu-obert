@@ -21,3 +21,20 @@ export function carveTerrainTunnels(surfaceParts,tunnels,api,limits={}){
     return {parts:surfaceParts,warnings:[`No s’han pogut obrir els túnels experimentals; es conserva el terreny anterior. ${error.message}`],metadata:{applied:false,count:0,error:error.message}};
   }
 }
+
+// Keep the fast, atomic batch on success. On failure, retry against the
+// original surfaces so a rejected tunnel never leaves a partial excavation.
+export function carveAvailableTunnels(surfaceParts,tunnels,api){
+  const batch=carveTerrainTunnels(surfaceParts,tunnels,api);
+  if(!batch.metadata.error||tunnels.length<2)return {...batch,tunnels:batch.metadata.applied?tunnels:[]};
+  const accepted=[],warnings=[];
+  let result=batch;
+  const retryLimit=8;
+  for(const tunnel of tunnels.slice(0,retryLimit)){
+    const trial=carveTerrainTunnels(surfaceParts,[...accepted,tunnel],api);
+    if(trial.metadata.applied){accepted.push(tunnel);result=trial;}
+    else warnings.push(`Túnel ${tunnel.id} omès. ${trial.metadata.error}`);
+  }
+  if(tunnels.length>retryLimit)warnings.push(`${tunnels.length-retryLimit} túnels pendents: s’ha assolit el límit de reintents de geometria.`);
+  return {...result,tunnels:accepted,warnings:[...result.warnings,...warnings]};
+}

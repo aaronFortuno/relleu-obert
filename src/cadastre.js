@@ -13,7 +13,7 @@ export function cadastreQuery(bbox){
   const zone=Math.max(29,Math.min(31,Math.floor(((w+e)/2+180)/6)+1)),epsg=25800+zone,t=coordinateTransform(epsg),corners=[[w,s],[e,s],[e,n],[w,n]].map(p=>t.inverse(p));
   return {epsg,bbox:[Math.min(...corners.map(p=>p[0])),Math.min(...corners.map(p=>p[1])),Math.max(...corners.map(p=>p[0])),Math.max(...corners.map(p=>p[1]))]};
 }
-export function parseCadastreGML(text,{kind='BuildingPart',epsg=25831,allowDuplicates=false}={}){
+export function parseCadastreGML(text,{kind='BuildingPart',epsg=25831,allowDuplicates=false,onInvalid}={}){
   if(typeof text!=='string'||text.length>20_000_000||/<!DOCTYPE|<!ENTITY/i.test(text))throw Error('Catastre: resposta XML no admesa o massa gran.');
   if(!['Building','BuildingPart'].includes(kind)||XMLValidator.validate(text)!==true)throw Error('Catastre: XML de geometries invàlid.');
   const json=new XMLParser({removeNSPrefix:true,ignoreAttributes:false,parseTagValue:false,processEntities:false}).parse(text);
@@ -34,8 +34,8 @@ export function parseCadastreGML(text,{kind='BuildingPart',epsg=25831,allowDupli
   const counts=[collection['@_numberMatched'],collection['@_numberReturned'],collection['@_numberOfFeatures']].map(number);
   if(counts.some(n=>Number.isFinite(n)&&n!==members.length))throw Error('Catastre: resposta incompleta: el recompte del servei no coincideix amb les geometries rebudes. Redueix la regió o torna-ho a provar.');
   const transform=coordinateTransform(epsg),ids=new Set();let vertices=0;
-  return members.map(member=>{
-    const f=member[kind];if(!f)throw Error('Catastre: tipus de geometria inesperat.');
+  const parseMember=member=>{
+    const f=member?.[kind];if(!f)throw Error('Catastre: tipus de geometria inesperat.');
     const id=f['@_id'];if(typeof id!=='string'||!id||!allowDuplicates&&ids.has(id))throw Error('Catastre: identificadors absents o duplicats.');ids.add(id);
     const surfaces=array(f.geometry?.BuildingGeometry?.geometry?.Surface);
     if(!surfaces.length)throw Error('Catastre: geometria de superfície no admesa.');
@@ -47,7 +47,7 @@ export function parseCadastreGML(text,{kind='BuildingPart',epsg=25831,allowDupli
         if(typeof raw!=='string'||Number(list['@_srsDimension']??2)!==2)throw Error('Catastre: anell de coordenades no admès.');
         const nums=raw.trim().split(/\s+/).map(Number);
         if(nums.length<8||nums.length%2||!nums.every(Number.isFinite)||list['@_count']!=null&&Number(list['@_count'])!==nums.length/2)throw Error('Catastre: anell de coordenades invàlid.');
-        if((vertices+=nums.length/2)>300000)throw Error('Catastre: massa vèrtexs. Redueix la regió.');
+        if((vertices+=nums.length/2)>300000)throw Object.assign(Error('Catastre: massa vèrtexs. Redueix la regió.'),{code:'CADASTRE_LIMIT'});
         if(Math.hypot(nums[0]-nums.at(-2),nums[1]-nums.at(-1))>1e-6)throw Error('Catastre: anell no tancat.');
         const result=[];for(let i=0;i<nums.length;i+=2){const p=transform.forward([nums[i],nums[i+1]]);if(!p.every(Number.isFinite)||Math.abs(p[0])>180||Math.abs(p[1])>70)throw Error('Catastre: coordenades fora de rang.');result.push(p);}return result;
       };
@@ -56,7 +56,16 @@ export function parseCadastreGML(text,{kind='BuildingPart',epsg=25831,allowDupli
     }
     const floors=number(f.numberOfFloorsAboveGround),knownFloors=Number.isInteger(floors)&&floors>0&&floors<=100;
     return {type:'Feature',id,geometry:{type:'MultiPolygon',coordinates},properties:{sourceLayer:'building',provider:'Dirección General del Catastro · INSPIRE BU',source_id:id,family:id.replace(/_part[^_]*$/i,''),is_part:kind==='BuildingPart',above_ground_floors:Number.isFinite(floors)?floors:null,render_height:knownFloors?floors*3:6,height_estimated:true,height_method:knownFloors?'above-ground floors × 3m estimate':'6m fallback estimate',source_version:value(f.beginLifespanVersion)||null}};
-  });
+  };
+  const features=[];
+  for(const member of members){
+    try{features.push(parseMember(member));}
+    catch(error){
+      if(!onInvalid||error.code==='CADASTRE_LIMIT')throw error;
+      onInvalid(member?.[kind]?.['@_id']??null);
+    }
+  }
+  return features;
 }
 export function cadastralVolumes(buildings,parts,excludedPartFamilies=[]){
   const families=new Set([...parts.map(f=>f.properties.family),...excludedPartFamilies]);
@@ -99,7 +108,9 @@ export async function fetchCadastralBuildings(bbox,fetcher=fetch,options={}){
     if(++diagnostics.requests>maxRequests)throw Error('Catastre: límit de consultes assolit; no es retornen dades parcials.');
     const params=new URLSearchParams({service:'wfs',version:'2.0.0',request:'getfeature',typenames:'BU.'+kind.toUpperCase(),bbox:box.join(','),srsname:'EPSG::'+query.epsg});
     try{
-      const features=parseCadastreGML(await request(CADASTRE_URL+'?'+params),{kind,epsg:query.epsg,allowDuplicates:true});
+      let invalid=0;
+      const features=parseCadastreGML(await request(CADASTRE_URL+'?'+params),{kind,epsg:query.epsg,allowDuplicates:true,onInvalid:()=>invalid++});
+      if(invalid)diagnostics.invalidMembers=(diagnostics.invalidMembers??0)+invalid;
       received+=features.length;
       for(const f of features)for(const polygon of f.geometry.coordinates)for(const ring of polygon)receivedVertices+=ring.length;
       if(received>20000||receivedVertices>600000)throw Error('Catastre: el conjunt de zones supera el pressupost de dades. Redueix la regió.');
@@ -144,6 +155,7 @@ export async function fetchCadastralBuildings(bbox,fetcher=fetch,options={}){
     }
   }catch(e){controller.abort(e);throw e;}
   const [buildings,parts]=datasets.map(dataset=>[...dataset.values()]),features=volumes(),warnings=['Catastre: parts de volum, no habitatges identificats. Altures estimades a partir de plantes; no conté formes de coberta. La font substitueix tota la capa d’edificis, sense afegir-hi les envolupants ICGC.'];
+  if(diagnostics.invalidMembers)warnings.push(`Catastre: geometries d’edifici omeses per dades invàlides: ${diagnostics.invalidMembers}.`);
   const conflictingIds=conflicts.flatMap((ids,index)=>[...ids.keys()].map(id=>({kind:kinds[index],id})));
   if(conflictingIds.length){
     diagnostics.conflictingIds=conflictingIds;

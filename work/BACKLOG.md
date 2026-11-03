@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-03 · v0.19.10**. RO-033 i RO-052 reconstrueixen les calçades solapades abans del retall i completen el relleu dels estreps. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
+Actualitzat: **2026-11-03 · v0.19.11**. El model conserva el relleu i les entitats vàlides quan falla un enllaç, un túnel o una geometria d’edifici. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
 
 ## Ordre de treball
 
@@ -279,6 +279,8 @@ Un MDT d’una altura per XY no descriu cavitats ni voladissos. Investigar núvo
 
 ### RO-044 — Catastre per seccions i recuperació de configuracions
 
+**v0.19.11.** Una entitat invàlida d’una resposta WFS vàlida s’omet amb un avís. El constructor tracta també les petjades per entitat, omet geometries invàlides i conserva la primera còpia usable de la mateixa petjada i identificador.
+
 **v0.19.7.** El flux interactiu consulta quatre blocs, amb un màxim de dues connexions. La vista provisional es reemplaça per una capa validada. Les contradiccions d'identificador s'ometen per entitat i queden registrades a la procedència. Un error de bloc recupera l'última capa vàlida.
 
 [Diagnòstic i comprovacions](RO-044-CATASTRE-RECUPERACIO.md). Reproduït a Tamariu: el servidor rebutja l’àrea inicial (3,18 km²) amb «Area of extension out of limits». Ara es subdivideix només davant límits reconeguts, fins a dos nivells 2×2, 42 consultes lògiques i dues connexions simultànies, amb pressupost total de tres minuts. Duplicats coherents eliminats; cap resultat parcial acceptat.
@@ -350,6 +352,8 @@ Primer prototip local: perfil longitudinal regularitzat amb tall/terraplè acota
 **Criteris:** perfil menys ondulat, continuïtat amb ponts/túnels i extrems, malles tancades, absència de col·lisions amb vies/edificis carregats, escala i retall coherents, avisos quan no hi ha una solució segura, mateixa geometria en preview i fitxer, laminat pendent d'usuari. La simplificació no és un aixecament real de la carretera.
 
 ### RO-052 — Continuïtat i amplada del traçat viari
+
+**v0.19.11.** Aïllat l’error «Les seccions de paviment es pleguen o es creuen» notificat a Millau. Un extrem defectuós conserva el tauler i l’altre extrem vàlid. Validació de l’usuari amb el retall original pendent.
 
 **v0.19.9.** Transicions calculades dins del traçat cartografiat, amb la cota de la malla al punt d’unió. Es conserva la via sobre el terreny quan no hi ha una unió admissible. [Control ferroviari, regressió i límits](RO-052-CONTINUITAT.md).
 

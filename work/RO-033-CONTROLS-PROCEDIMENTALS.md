@@ -34,6 +34,12 @@ node --max-old-space-size=512 scripts/check-procedural-overpass.mjs
 
 ## Millau — continuïtat del perfil
 
+**v0.19.11.** Una regressió amb un accés corbat reprodueix l’error de
+seccions plegades. La recuperació omet aquell accés i conserva el
+tauler i l’accés oposat. El control real de 3 km amb detall 36 ha
+generat ambdues calçades i els quatre accessos amb auditoria sense
+errors. Queda pendent contrastar el retall concret de l’usuari.
+
 **v0.19.10.** Amb el mateix centre i els mateixos dos retalls, la
 reconstrucció obté una sola plataforma per calçada. Les cotes dels
 extrems són idèntiques entre retalls (587,96–671,66 m i 588,84–668,31 m).
