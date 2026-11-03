@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.19.25 — 2026-11-03
+
+- Fins a un 50 % més d’alçada visible a les capçades còniques.
+- Retall de prova conjunt dels Rasos de Peguera i la Gallina Pelada amb mesures de densitat per cotes.
+
 ## v0.19.24 — 2026-11-03
 
 - Model complet adopta capçades còniques en alta muntanya amb la forma automàtica.

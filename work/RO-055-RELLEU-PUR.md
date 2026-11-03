@@ -12,6 +12,18 @@ El retall inclòs s’ha derivat d’ESA WorldCover 2021 v200 (Zanaga et al., 20
 
 ## Mesures locals
 
+### Retall conjunt dels Rasos i la Gallina Pelada a la v0.19.25
+
+Retall de 6 × 6 km centrat a 42,165671° N, 1,751211° E, a escala 1:20.000 i amb detall Equilibrat. S’ha exportat en quatre peces de 15 × 15 cm i totes han passat l’auditoria de malla. Les capçades plenament còniques tenen un 50 % més d’alçada visible. La base incrustada conserva la seva cota.
+
+| Cota | Capçades | Capçades per 1.000 mostres de bosc |
+| --- | ---: | ---: |
+| Per sota de 1.950 m | 3.400 | 33,7 |
+| De 1.950 a 2.200 m | 579 | 29,2 |
+| De 2.200 a 2.450 m | 21 | 15,6 |
+
+El retall arriba al límit de 4.000 capçades, amb un mostreig repartit entre els candidats. Les mostres de bosc corresponen a nodes de la malla dins de polígons cartografiats.
+
 ### Capçades d’alta muntanya a la v0.19.24
 
 En Model complet, la forma automàtica pren la cota màxima del retall com a referència per afinar el perfil. En Relleu pur, la densitat parteix del bosc cartografiat i disminueix amb la cota local de cada capçada entre 1.950 i 2.450 m. Aquesta franja és un criteri visual de simulació.

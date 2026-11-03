@@ -3,7 +3,7 @@ import {levelReliefLakes} from './relief-lakes.js';
 import {reliefDiagonals,reliefParts,PURE_RELIEF_RESOLUTIONS} from './pure-relief-mesh.js';
 import {reliefStreamStrips} from './relief-streams.js';
 import {sampleReliefForest} from './relief-forest.js';
-import {reliefCrownTaper,reliefForestTrees,RELIEF_TREE_MIN_DIAMETER_MM,RELIEF_TREE_DIAMETER_METRES,RELIEF_TREE_THINNING} from './relief-forest-trees.js';
+import {alpineCrownHeightFactor,reliefCrownTaper,reliefForestTrees,RELIEF_TREE_MIN_DIAMETER_MM,RELIEF_TREE_DIAMETER_METRES,RELIEF_TREE_THINNING} from './relief-forest-trees.js';
 import {waterwayPolygons} from './waterways.js';
 import {polygonOps} from './polygon-ops.js';
 import earcut from 'earcut';
@@ -167,12 +167,15 @@ export function deckSurfaceSolid(item,proj,verticalReference,exaggeration,thickn
 }
 export function treeMesh({x,y,ground,rx,ry,rz,rotation=0,phase=0,crownTaper=0}){
   const surf=new Surface(),rings=6,segments=8,embed=Math.min(.3,rz*.35),z=ground+rz-embed;
+  const stretch=alpineCrownHeightFactor(crownTaper);
   const p=(i,j)=>{
     const t=i/rings,v=t*Math.PI,u=j/segments*Math.PI*2;
     const round=Math.sin(v),cone=Math.min(t*1.5,(1-t)*3);
     const radius=round+(cone-round)*crownTaper,w=1+.05*Math.cos(3*u+phase)*radius;
     const dx=rx*radius*Math.cos(u)*w,dy=ry*radius*Math.sin(u)*w;
-    return [x+dx*Math.cos(rotation)-dy*Math.sin(rotation),y+dx*Math.sin(rotation)+dy*Math.cos(rotation),z+rz*Math.cos(v)];
+    const elevation=z+rz*Math.cos(v);
+    return [x+dx*Math.cos(rotation)-dy*Math.sin(rotation),y+dx*Math.sin(rotation)+dy*Math.cos(rotation),
+      stretch>1&&elevation>ground?ground+(elevation-ground)*stretch:elevation];
   };
   for(let i=0;i<rings;i++)for(let j=0;j<segments;j++){surf.tri(p(i,j),p(i+1,j),p(i+1,j+1));surf.tri(p(i,j),p(i+1,j+1),p(i,j+1));}
   return {vertices:surf.vertices,faces:surf.faces};

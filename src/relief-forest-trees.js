@@ -14,6 +14,7 @@ const CIRCLE=Array.from({length:SIDES},(_,i)=>[Math.cos(i*2*Math.PI/SIDES),Math.
 
 // A visual convention for the retall, independent of vertical exaggeration.
 export const reliefCrownTaper=maximumElevation=>Math.max(0,Math.min(1,(maximumElevation-1000)/800));
+export const alpineCrownHeightFactor=taper=>1+.5*taper;
 
 // Thin procedural crowns towards the high-mountain tree line. Mapped
 // forest remains the mask, including where crowns are too sparse to print.
@@ -77,6 +78,7 @@ export function reliefTreePart(grid,{left,bottom,right,top}){
   const profile=ROUND_PROFILE.map(([radius,level],i)=>[blend(radius,CONE_PROFILE[i][0]),blend(level,CONE_PROFILE[i][1])]);
   const widest=Math.max(...profile.map(([radius])=>radius));
   const tipLevel=blend(1.02,1.56);
+  const stretch=alpineCrownHeightFactor(crownTaper);
   const ringVertices=profile.length*SIDES,vertexCount=ringVertices+2;
   const vertices=new Float32Array(visible.length*vertexCount*3);
   const faces=new Uint32Array(visible.length*ringVertices*6);
@@ -87,12 +89,12 @@ export function reliefTreePart(grid,{left,bottom,right,top}){
     const first=v/3;
     for(const [widthRatio,level] of profile)for(let i=0;i<SIDES;i++){
       const angle=rotation+i*2*Math.PI/SIDES,r=radius*widthRatio/widest;
-      vertex(x+r*Math.cos(angle),y+r*Math.sin(angle),ground+radius*level*heightFactor);
+      vertex(x+r*Math.cos(angle),y+r*Math.sin(angle),ground+radius*level*heightFactor*(level>0?stretch:1));
     }
     const foot=v/3;
     vertex(x,y,ground+radius*profile[0][1]*heightFactor);
     const tip=v/3;
-    vertex(x,y,ground+radius*tipLevel*heightFactor);
+    vertex(x,y,ground+radius*tipLevel*heightFactor*stretch);
     for(let i=0;i<SIDES;i++){
       const next=(i+1)%SIDES;
       tri(foot,first+next,first+i);

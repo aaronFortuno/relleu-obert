@@ -18,6 +18,7 @@ test('absolute maximum elevation blends a rounded crown into a taller cone',()=>
     return audit.bbox.max[2];
   });
   assert(heights[0]<heights[1]&&heights[1]<heights[2]);
+  assert(Math.abs(heights[2]-(10+.25*1.56*1.5))<1e-6);
 });
 
 test('pure relief crowns use geographic scale and close below the terrain surface',()=>{

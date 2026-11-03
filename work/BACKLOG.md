@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-03 · v0.19.24**. Capçades d’alta muntanya al Model complet i densitat segons la cota a Relleu pur. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
+Actualitzat: **2026-11-03 · v0.19.25**. Capçades còniques més altes i retall conjunt dels Rasos i la Gallina Pelada. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
 
 ## Ordre de treball
 
@@ -479,3 +479,5 @@ La preparació de mida i territori precedeix les quatre capes. En separar el mot
 **v0.19.23.** Les capçades de Relleu pur passen d’un perfil arrodonit a un de cònic entre 1.000 i 1.800 m de cota màxima del retall. És un criteri visual; queda pendent la validació al laminador.
 
 **v0.19.24.** El perfil automàtic del Model complet s’adapta al retall. A Relleu pur, més densitat dins del bosc cartografiat i aclarida gradual entre 1.950 i 2.450 m de cota local. Pendent de validar al laminador.
+
+**v0.19.25.** Alçada visible de les capçades còniques fins a ×1,5. Retall conjunt de 6 km auditat. Queda per valorar un ajust manual d’alçada al pinzell.
