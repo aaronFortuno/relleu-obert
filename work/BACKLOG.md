@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-03 · v0.19.21**. Hidrografia de Relleu pur fora de l’Aneto i controls de gir del mapa ajustats. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
+Actualitzat: **2026-11-03 · v0.19.22**. Boscos cartografiats i capçades a escala a Relleu pur. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
 
 ## Ordre de treball
 
@@ -12,7 +12,7 @@ Actualitzat: **2026-11-03 · v0.19.21**. Hidrografia de Relleu pur fora de l’A
 
 1. **RO-053 / RO-051 — Rendiment del terreny i dels suports.** Sant Llorenç ha passat de 132,69 a 23,74 s fins al primer relleu en els controls Node. A Millau, els suports han passat de 31,58 a 22,96 s i continuen dominant el temps. [Temps de generació](RO-053-TEMPS.md).
 2. **RO-051 / RO-052 — Perfils i amplada de les vies.** Reproduir els bonys dels accessos de Millau i comparar la llegibilitat de diferents classes de via en una peça local i un retall ampli. Revisar amplades i mínims imprimibles conjuntament.
-3. **RO-055 — Relleu pur.** Contrast de la nova malla de l’Aneto al visor i al laminador. Vegetació cartografiada i proporcionada a l’escala en una iteració posterior.
+3. **RO-055 — Relleu pur.** Validar al laminador les capçades a escala i el material de bosc a Rajadell i a l’Aneto.
 4. **RO-054 — Galeria local.** Desar i recuperar configuracions en un mateix navegador. Valorar després una còpia del model acabat quan calgui recuperar exactament la mateixa geometria.
 5. **RO-032 — Cobertes i singulars.** Mesurar la cobertura real de formes de coberta en un retall abans d’ampliar el modelatge. Verificar els volums singulars amb fonts i llicències concretes.
 
@@ -33,7 +33,7 @@ Continuen oberts el laminat dels controls de ponts, túnels i ferrocarrils (RO-0
 | [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts)     | P1        | Fonts en estudi                                                                                                                                                                                                                                                                                                                       | Comparació de parts i petjades en segona zona           |
 | [RO-032](#ro-032--cobertes-i-volums-singulars) | P1 | Nucli verificat; servei remot pendent de validar | Consulta real reeixida i dades de coberta de Tamariu |
 | [RO-023](#ro-023--relleu-local-i-fonts-vectorials-de-més-precisió) | P2        | Fonts remotes pendents                                                                                                                                                                                                                                                                                                                | MDT més precís accessible al navegador                  |
-| [RO-055](#ro-055--mode-de-relleu-pur) | P2 | Pilot implementat | Malla més fina a l’Aneto; pendent de laminat i vegetació |
+| [RO-055](#ro-055--mode-de-relleu-pur) | P2 | Pilot implementat | Malla amb hidrografia i boscos; pendent de laminat |
 | [RO-054](#ro-054--galeria-local-de-projectes) | P2 | Proposat | Desar i recuperar una configuració en el mateix navegador |
 
 ## Validació i retocs acotats
@@ -474,4 +474,4 @@ La preparació de mida i territori precedeix les quatre capes. En separar el mot
 
 **v0.19.21.** Relleu pur pot llegir la hidrografia d’OpenFreeMap fora de l’Aneto, inclosa la riera de Rajadell. Es manté pendent estendre la cobertura del sòl i validar al laminador.
 
-**Vegetació pendent.** Representar boscos cartografiats i provar formes arrodonides proporcionades a l’escala de la maqueta. A escales on els arbres individuals quedin per sota de la resolució d’impressió, estudiar una representació contínua del bosc.
+**v0.19.22.** Els boscos es delimiten amb cartografia d’OpenStreetMap. A escales prou detallades, s’hi distribueixen capçades procedimentals proporcionades. Quan serien inferiors a 0,45 mm, el bosc es representa només amb color. Pendent de comprovar les capçades i els canvis de material al laminador.

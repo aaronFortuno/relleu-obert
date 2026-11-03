@@ -59,7 +59,7 @@ export function mergeStandingWaterFragments(lakes){
   return merged;
 }
 
-async function loadReliefHydrography(bbox,sample,progress){
+async function loadReliefVectors(bbox,sample,progress,forestOnly){
   const zoom=[14,13,12,11,10,9,8].find(z=>regionTileCount(bbox,z)<=MAX_REGION_TILES);
   const tiles=tileList(bbox,zoom),base=(import.meta.env?.BASE_URL||'./')+'data/';
   const place=typeof sample==='string'?recommendedPlace(sample):null;
@@ -82,14 +82,15 @@ async function loadReliefHydrography(bbox,sample,progress){
     template??=request(vectorCatalog).then(response=>response.json()).then(catalog=>catalog.tiles[0]);
     return read((await template).replace('{z}',z).replace('{x}',x).replace('{y}',y));
   };
-  const features=[],lakes=[],waterways=[],waterAreas=[];
+  const features=[],lakes=[],waterways=[],waterAreas=[],forests=[];
+  const layers=forestOnly?['landcover','landuse']:['water','waterway','landcover','landuse'];
   let failures=0;
   for(let i=0;i<tiles.length;i+=4){
-    progress(`Carregant la cartografia d’aigua ${i+1}/${tiles.length}…`);
+    progress(`Carregant la cartografia ${forestOnly?'de bosc':'d’aigua i bosc'} ${i+1}/${tiles.length}…`);
     const batch=await Promise.allSettled(tiles.slice(i,i+4).map(async t=>{
       const url=local.get(`${t.z}/${t.x}/${t.y}`);
       const bytes=url?await read(url).catch(()=>remote(t)):await remote(t);
-      return readVector(bytes,t,['water','waterway']);
+      return readVector(bytes,t,layers);
     }));
     for(const result of batch){
       if(result.status==='fulfilled')features.push(...result.value);
@@ -99,12 +100,23 @@ async function loadReliefHydrography(bbox,sample,progress){
   for(const feature of features){
     const {properties,geometry:{type}}=feature;
     if(properties.sourceLayer==='waterway'&&(type==='LineString'||type==='MultiLineString'))waterways.push(feature);
-    else if(properties.sourceLayer==='water'&&(type==='Polygon'||type==='MultiPolygon')){
+    else if(type!=='Polygon'&&type!=='MultiPolygon')continue;
+    else if(properties.sourceLayer==='water'){
       if(isStandingWater(properties))lakes.push(feature);
       else if(isFlowingWater(properties))waterAreas.push(feature);
+    }else if(['landcover','landuse'].includes(properties.sourceLayer)&&['wood','forest'].includes(properties.class)){
+      const {coordinates}=feature.geometry;
+      const polygons=type==='Polygon'?[coordinates]:coordinates;
+      if(polygons.some(([ring])=>{
+        let west=Infinity,south=Infinity,east=-Infinity,north=-Infinity;
+        for(const [x,y] of ring){
+          west=Math.min(west,x);south=Math.min(south,y);east=Math.max(east,x);north=Math.max(north,y);
+        }
+        return west<bbox[2]&&east>bbox[0]&&south<bbox[3]&&north>bbox[1];
+      }))forests.push(feature);
     }
   }
-  return {lakes:mergeStandingWaterFragments(lakes),waterways,waterAreas,failures,zoom,tileCount:tiles.length};
+  return {lakes:mergeStandingWaterFragments(lakes),waterways,waterAreas,forests,failures,zoom,tileCount:tiles.length};
 }
 async function decodeDEM(blob,t){
   const decoder=await import('./dem-browser.js');return decoder.decodeDEM(blob,t);
@@ -156,7 +168,7 @@ export async function loadRegion({sample=true,bbox,buildingSource,decodeElevatio
     const terrain=await time('source.terrain',()=>loadTerrain(bbox,decodeElevation,fetch,progress,undefined,{
       zooms:[14,13,12,11,10],maxTiles:96,maxSamples:8*1024**2
     }));
-    let coverage=[],lakes=[],waterways=[],waterAreas=[],hydrography;
+    let coverage=[],lakes=[],waterways=[],waterAreas=[],forests=[],vectorCoverage;
     const warnings=terrain.warnings.slice();
     progress('Carregant la cobertura de sòl nu i neu o gel…');
     try{
@@ -164,9 +176,9 @@ export async function loadRegion({sample=true,bbox,buildingSource,decodeElevatio
       if(coverage.length){
         warnings.push('ESA WorldCover 2021: gris per sòl nu o amb vegetació escassa i blanc per neu o gel cartografiat.');
         const [w,s,e,n]=coverage[0].bbox;
-        if(bbox[0]<w||bbox[1]<s||bbox[2]>e||bbox[3]>n)warnings.push('Fora del retall cartografiat del pilot, el relleu es mostra en un color neutre.');
-      }else warnings.push('Aquest retall és fora de la cobertura de colors del pilot de l’Aneto.');
-    }catch{warnings.push('No s’ha pogut carregar la cobertura de sòl nu i neu o gel. Es mostra el relleu en un color neutre.');}
+        if(bbox[0]<w||bbox[1]<s||bbox[2]>e||bbox[3]>n)warnings.push('El color de sòl nu i neu o gel només cobreix el retall cartografiat de l’Aneto.');
+      }else warnings.push('Aquest retall és fora de la cobertura de sòl nu i neu o gel del pilot de l’Aneto.');
+    }catch{warnings.push('No s’ha pogut carregar la cobertura de sòl nu i neu o gel.');}
     const [w,s,e,n]=RELIEF_LAKE_SOURCE.bounds;
     const insidePilot=bbox[0]>=w&&bbox[1]>=s&&bbox[2]<=e&&bbox[3]<=n;
     if(insidePilot){
@@ -175,23 +187,27 @@ export async function loadRegion({sample=true,bbox,buildingSource,decodeElevatio
         waterways=await time('source.relief-waterways',()=>loadReliefWaterways(bbox));
         if(lakes.length)warnings.push('Llacs i estanys del pilot de l’Aneto: © OpenStreetMap contributors, via OpenFreeMap. Cota estimada del model d’elevacions.');
       }catch{warnings.push('No s’ha pogut carregar tota la cartografia d’aigua local de l’Aneto.');}
-    }else{
-      try{
-        const {failures,zoom,tileCount,...water}=await time('source.relief-hydrography',()=>loadReliefHydrography(bbox,sample,progress));
-        ({lakes,waterways,waterAreas}=water);
-        const {provider,license,attribution,url}=RELIEF_WATERWAY_SOURCE;
-        hydrography={provider,license,attribution,url,zoom,tileCount,failures};
-        if(failures===tileCount)warnings.push('No s’ha pogut carregar la cartografia d’aigua. Es conserva el relleu.');
-        else if(failures)warnings.push('Falten algunes tessel·les de cartografia d’aigua. Es mostren les dades disponibles.');
-        if(zoom<14)warnings.push('La cartografia d’aigua d’aquest retall ampli pot ometre els cursos menors.');
-      }catch{warnings.push('No s’ha pogut carregar la cartografia d’aigua. Es conserva el relleu.');}
     }
+    const vectorLabel=insidePilot?'de bosc':'d’aigua i bosc';
+    const vectorUnavailable=`No s’ha pogut carregar la cartografia ${vectorLabel}. Es conserva el relleu.`;
+    try{
+      const {failures,zoom,tileCount,...vectors}=await time(insidePilot?'source.relief-forest':'source.relief-vectors',
+        ()=>loadReliefVectors(bbox,sample,progress,insidePilot));
+      ({forests}=vectors);
+      if(!insidePilot)({lakes,waterways,waterAreas}=vectors);
+      const {provider,license,attribution,url}=RELIEF_WATERWAY_SOURCE;
+      vectorCoverage={provider,license,attribution,url,zoom,tileCount,failures};
+      if(failures===tileCount)warnings.push(vectorUnavailable);
+      else if(failures)warnings.push(`Falten algunes tessel·les de cartografia ${vectorLabel}. Es mostren les dades disponibles.`);
+      if(failures<tileCount&&zoom<14)warnings.push(`La cartografia ${vectorLabel} d’aquest retall ampli pot ometre els elements més petits.`);
+    }catch{warnings.push(vectorUnavailable);}
     const meta={bbox,name:'Relleu pur',date:new Date().toISOString(),terrain:terrain.metadata,tiles:terrain.tiles.map(({z,x,y})=>({z,x,y})),
       coverage:{...RELIEF_COVERAGE_SOURCE,available:!!coverage.length,tiles:coverage.map(t=>t.tile)},
-      lakes:{count:lakes.length,...(lakes.length?(insidePilot?RELIEF_LAKE_SOURCE:hydrography):{})},
-      waterways:{count:waterways.length,areaCount:waterAreas.length,...(waterways.length||waterAreas.length?(insidePilot?RELIEF_WATERWAY_SOURCE:hydrography):{})},
+      lakes:{count:lakes.length,...(lakes.length?(insidePilot?RELIEF_LAKE_SOURCE:vectorCoverage):{})},
+      waterways:{count:waterways.length,areaCount:waterAreas.length,...(waterways.length||waterAreas.length?(insidePilot?RELIEF_WATERWAY_SOURCE:vectorCoverage):{})},
+      forests:{count:forests.length,...vectorCoverage},
       buildings:{count:0},buildingSource:null,sourceWarnings:warnings,pureRelief:true};
-    return {meta,features:[],dem:terrain.tiles,coverage,lakes,waterways,waterAreas,terrainWarnings:warnings};
+    return {meta,features:[],dem:terrain.tiles,coverage,lakes,waterways,waterAreas,forests,terrainWarnings:warnings};
   }
   const base=(import.meta.env?.BASE_URL||'./')+'data/';
   if(typeof sample==='string'&&!recommendedPlace(sample))throw Error('Exemple desconegut.');

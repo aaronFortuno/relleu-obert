@@ -12,6 +12,16 @@ El retall inclòs s’ha derivat d’ESA WorldCover 2021 v200 (Zanaga et al., 20
 
 ## Mesures locals
 
+### Boscos a la v0.19.22
+
+Les zones de bosc cartografiades es representen en verd, amb contorns interpolats dins de la malla. Les capçades tenen un diàmetre de referència de 12 m i s’escampen de manera procedimental dins d’aquests polígons. S’afegeixen quan el diàmetre equival almenys a 0,45 mm a la maqueta i eviten l’aigua i les vores de les peces. [Font i llicència](https://www.openstreetmap.org/copyright)
+
+| Retall | Escala | Capçades simulades |
+| --- | --- | ---: |
+| Rajadell, 1,5 × 1,5 km | 1:10.000 | 232 |
+| Vessants de l’Aneto, 3 × 3 km (42,629° N, 0,580° E) | 1:20.000 | 1.389 |
+| Aneto, 40 × 40 km | 1:100.000 | 0, bosc en color |
+
 ### Hidrografia fora de l’Aneto a la v0.19.21
 
 Relleu pur incorpora les capes de rius, rierols i llacs d’OpenFreeMap amb un màxim de 16 tessel·les. Descodifica les capes d’aigua del paquet vectorial. Si falten tessel·les, la maqueta aprofita les disponibles. La mostra de Rajadell reutilitza les tessel·les locals i el retall de l’Aneto conserva les dades pròpies del pilot. El color de sòl nu i neu continua limitat a la cobertura WorldCover distribuïda. [Font i llicència](https://www.openstreetmap.org/copyright)

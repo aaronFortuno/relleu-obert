@@ -36,6 +36,7 @@ test('pure relief survives missing remote hydrography without loading full model
     assert(requests.every(url=>url.startsWith('https://tiles.mapterhorn.com/')||url==='https://tiles.openfreemap.org/planet'));
     assert.deepEqual(data.features,[]);
     assert.deepEqual(data.waterways,[]);
+    assert.deepEqual(data.forests,[]);
     assert(data.meta.sourceWarnings.some(message=>message.includes('Es conserva el relleu')));
     assert.equal(data.meta.coverage.available,false);
     assert.equal(data.meta.buildingSource,null);
@@ -55,6 +56,8 @@ test('pure relief loads the real Rajadell stream from the bundled sample',async(
       decodeElevation:async(_,tile)=>({...tile,size:2,elev:new Float32Array([100,100,100,100])})});
     assert(data.waterways.some(feature=>feature.properties.name==='Riera de Rajadell'));
     assert(data.lakes.length);
+    assert(data.forests.some(feature=>feature.properties.class==='wood'));
+    assert.equal(data.meta.forests.provider,'OpenStreetMap · OpenFreeMap');
     assert(requests.some(url=>url.endsWith('.pbf')));
     assert(!requests.some(url=>url.includes('openfreemap')));
     assert.deepEqual(data.features,[]);
@@ -150,4 +153,17 @@ test('pure relief uses the mapped width of a flowing-water polygon without a cen
   assert.deepEqual(water.errors,[]);
   assert(Math.abs(water.dimensions[1]-20)<.001);
   assert(water.dimensions[2]>.36);
+});
+
+test('mapped forest stays green at overview scale and gains canopies at print scale',()=>{
+  const [w,s,e,n]=bbox,at=(x,y)=>[w+(e-w)*x,s+(n-s)*y];
+  const forests=[{geometry:{type:'Polygon',coordinates:[[at(.2,.2),at(.6,.2),at(.6,.6),at(.2,.6),at(.2,.2)]]}}];
+  const data={meta:{bbox},dem,forests};
+  const overview=buildModel(data,{...options,resolution:24});
+  const local=buildModel(data,{...options,resolution:24,size:400});
+  assert(overview.parts.some(part=>part.id==='forest'));
+  assert.equal(overview.treeCount,0);
+  assert(overview.provenance.treeRepresentation.omittedBelowThreshold);
+  assert(local.treeCount>0);
+  for(const part of local.parts)assert.deepEqual(auditPart(part).errors,[]);
 });

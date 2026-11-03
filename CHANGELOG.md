@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.19.22 — 2026-11-03
+
+- Relleu pur representa els boscos cartografiats amb un material propi.
+- Capçades còniques generades a escala quan el diàmetre supera el mínim imprimible, amb comprovacions a Rajadell i a l’Aneto.
+
 ## v0.19.21 — 2026-11-03
 
 - Relleu pur incorpora cursos d’aigua i llacs cartografiats fora del pilot de l’Aneto, amb una consulta limitada de tessel·les.

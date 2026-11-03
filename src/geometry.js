@@ -2,6 +2,8 @@ import {sampleCoverage} from './relief-contours.js';
 import {levelReliefLakes} from './relief-lakes.js';
 import {reliefDiagonals,reliefParts,PURE_RELIEF_RESOLUTIONS} from './pure-relief-mesh.js';
 import {reliefStreamStrips} from './relief-streams.js';
+import {sampleReliefForest} from './relief-forest.js';
+import {reliefForestTrees,RELIEF_TREE_MIN_DIAMETER_MM,RELIEF_TREE_DIAMETER_METRES} from './relief-forest-trees.js';
 import {waterwayPolygons} from './waterways.js';
 import {polygonOps} from './polygon-ops.js';
 import earcut from 'earcut';
@@ -355,16 +357,24 @@ function buildPureRelief(data,options,progress,preview){
   const paths=streams?waterwayPolygons(data.waterways||[],project,{width,height,scale,multiplier:options.streamWidth}):[];
   const waterAreas=streams?(data.waterAreas||[]).map(feature=>geoPolys(feature,project)):[];
   const streamStrips=reliefStreamStrips([...paths,...waterAreas],width,height,resolution);
-  const reliefGrid={resolution,width,height,heights,diagonals,scores,lakeWeights:lakes?.count?lakes.weights:null,streamStrips};
+  const forest=sampleReliefForest((data.forests||[]).flatMap(feature=>geoPolys(feature,project)),width,height,resolution);
+  const reliefGrid={resolution,width,height,heights,diagonals,scores,lakeWeights:lakes?.count?lakes.weights:null,
+    forestWeights:forest?.cells?forest.weights:null,streamStrips};
+  const trees=options.trees!==false;
+  if(trees&&forest?.cells)reliefGrid.trees=reliefForestTrees(reliefGrid,forest.contains,scale);
   progress('Construint el sòlid del relleu…');
   const categories=reliefParts(reliefGrid);
   preview?.parts('terrain',categories,{width,height});
   const verticalReference={originMeters,minimumSurfaceMM:5,seaLevelMM:null,method:'lowest generated-terrain sample at 5 mm'};
   const warnings=[...(data.meta.sourceWarnings||[])];
-  const provenance={...data.meta,options:{...options,pureRelief:true,trees:false},verticalExaggeration:exaggeration,verticalReference,
+  const treeCount=reliefGrid.trees?.length??0;
+  const omittedBelowThreshold=trees&&!!forest?.cells&&RELIEF_TREE_DIAMETER_METRES*scale<RELIEF_TREE_MIN_DIAMETER_MM;
+  if(omittedBelowThreshold)warnings.push('A aquesta escala, els boscos es representen amb color. Les capçades quedarien per sota de 0,45 mm.');
+  const provenance={...data.meta,options:{...options,pureRelief:true,trees},verticalExaggeration:exaggeration,verticalReference,
     units:'millimeters',coverageCells:{bare:cells[0],snow:cells[1],total:resolution**2},lakeCount:lakes?.count??0,
-    streamCount:paths.length,flowingWaterAreaCount:waterAreas.length};
-  return groupMaterials({width,height,scale:Math.round(1000/scale),treeCount:0,buildingCount:0,categories,warnings,reliefGrid,
+    streamCount:paths.length,flowingWaterAreaCount:waterAreas.length,forestSamples:forest?.cells??0,
+    treeRepresentation:{crownDiameterMetres:RELIEF_TREE_DIAMETER_METRES,minimumDiameterMM:RELIEF_TREE_MIN_DIAMETER_MM,omittedBelowThreshold}};
+  return groupMaterials({width,height,scale:Math.round(1000/scale),treeCount,buildingCount:0,categories,warnings,reliefGrid,
     triangles:categories.reduce((n,p)=>n+p.faces.length/3,0),elevationDiagnostics:prepared.diagnostics,provenance});
 }
 

@@ -2,6 +2,7 @@ import {coverageSkins,RELIEF_SKIN_DEPTH} from './relief-contours.js';
 import {RELIEF_MATERIALS} from './materials.js';
 import {tilePlan} from './selection.js';
 import {reliefStreamPart} from './relief-streams.js';
+import {reliefTreePart} from './relief-forest-trees.js';
 
 export const PURE_RELIEF_RESOLUTIONS={24:240,36:384,56:540};
 
@@ -77,13 +78,15 @@ function combine(a,b){
 }
 
 export function reliefParts(grid,bounds={left:0,bottom:0,right:grid.resolution,top:grid.resolution}){
-  const skins=grid.scores||grid.lakeWeights?coverageSkins(grid,bounds):[],layered=skins.slice(1).some(Boolean);
+  const skins=grid.scores||grid.lakeWeights||grid.forestWeights?coverageSkins(grid,bounds):[],layered=skins.slice(1).some(Boolean);
   const base=reliefBase(grid,bounds,layered);
   const terrain=layered?combine(base,skins[0]):base;
   const parts=[{...RELIEF_MATERIALS[0],...terrain}];
   for(let kind=1;kind<3;kind++)if(skins[kind])parts.push({...RELIEF_MATERIALS[kind],...skins[kind]});
   const stream=reliefStreamPart(grid,bounds),lake=skins[3];
   if(lake||stream)parts.push({...RELIEF_MATERIALS[3],...(lake?combine(lake,stream):stream)});
+  const forest=skins[4],trees=reliefTreePart(grid,bounds);
+  if(forest||trees)parts.push({...RELIEF_MATERIALS[4],...(forest?combine(forest,trees):trees)});
   return parts;
 }
 

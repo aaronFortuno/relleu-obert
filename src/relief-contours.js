@@ -81,9 +81,10 @@ function skinBuilder(kind,bounds,grid){
       for(let i=0;i<poly.length;i++){
         const j=(i+1)%poly.length,a=poly[i],b=poly[j];
         const shore=near(a[6],0)&&near(b[6],0);
+        const forestEdge=kind!==3&&near(a[7],0)&&near(b[7],0);
         const materialBoundary=kind<3&&!interior&&[0,1,2].some(other=>other!==kind&&
           near(a[3+kind],a[3+other])&&near(b[3+kind],b[3+other]));
-        if(outer(a,b)||shore||materialBoundary)wall(ids[i],ids[j]);
+        if(outer(a,b)||shore||forestEdge||materialBoundary)wall(ids[i],ids[j]);
       }
     },
     finish(){return nf?{vertices:vertices.slice(0,nv),faces:faces.slice(0,nf)}:null;}
@@ -92,10 +93,10 @@ function skinBuilder(kind,bounds,grid){
 
 export function coverageSkins(grid,bounds){
   const {left,bottom,right,top}=bounds;
-  const {resolution:n,heights,diagonals,scores,lakeWeights}=grid,builders=[0,1,2,3].map(kind=>skinBuilder(kind,bounds,grid));
+  const {resolution:n,heights,diagonals,scores,lakeWeights,forestWeights}=grid,builders=[0,1,2,3,4].map(kind=>skinBuilder(kind,bounds,grid));
   const point=(x,y)=>{
     const i=y*(n+1)+x;
-    return [x,y,heights[i],scores?.[i*3]??1,scores?.[i*3+1]??0,scores?.[i*3+2]??0,lakeWeights?.[i]??-1];
+    return [x,y,heights[i],scores?.[i*3]??1,scores?.[i*3+1]??0,scores?.[i*3+2]??0,lakeWeights?.[i]??-1,forestWeights?.[i]??-1];
   };
   const kindAt=p=>p[3]>p[4]?(p[3]>p[5]?0:2):(p[4]>p[5]?1:2);
   function triangle(a,b,c){
@@ -104,6 +105,12 @@ export function coverageSkins(grid,bounds){
       const water=clip(poly,p=>p[6]);
       if(water.length>=3)builders[3].patch(water,true);
       poly=clip(poly,p=>-p[6]);
+      if(poly.length<3)return;
+    }
+    if(poly.some(p=>p[7]>0)){
+      const forest=clip(poly,p=>p[7]);
+      if(forest.length>=3)builders[4].patch(forest,true);
+      poly=clip(poly,p=>-p[7]);
       if(poly.length<3)return;
     }
     const first=kindAt(a);
