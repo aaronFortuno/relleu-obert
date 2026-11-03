@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-03 · v0.20.1**. Rasants ferroviàries i accessos més progressius. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
+Actualitzat: **2026-11-03 · v0.21.0**. Auditoria per altura i primera millora del radi de suavitzat de la 0.22. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
 
 ## Ordre de treball
 
@@ -8,7 +8,8 @@ Actualitzat: **2026-11-03 · v0.20.1**. Rasants ferroviàries i accessos més pr
 | --- | --- | --- |
 | **0.20 · Projectes locals** | RO-054 | Desar i recuperar retall, ajustos, materials i traços en el mateix navegador. Provar un projecte girat i els dos modes. La còpia de la malla exacta és una fase posterior. |
 | **0.21 · Exportació comprovable** | RO-024, RO-033, RO-034, RO-050, RO-052, RO-055 | Auditar els 3MF amb controls petits i identificar el primer defecte reproduïble. Les comprovacions de Bambu Studio i d’impressió es registren a banda. |
-| **0.22 · Vies i rendiment** | RO-051, RO-052, RO-053 | Comparar els accessos de Millau i Rajadell i un segon retall. Mesurar cada canvi amb el mateix retall, escala i ajustos. |
+| **0.22 · Vies i rendiment** | RO-051, RO-052, RO-053 | Comparar els accessos de Millau i Rajadell i un segon retall ferroviari. Mesurar cada canvi amb el mateix retall, escala i ajustos. |
+| **Retocs en paral·lel** | RO-046, RO-054 | Validar la càrrega dels exemples i la recuperació de projectes girats, amb els dos modes i traços. Reproduir qualsevol pèrdua d’ajustos abans de tocar el flux. |
 | **Després** | RO-023, RO-026, RO-032 | Comparar les fonts d’elevació i edificis en dues zones, amb proves d’accés i cobertura abans de fer canvis al model. |
 
 Els encàrrecs independents avancen en paral·lel. Cada bloc validat té el seu commit i es manté una sola prova pesada alhora. Els casos que requereixen inspecció al laminador poden quedar pendents mentre avancen altres línies.
@@ -24,9 +25,9 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | [RO-053](#ro-053--flux-de-treball-per-etapes) | P1 | Previsualització i progrés validats en diversos llocs | Mesurar temps i memòria; validar guies i descàrrega |
 | [RO-033](#ro-033--ponts-i-viaductes) | P1 | Millau i el cupó del Bages validats al visor | Revisar accessos i llums al laminador, contrastar altres ponts |
 | [RO-034](#ro-034--túnels-imprimibles) | P1 | Corregit en controls locals; pendent d'usuari/laminat | Revisar portals amb mode experimental activat |
-| [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | Perfil ferroviari verificat; bonys en vies principals pendents | Reproduir ondulacions als accessos de Millau i mesurar fases |
+| [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | Radi intermedi verificat en carretera i ferrocarril sintètics | Contrastar Millau, Rajadell i un retall ferroviari |
 | [RO-052](#ro-052--continuïtat-i-amplada-del-traçat-viari) | P1 | Accessos de Millau visualment acceptables; camins massa amples en retalls grans | Comparar amplades a dues escales i revisar el laminat |
-| [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió) | P1 | Auditoria local de tres 3MF superada | Reproduir el primer defecte al laminador amb un fitxer controlat |
+| [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió) | P1 | Consulta per altura verificada amb el cupó del Bages | Reproduir el primer defecte al laminador amb un fitxer controlat |
 | [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts)     | P1        | Fonts en estudi                                                                                                                                                                                                                                                                                                                       | Comparació de parts i petjades en segona zona           |
 | [RO-032](#ro-032--cobertes-i-volums-singulars) | P1 | Nucli verificat; servei remot pendent de validar | Consulta real reeixida i dades de coberta de Tamariu |
 | [RO-023](#ro-023--relleu-local-i-fonts-vectorials-de-més-precisió) | P2        | Fonts remotes pendents                                                                                                                                                                                                                                                                                                                | MDT més precís accessible al navegador                  |

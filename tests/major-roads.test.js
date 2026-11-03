@@ -67,6 +67,26 @@ test('coarse-scale main roads round crests over a longer section while retaining
   assert(constrained.maximumSectionLiftMetres<=.5);
 });
 
+test('lift-constrained roads and railways retain intermediate smoothing across a crest',()=>{
+  const crest=lon=>110-.04*Math.abs(lon*M-300);
+  const rail=feature([[0,0],[600,0]],{class:'rail'});
+  const settings={smoothProfiles:true,maxLiftMetres:.95};
+  const largestGradeJump=profile=>{
+    const grades=profile.elevations.slice(1).map((z,i)=>(z-profile.elevations[i])/(profile.stations[i+1]-profile.stations[i]));
+    return Math.max(...grades.slice(1).map((grade,i)=>Math.abs(grade-grades[i])));
+  };
+  for(const axis of [road,rail]){
+    const [base]=generateMajorRoadItems([axis],crest,{...settings,projection:projection(.2)}).items;
+    const [coarse]=generateMajorRoadItems([axis],crest,{...settings,projection:projection(.05)}).items;
+    assert(base&&coarse);
+    assert(coarse.smoothingRadiusMetres>40);
+    assert(largestGradeJump(coarse)<largestGradeJump(base)*.65);
+    assert(coarse.elevations.every((z,i)=>z>=coarse.constraintFloors[i]-1e-8));
+    assert(coarse.maximumGrade<=coarse.maxGrade+1e-8);
+    assert(coarse.maximumSectionLiftMetres<=settings.maxLiftMetres+1e-8);
+  }
+});
+
 test('unambiguous railway fragments use a constant grade, while an unmapped level crossing is preserved',()=>{
   const left=feature([[0,0],[300,0]],{class:'rail',ref:'R1'},'rail-west');
   const right=feature([[300,0],[600,0]],{class:'rail',ref:'R1'},'rail-east');

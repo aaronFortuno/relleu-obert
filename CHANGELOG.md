@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.21.0 — 2026-11-03
+
+- Auditoria dels 3MF de control per altura de capa i material.
+- Les vies principals i els ferrocarrils poden conservar un radi intermedi de suavitzat quan la finestra màxima supera els límits de pendent o elevació.
+
 ## v0.20.1 — 2026-11-03
 
 - Les rasants ferroviàries corbes adapten la finestra de suavitzat a l’escala.
