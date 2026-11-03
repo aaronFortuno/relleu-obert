@@ -24,7 +24,7 @@ Els encàrrecs independents avancen en paral·lel. Cada bloc validat té el seu 
 | [RO-034](#ro-034--túnels-imprimibles) | P1 | Corregit en controls locals; pendent d'usuari/laminat | Revisar portals amb mode experimental activat |
 | [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | Perfil ferroviari verificat; bonys en vies principals pendents | Reproduir ondulacions als accessos de Millau i mesurar fases |
 | [RO-052](#ro-052--continuïtat-i-amplada-del-traçat-viari) | P1 | Accessos de Millau visualment acceptables; camins massa amples en retalls grans | Comparar amplades a dues escales i revisar el laminat |
-| [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió) | P1 | Artefactes de materials pendents de diagnòstic | Distingir malla/exportació de configuració del laminador |
+| [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió) | P1 | Auditoria local de tres 3MF superada | Reproduir el primer defecte al laminador amb un fitxer controlat |
 | [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts)     | P1        | Fonts en estudi                                                                                                                                                                                                                                                                                                                       | Comparació de parts i petjades en segona zona           |
 | [RO-032](#ro-032--cobertes-i-volums-singulars) | P1 | Nucli verificat; servei remot pendent de validar | Consulta real reeixida i dades de coberta de Tamariu |
 | [RO-023](#ro-023--relleu-local-i-fonts-vectorials-de-més-precisió) | P2        | Fonts remotes pendents                                                                                                                                                                                                                                                                                                                | MDT més precís accessible al navegador                  |
@@ -172,6 +172,8 @@ P1: fidelitat i imprimibilitat; P2: funcionalitat i ús; P3: exploració. Només
 **Decisió de l’usuari després de v0.7.0:** Comprovat que l'eina existeix, però poc intuïtiva i massa text. Valorar si podem carregar GeoJSON d'alguna font oberta, potser no com a opció principal però si com una opció d'usuari en cas que vulgui major detall per als edificis.
 
 ### RO-024 — Unió de volums i validació d’impressió
+
+**Preparació del lot 0.21.** L’auditoria de 3MF de control verifica el muntatge, els materials, els filaments i la topologia indexada. El cupó del Bages i la parella de la Perica passen aquestes comprovacions. El solapament de caixes envolupants només assenyala parells per inspeccionar. [Resultats i com repetir la prova](RO-024-RESULTATS.md)
 
 **Observació rebuda, 2026-11-02:** al laminador apareixen capes puntuals amb color terra dins de vegetació/arbres i alguns edificis. La causa no està establerta: comprovar encavalcaments, topologia i assignació de materials del 3MF, i després configuració/reparació del laminador. Cal un fitxer i tall concrets abans d’atribuir responsabilitat. Es conserva l’anotació literal a l’historial.
 

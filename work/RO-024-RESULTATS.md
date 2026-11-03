@@ -93,3 +93,19 @@ La reducció de volum d’edificis/camins és compatible amb eliminar
 encavalcaments dins d’aquest material; no s’han restat encavalcaments entre
 materials diferents. S’han generat `output/perica-v012-{raw,united}.3mf` per
 comparar al Bambu, pendent de validació de l’usuari.
+
+## Auditoria dels fitxers de control
+
+L’ordre següent emet un informe JSON i retorna un error si detecta un problema de muntatge, correspondència de materials o topologia indexada.
+
+```powershell
+node --max-old-space-size=512 scripts/audit-3mf.mjs public/controls/ro-033/RO-033-cupo-pas-inferior.3mf output/perica-v012-raw.3mf output/perica-v012-united.3mf
+```
+
+| Control | Peces verificades | Parells amb caixes envolupants solapades |
+| --- | ---: | ---: |
+| Cupó del Bages | 3 | 3 |
+| La Perica, exportació original | 4 | 6 |
+| La Perica, unió per material | 4 | 6 |
+
+Els tres fitxers passen les comprovacions. El recompte de parells és una indicació per orientar la inspecció i no mesura el volum d’intersecció. Queda pendent obrir els fitxers a Bambu Studio i registrar el primer defecte que es pugui reproduir amb la configuració de laminat. L’eina està acotada a controls de fins a 8 MiB de ZIP, 12 MiB d’XML, 100.000 triangles i 16 peces.
