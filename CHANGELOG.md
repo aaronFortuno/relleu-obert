@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.19.17 — 2026-11-03
+
+- Relleu pur amb fins a 432 cel·les per costat, dades d’elevació més fines i diagonals triades a partir d’una mostra central de cada cel·la.
+- Les peces separades comparteixen els perfils dels talls. El visor ombreja la superfície de manera contínua.
+
 ## v0.19.16 — 2026-11-03
 
 - Mode Relleu pur d’1:10.000 a 1:100.000, sense consultes de vies ni edificis.

@@ -9,7 +9,8 @@ import {physicalBBox} from '../src/selection.js';
 import {createProcessingTiming} from '../src/processing-timing.js';
 import {auditPart} from '../src/solid-audit.js';
 import {threeMF} from '../src/export.js';
-import {splitModel,tileArchive} from '../src/mesh-tiles.js';
+import {tileArchive} from '../src/mesh-tiles.js';
+import {PURE_RELIEF_RESOLUTIONS,splitPureRelief} from '../src/pure-relief-mesh.js';
 
 const name=process.argv[2];
 if(!['tamariu','millau','aneto20','aneto40'].includes(name))throw Error('Ús: node --max-old-space-size=512 scripts/measure-processing.mjs tamariu|millau|aneto20|aneto40');
@@ -25,7 +26,7 @@ globalThis.fetch=async (url,options)=>{
 };
 await init(await WebAssembly.compile(await readFile(new URL('../node_modules/@jsquash/webp/codec/dec/webp_dec.wasm',import.meta.url))));
 const data=await loadRegion({sample,bbox,pureRelief,buildingSource:'osm',decodeElevation:async(blob,t)=>decodeDEMTile(await blob.arrayBuffer(),t,decode),onTiming:event=>sources.push(event)});
-const settings={size:pureRelief?extent*10:150,resolution:pureRelief?96:12,exaggeration:1.5,trees:false,estimatedTunnels:!pureRelief,pureRelief};
+const settings={size:pureRelief?extent*10:150,resolution:pureRelief?PURE_RELIEF_RESOLUTIONS[56]:12,exaggeration:1.5,trees:false,estimatedTunnels:!pureRelief,pureRelief};
 const timing=createProcessingTiming();
 timing.mark('initialization','Preparant el motor de geometria…');
 const api=pureRelief?null:await Module();api?.setup();
@@ -37,15 +38,14 @@ const result=buildModel(data,settings,message=>timing.mark(stage,message),api,ti
 const worker=timing.finish(),totalMilliseconds=performance.now()-started;
 const audit=result.categories.map(auditPart).map(({id,errors})=>({id,errors}));
 const report={schemaVersion:1,environment:'node',startedAt,selection:{name,bbox:data.meta.bbox},settings,
-  data:{vectorFeatures:data.features.length,demTiles:data.dem.length,buildingSource:data.meta.buildingSource,terrainProvider:data.meta.terrain?.provider??'sample',demZoom:data.meta.terrain?.zoom,coverage:data.meta.coverage},
+  data:{vectorFeatures:data.features.length,demTiles:data.dem.length,buildingSource:data.meta.buildingSource,terrainProvider:data.meta.terrain?.provider??'sample',demZoom:data.meta.terrain?.zoom,demSampleSize:data.meta.terrain?.sampleSize,coverage:data.meta.coverage},
   sources,worker,firstTerrainPreviewMilliseconds,totalMilliseconds,peakProcessRSSBytes:process.resourceUsage().maxRSS*1024,
   result:{scale:result.scale,triangles:result.triangles,buildings:result.buildingCount,trees:result.treeCount,coverageCells:result.provenance.coverageCells,audit}};
 await mkdir('output',{recursive:true});
 await writeFile(`output/temps-${name}.json`,JSON.stringify(report,null,2)+'\n');
 if(name==='aneto20'&&audit.every(part=>!part.errors.length))await writeFile('output/aneto-20km.3mf',threeMF(result,{bambu:true}));
 if(name==='aneto40'&&audit.every(part=>!part.errors.length)){
-  const splitApi=await Module();splitApi.setup();
-  const pieces=splitModel(result,splitApi);
+  const pieces=splitPureRelief(result,200,()=>{});
   if(pieces.length!==4||pieces.some(piece=>piece.parts.some(part=>auditPart(part).errors.length)))
     throw Error('La partició del pilot no ha superat l’auditoria.');
   await writeFile('output/aneto-40km-peces.zip',tileArchive(pieces,'bambu'));

@@ -1,6 +1,26 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {loadTerrain,loadBridgeTerrain,oceanTilePredicate} from '../src/terrain-provider.js';
+import {physicalBBox,selectionPose} from '../src/selection.js';
+
+test('a wide rotated relief crop selects the highest zoom within the request budget',async()=>{
+  const bbox=selectionPose(physicalBBox([42.635,.65],40,40),45).bbox;
+  const result=await loadTerrain(bbox,async(_,tile)=>({...tile,size:2,elev:new Float32Array(4)}),
+    async()=>({ok:true,blob:async()=>({})}),undefined,undefined,{zooms:[14,13,12,11],maxTiles:96});
+  assert.equal(result.metadata.zoom,12);
+  assert.equal(result.tiles.length,81);
+});
+
+test('the sample budget retains centred numeric elevations and ignores invalid pixels',async()=>{
+  const original=Float32Array.from({length:16},(_,index)=>index);
+  original[0]=NaN;
+  const result=await loadTerrain([3.201,41.918,3.202,41.919],async(_,tile)=>({...tile,size:4,elev:original}),
+    async()=>({ok:true,blob:async()=>({})}),undefined,undefined,{zooms:[12],maxSamples:4});
+  assert.equal(result.metadata.sampleSize,2);
+  assert.equal(result.tiles[0].size,2);
+  assert.deepEqual([...result.tiles[0].elev],[Math.fround(10/3),4.5,10.5,12.5]);
+  assert(Number.isNaN(original[0]));
+});
 test('a missing Mapterhorn tile uses the second provider instead of stopping on 404',async()=>{
   const urls=[],r=await loadTerrain([3.201,41.918,3.202,41.919],async(blob,t)=>({...t,size:2,elev:new Float32Array(4)}),async url=>{urls.push(url);return url.includes('mapterhorn')?{ok:false,status:404}:{ok:true,blob:async()=>({})};});
   assert(r.metadata.provider.includes('Mapzen'));assert(r.warnings.length);assert(urls.some(u=>u.includes('amazonaws')));assert(r.tiles.length);

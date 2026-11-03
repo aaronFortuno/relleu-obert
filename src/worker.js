@@ -2,6 +2,7 @@ import {buildModel,updateVegetation,updateBuildings,updateTransport,previewBuild
 import {threeMF,stlZip} from './export.js';
 import {groupMaterials} from './materials.js';
 import {splitModel,tileArchive} from './mesh-tiles.js';
+import {splitPureRelief} from './pure-relief-mesh.js';
 import Module from 'manifold-3d';
 import wasmURL from 'manifold-3d/manifold.wasm?url';
 import {createProcessingTiming} from './processing-timing.js';
@@ -24,7 +25,7 @@ function buildObserver(timing,pureRelief){
     progress:message=>report(stage,message),
     parts:(stage,parts,{width,height},mode='replace')=>{
       const categories=parts.filter(part=>part.faces.length);
-      if(categories.length||mode==='replace')self.postMessage({type:'build-preview',stage,mode,categories,width,height});
+      if(!pureRelief&&(categories.length||mode==='replace'))self.postMessage({type:'build-preview',stage,mode,categories,width,height});
     }
   };
 }
@@ -45,7 +46,7 @@ try{
   if(data.type==='build'||data.type==='vegetation'){
     const observer=data.type==='build'?buildObserver(timing,data.options.pureRelief):null;
     if(observer&&!data.options.pureRelief&&!api&&(data.options.estimatedTunnels||data.options.majorRoads||data.region.infrastructure?.items?.length||data.region.features?.some(f=>f.properties?.sourceLayer==='transportation'&&f.properties.brunnel==='bridge'))){timing.mark('initialization','Preparant el motor de geometria…');progress('Preparant el motor de geometria…');api=await Module({locateFile:()=>wasmURL});api.setup();}
-    current=observer?buildModel(data.region,data.options,observer.progress,api,timing.detail,observer):updateVegetation(current,data.options,progress);self.postMessage({type:'model',model:{...current,parts:undefined,categories:data.type==='vegetation'?current.categories.filter(p=>p.id==='trees'):current.categories},vegetation:data.type==='vegetation',timing:timing?.finish()});
+    current=observer?buildModel(data.region,data.options,observer.progress,api,timing.detail,observer):updateVegetation(current,data.options,progress);self.postMessage({type:'model',model:{...current,parts:undefined,reliefGrid:undefined,categories:data.type==='vegetation'?current.categories.filter(p=>p.id==='trees'):current.categories},vegetation:data.type==='vegetation',timing:timing?.finish()});
   }
   if(data.type==='buildings'){
     const report=message=>{timing?.mark('buildings',message);progress(message);};
@@ -72,7 +73,15 @@ try{
   }
   if(data.type==='export'){
     if(!current)throw Error('Genera primer el model.');const model=groupMaterials(current,data.materialCount,data.assignments);let bytes,archive=false;
-    if(data.split&&(model.width>200||model.height>200)){progress('Preparant els talls de les peces…');if(!api){api=await Module({locateFile:()=>wasmURL});api.setup();}bytes=tileArchive(splitModel(model,api,200,progress),data.format);archive=true;}
+    if(data.split&&(model.width>200||model.height>200)){
+      progress('Preparant els talls de les peces…');
+      let pieces=model.reliefGrid&&splitPureRelief(model,200,progress);
+      if(!pieces){
+        if(!api){api=await Module({locateFile:()=>wasmURL});api.setup();}
+        pieces=splitModel(model,api,200,progress);
+      }
+      bytes=tileArchive(pieces,data.format);archive=true;
+    }
     else bytes=data.format==='stl'?stlZip(model):threeMF(model,{bambu:data.format==='bambu'});
     self.postMessage({type:'download',format:data.format,archive,bytes},[bytes.buffer]);
   }

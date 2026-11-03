@@ -5,6 +5,7 @@ import {loadRegion} from '../src/sources.js';
 import {auditPart} from '../src/solid-audit.js';
 import {physicalBBox} from '../src/selection.js';
 import {groupMaterials} from '../src/materials.js';
+import {reliefDiagonals,reliefParts,splitPureRelief} from '../src/pure-relief-mesh.js';
 
 const bbox=physicalBBox([0,0],10,10);
 const dem=[{z:0,x:0,y:0,size:2,elev:new Float32Array([100,200,500,650])}];
@@ -31,4 +32,21 @@ test('pure relief fetches only elevations outside the pilot coverage',async()=>{
     assert.equal(data.meta.coverage.available,false);
     assert.equal(data.meta.buildingSource,null);
   }finally{globalThis.fetch=previous;}
+});
+
+test('relief diagonals follow the measured centre and checkerboard materials stay closed',()=>{
+  assert.equal(reliefDiagonals([0,10,10,0],1,()=>9)[0],1);
+  assert.equal(reliefDiagonals([0,10,10,0],1,()=>1)[0],0);
+  const reliefGrid={resolution:2,width:400,height:400,
+    heights:new Float64Array([6,7,8,8,9,10,9,11,12]),
+    diagonals:new Uint8Array([1,0,0,1]),labels:new Uint8Array([1,2,2,1])};
+  const parts=reliefParts(reliefGrid);
+  for(const part of parts)assert.deepEqual(auditPart(part).errors,[]);
+  const tiles=splitPureRelief({reliefGrid,width:400,height:400,provenance:{}},200,()=>{});
+  assert.equal(tiles.length,4);
+  for(const tile of tiles)for(const part of tile.parts)assert.deepEqual(auditPart(part).errors,[]);
+  const seam=(tile,x)=>[...new Set(tile.parts.flatMap(({vertices})=>Array.from(
+    {length:vertices.length/3},(_,i)=>vertices[i*3]===x&&vertices[i*3+2]>0
+      ?vertices[i*3+1]+','+vertices[i*3+2]:null).filter(Boolean)))].sort();
+  assert.deepEqual(seam(tiles[0],200),seam(tiles[1],0));
 });

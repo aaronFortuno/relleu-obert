@@ -1,7 +1,29 @@
 import {zipSync,strToU8} from 'fflate';
 const esc=s=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;');
+function xmlBytes(...initial){
+  const chunks=[];
+  let lines=[],length=0;
+  const flush=()=>{
+    if(!lines.length)return;
+    const bytes=strToU8((chunks.length?'\n':'')+lines.join('\n'));
+    chunks.push(bytes);length+=bytes.length;lines=[];
+  };
+  const push=(...next)=>{
+    lines.push(...next);
+    if(lines.length>=4096)flush();
+  };
+  push(...initial);
+  return {push,finish(){
+    flush();
+    if(chunks.length===1)return chunks[0];
+    const bytes=new Uint8Array(length);
+    let offset=0;
+    for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.length;}
+    return bytes;
+  }};
+}
 export function threeMF(model,{bambu=false}={}){
-  const parts=model.parts,xml=['<?xml version="1.0" encoding="UTF-8"?>',`<model unit="millimeter" xml:lang="ca" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02"${bambu?' xmlns:BambuStudio="http://schemas.bambulab.com/package/2021" xmlns:p="http://schemas.microsoft.com/3dmanufacturing/production/2015/06" requiredextensions="p"':''}>`,`<metadata name="Title">Relleu Obert · ${esc(model.provenance.name||'Maqueta')}</metadata>`,`<metadata name="Description">${esc(JSON.stringify(model.provenance))}</metadata>`];
+  const parts=model.parts,xml=xmlBytes('<?xml version="1.0" encoding="UTF-8"?>',`<model unit="millimeter" xml:lang="ca" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02"${bambu?' xmlns:BambuStudio="http://schemas.bambulab.com/package/2021" xmlns:p="http://schemas.microsoft.com/3dmanufacturing/production/2015/06" requiredextensions="p"':''}>`,`<metadata name="Title">Relleu Obert · ${esc(model.provenance.name||'Maqueta')}</metadata>`,`<metadata name="Description">${esc(JSON.stringify(model.provenance))}</metadata>`);
   // Bambu's importer gates project/material loading on this compatibility marker.
   // Preserve the actual generator separately; no printer or temperature preset is embedded.
   if(bambu)xml.push('<metadata name="Application">BambuStudio-02.00.00.00</metadata>','<metadata name="BambuStudio:3mfVersion">1</metadata>','<metadata name="Designer">Relleu Obert</metadata>','<metadata name="RelleuObert:Generator">Relleu Obert · Bambu-compatible dialect</metadata>');
@@ -9,7 +31,7 @@ export function threeMF(model,{bambu=false}={}){
   for(const p of parts)xml.push(`<base name="${esc(p.name)}" displaycolor="${p.color}FF"/>`);xml.push('</basematerials>');
   parts.forEach((p,i)=>{xml.push(`<object id="${i+2}" name="${esc(p.name)}" type="model" pid="1" pindex="${i}"><mesh><vertices>`);for(let j=0;j<p.vertices.length;j+=3)xml.push(`<vertex x="${p.vertices[j].toFixed(6)}" y="${p.vertices[j+1].toFixed(6)}" z="${p.vertices[j+2].toFixed(6)}"/>`);xml.push('</vertices><triangles>');const paint=i<2?((i+1)*4).toString(16).toUpperCase():(12+(i-2)*16).toString(16).toUpperCase().padStart(2,'0');for(let j=0;j<p.faces.length;j+=3)xml.push(`<triangle v1="${p.faces[j]}" v2="${p.faces[j+1]}" v3="${p.faces[j+2]}"${bambu?` paint_color="${paint}"`:''}/>`);xml.push('</triangles></mesh></object>');});
   const assembly=parts.length+2;xml.push(`<object id="${assembly}" name="Relleu Obert" type="model"><components>`);parts.forEach((p,i)=>xml.push(`<component objectid="${i+2}"/>`));xml.push(`</components></object></resources><build><item objectid="${assembly}"/></build></model>`);
-  const files={'[Content_Types].xml':strToU8('<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/><Default Extension="config" ContentType="application/octet-stream"/><Default Extension="json" ContentType="application/json"/></Types>'),'_rels/.rels':strToU8('<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Target="/3D/3dmodel.model" Id="rel-1" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/></Relationships>'),'3D/3dmodel.model':strToU8(xml.join('\n')),'Metadata/provenance.json':strToU8(JSON.stringify({...model.provenance,exportDialect:bambu?'bambu-compatible':'3mf-core'},null,2))};
+  const files={'[Content_Types].xml':strToU8('<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/><Default Extension="config" ContentType="application/octet-stream"/><Default Extension="json" ContentType="application/json"/></Types>'),'_rels/.rels':strToU8('<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Target="/3D/3dmodel.model" Id="rel-1" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/></Relationships>'),'3D/3dmodel.model':xml.finish(),'Metadata/provenance.json':strToU8(JSON.stringify({...model.provenance,exportDialect:bambu?'bambu-compatible':'3mf-core'},null,2))};
   if(bambu){
     files['Metadata/project_settings.config']=strToU8(JSON.stringify({filament_colour:parts.map(p=>p.color.toUpperCase())}));
     const config=['<?xml version="1.0" encoding="UTF-8"?>',`<config><object id="${assembly}"><metadata key="name" value="Relleu Obert"/><metadata key="extruder" value="1"/>`];

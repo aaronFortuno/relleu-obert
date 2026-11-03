@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-03 · v0.19.16**. Pilot de Relleu pur disponible i perfils suaus activats per defecte. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
+Actualitzat: **2026-11-03 · v0.19.17**. Malla de Relleu pur més fina i exportació en peces des de la mateixa graella. [Represa](REPRESA-RO-052.md), [informe geomètric](RO-052-CONTINUITAT.md), [disseny d'UX](RO-053-UX.md).
 
 ## Ordre de treball
 
@@ -12,7 +12,7 @@ Actualitzat: **2026-11-03 · v0.19.16**. Pilot de Relleu pur disponible i perfil
 
 1. **RO-053 / RO-051 — Rendiment del terreny i dels suports.** Sant Llorenç ha passat de 132,69 a 23,74 s fins al primer relleu en els controls Node. A Millau, els suports han passat de 31,58 a 22,96 s i continuen dominant el temps. [Temps de generació](RO-053-TEMPS.md).
 2. **RO-051 / RO-052 — Perfils i amplada de les vies.** Reproduir els bonys dels accessos de Millau i comparar la llegibilitat de diferents classes de via en una peça local i un retall ampli. Revisar amplades i mínims imprimibles conjuntament.
-3. **RO-055 — Relleu pur.** Pilot de l’Aneto mesurat amb retalls de 20 i 40 km. Pendent de validar al laminador i en altres serralades.
+3. **RO-055 — Relleu pur.** Contrast de la nova malla de l’Aneto al visor i al laminador. Vegetació cartografiada i proporcionada a l’escala en una iteració posterior.
 4. **RO-054 — Galeria local.** Desar i recuperar configuracions en un mateix navegador. Valorar després una còpia del model acabat quan calgui recuperar exactament la mateixa geometria.
 5. **RO-032 — Cobertes i singulars.** Mesurar la cobertura real de formes de coberta en un retall abans d’ampliar el modelatge. Verificar els volums singulars amb fonts i llicències concretes.
 
@@ -33,7 +33,7 @@ Continuen oberts el laminat dels controls de ponts, túnels i ferrocarrils (RO-0
 | [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts)     | P1        | Fonts en estudi                                                                                                                                                                                                                                                                                                                       | Comparació de parts i petjades en segona zona           |
 | [RO-032](#ro-032--cobertes-i-volums-singulars) | P1 | Nucli verificat; servei remot pendent de validar | Consulta real reeixida i dades de coberta de Tamariu |
 | [RO-023](#ro-023--relleu-local-i-fonts-vectorials-de-més-precisió) | P2        | Fonts remotes pendents                                                                                                                                                                                                                                                                                                                | MDT més precís accessible al navegador                  |
-| [RO-055](#ro-055--mode-de-relleu-pur) | P2 | Pilot implementat | Retalls de 20 i 40 km exportats; pendent de laminat |
+| [RO-055](#ro-055--mode-de-relleu-pur) | P2 | Pilot implementat | Malla més fina a l’Aneto; pendent de laminat i vegetació |
 | [RO-054](#ro-054--galeria-local-de-projectes) | P2 | Proposat | Desar i recuperar una configuració en el mateix navegador |
 
 ## Validació i retocs acotats
@@ -464,4 +464,6 @@ La preparació de mida i territori precedeix les quatre capes. En separar el mot
 
 **P2, pilot implementat a v0.19.16.** Escales d’1:10.000 a 1:100.000, càrrega d’elevacions separada i colors de sòl nu i neu o gel segons ESA WorldCover 2021 al retall de l’Aneto.
 
-**Validació.** Retalls de 20 i 40 km generats en uns cinc segons al motor local. Exportació 3MF d’una i quatre peces, respectivament. Pendent de comprovar en un laminador i de validar la resolució útil en altres serralades. [Mesures i fonts](RO-055-RELLEU-PUR.md).
+**v0.19.17.** Detall alt de 432 cel·les per costat i més resolució a les dades d’elevació. Les peces comparteixen la malla dels talls. Pendent de validar en un laminador i en altres serralades. [Mesures i fonts](RO-055-RELLEU-PUR.md).
+
+**Vegetació pendent.** Representar boscos cartografiats i provar formes arrodonides proporcionades a l’escala de la maqueta. A escales on els arbres individuals quedin per sota de la resolució d’impressió, estudiar una representació contínua del bosc.

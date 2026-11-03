@@ -1,7 +1,8 @@
+import {reliefDiagonals,reliefParts} from './pure-relief-mesh.js';
 import {polygonOps} from './polygon-ops.js';
 import earcut from 'earcut';
-import {sampleHeight,prepareElevationTiles,createTerrainField} from './elevation.js';
-import {CATEGORIES,RELIEF_MATERIALS,groupMaterials} from './materials.js';
+import {sampleHeight,prepareElevationTiles,createTerrainField,createElevationSampler} from './elevation.js';
+import {CATEGORIES,groupMaterials} from './materials.js';
 import {polygonTester} from './polygon-index.js';
 import {lineBuffer} from './roads.js';
 import {isRailway,isInactiveRailway,railwayOptions,railwayWidthMetres} from './railways.js';
@@ -283,56 +284,43 @@ function buildPureRelief(data,options,progress,preview){
   const {size=160,exaggeration=1.5,resolution=56}=options;
   const {width,height,scale,unproject}=makeProjection(data.meta.bbox,size,options);
   if(![width,height,exaggeration].every(Number.isFinite)||Math.min(width,height)<=0||Math.max(width,height)>450||exaggeration<1||exaggeration>5||
-      !Number.isInteger(resolution)||resolution<2||resolution>100||1000/scale<9999.9||1000/scale>100001)
+      !Number.isInteger(resolution)||resolution<2||resolution>432||1000/scale<9999.9||1000/scale>100001)
     throw Error('El mode Relleu pur admet escales d’1:10.000 a 1:100.000.');
   preview?.stage('terrain','Revisant les mostres d’altitud…');
-  const prepared=prepareElevationTiles(data.dem);
+  const prepared=prepareElevationTiles(data.dem),sample=createElevationSampler(prepared.tiles);
   progress('Calculant el camp d’altures…');
-  const field=createTerrainField({width,height,resolution,at:(x,y)=>sampleHeight(prepared.tiles,...unproject([x,y]))});
-  const originMeters=Math.min(...field.values);
-  for(let i=0;i<field.values.length;i++)field.values[i]=5+(field.values[i]-originMeters)*scale*exaggeration;
-  const ground=field.sample,rect=box(width,height),masks=[[],[]],cells=[0,0];
-  const categoryAt=(x,y)=>{
-    const [lon,lat]=unproject([x,y]);
-    for(const {bbox:[w,s,e,n],width,height,values}of data.coverage||[]){
+  const heightAt=(x,y)=>sample(...unproject([x*width/resolution,y*height/resolution]));
+  const heights=new Float64Array((resolution+1)**2);
+  let originMeters=Infinity;
+  for(let row=0;row<=resolution;row++)for(let col=0;col<=resolution;col++){
+    const z=heightAt(col,row);
+    heights[row*(resolution+1)+col]=z;
+    originMeters=Math.min(originMeters,z);
+  }
+  const diagonals=reliefDiagonals(heights,resolution,(col,row)=>heightAt(col+.5,row+.5));
+  for(let i=0;i<heights.length;i++)heights[i]=5+(heights[i]-originMeters)*scale*exaggeration;
+  const cells=[0,0],labels=new Uint8Array(resolution**2);
+  progress('Projectant la cobertura de sòl nu i neu o gel…');
+  if(data.coverage?.length)for(let row=0;row<resolution;row++)for(let col=0;col<resolution;col++){
+    const [lon,lat]=unproject([(col+.5)*width/resolution,(row+.5)*height/resolution]);
+    for(const {bbox:[w,s,e,n],width,height,values}of data.coverage){
       if(lon<w||lon>=e||lat<=s||lat>n)continue;
       const value=values[Math.floor((n-lat)/(n-s)*height)*width+Math.floor((lon-w)/(e-w)*width)];
-      return value===60?0:value===70?1:-1;
-    }
-    return -1;
-  };
-  progress('Projectant la cobertura de sòl nu i neu o gel…');
-  if(data.coverage?.length)for(let row=0;row<resolution;row++){
-    const y0=row*height/resolution,y1=(row+1)*height/resolution;
-    let start=0,category=-1;
-    for(let col=0;col<=resolution;col++){
-      const next=col===resolution?-1:categoryAt((col+.5)*width/resolution,(y0+y1)/2);
-      if(next===category)continue;
-      if(category>=0){
-        const x0=start*width/resolution,x1=col*width/resolution;
-        masks[category].push([[[[x0,y0],[x1,y0],[x1,y1],[x0,y1],[x0,y0]]]]);
-        cells[category]+=col-start;
-      }
-      start=col;category=next;
+      const category=value===60?1:value===70?2:0;
+      labels[row*resolution+col]=category;
+      if(category)cells[category-1]++;
+      break;
     }
   }
   progress('Construint el sòlid del relleu…');
-  const colored=masks.map(mergeLayer),hasColors=colored.some(p=>p.length),surface=RELIEF_MATERIALS[0];
-  const solid=(mask,top,bottom)=>terrainSolid(mask,top,bottom,width,height,resolution);
-  const categories=[];
-  if(hasColors){
-    const shoulder=(x,y)=>ground(x,y)-.65,base={vertices:[],faces:[]};
-    append(base,solid(rect,shoulder,()=>0));
-    append(base,solid(subtract(rect,merge(colored.filter(p=>p.length))),ground,shoulder));
-    categories.push({...surface,vertices:new Float32Array(base.vertices),faces:new Uint32Array(base.faces)});
-    colored.forEach((mask,i)=>{if(mask.length)categories.push({...RELIEF_MATERIALS[i+1],...solid(mask,ground,shoulder)});});
-  }else categories.push({...surface,...solid(rect,ground,()=>0)});
+  const reliefGrid={resolution,width,height,heights,diagonals,labels};
+  const categories=reliefParts(reliefGrid);
   preview?.parts('terrain',categories,{width,height});
   const verticalReference={originMeters,minimumSurfaceMM:5,seaLevelMM:null,method:'lowest generated-terrain sample at 5 mm'};
   const warnings=[...(data.meta.sourceWarnings||[])];
   const provenance={...data.meta,options:{...options,pureRelief:true,trees:false},verticalExaggeration:exaggeration,verticalReference,
     units:'millimeters',coverageCells:{bare:cells[0],snow:cells[1],total:resolution**2}};
-  return groupMaterials({width,height,scale:Math.round(1000/scale),treeCount:0,buildingCount:0,categories,warnings,
+  return groupMaterials({width,height,scale:Math.round(1000/scale),treeCount:0,buildingCount:0,categories,warnings,reliefGrid,
     triangles:categories.reduce((n,p)=>n+p.faces.length/3,0),elevationDiagnostics:prepared.diagnostics,provenance});
 }
 

@@ -74,7 +74,9 @@ export async function loadRegion({sample=true,bbox,buildingSource,decodeElevatio
     if(!Array.isArray(bbox)||bbox.length!==4||!bbox.every(Number.isFinite)||bbox[0]>=bbox[2]||bbox[1]>=bbox[3]||
       bbox[0]<-180||bbox[2]>180||bbox[1]<-70||bbox[3]>70||bbox[2]-bbox[0]>2||bbox[3]-bbox[1]>1)
       throw Error('Retall fora dels límits de Relleu pur.');
-    const terrain=await time('source.terrain',()=>loadTerrain(bbox,decodeElevation,fetch,progress,undefined,{zooms:[14,13,12,11,10],maxTiles:16}));
+    const terrain=await time('source.terrain',()=>loadTerrain(bbox,decodeElevation,fetch,progress,undefined,{
+      zooms:[14,13,12,11,10],maxTiles:96,maxSamples:8*1024**2
+    }));
     let coverage=[];
     const warnings=terrain.warnings.slice();
     progress('Carregant la cobertura de sòl nu i neu o gel…');
