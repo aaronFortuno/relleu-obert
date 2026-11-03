@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.21.1 — 2026-11-03
+
+- MET5 de l’ICGC com a primera font per als retalls amb cobertura completa, amb retorn automàtic a la font general.
+
 ## v0.21.0 — 2026-11-03
 
 - Auditoria dels 3MF de control per altura de capa i material.

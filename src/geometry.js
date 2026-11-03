@@ -185,8 +185,10 @@ function prepareTerrain(data,options,progress,preview,measure){
   if(!Number.isFinite(density)||density<.25||density>5||!Number.isInteger(resolution)||resolution<2||resolution>100||!Number.isFinite(exaggeration)||exaggeration<1||exaggeration>5||!Number.isFinite(size)||size<50||size>450||width>450||height>450)throw Error('Els ajustos de la maqueta són fora del rang admès.');
   if(options.targetScale!=null&&Math.abs(1000/scale-validateScale(options.targetScale))>options.targetScale*1e-6)throw Error('El retall no concorda amb l’escala demanada. Torna a seleccionar la regió.');
   preview?.stage('terrain','Revisant les mostres d’altitud…');
-  const prepared=data.localDEM?{tiles:[],diagnostics:{invalid:0,spikes:0,repaired:0,source:'local GeoTIFF'}}:prepareElevationTiles(data.dem),localHeight=data.localDEM?localRasterSampler(data.localDEM):null;
-  const elevationAt=(lon,lat)=>localHeight?localHeight(lon,lat):sampleHeight(prepared.tiles,lon,lat);
+  const raster=data.localDEM||data.terrainRaster;
+  const prepared=raster?{tiles:[],diagnostics:{invalid:0,spikes:0,repaired:0,source:data.meta.terrain?.provider||'local GeoTIFF'}}:prepareElevationTiles(data.dem);
+  const rasterHeight=raster?localRasterSampler(raster):null;
+  const elevationAt=(lon,lat)=>rasterHeight?rasterHeight(lon,lat):sampleHeight(prepared.tiles,lon,lat);
   if(prepared.diagnostics.repaired)warnings.push(`S’han reconstruït ${prepared.diagnostics.repaired} mostres d’altitud invàlides o pics aïllats a partir dels veïns.`);
   const water=[],ocean=[],stillWater=[],green=[],woods=[],roads=[],rails=[],transport=[],roadPieces=[],railPieces=[];
   const knownItems=[],knownFootprints=[];
@@ -206,7 +208,12 @@ function prepareTerrain(data,options,progress,preview,measure){
     for(const line of lines)if(!overlapsKnown(line))candidates.push({...f,geometry:{type:'LineString',coordinates:line}});
   }
   const bridgeTiles=data.bridgeDem?.length?[...prepared.tiles,...prepareElevationTiles(data.bridgeDem).tiles]:null;
-  const bridgeElevation=bridgeTiles?(lon,lat)=>sampleHeight(bridgeTiles,lon,lat):elevationAt;
+  const bridgeElevation=bridgeTiles?(lon,lat)=>{
+    if(data.terrainRaster){
+      try{return elevationAt(lon,lat);}catch{/* Use the context DEM beyond the MET5 window. */}
+    }
+    return sampleHeight(bridgeTiles,lon,lat);
+  }:elevationAt;
   preview?.stage('terrain','Identificant els traçats dels ponts…');
   const generated=generateProceduralBridgeItems(candidates,bridgeElevation,{scale,bbox:data.meta.bbox});warnings.push(...generated.warnings);
   const deckItems=knownItems.slice(),deckFootprints=knownFootprints.slice();
@@ -264,14 +271,14 @@ function prepareTerrain(data,options,progress,preview,measure){
   const bare=measure('terrain.bare',()=>subtract(subtract(land,roadPoly),forest));
   const oceanPoly=merge(cropped(ocean)),hasOcean=oceanPoly.length>0;
   progress('Calculant el camp d’altures…');
-  const field=createTerrainField({width,height,resolution,at:(x,y)=>{const[lon,lat]=proj.unproject([x,y]);const h=localHeight?localHeight(lon,lat):sampleHeight(prepared.tiles,lon,lat);return hasOcean?Math.max(0,h):h;}});
+  const field=createTerrainField({width,height,resolution,at:(x,y)=>{const h=elevationAt(...proj.unproject([x,y]));return hasOcean?Math.max(0,h):h;}});
   let originMeters=Infinity,maximumElevation=-Infinity;
   for(const h of field.values){originMeters=Math.min(originMeters,h);maximumElevation=Math.max(maximumElevation,h);}
   if(hasOcean)originMeters=0;
   const verticalReference={originMeters,minimumSurfaceMM:5,seaLevelMM:hasOcean?5:null,method:hasOcean?'sea level at 5 mm; no bathymetry':'lowest generated-terrain sample at 5 mm'};
   for(let i=0;i<field.values.length;i++)field.values[i]=5+(field.values[i]-originMeters)*scale*exaggeration;
   const ground=field.sample;
-  const terrain={size,exaggeration,resolution,proj,rect,warnings,elevationAt,deckItems,deckMask,transport,roadPieces,railPieces,maximumElevation,
+  const terrain={size,exaggeration,resolution,proj,rect,warnings,elevationAt:data.terrainRaster?bridgeElevation:elevationAt,deckItems,deckMask,transport,roadPieces,railPieces,maximumElevation,
     roadOnlyPoly,roadPoly,forest,bare,railPoly,waterPoly,land,oceanPoly,green,cropped,ground,verticalReference,diagnostics:prepared.diagnostics,
     woodsMask:measure('terrain.woods',()=>merge(cropped(woods)),{inputs:woods.length})};
   terrain.surfaces=measure('terrain.surfaces',()=>terrainCover(forest,bare,terrain,progress));
@@ -332,7 +339,8 @@ function buildPureRelief(data,options,progress,preview){
       !Number.isInteger(resolution)||resolution<2||resolution>PURE_RELIEF_RESOLUTIONS[56]||1000/scale<9999.9||1000/scale>100001)
     throw Error('El mode Relleu pur admet escales d’1:10.000 a 1:100.000.');
   preview?.stage('terrain','Revisant les mostres d’altitud…');
-  const prepared=prepareElevationTiles(data.dem),sample=createElevationSampler(prepared.tiles);
+  const prepared=data.terrainRaster?{diagnostics:{invalid:0,spikes:0,repaired:0,source:data.meta.terrain?.provider}}:prepareElevationTiles(data.dem);
+  const sample=data.terrainRaster?localRasterSampler(data.terrainRaster):createElevationSampler(prepared.tiles);
   progress('Calculant el camp d’altures…');
   const heightAt=(x,y)=>sample(...unproject([x*width/resolution,y*height/resolution]));
   const heights=new Float64Array((resolution+1)**2);

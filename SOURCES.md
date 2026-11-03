@@ -15,6 +15,7 @@ L’atribut `altura` de les construccions RTT s’expressa en metres: [especific
 ## Elevacions
 
 - Mapterhorn, https://mapterhorn.com/data-access/ . Tessel·les Terrarium WebP de 512 píxels. Fórmula: `R*256 + G + B/256 - 32768` metres.
+- ICGC MET5, [servei WCS del Model d’Elevacions del Terreny](https://www.icgc.cat/ca/Geoinformacio-i-mapes/Geoinformacio-en-linia-Geoserveis/WMS-i-WCS-Elevacions/WCS-del-Model-dElevacions-del-Terreny). Graella ArcGrid de 5 m en ETRS89 / UTM 31N. Font preferent per als retalls amb cobertura completa i dins del pressupost de càrrega.
 - Fonts originals i atribucions: https://mapterhorn.com/attribution/ i https://download.mapterhorn.com/attribution.json . La precisió real varia segons la font i la regió.
 - Es conserva una còpia del catàleg d’atribucions originals a `public/data/elevation-attribution.json`.
 - Font alternativa: Mapzen / Tilezen Terrain Tiles, AWS Open Data, https://registry.opendata.aws/terrain-tiles/ . Atribucions originals: https://github.com/tilezen/joerd/blob/master/docs/attribution.md . La font efectivament utilitzada queda registrada a les metadades de cada regió.

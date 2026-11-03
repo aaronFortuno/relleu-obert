@@ -1,7 +1,31 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {loadTerrain,loadBridgeTerrain,oceanTilePredicate} from '../src/terrain-provider.js';
+import {loadTerrain,loadPreferredTerrain,loadBridgeTerrain,oceanTilePredicate} from '../src/terrain-provider.js';
+import {localRasterSampler} from '../src/local-raster.js';
 import {physicalBBox,selectionPose} from '../src/selection.js';
+
+test('the preferred source uses a complete MET5 raster and falls back on a coverage gap',async()=>{
+  const center=[42.237,1.704],bbox=physicalBBox(center,.02,.02),urls=[];
+  const decode=async(_,tile)=>({...tile,size:2,elev:new Float32Array(4).fill(100)});
+  const fetcher=hole=>async url=>{
+    urls.push(url);
+    if(!url.includes('geoserveis.icgc.cat'))return new Response('tile');
+    const [west,south,east,north]=new URL(url).searchParams.get('BBOX').split(',').map(Number);
+    const width=(east-west)/5,height=(north-south)/5;
+    const rows=Array.from({length:height},(_,row)=>Array.from({length:width},(_,col)=>hole&&row===0&&col===0?-9999:1200).join(' '));
+    return new Response([`NCOLS ${width}`,`NROWS ${height}`,`XLLCORNER ${west}`,`YLLCORNER ${south}`,'CELLSIZE 5','NODATA_VALUE -9999',...rows].join('\n'));
+  };
+  const preferred=await loadPreferredTerrain(bbox,decode,fetcher(false));
+  assert.equal(preferred.metadata.provider,'ICGC MET5');
+  assert(Math.abs(localRasterSampler(preferred.raster)(center[1],center[0])-1200)<1e-8);
+  assert.equal(urls.length,1);
+  const fallback=await loadPreferredTerrain(bbox,decode,fetcher(true));
+  assert.equal(fallback.metadata.provider,'Mapterhorn');
+  assert.match(fallback.warnings[0],/MET5/);
+  urls.length=0;
+  await loadPreferredTerrain(physicalBBox([44,3],.02,.02),decode,fetcher(false));
+  assert(urls.every(url=>url.includes('mapterhorn')));
+});
 
 test('a wide rotated relief crop selects the highest zoom within the request budget',async()=>{
   const bbox=selectionPose(physicalBBox([42.635,.65],40,40),45).bbox;

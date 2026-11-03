@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-03. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.21.1 — MET5 al Pedraforca
+
+MET5 seleccionat automàticament en retalls amb cobertura completa. Dos 3MF auditats al Pedraforca. Als Degotalls falta la transformació del núvol terrestre. [Resultats i comprovacions](RELLEU-ROCOS.md)
+
 ## v0.21.0 — Control d’exportació per altura i rasants
 
 El cupó del Bages permet consultar materials per altura. Rajadell i els Rasos–Gallina Pelada queden com a controls de laminat. Una prova sintètica amb carretera i ferrocarril en dues escales verifica un radi intermedi i un canvi de pendent més progressiu. Queda pendent el contrast visual en retalls reals.

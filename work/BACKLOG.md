@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-03 · v0.21.0**. Auditoria per altura i primera millora del radi de suavitzat de la 0.22. [Historial](HISTORIAL.md).
+Actualitzat: **2026-11-03 · v0.21.1**. MET5 integrat i comprovat al Pedraforca. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -30,7 +30,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió) | P1 | Consulta per altura verificada amb el cupó del Bages | Reproduir el primer defecte al laminador amb un fitxer controlat |
 | [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts) | P1 | Fonts en estudi | Comparació de parts i petjades en segona zona |
 | [RO-032](#ro-032--cobertes-i-volums-singulars) | P1 | Nucli verificat; servei remot pendent de validar | Consulta real reeixida i dades de coberta de Tamariu |
-| [RO-023](#ro-023--relleu-local-i-fonts-vectorials-de-més-precisió) | P2 | Fonts remotes pendents | MDT més precís accessible al navegador |
+| [RO-023](#ro-023--relleu-local-i-fonts-vectorials-de-més-precisió) | P2 | MET5 integrat i auditat al Pedraforca | Contrast visual i refinament de malla |
 | [RO-055](#ro-055--mode-de-relleu-pur) | P2 | Pilot implementat | Malla amb hidrografia i boscos; pendent de laminat |
 | [RO-054](#ro-054--galeria-local-de-projectes) | P2 | Integrat a v0.20.0 | Validar la recuperació en l’ús habitual |
 
