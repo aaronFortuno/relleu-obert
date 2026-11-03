@@ -9,7 +9,7 @@ Actualitzat: **2026-11-03 · v0.21.0**. Auditoria per altura i primera millora d
 | **0.21 · Exportació comprovable** | RO-024, RO-033, RO-034, RO-050, RO-052, RO-055 | Auditar els 3MF amb controls petits i identificar el primer defecte reproduïble. Les comprovacions de Bambu Studio i d’impressió es registren a banda. |
 | **0.22 · Vies i rendiment** | RO-051, RO-052, RO-053 | Comparar els accessos de Millau i Rajadell i un segon retall ferroviari. Mesurar cada canvi amb el mateix retall, escala i ajustos. |
 | **Retocs en paral·lel** | RO-046, RO-054 | Validar la càrrega dels exemples i la recuperació de projectes girats, amb els dos modes i traços. Reproduir qualsevol pèrdua d’ajustos abans de tocar el flux. |
-| **Pilot de relleu rocós** | RO-023, RO-035 | Comparar el perfil d’agulles amb un MDT de detall i comprovar la viabilitat d’un pedaç 3D en un espadat mesurat. |
+| **Pilot de relleu rocós** | RO-023, RO-035 | Quatre controls del Cavall Bernat i un cupó local dels Degotalls auditats. Contrastar un segon lloc i resoldre la georeferenciació del cupó. [Resultats](RELLEU-ROCOS.md) |
 | **Després** | RO-026, RO-032 | Comparar les fonts d’edificis en dues zones, amb proves d’accés i cobertura abans de fer canvis al model. |
 
 Els encàrrecs independents avancen en paral·lel. Cada bloc validat té el seu commit i es manté una sola prova pesada alhora. Els casos que requereixen inspecció al laminador poden quedar pendents mentre avancen altres línies.
