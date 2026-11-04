@@ -2,6 +2,12 @@
 
 Actualitzat: 2026-11-04. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.22.20 — Mars i oceans en Relleu pur
+
+El carregador envia els polígons marins al motor. La malla divideix la costa entre terreny i aigua, amb la superfície marina a 0 m i el blau fins a la base. Es comproven la separació de les aigües interiors i la continuïtat a les vores dels fragments.
+
+Al navegador, el panorama real de 100 × 20 cm a 1:450.000 mostra l’Atlàntic i el Mediterrani amb el material «Mar» i conserva les aigües interiors. El 3MF sintètic confirma el filament marí. Queda comprovar les peces del panorama al laminador.
+
 ## v0.22.19 — Peces panoràmiques a escala al selector
 
 La taula de 60 × 40 cm manté la proporció de les peces. A partir de 61 cm de costat llarg, la vista inicial les distribueix en dues files. Es comproven les mides panoràmiques admeses en ambdues orientacions.

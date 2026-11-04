@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {coverageSkins} from '../src/relief-contours.js';
-import {sampleReliefForest} from '../src/relief-forest.js';
+import {sampleReliefMask} from '../src/relief-forest.js';
 import {reliefForestTrees,reliefTreePart} from '../src/relief-forest-trees.js';
 import {levelReliefLakes} from '../src/relief-lakes.js';
 import {reliefStreamPart,reliefStreamStrips} from '../src/relief-streams.js';
@@ -21,7 +21,7 @@ function seam(vertices,y){
 }
 
 test('rectangular forest sampling and coverage match at the horizontal print cut',()=>{
-  const forest=sampleReliefForest([[box(14,-5,45,85)]],width,height,resolution,rows);
+  const forest=sampleReliefMask([[box(14,-5,45,85)]],width,height,resolution,rows);
   assert.equal(forest.weights.length,stride*(rows+1));
   assert.equal(forest.cells,27);
   assert(forest.weights[8*stride+2]>0);

@@ -38,12 +38,13 @@ function fieldSample(grid,field,x,y){
 export function reliefForestTrees(grid,containsForest,scale){
   const diameter=RELIEF_TREE_DIAMETER_METRES*scale;
   if(diameter<RELIEF_TREE_MIN_DIAMETER_MM)return [];
-  const {width,height,resolution:n,lakeWeights,streamStrips,heights,originMeters=0,exaggeration=1}=grid;
+  const {width,height,resolution:n,lakeWeights,oceanWeights,streamStrips,heights,originMeters=0,exaggeration=1}=grid;
   const {cols,rows}=tilePlan(width,height);
   const seamDistance=(v,step)=>Math.abs(v-Math.round(v/step)*step);
   const streamTests=new Map();
   function dry(x,y){
     if(lakeWeights&&fieldSample(grid,lakeWeights,x,y)>0)return false;
+    if(oceanWeights&&fieldSample(grid,oceanWeights,x,y)>0)return false;
     const col=Math.min(n-1,Math.floor(x/width*n)),polys=streamStrips?.[col];
     if(!polys?.length)return true;
     if(!streamTests.has(col))streamTests.set(col,polygonTester(polys));

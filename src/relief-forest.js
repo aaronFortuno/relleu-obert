@@ -2,7 +2,7 @@ import {polygonTester} from './polygon-index.js';
 
 // Sample signed distance near the mapped outline. This lets the surface
 // contour cross a triangle at a fractional position instead of snapping it.
-export function sampleReliefForest(polygons,width,height,n,rows=n){
+export function sampleReliefMask(polygons,width,height,n,rows=n){
   if(!polygons.length)return null;
   const stride=n+1,dx=width/n,dy=height/rows,pad=Math.hypot(dx,dy);
   const weights=new Float32Array(stride*(rows+1)).fill(pad);
@@ -27,9 +27,9 @@ export function sampleReliefForest(polygons,width,height,n,rows=n){
   let cells=0;
   for(let row=0;row<=rows;row++)for(let col=0;col<=n;col++){
     const index=row*stride+col,distance=Math.max(.0001,weights[index]/pad);
-    const forest=contains([col*dx,row*dy]);
-    weights[index]=forest?distance:-distance;
-    if(forest)cells++;
+    const inside=contains([col*dx,row*dy]);
+    weights[index]=inside?distance:-distance;
+    if(inside)cells++;
   }
   return {weights,contains,cells};
 }

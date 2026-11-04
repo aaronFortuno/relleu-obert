@@ -87,16 +87,30 @@ function combine(a,b){
   return {vertices,faces};
 }
 
+function hasMarineNodes(grid,bounds){
+  const {resolution,oceanWeights}=grid;
+  if(!oceanWeights)return false;
+  const {left,bottom,right,top}=bounds,stride=resolution+1;
+  for(let row=bottom;row<=top;row++)for(let col=left;col<=right;col++){
+    if(oceanWeights[row*stride+col]>0)return true;
+  }
+  return false;
+}
+
 export function reliefParts(grid,bounds={left:0,bottom:0,right:grid.resolution,top:grid.rows??grid.resolution}){
-  const skins=grid.scores||grid.lakeWeights||grid.forestWeights?coverageSkins(grid,bounds):[],layered=skins.slice(1).some(Boolean);
-  const base=reliefBase(grid,bounds,layered);
-  const terrain=layered?combine(base,skins[0]):base;
-  const parts=[{...RELIEF_MATERIALS[0],...terrain}];
+  const coastal=hasMarineNodes(grid,bounds);
+  const skins=coastal||grid.scores||grid.lakeWeights||grid.forestWeights?coverageSkins(grid,bounds,coastal):[];
+  const layered=skins.slice(1,5).some(Boolean);
+  const base=coastal?skins[6]:reliefBase(grid,bounds,layered);
+  const terrain=base&&(coastal||layered?combine(base,skins[0]):base);
+  const parts=[];
+  if(terrain)parts.push({...RELIEF_MATERIALS[0],...terrain});
   for(let kind=1;kind<3;kind++)if(skins[kind])parts.push({...RELIEF_MATERIALS[kind],...skins[kind]});
   const stream=reliefStreamPart(grid,bounds),lake=skins[3];
   if(lake||stream)parts.push({...RELIEF_MATERIALS[3],...(lake?combine(lake,stream):stream)});
   const forest=skins[4],trees=reliefTreePart(grid,bounds);
   if(forest||trees)parts.push({...RELIEF_MATERIALS[4],...(forest?combine(forest,trees):trees)});
+  if(skins[5])parts.push({...RELIEF_MATERIALS[5],...skins[5]});
   return parts;
 }
 
@@ -117,9 +131,10 @@ function placeInAssembly(part,tile){
 export function previewReliefPieces(grid,emit){
   const plan=tilePlan(grid.width,grid.height),total=plan.tiles.length;
   if(total<2||grid.resolution%plan.cols||(grid.rows??grid.resolution)%plan.rows)return false;
+  const previewGrid={...grid,scores:null,lakeWeights:null,forestWeights:null,streamStrips:null,trees:[]};
   for(const [i,tile] of plan.tiles.entries()){
-    const base=placeInAssembly(reliefBase(grid,tileBounds(grid,plan,tile),false),tile);
-    emit([{...RELIEF_MATERIALS[0],...base}],{index:i+1,total});
+    const parts=reliefParts(previewGrid,tileBounds(grid,plan,tile));
+    emit(parts.map(part=>placeInAssembly(part,tile)),{index:i+1,total});
   }
   return true;
 }

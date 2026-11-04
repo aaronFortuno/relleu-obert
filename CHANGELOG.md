@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.22.20 — 2026-11-04
+
+- Relleu pur mostra els mars i oceans cartografiats. L’aigua marina es manté plana al nivell del mar i el seu material arriba fins a la base, també als talls de les maquetes panoràmiques.
+
 ## v0.22.19 — 2026-11-04
 
 - La vista inicial manté les dimensions de les peces panoràmiques respecte de la taula de 60 × 40 cm. Si el costat llarg supera els 60 cm, presenta les peces en dues files.

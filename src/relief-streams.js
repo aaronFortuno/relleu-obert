@@ -28,17 +28,17 @@ export function reliefStreamStrips(polygons,width,height,n){
   });
 }
 
-function landTriangle(triangle){
-  if(triangle.every(p=>p[3]>0))return [];
-  if(triangle.every(p=>p[3]<=0))return triangle;
+function landPolygon(polygon,weightIndex){
+  if(polygon.every(p=>p[weightIndex]>0))return [];
+  if(polygon.every(p=>p[weightIndex]<=0))return polygon;
   const result=[];
-  let a=triangle.at(-1);
-  for(const b of triangle){
-    if((a[3]<=0)!==(b[3]<=0)){
-      const t=a[3]/(a[3]-b[3]);
-      result.push([a[0]+t*(b[0]-a[0]),a[1]+t*(b[1]-a[1])]);
+  let a=polygon.at(-1);
+  for(const b of polygon){
+    if((a[weightIndex]<=0)!==(b[weightIndex]<=0)){
+      const t=a[weightIndex]/(a[weightIndex]-b[weightIndex]);
+      result.push(a.map((value,index)=>value+t*(b[index]-value)));
     }
-    if(b[3]<=0)result.push(b);
+    if(b[weightIndex]<=0)result.push(b);
     a=b;
   }
   return result;
@@ -91,13 +91,13 @@ function extrudePatch(poly,heightAt,offset,result){
 }
 
 export function reliefStreamPart(grid,{left,bottom,right,top}){
-  const {resolution:n,rows=n,width,height,heights,diagonals,lakeWeights,streamStrips}=grid;
+  const {resolution:n,rows=n,width,height,heights,diagonals,lakeWeights,oceanWeights,streamStrips}=grid;
   if(!streamStrips?.length)return null;
   const dy=height/rows,stride=n+1;
   const x=i=>i*width/n,y=i=>i*height/rows,offset=[x(left),y(bottom)],result={vertices:[],faces:[]};
   const nodes=(i,j)=>{
     const index=j*stride+i;
-    return [x(i),y(j),heights[index],lakeWeights?.[index]??-1];
+    return [x(i),y(j),heights[index],lakeWeights?.[index]??-1,oceanWeights?.[index]??-1];
   };
   for(let i=left;i<right;i++){
     const strips=streamStrips[i];
@@ -115,7 +115,8 @@ export function reliefStreamPart(grid,{left,bottom,right,top}){
     for(const [j,candidates]of stripsByRow){
       const a=nodes(i,j),b=nodes(i+1,j),c=nodes(i+1,j+1),d=nodes(i,j+1);
       for(const triangle of diagonals[j*n+i]?[[a,b,d],[b,c,d]]:[[a,b,c],[a,c,d]]){
-        const dry=landTriangle(triangle);
+        const land=landPolygon(triangle,3);
+        const dry=oceanWeights?landPolygon(land,4):land;
         if(dry.length<3)continue;
         const clipped=pc.intersection(candidates,[[dry.map(([px,py])=>[px,py])]]);
         if(!clipped.length)continue;

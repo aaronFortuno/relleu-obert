@@ -45,7 +45,7 @@ function grow(array,minimum){
   return bigger;
 }
 
-function skinBuilder(bounds,grid){
+function skinBuilder(bounds,grid,toBase=false){
   const {left,bottom,right,top}=bounds,{resolution:n,rows=n,width,height}=grid;
   const stride=right-left+1,integer=new Uint32Array(stride*(top-bottom+1));
   const intersections=new Map(),boundary=new Map(),edgeStride=2**24;
@@ -62,7 +62,7 @@ function skinBuilder(bounds,grid){
     vertices=grow(vertices,nv+6);
     const index=nv/3;
     vertices[nv++]=vx;vertices[nv++]=vy;vertices[nv++]=z;
-    vertices[nv++]=vx;vertices[nv++]=vy;vertices[nv++]=z-RELIEF_SKIN_DEPTH;
+    vertices[nv++]=vx;vertices[nv++]=vy;vertices[nv++]=toBase?0:z-RELIEF_SKIN_DEPTH;
     if(lattice)integer[key]=index+1;
     else intersections.set(key,index+1);
     return index;
@@ -152,16 +152,31 @@ function skinBuilder(bounds,grid){
   };
 }
 
-export function coverageSkins(grid,bounds){
+export function coverageSkins(grid,bounds,coastal=false){
   const {left,bottom,right,top}=bounds;
-  const {resolution:n,heights,diagonals,scores,lakeWeights,forestWeights}=grid,builders=Array.from({length:5},()=>skinBuilder(bounds,grid));
+  const {resolution:n,heights,diagonals,scores,lakeWeights,forestWeights,oceanWeights,seaLevelMM}=grid;
+  const layered=scores||lakeWeights||forestWeights;
+  const builders=!coastal||layered?Array.from({length:5},()=>skinBuilder(bounds,grid)):[];
+  const sea=coastal?skinBuilder(bounds,grid,true):null;
+  const core=coastal?skinBuilder(bounds,grid,true):null;
   const point=(x,y)=>{
     const i=y*(n+1)+x;
-    return [x,y,heights[i],scores?.[i*3]??1,scores?.[i*3+1]??0,scores?.[i*3+2]??0,lakeWeights?.[i]??-1,forestWeights?.[i]??-1];
+    return [x,y,heights[i],scores?.[i*3]??1,scores?.[i*3+1]??0,scores?.[i*3+2]??0,lakeWeights?.[i]??-1,forestWeights?.[i]??-1,oceanWeights?.[i]??-1];
   };
   const kindAt=p=>p[3]>p[4]?(p[3]>p[5]?0:2):(p[4]>p[5]?1:2);
   function triangle(a,b,c){
     let poly=[a,b,c];
+    if(coastal){
+      if(a[8]>0||b[8]>0||c[8]>0){
+        const water=clip(poly,p=>p[8]);
+        sea.patch(water.map(([x,y])=>[x,y,seaLevelMM]));
+        poly=clip(poly,p=>-p[8]);
+        if(poly.length<3)return;
+      }
+      // The two masks share the same shoreline; only the dry area has a core.
+      core.patch(layered?poly.map(([x,y,z])=>[x,y,z-RELIEF_SKIN_DEPTH]):poly);
+      if(!layered)return;
+    }
     if(a[6]>0||b[6]>0||c[6]>0){
       const water=clip(poly,p=>p[6]);
       if(water.length>=3)builders[3].patch(water);
@@ -190,5 +205,10 @@ export function coverageSkins(grid,bounds){
     if(diagonals[y*n+x]){triangle(a,b,d);triangle(b,c,d);}
     else{triangle(a,b,c);triangle(a,c,d);}
   }
-  return builders.map(builder=>builder.finish());
+  const skins=builders.map(builder=>builder.finish());
+  if(coastal){
+    skins[5]=sea.finish();
+    skins[6]=core.finish();
+  }
+  return skins;
 }

@@ -103,9 +103,9 @@ async function loadReliefVectors(bbox,sample,progress,forestOnly,panoramic){
     if(properties.sourceLayer==='waterway'&&(type==='LineString'||type==='MultiLineString'))waterways.push(feature);
     else if(type!=='Polygon'&&type!=='MultiPolygon')continue;
     else if(properties.sourceLayer==='water'){
-      if(isStandingWater(properties))lakes.push(feature);
+      if(isMarineWater(properties))oceans.push(feature);
+      else if(isStandingWater(properties))lakes.push(feature);
       else if(isFlowingWater(properties))waterAreas.push(feature);
-      else if(panoramic&&isMarineWater(properties))oceans.push(feature);
     }else if(['landcover','landuse'].includes(properties.sourceLayer)&&['wood','forest'].includes(properties.class)){
       const {coordinates}=feature.geometry;
       const polygons=type==='Polygon'?[coordinates]:coordinates;
@@ -190,7 +190,7 @@ export async function loadRegion({sample=true,bbox,buildingSource,decodeElevatio
       zooms:panoramic?[14,13,12,11,10,9,8]:[14,13,12,11,10],maxTiles:panoramic?144:96,maxSamples:8*1024**2,
       concurrency:panoramic?4:1
     }));
-    let coverage=[],lakes=[],waterways=[],waterAreas=[],forests=[],vectorCoverage;
+    let coverage=[],lakes=[],waterways=[],waterAreas=[],forests=[],oceans=[],vectorCoverage;
     const warnings=terrain.warnings.slice();
     progress('Carregant la cobertura de sòl nu i neu o gel…');
     try{
@@ -212,7 +212,7 @@ export async function loadRegion({sample=true,bbox,buildingSource,decodeElevatio
     const vectorUnavailable=`No s’ha pogut carregar la cartografia ${vectorLabel}. Es conserva el relleu.`;
     try{
       const {failures,zoom,tileCount,...vectors}=await loadVectors();
-      ({forests}=vectors);
+      ({forests,oceans}=vectors);
       if(!insidePilot)({lakes,waterways,waterAreas}=vectors);
       const {provider,license,attribution,url}=RELIEF_WATERWAY_SOURCE;
       vectorCoverage={provider,license,attribution,url,zoom,tileCount,failures};
@@ -224,9 +224,10 @@ export async function loadRegion({sample=true,bbox,buildingSource,decodeElevatio
       coverage:{...RELIEF_COVERAGE_SOURCE,available:!!coverage.length,tiles:coverage.map(t=>t.tile)},
       lakes:{count:lakes.length,...(lakes.length?(insidePilot?RELIEF_LAKE_SOURCE:vectorCoverage):{})},
       waterways:{count:waterways.length,areaCount:waterAreas.length,...(waterways.length||waterAreas.length?(insidePilot?RELIEF_WATERWAY_SOURCE:vectorCoverage):{})},
+      oceans:{count:oceans.length,...vectorCoverage},
       forests:{count:forests.length,...vectorCoverage},
       buildings:{count:0},buildingSource:null,sourceWarnings:warnings,pureRelief:true,...(panoramic?{panoramic:true}:{})};
-    return {meta,features:[],dem:terrain.tiles,terrainRaster:terrain.raster,coverage,lakes,waterways,waterAreas,forests,terrainWarnings:warnings};
+    return {meta,features:[],dem:terrain.tiles,terrainRaster:terrain.raster,coverage,lakes,waterways,waterAreas,forests,oceans,terrainWarnings:warnings};
   }
   const base=(import.meta.env?.BASE_URL||'./')+'data/';
   if(typeof sample==='string'&&!recommendedPlace(sample))throw Error('Exemple desconegut.');

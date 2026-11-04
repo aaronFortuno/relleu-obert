@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {buildModel} from '../src/geometry.js';
+import {buildModel,makeProjection} from '../src/geometry.js';
 import {reliefGridSize,splitPureRelief} from '../src/pure-relief-mesh.js';
 import {physicalBBox,selectionPose,tilePlan} from '../src/selection.js';
 
@@ -49,4 +49,33 @@ test('a panoramic pure relief previews its pieces in order and exports matching 
   }
   assert.throws(()=>buildModel(data,{...options,heightMM:210}),/format panoràmic/);
   assert.throws(()=>buildModel(data,{...options,selectionPose:{...selection,widthM:510000,heightM:102000}}),/format panoràmic/);
+});
+
+test('mapped seas at both ends stay flat and reach the base through preview and print cuts',()=>{
+  const widthMM=510,heightMM=100,selection=selectionPose(physicalBBox([42.8,.75],229.5,45),15);
+  const options={size:widthMM,widthMM,heightMM,selectionPose:selection,pureRelief:true,resolution:24,trees:false};
+  const {unproject}=makeProjection(selection.bbox,options.size,options);
+  const ocean=(left,right)=>({type:'Feature',properties:{class:'ocean'},geometry:{type:'Polygon',
+    coordinates:[[ [left,-10],[right,-10],[right,110],[left,110],[left,-10] ].map(unproject)]}});
+  const oceans=[ocean(-10,185),ocean(325,520)];
+  const dem=[{x:0,y:0,z:0,size:2,elev:Float32Array.of(800,800,800,800)}];
+  const previewed=[];
+  const observer={stage(){},parts(stage,parts,dimensions,mode,piece){
+    if(parts.some(part=>part.id==='water'))previewed.push(piece.index);
+  }};
+  const model=buildModel({meta:{bbox:selection.bbox},dem,oceans},options,undefined,undefined,undefined,observer);
+  assert.equal(model.provenance.verticalReference.originMeters,0);
+  assert.equal(model.provenance.verticalReference.seaLevelMM,5);
+  assert.deepEqual(previewed,[1,2,3]);
+  const sea=model.parts.find(part=>part.id==='water');
+  const land=model.parts.find(part=>part.id==='terrain');
+  assert.deepEqual([...new Set(sea.vertices.filter((_,i)=>i%3===2))].sort(),[0,5]);
+  assert.ok(land.vertices.every((value,i)=>i%3!==0||value>184&&value<326));
+  const pieces=splitPureRelief(model,250);
+  assert.equal(pieces.length,3);
+  for(const piece of pieces){
+    const {vertices}=piece.parts.find(part=>part.id==='water');
+    assert.ok(vertices.some((value,i)=>i%3===2&&value===0));
+    assert.ok(vertices.some((value,i)=>i%3===2&&value===5));
+  }
 });

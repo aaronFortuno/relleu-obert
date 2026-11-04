@@ -1,10 +1,36 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {buildRequest} from '../src/build-request.js';
 import {loadRegion} from '../src/sources.js';
 import {physicalBBox,selectionPose} from '../src/selection.js';
 
 const bbox=selectionPose(physicalBBox([42.8,.75],450,90),15).bbox;
 const decode=async(_,tile)=>({...tile,size:2,elev:new Float32Array(4).fill(700)});
+
+test('bundled Tamariu sea polygons reach the worker in both pure relief formats',async t=>{
+  const previous=globalThis.fetch;
+  globalThis.fetch=async value=>{
+    const url=String(value);
+    if(url.startsWith('./data/'))return new Response(await readFile(new URL('../public/'+url.slice(2),import.meta.url)));
+    if(url.startsWith('https://tiles.mapterhorn.com/'))return new Response('elevation');
+    throw Error('Unexpected request '+url);
+  };
+  t.after(()=>{globalThis.fetch=previous;});
+  const catalog=JSON.parse(await readFile(new URL('../public/data/tamariu.json',import.meta.url),'utf8'));
+  for(const panoramic of [false,true]){
+    const region=await loadRegion({bbox:catalog.bbox,sample:'tamariu',pureRelief:true,panoramic,decodeElevation:decode});
+    assert(region.oceans.length>0);
+    assert(region.oceans.every(({properties,geometry})=>properties.class==='ocean'&&['Polygon','MultiPolygon'].includes(geometry.type)));
+    assert(region.lakes.some(({properties})=>properties.class==='swimming_pool'));
+    assert(region.lakes.every(({properties})=>properties.class!=='ocean'));
+    assert.equal(region.meta.oceans.count,region.oceans.length);
+    assert.equal(region.meta.oceans.provider,'OpenStreetMap · OpenFreeMap');
+    assert.equal(region.meta.oceans.zoom,14);
+    const request=structuredClone(buildRequest(region,{pureRelief:true}));
+    assert.deepEqual(request.region.oceans,region.oceans);
+  }
+});
 
 test('the coast-to-coast envelope uses bounded terrain and vector loads in panoramic relief',async t=>{
   const previous=globalThis.fetch,requests=[];

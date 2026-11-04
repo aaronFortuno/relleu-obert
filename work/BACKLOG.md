@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-04 · v0.22.19**. Peces panoràmiques a escala sobre la taula de previsualització. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-04 · v0.22.20**. Mar cartografiat en Relleu pur. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -31,7 +31,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts) | P1 | Fonts en estudi | Comparació de parts i petjades en segona zona |
 | [RO-032](#ro-032--cobertes-i-volums-singulars) | P1 | Nucli verificat; servei remot pendent de validar | Consulta real reeixida i dades de coberta de Tamariu |
 | [RO-023](#ro-023--relleu-local-i-fonts-vectorials-de-més-precisió) | P2 | MET5 integrat i auditat al Pedraforca | Contrast visual i refinament de malla |
-| [RO-055](#ro-055--mode-de-relleu-pur) | P2 | Format panoràmic amb mostreig rectangular i previsualització per peces | Mesurar el panorama complet dels Pirineus i laminar dos talls adjacents |
+| [RO-055](#ro-055--mode-de-relleu-pur) | P2 | Atlàntic i Mediterrani visibles al panorama de 100 × 20 cm | Laminar les peces costaneres i comprovar dos talls adjacents |
 | [RO-054](#ro-054--galeria-local-de-projectes) | P2 | Integrat a v0.20.0 | Validar la recuperació en l’ús habitual |
 
 ## Validació i retocs acotats
@@ -169,4 +169,6 @@ Validar la recuperació d’un projecte girat amb traços i materials als dos mo
 
 Validar les quatre peces dels Rasos–Gallina Pelada al laminador, sobretot les vores adjacents i la visibilitat de rierols i arbres. [Mesures i fonts](RO-055-RELLEU-PUR.md)
 
-El format panoràmic admet de 51 a 100 cm de costat llarg i de 10 a 20 cm de costat curt, en Relleu pur. A la vista inicial, les peces que superen conjuntament els 60 cm es disposen en dues files a la mateixa escala que la taula. La malla rectangular segueix un pas físic similar als dos eixos i comparteix mostres i cota de base als talls. Queden el control de dades reals de tot l’eix pirinenc, la mesura de memòria i la comprovació al laminador.
+El format panoràmic admet de 51 a 100 cm de costat llarg i de 10 a 20 cm de costat curt, en Relleu pur. A la vista inicial, les peces que superen conjuntament els 60 cm es disposen en dues files a la mateixa escala que la taula. La malla rectangular segueix un pas físic similar als dos eixos i comparteix mostres i cota de base als talls.
+
+En una prova de 100 × 20 cm, l’usuari observa un temps aproximat de 20 s i detecta que els mars quedaven sense material propi. La v0.22.20 incorpora els polígons marins al visor i a l’exportació. El retall complet de l’eix pirinenc ja mostra els dos mars al navegador. Queden la mesura de memòria i el control de les peces al laminador.

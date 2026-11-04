@@ -2,7 +2,7 @@ import {sampleCoverage} from './relief-contours.js';
 import {levelReliefLakes} from './relief-lakes.js';
 import {reliefDiagonals,reliefParts,reliefGridSize,previewReliefPieces,assemblePanoramicRelief,PURE_RELIEF_RESOLUTIONS} from './pure-relief-mesh.js';
 import {reliefStreamStrips} from './relief-streams.js';
-import {sampleReliefForest} from './relief-forest.js';
+import {sampleReliefMask} from './relief-forest.js';
 import {alpineCrownHeightFactor,reliefCrownTaper,reliefForestTrees,RELIEF_TREE_MIN_DIAMETER_MM,RELIEF_TREE_DIAMETER_METRES,RELIEF_TREE_THINNING} from './relief-forest-trees.js';
 import {waterwayPolygons} from './waterways.js';
 import {polygonOps} from './polygon-ops.js';
@@ -549,24 +549,42 @@ function buildPureRelief(data,options,progress,preview){
   preview?.stage('terrain','Revisant les mostres d’altitud…');
   const prepared=data.terrainRaster?{diagnostics:{invalid:0,spikes:0,repaired:0,source:data.meta.terrain?.provider}}:prepareElevationTiles(data.dem);
   const sample=data.terrainRaster?localRasterSampler(data.terrainRaster):createElevationSampler(prepared.tiles);
+  let oceanPolygons=(data.oceans||[]).flatMap(feature=>geoPolys(feature,project));
+  if(oceanPolygons.length){
+    progress('Delimitant la costa cartografiada…');
+    // Remove vector tile boundaries before measuring the distance to the shore.
+    try{oceanPolygons=mergeLayer(oceanPolygons.map(polygon=>[polygon]));}
+    catch{/* Preserve the available footprints if a fragment prevents the union. */}
+  }
+  const ocean=sampleReliefMask(oceanPolygons,width,height,columns,rows);
+  const oceanWeights=ocean?.cells?ocean.weights:null;
   progress('Calculant el camp d’altures…');
-  const heightAt=(x,y)=>sample(...unproject([x*width/columns,y*height/rows]));
+  const gridPoint=(x,y)=>[x*width/columns,y*height/rows];
+  const heightAt=(x,y)=>sample(...unproject(gridPoint(x,y)));
   const heights=new Float64Array(stride*(rows+1));
   let originMeters=Infinity,maximumElevation=-Infinity;
   for(let row=0;row<=rows;row++){
     for(let col=0;col<=columns;col++){
-      const z=heightAt(col,row);
-      heights[row*stride+col]=z;
+      const index=row*stride+col;
+      const z=oceanWeights?.[index]>0?0:heightAt(col,row);
+      heights[index]=z;
       originMeters=Math.min(originMeters,z);
       maximumElevation=Math.max(maximumElevation,z);
     }
     if(row%32===31||row===rows)preview?.stage('terrain','Calculant el camp d’altures…',row+1,rows+1);
   }
   const lakes=data.lakes?.length?levelReliefLakes(data.lakes,project,heights,columns,width,height,rows):null;
+  if(oceanWeights&&lakes?.count)for(let i=0;i<heights.length;i++){
+    if(oceanWeights[i]>0)heights[i]=0;
+  }
   progress('Ajustant la malla al relleu…');
-  const diagonals=reliefDiagonals(heights,columns,(col,row)=>heightAt(col+.5,row+.5),rows);
+  const diagonals=reliefDiagonals(heights,columns,(col,row)=>{
+    const point=gridPoint(col+.5,row+.5);
+    return oceanWeights&&ocean.contains(point)?0:sample(...unproject(point));
+  },rows);
+  const seaLevelMM=oceanWeights?5-originMeters*scale*exaggeration:null;
   for(let i=0;i<heights.length;i++)heights[i]=5+(heights[i]-originMeters)*scale*exaggeration;
-  const reliefGrid={resolution:columns,rows,width,height,heights,diagonals,originMeters,exaggeration};
+  const reliefGrid={resolution:columns,rows,width,height,heights,diagonals,originMeters,exaggeration,oceanWeights,seaLevelMM};
   if(preview){
     progress('Preparant la vista per peces…');
     previewReliefPieces(reliefGrid,(parts,piece)=>{
@@ -595,7 +613,7 @@ function buildPureRelief(data,options,progress,preview){
   const paths=streams?waterwayPolygons(data.waterways||[],project,{width,height,scale,multiplier:options.streamWidth}):[];
   const waterAreas=streams?(data.waterAreas||[]).map(feature=>geoPolys(feature,project)):[];
   const streamStrips=reliefStreamStrips([...paths,...waterAreas],width,height,columns);
-  const forest=sampleReliefForest((data.forests||[]).flatMap(feature=>geoPolys(feature,project)),width,height,columns,rows);
+  const forest=sampleReliefMask((data.forests||[]).flatMap(feature=>geoPolys(feature,project)),width,height,columns,rows);
   const crownTaper=reliefCrownTaper(maximumElevation);
   Object.assign(reliefGrid,{scores,lakeWeights:lakes?.count?lakes.weights:null,
     forestWeights:forest?.cells?forest.weights:null,streamStrips,crownTaper});
@@ -605,7 +623,8 @@ function buildPureRelief(data,options,progress,preview){
   const categories=panoramic?assemblePanoramicRelief(reliefGrid,(completed,total)=>{
     preview?.stage('terrain','Acabant el relleu i les capes de cada peça',completed,total);
   }):reliefParts(reliefGrid);
-  const verticalReference={originMeters,minimumSurfaceMM:5,seaLevelMM:null,method:'lowest generated-terrain sample at 5 mm'};
+  const verticalReference={originMeters,minimumSurfaceMM:5,seaLevelMM,
+    method:oceanWeights?'lowest generated-terrain sample at 5 mm; mapped sea at zero metres; no bathymetry':'lowest generated-terrain sample at 5 mm'};
   const warnings=[...(data.meta.sourceWarnings||[])];
   const treeCount=reliefGrid.trees?.length??0;
   const omittedBelowThreshold=trees&&!!forest?.cells&&RELIEF_TREE_DIAMETER_METRES*scale<RELIEF_TREE_MIN_DIAMETER_MM;
