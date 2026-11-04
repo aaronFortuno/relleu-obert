@@ -115,6 +115,30 @@ test('overlap stitching rejects distinct IDs, lateral offsets and a same-ID fork
   assert.equal(generateProceduralBridgeItems([a,matching,fork],flat).items.length,3);
 });
 
+test('a contained tile copy does not reverse the Montgròs bridge at its shared endpoint',()=>{
+  const east=[1.761980652809143,41.68925015293257];
+  const axis=[east,[1.7613476514816284,41.68906988498435],[1.7607307434082031,41.688877598616074]];
+  const props={class:'trunk',layer:1},id=317900710;
+  const full=bridge(axis,props,id);
+  const short=bridge([east,[1.761331558227539,41.689065879024184]],props,id);
+  const fessona=bridge([[1.7701667547225952,41.689390360987545],[1.769120693206787,41.68945846193253]],props,id);
+  const elevation=lon=>300+10000*(lon-1.76);
+  const expected=generateProceduralBridgeItems([full,fessona],elevation);
+  const reversed=bridge(short.geometry.coordinates.slice().reverse(),props,id);
+  assert.equal(expected.items.length,2);
+  assert.deepEqual(expected.warnings,[]);
+  assert.deepEqual(generateProceduralBridgeItems([short,full,fessona],elevation),expected);
+  assert.deepEqual(generateProceduralBridgeItems([fessona,full,reversed],elevation),expected);
+});
+
+test('contained tile matching preserves a short detour between matching endpoints',()=>{
+  const id='way',line=bridge([[0,0],[.004,0]],{},id);
+  const detour=bridge([[.001,0],[.00103,0],[.00111,.000015],[.00119,0],[.003,0]],{},id);
+  const {items,warnings}=generateProceduralBridgeItems([line,detour],flat);
+  assert.equal(items.length,2);
+  assert.deepEqual(warnings,[]);
+});
+
 test('connected fragments keep real width changes and route identities independent of input order',()=>{
   const a=bridge([[0,0],[.002,0]],{name:'Same road',ref:'C-1',width:6},'narrow');
   const b=bridge([[.002,0],[.004,0]],{name:'Same road',ref:'C-1',width:10},'wide');

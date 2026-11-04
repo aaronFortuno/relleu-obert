@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.21.8 — 2026-11-04
+
+- Si un fragment de pont d’una tessel·la queda contingut en un altre del mateix traçat, es conserva el fragment complet amb els dos extrems. Es recupera així el tauler de la C-37 al torrent de Montgròs.
+
 ## v0.21.7 — 2026-11-04
 
 - Si la secció mínima d’un túnel estimat queda sense coberta, el motor pot provar un descens limitat de la rasant. Es comproven de nou les dues connexions, la coberta i el gruix de base.

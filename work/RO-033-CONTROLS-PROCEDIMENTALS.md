@@ -1,5 +1,32 @@
 # RO-033 / RO-052 — Controls de ponts procedimentals
 
+## Torrent de Montgròs
+
+**v0.21.8.** Control del retall de Sant Salvador de 3 × 3 km a 1:20.000,
+amb centre a 41,68075 N, 1,754 E, detall 36, exageració ×1,5 i MET5 de
+l’ICGC. Els fragments originals reprodueixen l’omissió de la v0.21.7.
+La regla conserva el fragment més llarg quan el més curt del mateix
+traçat hi queda contingut dins de la tolerància mètrica. La prova
+verifica ambdós ordres d’entrada i conserva també el tram independent
+de la Fessona, que comparteix identificador amb Montgròs.
+
+El paviment de la C-37 és present sobre el torrent a **41,689049 N,
+1,761280 E**. La cota superior a la malla és de 8,006 mm sobre la base
+i hi ha 0,266 mm lliures entre el terreny i la cara inferior del tauler
+en aquest punt. Els dos accessos arriben a la C-37 cartografiada
+(`317898630`). S’ha mostrejat el paviment a 0,01 mm a cada costat de les
+unions a l’eix de la calçada.
+
+| Accés | Diferència de cota a la unió amb el tauler | Diferència de cota a la unió amb la carretera |
+| --- | ---: | ---: |
+| Oest | 0,0018 mm | 0,0062 mm |
+| Est | 0,0025 mm | 0,0007 mm |
+
+Auditoria de les sis categories sense errors. El pont de la Fessona
+conserva els dos accessos. Temps del control de Montgròs de 6,3 s de
+càrrega i 44,2 s de càlcul i auditoria. Queda pendent comprovar el pas
+lliure i els accessos al laminador.
+
 ## Pas inferior al Bages
 
 Control local amb les tessel·les de la [mostra de l’Eix Diagonal](../public/data/eix-diagonal.json).

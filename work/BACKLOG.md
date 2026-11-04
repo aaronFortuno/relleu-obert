@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-04 · v0.21.7**. Sis controls de transport repetits i pas del torrent de Montgròs identificat. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-04 · v0.21.8**. Tauler de Montgròs recuperat i dues unions comprovades sobre la malla. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -8,7 +8,7 @@ Actualitzat el **2026-11-04 · v0.21.7**. Sis controls de transport repetits i p
 | --- | --- | --- |
 | **0.22 · 1. Transicions de la C-37** | RO-051, RO-052 | Recuperat un perfil a Sant Salvador a 1:10.000. Queden dos trams sense enllaç dins del pendent admissible i un creuament amb túnel sense cota. Comprovar la continuïtat visual i al laminador. |
 | **0.22 · 2. Coberta del túnel** | RO-034 | Descens limitat de la rasant. A Sant Salvador a 1:20.000 s’han comprovat les dues boques i punts de pas, sostre i base al 3MF. Revisió visual i laminat pendents. |
-| **0.22 · 3. Contrast i rendiment** | RO-033, RO-050, RO-051, RO-052, RO-053 | Sis controls repetits. Abans de publicar la 0.22, reproduir el fragment omès al torrent de Montgròs i comprovar el tauler i la continuïtat a la posició del creuament. [Comparativa](RO-051-PERFILS-VIARIS.md#bateria-repetida-amb-v0217) |
+| **0.22 · 3. Contrast i rendiment** | RO-033, RO-050, RO-051, RO-052, RO-053 | Sis controls repetits a la 0.21.7. Montgròs recuperat amb dues unions mesurades a la 0.21.8. Revisar els accessos i el pas lliure al laminador. [Comparativa](RO-051-PERFILS-VIARIS.md#bateria-repetida-amb-v0217) · [Montgròs](RO-033-CONTROLS-PROCEDIMENTALS.md#torrent-de-montgròs) |
 | **Validació en paral·lel** | RO-024, RO-046, RO-054, RO-055 | Laminar les vores adjacents de Tamariu i dels Rasos–Gallina Pelada. Comprovar la recuperació d’un projecte girat, de mida personalitzada, amb materials i traços, i la transició quan es carrega un exemple. |
 | **Pilot de relleu rocós** | RO-023, RO-035 | Quatre controls del Cavall Bernat i un cupó local dels Degotalls auditats. Contrastar un segon lloc i resoldre la georeferenciació del cupó. [Resultats](RELLEU-ROCOS.md) |
 | **Després** | RO-026, RO-032 | Comparar les fonts d’edificis en dues zones, amb proves d’accés i cobertura abans de fer canvis al model. |
@@ -24,7 +24,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | ID | Prioritat | Estat | Proper resultat comprovable |
 | ------------------------------------------------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
 | [RO-053](#ro-053--flux-de-treball-per-etapes) | P1 | Progrés per capes i guies de Tamariu verificats | Comparar temps i memòria a la bateria de la 0.22 |
-| [RO-033](#ro-033--ponts-i-viaductes) | P1 | Millau i el cupó del Bages validats al visor | Revisar accessos i llums al laminador, contrastar altres ponts |
+| [RO-033](#ro-033--ponts-i-viaductes) | P1 | Millau i el cupó del Bages validats al visor. Montgròs auditat a la malla | Revisar accessos i llums al laminador |
 | [RO-034](#ro-034--túnels-imprimibles) | P1 | Túnel de Sant Salvador obert a les dues escales | Revisar el tram cobert de la maqueta a 1:20.000 al laminador |
 | [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | Tres perfils de la C-37 i rasant ferroviària de 800 m comprovats | Resoldre les transicions omeses i repetir la bateria |
 | [RO-052](#ro-052--continuïtat-i-amplada-del-traçat-viari) | P1 | Quatre enllaços a Millau a 1:20.000 | Mesurar cotes, pendents i amplades als enllaços de la C-37 |
@@ -120,7 +120,7 @@ El motor admet cobertes a partir d’atributs disponibles. Verificar la consulta
 
 ### RO-033 — Ponts i viaductes
 
-Pilars i taulers procedimentals, amb dades específiques documentades per a Rajadell. Millau i el cupó del Bages estan validats al visor. El control de Montgròs ha de verificar el tauler al punt de creuament i provar una regla general per als fragments solapats entre tessel·les. Revisar llums i contacte al laminador. [Controls procedimentals](RO-033-CONTROLS-PROCEDIMENTALS.md) · [Suports segons escala](RO-033-SUPORTS-ESCALA.md)
+Pilars i taulers procedimentals, amb dades específiques documentades per a Rajadell. Millau i el cupó del Bages estan validats al visor. La regla general per als fragments continguts recupera el tauler de Montgròs a 1:20.000 i conserva el de la Fessona, amb dues unions a cadascun. El pas lliure de Montgròs és de 0,27 mm a la maqueta. Revisar accessos i llums al laminador. [Controls procedimentals](RO-033-CONTROLS-PROCEDIMENTALS.md) · [Suports segons escala](RO-033-SUPORTS-ESCALA.md)
 
 ### RO-034 — Túnels imprimibles
 

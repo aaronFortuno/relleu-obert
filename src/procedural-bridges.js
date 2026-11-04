@@ -66,11 +66,32 @@ function nearestStation(point,path){
 }
 
 function stationPoint(path,station){
-  const next=path.stations.findIndex(s=>s>=station);
-  if(next<0)return path.xy.at(-1);
-  if(next===0)return path.xy[0];
+  if(station<=0)return path.xy[0];
+  if(station>=path.length)return path.xy.at(-1);
+  let first=1,next=path.stations.length-1;
+  while(first<next){
+    const middle=Math.floor((first+next)/2);
+    if(path.stations[middle]<station)first=middle+1;
+    else next=middle;
+  }
   const t=(station-path.stations[next-1])/(path.stations[next]-path.stations[next-1]);
   return path.xy[next-1].map((v,i)=>v+(path.xy[next][i]-v)*t);
+}
+
+function containsTileCopy(container,copy){
+  if(copy.length<MIN_SEAM_OVERLAP||copy.length>container.length)return false;
+  const start=nearestStation(copy.xy[0],container),end=nearestStation(copy.xy.at(-1),container);
+  if(start.distance>SEAM_TOLERANCE||end.distance>SEAM_TOLERANCE)return false;
+  const span=end.station-start.station;
+  if(Math.abs(span)<MIN_SEAM_OVERLAP||Math.abs(Math.abs(span)-copy.length)>2*SEAM_TOLERANCE)return false;
+  // Between successive vertices of either path, the offset interpolates
+  // linearly. Check both sets of vertices, including short deviations.
+  const close=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1])<=SEAM_TOLERANCE;
+  return copy.stations.every((s,i)=>close(copy.xy[i],stationPoint(container,start.station+s/copy.length*span)))&&
+    container.stations.every((s,i)=>{
+      const fraction=(s-start.station)/span;
+      return fraction<=0||fraction>=1||close(container.xy[i],stationPoint(copy,fraction*copy.length));
+    });
 }
 
 function overlapTail(left,right){
@@ -108,6 +129,18 @@ function joinTileOverlaps(fragments){
     const kx=LAT_METRES*Math.cos(parts[0].points[0][1]*Math.PI/180);
     while(parts.length>1){
       const paths=parts.map(f=>[seamPath(f.points,kx),seamPath(f.points.slice().reverse(),kx)]),candidates=[];
+      // Resolve containment before looking for open ends. Joining a clipped
+      // copy to the full line at their common endpoint reverses the axis.
+      const byLength=paths.map(([path],i)=>({path,i})).sort((a,b)=>b.path.length-a.path.length);
+      const retained=[],copies=new Set();
+      for(const {path,i} of byLength){
+        if(retained.some(container=>containsTileCopy(container,path)))copies.add(i);
+        else retained.push(path);
+      }
+      if(copies.size){
+        for(let i=parts.length-1;i>=0;i--)if(copies.has(i))parts.splice(i,1);
+        continue;
+      }
       for(let a=0;a<parts.length;a++)for(let b=a+1;b<parts.length;b++){
         for(const left of [0,1])for(const right of [0,1]){
           const tail=overlapTail(paths[a][left],paths[b][right]);
