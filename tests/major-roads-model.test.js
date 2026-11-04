@@ -8,6 +8,16 @@ function region(roadClass='motorway'){
   return {meta:{bbox:[0,0,.01,.01]},localDEM:{width:11,height:11,epsg:4326,affine:[.001,0,0,0,.001,0],pixelIsArea:false,values,metadata:{}},features:[{type:'Feature',id:'main-road',properties:{sourceLayer:'transportation',class:roadClass},geometry:{type:'LineString',coordinates:[[.0001,.005],[.0099,.005]]}}]};
 }
 const options={size:100,resolution:6,trees:false,estimatedTunnels:false,majorRoads:true};
+test('updating transport keeps the MET5 window when the mapped axis extends outside it',()=>{
+  const {localDEM,...data}=region();
+  data.terrainRaster={...localDEM,width:13,height:13,affine:[.001,0,-.001,0,.001,-.001],values:new Float32Array(169).fill(100)};
+  data.features[0].geometry.coordinates=[[-.01,.005],[.02,.005]];
+  const initial=buildModel(data,{...options,smoothProfiles:true},()=>{},api);
+  const updated=updateTransport(initial,{roadRise:.5});
+  assert.equal(initial.provenance.majorRoads.count,1);
+  assert.equal(updated.provenance.majorRoads.count,1);
+  assert.strictEqual(updated.context.ground,initial.context.ground);
+});
 test('smooth rail platforms are applied incrementally in the railway material',()=>{
   const data=region('rail');
   const initial=buildModel(data,{...options,majorRoads:false,smoothProfiles:true},()=>{},api);

@@ -1,12 +1,12 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-04 · v0.21.5**. Guies i ZIP de Tamariu 40 × 45 cm verificats localment. [Historial](HISTORIAL.md#v0215--mides-i-guies-de-tall).
+Actualitzat el **2026-11-04 · v0.21.6**. Un tercer perfil de la C-37 recuperat a Sant Salvador. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
 | Lot | Línies | Resultat que permet avançar |
 | --- | --- | --- |
-| **0.22 · 1. Transicions de la C-37** | RO-051, RO-052 | Reproduir els extrems omesos a Sant Salvador a 1:10.000. Comprovar la continuïtat de cota i el canvi de pendent a les unions, i registrar quins trams tornen a seguir el terreny. |
+| **0.22 · 1. Transicions de la C-37** | RO-051, RO-052 | Recuperat un perfil a Sant Salvador a 1:10.000. Queden dos trams sense enllaç dins del pendent admissible i un creuament amb túnel sense cota. Comprovar la continuïtat visual i al laminador. |
 | **0.22 · 2. Coberta del túnel** | RO-034 | Comparar el mateix túnel a 1:10.000 i 1:20.000 i aïllar si el límit ve del mostreig, del perfil estimat o de la secció imprimible. Si es pot obrir, comprovar que les dues boques són visibles i que es conserva la coberta interior i la base. |
 | **0.22 · 3. Contrast i rendiment** | RO-033, RO-050, RO-051, RO-052, RO-053 | Repetir la bateria de sis retalls després de les correccions. Comparar unions, pendents, omissions i temps amb la mateixa font, escala i detall. [Resultats de referència](RO-051-PERFILS-VIARIS.md#bateria-de-la-022--control-inicial-amb-v0213) |
 | **Validació en paral·lel** | RO-024, RO-046, RO-054, RO-055 | Laminar les vores adjacents de Tamariu i dels Rasos–Gallina Pelada. Comprovar la recuperació d’un projecte girat, de mida personalitzada, amb materials i traços, i la transició quan es carrega un exemple. |
@@ -26,7 +26,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | [RO-053](#ro-053--flux-de-treball-per-etapes) | P1 | Progrés per capes i guies de Tamariu verificats | Comparar temps i memòria a la bateria de la 0.22 |
 | [RO-033](#ro-033--ponts-i-viaductes) | P1 | Millau i el cupó del Bages validats al visor | Revisar accessos i llums al laminador, contrastar altres ponts |
 | [RO-034](#ro-034--túnels-imprimibles) | P1 | Túnel de Sant Salvador obert a 1:10.000 i omès a 1:20.000 | Aïllar la causa de la coberta discontínua a 1:20.000 |
-| [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | Dos perfils de la C-37 i rasant ferroviària de 800 m recuperats | Resoldre les transicions omeses i repetir la bateria |
+| [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | Tres perfils de la C-37 i rasant ferroviària de 800 m comprovats | Resoldre les transicions omeses i repetir la bateria |
 | [RO-052](#ro-052--continuïtat-i-amplada-del-traçat-viari) | P1 | Quatre enllaços a Millau a 1:20.000 | Mesurar cotes, pendents i amplades als enllaços de la C-37 |
 | [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió) | P1 | Quatre 3MF de Tamariu verificats al ZIP | Contrastar les vores adjacents i els materials al laminador |
 | [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts) | P1 | Fonts en estudi | Comparació de parts i petjades en segona zona |

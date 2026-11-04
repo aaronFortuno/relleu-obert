@@ -37,8 +37,10 @@ const report={name,center:scenario.center,km,scale:model.scale,bbox,options,terr
   timings:{sourcesMs:built-started,buildMs:performance.now()-built},
   checks:{bridges:matches(scenario.bridges,infrastructure?.deckProfiles||[]),tunnels:matches(scenario.tunnels,tunnels?.profiles||[])},
   major:{applied:majorRoads?.applied,omissions:majorRoads?.omissions,error:majorRoads?.error,
-    profiles:(majorRoads?.profiles||[]).map(p=>({ids:p.sourceFeatureIds,class:p.roadClass,railway:p.railway,method:p.elevationMethod,
-      maximumGrade:p.maximumGrade,largestGradeChange:largestGradeChange(p)}))},
+    profiles:(majorRoads?.profiles||[]).map(p=>({id:p.id,ids:p.sourceFeatureIds,class:p.roadClass,railway:p.railway,method:p.elevationMethod,
+      maximumGrade:p.maximumGrade,largestGradeChange:largestGradeChange(p)})),
+    transitions:model.context.bridges.filter(bridge=>bridge.mainRoad).flatMap(bridge=>
+      bridge.approaches.plans.map(approach=>measureApproach(bridge,approach,model.context.ground,options.exaggeration)))},
   tunnels:{applied:tunnels?.applied,count:tunnels?.count,omissions:tunnels?.omissions,error:tunnels?.error},
   decks:(infrastructure?.deckProfiles||[]).filter(p=>!p.mainRoad),
   continuity:model.provenance.transportContinuity,
@@ -60,4 +62,16 @@ function largestGradeChange({stations,elevations}){
     previous=grade;
   }
   return max;
+}
+
+function measureApproach(bridge,{sections,length},ground,exaggeration){
+  const first=sections[0].centre,last=sections.at(-1).centre;
+  const maximumGrade=Math.max(...sections.slice(1).map(({centre:[x,y,z]},i)=>{
+    const [a,b,c]=sections[i].centre;
+    return Math.abs(z-c)/Math.hypot(x-a,y-b)/exaggeration;
+  }));
+  const startHeight=bridge.top(first[0],first[1]);
+  return {id:bridge.id,lengthMM:length,maximumGrade,
+    startGapMM:startHeight==null?null:first[2]-startHeight,
+    endGapMM:last[2]-ground(last[0],last[1])-bridge.surfaceRise};
 }

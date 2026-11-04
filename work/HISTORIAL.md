@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-04. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.21.6 — Transicions de la C-37
+
+Una reserva més llarga de traçat recupera un tercer perfil de la C-37 a Sant Salvador a 1:10.000. Queden dues omissions d’enllaç i un creuament sense cota acreditada. El control ferroviari de 800 m conserva la rasant. [Resultats](RO-051-PERFILS-VIARIS.md#transicions-amb-v0216)
+
 ## v0.21.5 — Mides i guies de tall
 
 Tria inicial amb 10 × 10 cm i mides personalitzades. El visor i l’exportació comparteixen el límit de 25 cm i les mides de les peces.

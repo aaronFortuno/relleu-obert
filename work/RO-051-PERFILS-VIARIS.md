@@ -138,3 +138,12 @@ La unió reintenta en coordenades locals els components amb volum geomètric pos
 - **Ferrocarril, 800 m, 1:5.333.** Perfil aplicat amb pendent constant de l’1,56% i zero omissions.
 
 Tots dos controls s’han repetit amb MET5 i els mateixos ajustos de model, amb un termini ampliat només al diagnòstic per obtenir la mateixa font. Les malles finals passen l’auditoria. El contrast visual i el laminat són pendents.
+
+### Transicions amb v0.21.6
+
+Quan l’enllaç habitual falla, el motor pot provar dues reserves més llargues dins del mateix eix cartografiat. Cada intent torna a comprovar l’ajust a la superfície, els encreuaments, el pendent i el tram sense suport. La terra i les cotes dels taulers mesurats es mantenen.
+
+- **Sant Salvador, 1:10.000 amb MET5.** De dos a tres perfils aplicats. El nou enllaç fa 3,65 mm i té un pendent màxim mesurat del 5,16% abans de l’exageració vertical. Les cotes coincideixen al centre dels dos extrems de l’enllaç calculat. El pont i el túnel principal es conserven. Queden dos perfils omesos per manca d’una unió admissible i un tercer per un creuament amb túnel sense cota acreditada.
+- **Ferrocarril, 800 m amb MET5.** Es conserva el perfil a l’1,56% i amb zero omissions.
+
+Totes dues malles passen l’auditoria. L’informe de la bateria separa ara els pendents de l’eix i els dels enllaços. Pendent de contrast visual i laminat.

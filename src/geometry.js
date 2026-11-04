@@ -286,7 +286,7 @@ function prepareTerrain(data,options,progress,preview,measure){
   const verticalReference={originMeters,minimumSurfaceMM:5,seaLevelMM:hasOcean?5:null,method:hasOcean?'sea level at 5 mm; no bathymetry':'lowest generated-terrain sample at 5 mm'};
   for(let i=0;i<field.values.length;i++)field.values[i]=5+(field.values[i]-originMeters)*scale*exaggeration;
   const ground=field.sample;
-  const terrain={size,exaggeration,resolution,proj,rect,warnings,elevationAt:data.terrainRaster?bridgeElevation:elevationAt,deckItems,deckMask,transport,roadPieces,railPieces,maximumElevation,
+  const terrain={size,exaggeration,resolution,proj,rect,warnings,elevationAt:data.terrainRaster?bridgeElevation:elevationAt,cropToElevationWindow:!!data.terrainRaster,deckItems,deckMask,transport,roadPieces,railPieces,maximumElevation,
     roadOnlyPoly,roadPoly,forest,bare,railPoly,waterPoly,land,oceanPoly,green,cropped,ground,verticalReference,diagnostics:prepared.diagnostics,
     woodsMask:measure('terrain.woods',()=>merge(cropped(woods)),{inputs:woods.length})};
   terrain.surfaces=measure('terrain.surfaces',()=>terrainCover(forest,bare,terrain,progress));
@@ -444,7 +444,7 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
   };
   const majorRoadsEnabled=options.majorRoads===true;
   if(majorRoadsEnabled)progress('Calculant els perfils de les vies principals…');
-  const majorPlan=majorRoadsEnabled&&infrastructureApi?generateMajorRoadItems(data.features,elevationAt,{projection:proj,bbox:data.meta.bbox,roi:rect,renderedElevationAt:representedElevationAt,allowEndpointLift:true,cropToElevationWindow:!!data.terrainRaster,smoothProfiles:options.smoothProfiles===true,maxLiftMetres:30,allowCrossing:(other,p)=>other.properties?.brunnel==='bridge'&&knownCrossingSources.some(source=>source.contains(p)&&!!source.item.railway===isRailway(other.properties))}):{items:[],metadata:{count:0,terrainModified:false},warnings:[]};
+  const majorPlan=majorRoadsEnabled&&infrastructureApi?generateMajorRoadItems(data.features,elevationAt,{projection:proj,bbox:data.meta.bbox,roi:rect,renderedElevationAt:representedElevationAt,allowEndpointLift:true,cropToElevationWindow:terrain.cropToElevationWindow,smoothProfiles:options.smoothProfiles===true,maxLiftMetres:30,allowCrossing:(other,p)=>other.properties?.brunnel==='bridge'&&knownCrossingSources.some(source=>source.contains(p)&&!!source.item.railway===isRailway(other.properties))}):{items:[],metadata:{count:0,terrainModified:false},warnings:[]};
   const acceptedMajor=[],majorOmissions=[];
   for(const [itemIndex,profile]of majorPlan.items.entries()){
     if(excludedProfiles.has(profile.id)){
@@ -455,14 +455,19 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
     if(preview)preview.stage('transport',message,itemIndex,majorPlan.items.length);
     else progress(`Comprovant la via principal ${itemIndex+1} de ${majorPlan.items.length}…`);
     try{
-      const item=options.smoothProfiles?reserveProfileEnds(profile,proj):profile;
-      if(!item){
-        majorOmissions.push({sourceFeatureIds:profile.sourceFeatureIds,reason:'espai o pendent insuficients per enllaçar amb la via sobre el terreny'});
-        continue;
-      }
-      const fit=fitMajorRoadItem(item,{projection:proj,verticalReference,exaggeration,ground,maxLiftMetres:30,patches:polys=>terrainPatches(intersect(polys,land),width,height,resolution)});
-      const clearance=fit.accepted?knownBridgeClearance(item,fit,knownCrossingSources.map(p=>p.item),{projection:proj,verticalReference,exaggeration,roadRise,railRise}):null;
-      if(fit.accepted&&clearance.accepted){
+      const joinFailure='espai o pendent insuficients per enllaçar amb la via sobre el terreny';
+      let omission,previous;
+      // Try longer approaches only when the usual landing cannot match the grade.
+      for(const reserveFactor of [1,1.4,1.9]){
+        const item=options.smoothProfiles?reserveProfileEnds(profile,proj,reserveFactor):profile;
+        if(!item){omission??={reason:joinFailure};break;}
+        const ends=item.terminalRoutes?.map(path=>path?.[0]?.join(',')).join('|');
+        if(reserveFactor>1&&ends===previous)continue;
+        previous=ends;
+        const fit=fitMajorRoadItem(item,{projection:proj,verticalReference,exaggeration,ground,maxLiftMetres:30,patches:polys=>terrainPatches(intersect(polys,land),width,height,resolution)});
+        if(!fit.accepted){if(fit.present)omission??={reason:fit.reason};break;}
+        const clearance=knownBridgeClearance(item,fit,knownCrossingSources.map(p=>p.item),{projection:proj,verticalReference,exaggeration,roadRise,railRise});
+        if(!clearance.accepted){omission??={reason:clearance.reason};break;}
         let terminalApproaches;
         if(item.terminalRoutes){
           const identity=transportIdentity({class:item.roadClass,ref:item.ref,name:item.name,oneway:item.oneway,layer:item.layer,railway:item.railway,sourceFeatureIds:item.sourceFeatureIds});
@@ -476,15 +481,16 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
             forceConnections:true,roadRise:surfaceRise,scale,widthMM:width,heightMM:height,roadWidth:item.widthMetres*scale,
             terminalRoads,maxGrade:item.maxGrade*exaggeration});
           if(terminalApproaches.missed.length){
-            majorOmissions.push({sourceFeatureIds:item.sourceFeatureIds,reason:'espai o pendent insuficients per enllaçar amb la via sobre el terreny',ends:terminalApproaches.missed});
+            omission={reason:joinFailure,ends:terminalApproaches.missed};
             continue;
           }
         }
         acceptedMajor.push({...item,terminalApproaches,generatedSurfaceAdjustmentMM:fit.adjustmentMM,maximumPrintedLiftMetres:fit.maximumPrintedLiftMetres,checkedCrossings:clearance.checkedCrossings,knownCrossingClearanceMM:Number.isFinite(clearance.minimumClearanceMM)?clearance.minimumClearanceMM:null});
+        omission=undefined;
+        break;
       }
-      else if(fit.accepted)majorOmissions.push({sourceFeatureIds:item.sourceFeatureIds,reason:clearance.reason});
-      else if(fit.present)majorOmissions.push({sourceFeatureIds:item.sourceFeatureIds,reason:fit.reason});
-    }catch(error){majorOmissions.push({sourceFeatureIds:item.sourceFeatureIds,reason:error.message});}
+      if(omission)majorOmissions.push({sourceFeatureIds:profile.sourceFeatureIds,...omission});
+    }catch(error){majorOmissions.push({sourceFeatureIds:profile.sourceFeatureIds,reason:error.message});}
   }
   let majorMetadata={...majorPlan.metadata,enabled:majorRoadsEnabled,applied:false,count:acceptedMajor.length,omissions:[...(majorPlan.metadata.omissions||[]),...majorOmissions],omitted:(majorPlan.metadata.omitted||0)+majorOmissions.length};
   warnings.push(...majorPlan.warnings,...majorOmissions.map(p=>'Perfil principal omès: '+p.reason));

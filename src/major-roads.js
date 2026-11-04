@@ -201,13 +201,17 @@ function axisCrossings(axis,otherLines){
 
 // Retain the ordinary surface on the mapped ends so the ramps can land
 // before a junction. A profile leaving the crop needs no such landing.
-export function reserveProfileEnds(item,projection){
+export function reserveProfileEnds(item,projection,reserveFactor=1){
   const path=item.axisXYZ.map(projection.project),{stations}=item,last=stations.length-1;
   const ends=[null,null],limits=[0,last];
+  const inCrop=([x,y])=>x>=0&&y>=0&&x<=projection.width&&y<=projection.height;
+  const terminalCount=Number(inCrop(path[0]))+Number(inCrop(path[last]));
+  const maximumShare=terminalCount===2?.45:2/3;
   for(const end of [0,1]){
     const edge=end?last:0,[x,y]=path[edge];
-    if(x<0||y<0||x>projection.width||y>projection.height)continue;
-    const reserve=Math.min(item.lengthMetres/3,Math.max(60,12/projection.scale,item.endpointLiftMetres[end]/item.maxGrade*2));
+    if(!inCrop([x,y]))continue;
+    const base=Math.min(item.lengthMetres/3,Math.max(60,12/projection.scale,item.endpointLiftMetres[end]/item.maxGrade*2));
+    const reserve=Math.min(item.lengthMetres*maximumShare,base*reserveFactor);
     let index=edge;
     while(Math.abs(stations[index]-stations[edge])<reserve&&index!==(end?0:last))index+=end?-1:1;
     limits[end]=index;

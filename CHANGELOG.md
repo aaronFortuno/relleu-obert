@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.21.6 — 2026-11-04
+
+- Els perfils principals poden reservar més traçat per enllaçar amb el paviment sobre el terreny. Cada intent conserva les comprovacions de pendent, suport i encreuaments.
+- Els ajustos de vies reutilitzen també la finestra MET5 del model.
+
 ## v0.21.5 — 2026-11-04
 
 - Mida inicial de 10 × 10 cm i mides personalitzades de 10 a 50 cm per costat, en passos d’1 cm.

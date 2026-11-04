@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {generateMajorRoadItems,majorRoadWidthMetres} from '../src/major-roads.js';
+import {generateMajorRoadItems,majorRoadWidthMetres,reserveProfileEnds} from '../src/major-roads.js';
 
 const M=111320,geo=(x,y=0)=>[x/M,y/M];
 const feature=(points,props={},id='road')=>({type:'Feature',id,properties:{sourceLayer:'transportation',class:'trunk',...props},geometry:{type:'LineString',coordinates:points.map(p=>geo(...p))}});
@@ -46,6 +46,19 @@ test('a windowed DEM keeps a trunk profile whose mapped axis extends beyond the 
   assert(profile.axisXYZ[0][0]*M<0);
   assert(profile.axisXYZ.at(-1)[0]*M>600);
   assert(profile.maximumGrade<.021);
+});
+
+test('extra approach reserve stays on the mapped axis and keeps an interior platform',()=>{
+  const proj={...projection(.1,0,[5,5]),width:25,height:10};
+  const [profile]=generateMajorRoadItems([feature([[0,0],[170,0]])],()=>100,{projection:proj,stationMetres:10}).items;
+  const standard=reserveProfileEnds(profile,proj);
+  const extended=reserveProfileEnds(profile,proj,1.9);
+  for(const i of [0,1]){
+    assert.deepEqual(extended.terminalRoutes[i].at(-1),standard.terminalRoutes[i].at(-1));
+    assert(extended.terminalRoutes[i].length>standard.terminalRoutes[i].length);
+  }
+  assert(extended.axis.length>=2);
+  assert(extended.faces.length>0);
 });
 
 test('global upper envelope remains above axis and BOTH edges with fixed original section endpoints',()=>{
