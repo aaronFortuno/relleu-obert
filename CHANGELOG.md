@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.22.30 — 2026-11-04
+
+- Les fletxes laterals del carrusel acceleren el moviment en passar-hi per sobre. Un clic desplaça una fitxa sencera amb acceleració i frenada graduals. Les fitxes s’amplien en una vista flotant i l’ordre es barreja en cada càrrega. El carrusel alterna els modes quan hi ha fitxes de tots dos.
+- Els controls de mida són al costat de la taula. L’exemple del Cap de Creus abasta 20 × 20 km amb gir de +10°.
+
 ## v0.22.29 — 2026-11-04
 
 - El carrusel afegeix Montserrat, l’estany de Sant Maurici i els volcans del Croscat i Santa Margarida. Tots tres tenen una imatge estàtica del visor i es generen en triar-los.

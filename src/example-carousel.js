@@ -1,133 +1,287 @@
-const pixelsPerSecond = 12;
+import {createCarouselMotion} from './carousel-motion.js';
+
+const baseSpeed = 12;
+const arrowSpeed = 85;
+const previewTiming = {duration: 260, easing: 'cubic-bezier(.2,.7,.25,1)'};
+
+function shuffle(examples) {
+  for (let i = examples.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [examples[i], examples[j]] = [examples[j], examples[i]];
+  }
+  return examples;
+}
+
+function orderExamples(examples) {
+  const relief = shuffle(examples.filter(example => example.pureRelief !== false));
+  const complete = shuffle(examples.filter(example => example.pureRelief === false));
+  const groups = Math.random() < .5 ? [relief, complete] : [complete, relief];
+  const result = [];
+  while (groups[0].length && groups[1].length) result.push(groups[0].shift(), groups[1].shift());
+  return result.concat(...groups);
+}
+
+function createCard(expanded = false) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = expanded ? 'secondary example-preview-card' : 'secondary example-card';
+
+  const picture = document.createElement('span');
+  picture.className = 'example-card-image';
+  const image = document.createElement('img');
+  image.alt = '';
+  image.width = 720;
+  image.height = 450;
+  image.decoding = 'async';
+  if (!expanded) image.loading = 'lazy';
+  picture.append(image);
+
+  const caption = document.createElement('span');
+  caption.className = 'example-card-caption';
+  const title = document.createElement('strong');
+  const metadata = document.createElement('span');
+  caption.append(title, metadata);
+  const scale = document.createElement('span');
+  const description = document.createElement('span');
+  if (expanded) caption.append(scale, description);
+  button.append(picture, caption);
+
+  return {button, populate(example) {
+    const mode = example.pureRelief === false ? 'Model complet' : 'Relleu pur';
+    const details = `${mode} · 1:${example.scale.toLocaleString('ca')}`;
+    button.dataset.example = example.id;
+    button.setAttribute('aria-description', `${details}. ${example.description}`);
+    image.src = example.image;
+    title.textContent = example.title;
+    metadata.textContent = `${example.category} · ${example.width / 10} × ${example.height / 10} cm`;
+    if (expanded) {
+      scale.textContent = details;
+      description.textContent = example.description;
+    }
+  }};
+}
 
 export function initExampleCarousel(container, examples, onSelect) {
   if (!examples.length) return;
 
   const cards = container.querySelector('.example-cards');
   const track = cards.querySelector('.example-track');
-  const navigation = container.querySelector('.example-carousel-navigation');
-  const motionButton = navigation.querySelector('.example-carousel-motion');
+  const arrows = [...container.querySelectorAll('[data-example-step]')];
+  const byId = new Map(examples.map(example => [example.id, example]));
+  for (const example of orderExamples(examples)) {
+    const card = createCard();
+    card.populate(example);
+    track.append(card.button);
+  }
+  const first = track.firstElementChild;
+  const looping = examples.length > 1;
+  if (looping) {
+    // The copies keep the seam filled when moving in either direction.
+    for (const card of [...track.children]) {
+      const copy = card.cloneNode(true);
+      copy.tabIndex = -1;
+      copy.setAttribute('aria-hidden', 'true');
+      track.append(copy);
+    }
+  }
+  const firstCopy = track.children[examples.length];
+  for (const arrow of arrows) arrow.hidden = !looping;
 
-  for (const example of examples) {
-    const card = document.createElement('button');
-    card.type = 'button';
-    card.className = 'secondary example-card';
-    card.dataset.example = example.id;
-    card.setAttribute('aria-description', example.description);
+  const workspace = container.closest('#welcome');
+  const overlay = document.createElement('div');
+  overlay.className = 'example-preview';
+  overlay.setAttribute('aria-hidden', 'true');
+  const preview = createCard(true);
+  preview.button.tabIndex = -1;
+  overlay.append(preview.button);
+  workspace.append(overlay);
 
-    const image = document.createElement('img');
-    image.src = example.image;
-    image.alt = '';
-    image.width = 720;
-    image.height = 450;
-    image.loading = 'lazy';
-    image.decoding = 'async';
-    const picture = document.createElement('span');
-    picture.className = 'example-card-image';
-    picture.append(image);
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  const motion = createCarouselMotion();
+  let cycle = 0, visible = false, frame = 0, previousTime = 0;
+  let arrowDirection = 0, cardsHovered = false;
+  let activeCard, pointerCard, keyboardCard, dismissedId, closeTimer, previewAnimation;
 
-    const caption = document.createElement('span');
-    caption.className = 'example-card-caption';
-    const title = document.createElement('strong');
-    title.textContent = example.title;
-    const metadata = document.createElement('span');
-    metadata.textContent = `${example.category} · ${example.width / 10} × ${example.height / 10} cm`;
-    const details = document.createElement('span');
-    details.className = 'example-card-details';
-    const scale = document.createElement('span');
-    scale.textContent = `Relleu pur · 1:${example.scale.toLocaleString('ca')}`;
-    const description = document.createElement('span');
-    description.textContent = example.description;
-    description.setAttribute('aria-hidden', 'true');
-    details.append(scale, description);
-    caption.append(title, metadata, details);
-    card.append(picture, caption);
-    track.append(card);
+  function render() {
+    if (!cycle) return;
+    const offset = (motion.position % cycle + cycle) % cycle;
+    track.style.transform = `translate3d(${-offset}px,0,0)`;
+  }
+
+  function tick(time) {
+    const elapsed = previousTime ? Math.min(.05, (time - previousTime) / 1000) : 0;
+    const speed = arrowDirection ? arrowDirection * arrowSpeed :
+      cardsHovered || activeCard || keyboardCard ? 0 : baseSpeed;
+    motion.update(elapsed, speed);
+    render();
+    previousTime = time;
+    frame = requestAnimationFrame(tick);
+  }
+
+  function updatePlayback() {
+    if (cycle && visible && !document.hidden && !reducedMotion.matches) {
+      if (!frame) frame = requestAnimationFrame(tick);
+    } else {
+      cancelAnimationFrame(frame);
+      frame = previousTime = 0;
+      if (reducedMotion.matches) motion.seek(motion.position);
+    }
+  }
+
+  function measure() {
+    if (!looping) return;
+    const distance = firstCopy.getBoundingClientRect().left - first.getBoundingClientRect().left;
+    if (distance > 0 && distance !== cycle) {
+      cycle = distance;
+      motion.setStride(cycle / examples.length);
+      render();
+    }
+    updatePlayback();
+  }
+
+  function sourceTransform(card) {
+    const source = card.getBoundingClientRect();
+    const rail = cards.getBoundingClientRect();
+    const frame = overlay.getBoundingClientRect();
+    const x = Math.min(rail.right - source.width / 2, Math.max(rail.left + source.width / 2, source.left + source.width / 2));
+    const dx = x - (frame.left + frame.width / 2);
+    const dy = source.top + source.height / 2 - (frame.top + frame.height / 2);
+    return `translate(${dx}px,${dy}px) scale(${source.width / preview.button.offsetWidth},${source.height / preview.button.offsetHeight})`;
+  }
+
+  function closePreview() {
+    if (!activeCard) return;
+    const source = activeCard;
+    activeCard = null;
+    const {transform, opacity} = getComputedStyle(preview.button);
+    previewAnimation?.cancel();
+    overlay.classList.remove('is-open');
+    if (!reducedMotion.matches && preview.button.offsetWidth && source.offsetWidth) {
+      previewAnimation = preview.button.animate([
+        {transform, opacity}, {transform: sourceTransform(source), opacity: 0},
+      ], previewTiming);
+    }
+  }
+
+  function refreshPreview() {
+    const source = pointerCard || keyboardCard;
+    if (!source || source.dataset.example === dismissedId) {
+      closePreview();
+      return;
+    }
+    const {example: id} = source.dataset;
+    if (activeCard?.dataset.example === id) {
+      activeCard = source;
+      return;
+    }
+    let origin;
+    if (preview.button.dataset.example === id && previewAnimation?.playState === 'running') {
+      const {transform, opacity} = getComputedStyle(preview.button);
+      origin = {transform, opacity};
+    }
+    activeCard = source;
+    previewAnimation?.cancel();
+    preview.populate(byId.get(id));
+    overlay.classList.add('is-open');
+    if (!reducedMotion.matches) {
+      previewAnimation = preview.button.animate([
+        origin ?? {transform: sourceTransform(source), opacity: 0}, {transform: 'none', opacity: 1},
+      ], previewTiming);
+    }
+  }
+
+  function choose(id) {
+    closePreview();
+    onSelect(byId.get(id));
+  }
+
+  function leavePreview(event) {
+    if (event.pointerType !== 'mouse') return;
+    const to = event.relatedTarget;
+    if (preview.button.contains(to) || to?.closest?.('.example-card')) return;
+    pointerCard = null;
+    if (!keyboardCard) dismissedId = null;
+    clearTimeout(closeTimer);
+    if (to?.closest?.('[data-example-step]')) refreshPreview();
+    else closeTimer = setTimeout(refreshPreview, 140);
   }
 
   track.addEventListener('click', event => {
     const card = event.target.closest('.example-card');
-    if (card) onSelect(examples.find(example => example.id === card.dataset.example));
+    if (card) choose(card.dataset.example);
   });
-  container.hidden = false;
-  if (examples.length === 1) return;
-
-  // A second copy fills the viewport when the last card passes the left edge.
-  const first = track.firstElementChild;
-  for (const card of [...track.children]) {
-    const copy = card.cloneNode(true);
-    copy.tabIndex = -1;
-    copy.setAttribute('aria-hidden', 'true');
-    track.append(copy);
-  }
-  const firstCopy = track.children[examples.length];
-  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-  let animation, cycle = 0, step = 0, visible = false, paused = false;
-
-  const offset = () => ((animation?.currentTime ?? 0) * pixelsPerSecond / 1000) % cycle;
-  function seek(distance) {
-    if (animation) animation.currentTime = ((distance % cycle + cycle) % cycle) * 1000 / pixelsPerSecond;
-  }
-  function updatePlayback() {
-    motionButton.hidden = reducedMotion.matches;
-    if (!animation) return;
-    const keyboardFocus = container.querySelector(':focus-visible:not(.example-carousel-motion)');
-    const shouldPlay = visible && !document.hidden && !reducedMotion.matches && !paused &&
-      !cards.matches(':hover') && !keyboardFocus;
-    if (shouldPlay && animation.playState !== 'running') animation.play();
-    if (!shouldPlay && animation.playState === 'running') animation.pause();
-  }
-  function measure() {
-    const distance = firstCopy.getBoundingClientRect().left - first.getBoundingClientRect().left;
-    if (distance <= 0 || distance === cycle) return;
-    const progress = animation ? offset() / step : 0;
-    animation?.cancel();
-    cycle = distance;
-    step = cycle / examples.length;
-    animation = track.animate([{transform: 'translateX(0)'}, {transform: `translateX(${-cycle}px)`}], {
-      duration: cycle * 1000 / pixelsPerSecond, iterations: Infinity,
-    });
-    animation.pause();
-    seek(progress * step);
-    updatePlayback();
-  }
-
-  for (const button of navigation.querySelectorAll('[data-example-step]')) {
-    button.addEventListener('click', () => seek((Math.round(offset() / step) + Number(button.dataset.exampleStep)) * step));
-  }
-  motionButton.addEventListener('click', () => {
-    paused = !paused;
-    motionButton.textContent = paused ? 'Reprèn' : 'Pausa';
-    updatePlayback();
-  });
-  cards.addEventListener('pointerenter', updatePlayback);
-  cards.addEventListener('pointerleave', updatePlayback);
-  // A partly visible card moves just inside the fade so its text fits.
-  cards.addEventListener('pointerover', event => {
-    const card = event.target.closest('.example-card');
-    if (event.pointerType !== 'mouse' || !card || card.contains(event.relatedTarget)) return;
-    const frame = cards.getBoundingClientRect(), box = card.getBoundingClientRect();
-    const inset = first.offsetLeft;
-    if (event.clientX <= frame.left + inset || event.clientX >= frame.right - inset) return;
-    if (box.left < frame.left + inset) seek(offset() + box.left - frame.left - inset);
-    else if (box.right > frame.right - inset) seek(offset() + box.right - frame.right + inset);
-  });
-  cards.addEventListener('pointerdown', event => {
+  track.addEventListener('pointerdown', event => {
     if (event.target.closest('.example-card[aria-hidden]')) event.preventDefault();
   });
-  container.addEventListener('focusin', event => {
-    updatePlayback();
-    const card = event.target.closest('.example-card:focus-visible');
-    if (card) seek(card.offsetLeft - first.offsetLeft);
+  track.addEventListener('pointerover', event => {
+    const card = event.target.closest('.example-card');
+    if (event.pointerType !== 'mouse' || !card || card.contains(event.relatedTarget)) return;
+    clearTimeout(closeTimer);
+    pointerCard = card;
+    if (dismissedId !== card.dataset.example) dismissedId = null;
+    refreshPreview();
   });
-  container.addEventListener('focusout', () => queueMicrotask(updatePlayback));
-  reducedMotion.addEventListener('change', updatePlayback);
+  track.addEventListener('pointerout', event => {
+    const card = event.target.closest('.example-card');
+    if (card && !card.contains(event.relatedTarget)) leavePreview(event);
+  });
+  cards.addEventListener('pointerenter', event => { if (event.pointerType === 'mouse') cardsHovered = true; });
+  cards.addEventListener('pointerleave', () => { cardsHovered = false; });
+  preview.button.addEventListener('pointerenter', () => {
+    clearTimeout(closeTimer);
+    pointerCard = activeCard;
+  });
+  preview.button.addEventListener('pointerleave', leavePreview);
+  preview.button.addEventListener('pointerdown', event => event.preventDefault());
+  preview.button.addEventListener('click', () => choose(preview.button.dataset.example));
+
+  for (const arrow of arrows) {
+    const direction = Number(arrow.dataset.exampleStep);
+    arrow.addEventListener('pointerenter', event => { if (event.pointerType === 'mouse') arrowDirection = direction; });
+    arrow.addEventListener('pointerleave', () => { arrowDirection = 0; });
+    arrow.addEventListener('click', () => {
+      motion.advance(direction, reducedMotion.matches);
+      render();
+    });
+  }
+
+  container.addEventListener('focusin', event => {
+    keyboardCard = event.target.closest('.example-card:focus-visible');
+    if (keyboardCard) {
+      pointerCard = null;
+      if (dismissedId !== keyboardCard.dataset.example) dismissedId = null;
+      if (cycle) {
+        const destination = keyboardCard.offsetLeft - first.offsetLeft;
+        motion.moveTo(destination + Math.round((motion.position - destination) / cycle) * cycle, reducedMotion.matches);
+        render();
+      }
+    }
+    refreshPreview();
+  });
+  container.addEventListener('focusout', () => queueMicrotask(() => {
+    if (document.activeElement === keyboardCard || !keyboardCard) return;
+    keyboardCard = null;
+    if (!pointerCard) dismissedId = null;
+    refreshPreview();
+  }));
+  document.addEventListener('keydown', event => {
+    if (event.key !== 'Escape' || !activeCard) return;
+    event.preventDefault();
+    dismissedId = activeCard.dataset.example;
+    closePreview();
+  });
+
+  reducedMotion.addEventListener('change', () => {
+    previewAnimation?.cancel();
+    updatePlayback();
+  });
   document.addEventListener('visibilitychange', updatePlayback);
   new IntersectionObserver(([entry]) => {
     visible = entry.isIntersecting;
+    if (!visible && !cards.clientWidth) closePreview();
     updatePlayback();
   }).observe(cards);
   new ResizeObserver(measure).observe(cards);
-  navigation.hidden = false;
+  container.hidden = false;
   measure();
 }

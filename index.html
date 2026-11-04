@@ -86,40 +86,41 @@
         <h2 id="welcome-title">Tria la mida de la maqueta</h2>
         <p id="welcome-instruction">Passa per una mida per veure quant espai ocupa.</p>
         <div id="piece-choice">
-          <figure class="piece-preview">
-            <svg viewBox="235 225 1190 735" aria-hidden="true">
-              <image href="./assets/size-table.jpg" width="1536" height="1024"></image>
-              <foreignObject x="235" y="225" width="1190" height="735">
-                <canvas id="piece-preview-model" width="1190" height="735"></canvas>
-              </foreignObject>
-            </svg>
-            <figcaption>
-              <output id="piece-preview-size" aria-live="off"></output>
-              <span id="piece-preview-note">Taula 60 × 40 cm · vista orientativa</span>
-            </figcaption>
-          </figure>
-          <div id="piece-sizes" role="group" aria-labelledby="welcome-title"></div>
-          <details id="custom-piece">
-            <summary>Mides personalitzades</summary>
-            <form id="custom-piece-form">
-              <div class="two-fields">
-                <div><label for="custom-width">Amplada <span class="unit">cm</span></label><input id="custom-width" type="number" min="10" max="100" step="1" value="20" aria-describedby="custom-size-note" required></div>
-                <div><label for="custom-height">Fondària <span class="unit">cm</span></label><input id="custom-height" type="number" min="10" max="100" step="1" value="20" aria-describedby="custom-size-note" required></div>
-              </div>
-              <p id="custom-size-note" class="hint piece-size-note">Si un costat supera els 50 cm, l’altre pot fer fins a 20 cm. Aquest format fa servir Relleu pur.</p>
-              <button type="submit" class="primary">Continua</button>
-            </form>
-          </details>
-          <section id="example-carousel" aria-labelledby="example-carousel-title" hidden>
-            <div class="example-carousel-heading">
-              <h3 id="example-carousel-title">Exemples de maquetes</h3>
-              <div class="example-carousel-navigation" role="group" aria-label="Navegació dels exemples" hidden>
-                <button type="button" class="quiet-button example-carousel-motion" aria-controls="example-cards">Pausa</button>
-                <button type="button" class="quiet-button" data-example-step="-1" aria-label="Exemple anterior" aria-controls="example-cards"><span aria-hidden="true">‹</span></button>
-                <button type="button" class="quiet-button" data-example-step="1" aria-label="Exemple següent" aria-controls="example-cards"><span aria-hidden="true">›</span></button>
-              </div>
+          <div class="piece-setup">
+            <figure class="piece-preview">
+              <svg viewBox="235 225 1190 735" aria-hidden="true">
+                <image href="./assets/size-table.jpg" width="1536" height="1024"></image>
+                <foreignObject x="235" y="225" width="1190" height="735">
+                  <canvas id="piece-preview-model" width="1190" height="735"></canvas>
+                </foreignObject>
+              </svg>
+              <figcaption>
+                <output id="piece-preview-size" aria-live="off"></output>
+                <span id="piece-preview-note">Taula 60 × 40 cm · vista orientativa</span>
+              </figcaption>
+            </figure>
+            <div class="piece-setup-controls">
+              <div id="piece-sizes" role="group" aria-labelledby="welcome-title"></div>
+              <details id="custom-piece">
+                <summary>Mides personalitzades</summary>
+                <form id="custom-piece-form">
+                  <div class="two-fields">
+                    <div><label for="custom-width">Amplada <span class="unit">cm</span></label><input id="custom-width" type="number" min="10" max="100" step="1" value="20" aria-describedby="custom-size-note" required></div>
+                    <div><label for="custom-height">Fondària <span class="unit">cm</span></label><input id="custom-height" type="number" min="10" max="100" step="1" value="20" aria-describedby="custom-size-note" required></div>
+                  </div>
+                  <p id="custom-size-note" class="hint piece-size-note">Si un costat supera els 50 cm, l’altre pot fer fins a 20 cm. Aquest format fa servir Relleu pur.</p>
+                  <button type="submit" class="primary">Continua</button>
+                </form>
+              </details>
             </div>
-            <div id="example-cards" class="example-cards"><div class="example-track"></div></div>
+          </div>
+          <section id="example-carousel" aria-labelledby="example-carousel-title" hidden>
+            <h3 id="example-carousel-title" class="example-carousel-heading">Exemples de maquetes</h3>
+            <div class="example-carousel-rail">
+              <button type="button" class="quiet-button example-carousel-arrow" data-example-step="-1" aria-label="Exemple anterior" aria-controls="example-cards"><span aria-hidden="true">‹</span></button>
+              <div id="example-cards" class="example-cards"><div class="example-track"></div></div>
+              <button type="button" class="quiet-button example-carousel-arrow" data-example-step="1" aria-label="Exemple següent" aria-controls="example-cards"><span aria-hidden="true">›</span></button>
+            </div>
             <small class="example-credits">Dades © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> · © <a href="https://mapterhorn.com/attribution/" target="_blank" rel="noopener">Mapterhorn</a> · © <a href="https://www.icgc.cat/ca/Geoinformacio-i-mapes/Dades-i-productes/Elevacions/Elevacions-territorial/Models-delevacions" target="_blank" rel="noopener">ICGC</a></small>
           </section>
         </div>
@@ -171,7 +172,7 @@
       <path d="m27 9 7-6" stroke="var(--umbrella-accent)" stroke-width="4.5"/>
     </svg><span>ortogra<span class="umbrella-dot">.</span>fi</span>
   </a></p>
-  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions">v0.22.29</button><button data-open="about-dialog" class="v4v-button">♡ Sobre el projecte · V4V</button></div>
+  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions">v0.22.30</button><button data-open="about-dialog" class="v4v-button">♡ Sobre el projecte · V4V</button></div>
 </footer>
 
 <dialog id="piece-resize-dialog" aria-labelledby="piece-resize-title">

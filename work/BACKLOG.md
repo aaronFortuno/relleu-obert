@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-04 · v0.22.29**. Sis exemples de Catalunya al carrusel inicial. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-04 · v0.22.30**. Carrusel amb navegació lateral i fitxes flotants. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -39,7 +39,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | ID | Prioritat | Estat | Què falta |
 | ------------------------------------------------------------------------ | --------- | ------------------------------------ | --------------------------------------------------------------- |
 | [RO-050](#ro-050--ferrocarrils-diferenciats) | P2 | Implementat i comprovat localment | Usuari: realç ferroviari i assignació de material; laminat |
-| [RO-046](#ro-046--catàleg-de-llocs-recomanats) | P2 | Sis fitxes de Catalunya al carrusel, amb generació en triar l’exemple | Validar el ritme i la llegibilitat en ús, i decidir el lot següent |
+| [RO-046](#ro-046--catàleg-de-llocs-recomanats) | P2 | Sis fitxes en ordre aleatori, amb controls laterals i vista ampliada | Validar el ritme i la llegibilitat en ús, i decidir el primer lot de Model complet |
 | [RO-044](#ro-044--catastre-per-seccions-i-recuperació-de-configuracions) | P1 | Vista progressiva validada a Tamariu | Buit/mixt, subdivisions i recuperació després d’error |
 | [RO-045](#ro-045--coherència-visual-dels-sidebars) | P2 | Implementat; pendent d’usuari | Coherència de controls i scroll a escriptori |
 
@@ -139,7 +139,7 @@ Validar a l’escriptori la coherència dels controls i el desplaçament intern 
 
 ### RO-046 — Catàleg de llocs recomanats
 
-El [catàleg inicial](RO-046-CATALEG.md) proposa 28 retalls per a Relleu pur i Model complet. El carrusel incorpora els sis de Relleu pur de Catalunya, amb imatges estàtiques i detalls quan s’amplia la fitxa. Triar un d’aquests exemples al carrusel o a Territori prepara i genera el projecte. Queda revisar el ritme i la llegibilitat en ús i triar el lot següent.
+El [catàleg inicial](RO-046-CATALEG.md) proposa 28 retalls per a Relleu pur i Model complet. El carrusel incorpora els sis de Relleu pur de Catalunya en ordre aleatori, amb detalls a la fitxa flotant i controls de velocitat als costats. Alterna els modes mentre hi ha exemples de tots dos. El Cap de Creus abasta la península amb el retall girat de l’usuari. Queda validar el ritme i la llegibilitat en ús i triar el primer lot de Model complet.
 
 ### RO-047 — Precàrrega opcional de fonts alternatives
 

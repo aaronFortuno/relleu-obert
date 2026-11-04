@@ -2,6 +2,12 @@
 
 Actualitzat: 2026-11-04. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.22.30 — Fletxes laterals i fitxes flotants
+
+RO-046 barreja les sis fitxes en cada càrrega i alternarà els modes quan hi hagi exemples de Model complet. Les fletxes dels extrems acceleren el moviment amb el punter i cada activació avança o retrocedeix una fitxa exacta. La fitxa s’amplia al centre i conserva la generació en seleccionar-la. Les mides queden a la dreta de la taula. El Cap de Creus té un nou render estàtic de la península amb un retall de 20 × 20 km, a 1:100.000 i amb un gir de +10°. [Retall i imatge](RO-046-CATALEG.md#primer-lot-al-carrusel)
+
+Revisat al navegador a 1280 × 720 i 1100 × 680 amb el punter i el teclat. Comprovats el canvi d’ordre en recarregar, l’ampliació i el retorn de la fitxa, i el pas de 227 px en tots dos sentits en la finestra de 1100 × 680. S’han comprovat l’alternança amb un catàleg mixt de prova i la generació del Cap de Creus amb el nou retall. Superades 49 proves locals. La construcció estàtica local queda pendent pel llindar de memòria. Pendent de validació d’ús.
+
 ## v0.22.29 — Segon lot de Catalunya al carrusel
 
 Montserrat, l’estany de Sant Maurici i els volcans del Croscat i Santa Margarida s’incorporen al carrusel de RO-046. Les imatges són renders estàtics i les fitxes obren la generació de Relleu pur amb els retalls del catàleg. [Retalls i fonts](RO-046-CATALEG.md#segon-lot-al-carrusel)
