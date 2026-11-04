@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {coverageSkins} from '../src/relief-contours.js';
+import {coverageSkins,vegetationSkin} from '../src/relief-contours.js';
 import {sampleReliefMask} from '../src/relief-forest.js';
-import {reliefForestTrees,reliefTreePart} from '../src/relief-forest-trees.js';
+import {reliefVegetationTexture} from '../src/relief-vegetation-texture.js';
 import {levelReliefLakes} from '../src/relief-lakes.js';
 import {reliefStreamPart,reliefStreamStrips} from '../src/relief-streams.js';
 import {auditPart} from '../src/solid-audit.js';
@@ -55,11 +55,17 @@ test('a stream on a rectangular grid keeps the same height on both sides of a pr
   assert.deepEqual(seamSouth,seam(northStream.vertices,0));
 });
 
-test('crowns interpolate the rectangular terrain and translate to tile-local coordinates',()=>{
-  const trees=reliefForestTrees(grid,()=>true,.05);
-  assert(trees.some(({y})=>y>70));
-  for(const {x,y,ground} of trees)assert(Math.abs(ground-heightAt(x,y))<1e-8);
-  const part=reliefTreePart({...grid,trees},north),audit=auditPart(part);
-  assert.deepEqual(audit.errors,[]);
-  assert(audit.bbox.min[1]>=0&&audit.bbox.max[1]<=40&&audit.bbox.max[1]>30);
+test('continuous vegetation follows sloping rectangular terrain across its horizontal print cut',()=>{
+  const wooded={...grid,forestWeights:new Float32Array(grid.heights.length).fill(1)};
+  wooded.vegetationTexture=reliefVegetationTexture(wooded,{scale:.1,waterPolygons:[]});
+  const southTexture=vegetationSkin(wooded,south),northTexture=vegetationSkin(wooded,north);
+  assert.deepEqual(auditPart(northTexture).errors,[]);
+  assert.deepEqual(auditPart(southTexture).errors,[]);
+  assert.deepEqual(seam(southTexture.vertices,40),seam(northTexture.vertices,0));
+  assert.equal(northTexture.areaMM2,1600);
+  const {vertices}=northTexture;
+  for(let i=0;i<vertices.length;i+=6){
+    const ground=heightAt(vertices[i],vertices[i+1]+40);
+    assert(vertices[i+2]>ground&&Math.abs(vertices[i+5]-(ground-.06))<1e-6);
+  }
 });

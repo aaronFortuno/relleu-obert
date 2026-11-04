@@ -45,12 +45,13 @@ function grow(array,minimum){
   return bigger;
 }
 
-function skinBuilder(bounds,grid,toBase=false){
+function skinBuilder(bounds,grid,toBase=false,bottomAt){
   const {left,bottom,right,top}=bounds,{resolution:n,rows=n,width,height}=grid;
   const stride=right-left+1,integer=new Uint32Array(stride*(top-bottom+1));
   const intersections=new Map(),boundary=new Map(),edgeStride=2**24;
   let vertices=new Float32Array(1024),faces=new Uint32Array(1024),nv=0,nf=0;
-  function vertex([x,y,z]){
+  function vertex(point){
+    let [x,y,z]=point;
     const vx=Math.fround((x-left)*width/n),vy=Math.fround((y-bottom)*height/rows);
     const ix=Math.round(x),iy=Math.round(y);
     if(vx===Math.fround((ix-left)*width/n))x=ix;
@@ -62,7 +63,7 @@ function skinBuilder(bounds,grid,toBase=false){
     vertices=grow(vertices,nv+6);
     const index=nv/3;
     vertices[nv++]=vx;vertices[nv++]=vy;vertices[nv++]=z;
-    vertices[nv++]=vx;vertices[nv++]=vy;vertices[nv++]=toBase?0:z-RELIEF_SKIN_DEPTH;
+    vertices[nv++]=vx;vertices[nv++]=vy;vertices[nv++]=bottomAt?bottomAt(point):toBase?0:z-RELIEF_SKIN_DEPTH;
     if(lattice)integer[key]=index+1;
     else intersections.set(key,index+1);
     return index;
@@ -211,4 +212,36 @@ export function coverageSkins(grid,bounds,coastal=false){
     skins[6]=core.finish();
   }
   return skins;
+}
+
+export function vegetationSkin(grid,bounds){
+  const {vegetationTexture,heights,diagonals,resolution:n,rows=n,width,height}=grid;
+  if(!vegetationTexture)return null;
+  const {coverage,raise}=vegetationTexture,{left,bottom,right,top}=bounds;
+  const skin=skinBuilder(bounds,grid,false,point=>point[3]-.06);
+  const point=(x,y,index)=>[x,y,heights[index],coverage[index],raise[index]];
+  let area=0;
+  function patch(a,b,c){
+    if(a[3]<=0&&b[3]<=0&&c[3]<=0)return;
+    const triangle=[a,b,c];
+    const contour=triangle.every(p=>p[3]>=0)?triangle:clip(triangle,p=>p[3]);
+    if(contour.length<3)return;
+    for(let i=1;i+1<contour.length;i++){
+      const [p,q,r]=[contour[0],contour[i],contour[i+1]];
+      area+=((q[0]-p[0])*(r[1]-p[1])-(q[1]-p[1])*(r[0]-p[0]))/2;
+    }
+    skin.patch(contour.map(([x,y,ground,weight,offset])=>{
+      const fade=Math.max(0,Math.min(1,weight));
+      return [x,y,ground+offset*fade*fade*(3-2*fade),ground];
+    }));
+  }
+  for(let y=bottom;y<top;y++)for(let x=left;x<right;x++){
+    const i=y*(n+1)+x,j=i+n+1;
+    if(coverage[i]<=0&&coverage[i+1]<=0&&coverage[j]<=0&&coverage[j+1]<=0)continue;
+    const a=point(x,y,i),b=point(x+1,y,i+1),c=point(x+1,y+1,j+1),d=point(x,y+1,j);
+    if(diagonals[y*n+x]){patch(a,b,d);patch(b,c,d);}
+    else{patch(a,b,c);patch(a,c,d);}
+  }
+  const mesh=skin.finish();
+  return mesh&&{...mesh,areaMM2:area*width*height/(n*rows)};
 }

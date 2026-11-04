@@ -1,8 +1,7 @@
-import {coverageSkins,RELIEF_SKIN_DEPTH} from './relief-contours.js';
+import {coverageSkins,RELIEF_SKIN_DEPTH,vegetationSkin} from './relief-contours.js';
 import {RELIEF_MATERIALS,nativeReliefParts} from './materials.js';
 import {tilePlan} from './selection.js';
 import {reliefStreamPart} from './relief-streams.js';
-import {reliefTreePart} from './relief-forest-trees.js';
 
 export const PURE_RELIEF_RESOLUTIONS={24:240,36:384,56:540};
 const panoramicSteps={240:1.25,384:.9,540:.65};
@@ -31,10 +30,10 @@ export function reliefDiagonals(heights,n,midpoint,rows=n){
 
 const directions=[[0,-1],[1,0],[0,1],[-1,0]];
 const corners=[[0,0],[1,0],[1,1],[0,1]];
-const reliefTreeCategory={...RELIEF_MATERIALS[4],id:'trees',name:'Arbres'};
+const reliefTreeCategory={...RELIEF_MATERIALS[4],id:'trees',name:'Vegetació simulada'};
 
 export function reliefTreesPart(grid,bounds={left:0,bottom:0,right:grid.resolution,top:grid.rows??grid.resolution}){
-  const mesh=reliefTreePart(grid,bounds);
+  const mesh=vegetationSkin(grid,bounds);
   return mesh&&{...reliefTreeCategory,...mesh};
 }
 
@@ -138,7 +137,7 @@ function placeInAssembly(part,tile){
 export function previewReliefPieces(grid,emit){
   const plan=tilePlan(grid.width,grid.height),total=plan.tiles.length;
   if(total<2||grid.resolution%plan.cols||(grid.rows??grid.resolution)%plan.rows)return false;
-  const previewGrid={...grid,scores:null,lakeWeights:null,forestWeights:null,streamStrips:null,trees:[]};
+  const previewGrid={...grid,scores:null,lakeWeights:null,forestWeights:null,streamStrips:null,vegetationTexture:null};
   for(const [i,tile] of plan.tiles.entries()){
     const parts=reliefParts(previewGrid,tileBounds(grid,plan,tile));
     emit(parts.map(part=>placeInAssembly(part,tile)),{index:i+1,total});

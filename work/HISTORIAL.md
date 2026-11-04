@@ -2,6 +2,12 @@
 
 Actualitzat: 2026-11-04. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.22.28 — Vegetació contínua en Relleu pur
+
+El bosc cartografiat presenta una superfície rugosa contínua, d’1 a 3 mm a 1:10.000, que escala proporcionalment. El pinzell i la goma modifiquen la capa de textura, i la casella «Vegetació simulada» l’amaga conservant el color cartografiat.
+
+El control de Tamariu a 1:10.000 mostra 44,5 cm² de superfície amb textura. S’han comprovat al navegador la goma, el repintat i la casella amb teclat a 1280 × 720 i 1100 × 680. Les proves locals comproven l’altura, la continuïtat als talls, els sòlids tancats, el filament i el pas de l’aigua. Pendent de laminat i impressió.
+
 ## v0.22.26 — Pinzell de vegetació en Relleu pur
 
 Relleu pur recupera el panell Vegetació, amb capçades automàtiques segons l’escala i un pinzell per afegir o esborrar volums sobre terra. Quan el diàmetre de les capçades baixa de 0,45 mm, el pinzell afegeix una textura de 0,54–0,60 mm de diàmetre nominal i 0,25–0,31 mm d’altura nominal. La textura comparteix el filament del bosc i es conserva en tallar la maqueta en peces. Els canvis de vegetació reutilitzen la malla del relleu.

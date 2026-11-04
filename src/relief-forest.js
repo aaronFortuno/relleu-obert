@@ -2,9 +2,9 @@ import {polygonTester} from './polygon-index.js';
 
 // Sample signed distance near the mapped outline. This lets the surface
 // contour cross a triangle at a fractional position instead of snapping it.
-export function sampleReliefMask(polygons,width,height,n,rows=n){
+export function sampleReliefMask(polygons,width,height,n,rows=n,distanceCells=1){
   if(!polygons.length)return null;
-  const stride=n+1,dx=width/n,dy=height/rows,pad=Math.hypot(dx,dy);
+  const stride=n+1,dx=width/n,dy=height/rows,pad=Math.hypot(dx,dy)*distanceCells;
   const weights=new Float32Array(stride*(rows+1)).fill(pad);
   for(const polygon of polygons)for(const ring of polygon)for(let i=1;i<ring.length;i++){
     const [ax,ay]=ring[i-1],[bx,by]=ring[i],vx=bx-ax,vy=by-ay,length=vx*vx+vy*vy;

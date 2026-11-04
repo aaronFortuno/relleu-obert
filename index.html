@@ -42,13 +42,13 @@
     </section>
     <section class="config-section" data-step="vegetation">
       <div class="step-header"><h2 class="config-heading"><button type="button" class="section-toggle" id="step-vegetation" aria-expanded="false" aria-controls="panel-vegetation"><span aria-hidden="true">02</span><span data-i18n="section.vegetation">Vegetació</span><i aria-hidden="true">+</i></button></h2><button type="button" class="secondary step-action" data-step-action="vegetation" hidden>Vies →</button></div>
-      <div id="panel-vegetation" class="config-content" role="region" aria-labelledby="step-vegetation" hidden><label class="check-row"><input id="trees" type="checkbox" checked><span>Afegir arbres amb volum</span></label>
+      <div id="panel-vegetation" class="config-content" role="region" aria-labelledby="step-vegetation" hidden><label class="check-row"><input id="trees" type="checkbox" checked><span id="vegetation-label">Afegir arbres amb volum</span></label>
       <label for="tree-type">Forma dels arbres</label><select id="tree-type"><option value="mixed">Automàtica · segons el relleu</option><option value="round">Arrodonida</option><option value="tall">Allargada</option></select>
       <p id="vegetation-budget-note" class="hint" role="status" hidden></p><p id="tree-scale-note" class="hint" role="status" hidden></p><div class="brush-tools" role="group" aria-label="Edició de vegetació"><button data-brush="navigate" class="selected" aria-pressed="true">↖ Navega</button><button data-brush="add" aria-pressed="false">＋ Pinzell</button><button data-brush="erase" aria-pressed="false">− Goma</button></div>
-      <label for="density">Densitat del pinzell <output id="density-value">×0,5</output></label><input id="density" type="range" min=".25" max="2" step=".25" value=".5">
+      <label for="density"><span id="brush-density-label">Densitat del pinzell</span> <output id="density-value">×0,5</output></label><input id="density" type="range" min=".25" max="2" step=".25" value=".5">
       <label for="brush-radius">Radi del pinzell <output id="brush-value">5 mm</output></label><input id="brush-radius" type="range" min="2" max="12" value="5" step="1">
       <div class="edit-actions"><button id="undo-brush" class="quiet-button" disabled>↶ Desfés</button><button id="clear-brush" class="quiet-button" disabled>Restableix els arbres</button></div>
-      <p class="hint">Pinta sobre el terreny. En aixecar el pinzell s’aplica tot el traç. La densitat afecta només els traços nous.</p>
+      <p id="vegetation-brush-note" class="hint">Pinta sobre el terreny. En aixecar el pinzell s’aplica tot el traç. La densitat afecta només els traços nous.</p>
       </div>
     </section>
     <section class="config-section" data-step="transport">
@@ -120,7 +120,7 @@
               </div>
             </div>
             <div id="example-cards" class="example-cards"><div class="example-track"></div></div>
-            <small class="example-credits">Dades © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> · © <a href="https://mapterhorn.com/attribution/" target="_blank" rel="noopener">Mapterhorn</a></small>
+            <small class="example-credits">Dades © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> · © <a href="https://mapterhorn.com/attribution/" target="_blank" rel="noopener">Mapterhorn</a> · © <a href="https://www.icgc.cat/ca/Geoinformacio-i-mapes/Dades-i-productes/Elevacions/Elevacions-territorial/Models-delevacions" target="_blank" rel="noopener">ICGC</a></small>
           </section>
         </div>
       </div>
@@ -171,7 +171,7 @@
       <path d="m27 9 7-6" stroke="var(--umbrella-accent)" stroke-width="4.5"/>
     </svg><span>ortogra<span class="umbrella-dot">.</span>fi</span>
   </a></p>
-  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions">v0.22.26</button><button data-open="about-dialog" class="v4v-button">♡ Sobre el projecte · V4V</button></div>
+  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions">v0.22.28</button><button data-open="about-dialog" class="v4v-button">♡ Sobre el projecte · V4V</button></div>
 </footer>
 
 <dialog id="piece-resize-dialog" aria-labelledby="piece-resize-title">

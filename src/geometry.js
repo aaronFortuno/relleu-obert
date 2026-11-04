@@ -3,7 +3,8 @@ import {levelReliefLakes} from './relief-lakes.js';
 import {reliefDiagonals,reliefParts,reliefGridSize,reliefTreesPart,previewReliefPieces,assemblePanoramicRelief,PURE_RELIEF_RESOLUTIONS} from './pure-relief-mesh.js';
 import {reliefStreamStrips} from './relief-streams.js';
 import {sampleReliefMask} from './relief-forest.js';
-import {alpineCrownHeightFactor,reliefCrownTaper,reliefForestTrees,reliefBrushTrees,RELIEF_TREE_MIN_DIAMETER_MM,RELIEF_TREE_DIAMETER_METRES,RELIEF_TREE_THINNING} from './relief-forest-trees.js';
+import {alpineCrownHeightFactor,reliefCrownTaper} from './relief-forest-trees.js';
+import {reliefVegetationTexture} from './relief-vegetation-texture.js';
 import {waterwayPolygons} from './waterways.js';
 import {polygonOps} from './polygon-ops.js';
 import earcut from 'earcut';
@@ -562,14 +563,13 @@ function buildPureRelief(data,options,progress,preview){
   const gridPoint=(x,y)=>[x*width/columns,y*height/rows];
   const heightAt=(x,y)=>sample(...unproject(gridPoint(x,y)));
   const heights=new Float64Array(stride*(rows+1));
-  let originMeters=Infinity,maximumElevation=-Infinity;
+  let originMeters=Infinity;
   for(let row=0;row<=rows;row++){
     for(let col=0;col<=columns;col++){
       const index=row*stride+col;
       const z=oceanWeights?.[index]>0?0:heightAt(col,row);
       heights[index]=z;
       originMeters=Math.min(originMeters,z);
-      maximumElevation=Math.max(maximumElevation,z);
     }
     if(row%32===31||row===rows)preview?.stage('terrain','Calculant el camp d’altures…',row+1,rows+1);
   }
@@ -612,16 +612,10 @@ function buildPureRelief(data,options,progress,preview){
   if(streams&&(data.waterways?.length||data.waterAreas?.length))progress('Traçant els rius i rierols…');
   const paths=waterwayPolygons(data.waterways||[],project,{width,height,scale,multiplier:options.streamWidth});
   const waterAreas=(data.waterAreas||[]).map(feature=>geoPolys(feature,project));
-  const plantingStreamStrips=reliefStreamStrips([...paths,...waterAreas],width,height,columns);
   const forest=sampleReliefMask((data.forests||[]).flatMap(feature=>geoPolys(feature,project)),width,height,columns,rows);
   Object.assign(reliefGrid,{scores,lakeWeights:lakes?.count?lakes.weights:null,
-    forestWeights:forest?.cells?forest.weights:null,streamStrips:streams?plantingStreamStrips:null});
-  const containsMappedLake=polygonTester((data.lakes||[]).flatMap(feature=>geoPolys(feature,project)));
-  const containsMappedWater=point=>ocean?.contains(point)||containsMappedLake(point);
-  const treeContext={scale,maximumElevation,containsForest:forest?.cells?forest.contains:null,
-    plantingGrid:{...reliefGrid,plantingStreamStrips,containsMappedWater},baseWarnings:[...(data.meta.sourceWarnings||[])]};
-  const vegetation=reliefVegetation(treeContext,options);
-  Object.assign(reliefGrid,{trees:vegetation.placements,crownTaper:vegetation.treeRepresentation.crownTaper});
+    forestWeights:forest?.cells?forest.weights:null,streamStrips:streams?reliefStreamStrips([...paths,...waterAreas],width,height,columns):null});
+  const waterPolygons=[...oceanPolygons,...(data.lakes||[]).flatMap(feature=>geoPolys(feature,project)),...paths.flat(),...waterAreas.flat()];
   progress('Construint el sòlid del relleu…');
   const categories=panoramic?assemblePanoramicRelief(reliefGrid,(completed,total)=>{
     preview?.stage('terrain','Acabant el relleu i les capes de cada peça',completed,total);
@@ -633,34 +627,18 @@ function buildPureRelief(data,options,progress,preview){
     coverageCells:{bare:cells[0],snow:cells[1],total:columns*rows},lakeCount:lakes?.count??0,
     streamCount:streams?paths.length:0,flowingWaterAreaCount:streams?waterAreas.length:0,forestSamples:forest?.cells??0};
   return finishReliefVegetation({width,height,scale:Math.round(1000/scale),buildingCount:0,categories,reliefGrid,
-    elevationDiagnostics:prepared.diagnostics,provenance},treeContext,vegetation);
+    warnings:[...(data.meta.sourceWarnings||[])],elevationDiagnostics:prepared.diagnostics,provenance},{scale,waterPolygons});
 }
 
-function reliefVegetation(context,options){
-  const {scale,maximumElevation,containsForest,plantingGrid,baseWarnings}=context;
-  const {trees=true,treeType='mixed',density=2.5,brushDensity=density,strokes=[]}=options;
-  if(!Number.isFinite(density)||density<.25||density>5)throw Error('Densitat fora del rang admès.');
-  if(!Number.isFinite(brushDensity)||brushDensity<.25||brushDensity>5)throw Error('Densitat del pinzell fora del rang admès.');
-  const texture=RELIEF_TREE_DIAMETER_METRES*scale<RELIEF_TREE_MIN_DIAMETER_MM;
-  const crownTaper=treeType==='round'?0:treeType==='tall'?1:reliefCrownTaper(maximumElevation);
-  let candidates=[];
-  if(trees&&!texture&&containsForest){
-    if(context.cache?.density!==density)context.cache={density,candidates:reliefForestTrees(plantingGrid,containsForest,scale,density)};
-    candidates=context.cache.candidates;
-  }
-  const {placements,budget}=reliefBrushTrees(plantingGrid,candidates,{strokes:trees?strokes:[],brushDensity},scale,texture);
-  const omittedBelowThreshold=!!trees&&texture;
-  const warnings=baseWarnings.slice();
-  if(omittedBelowThreshold&&containsForest)warnings.push('A aquesta escala, el bosc cartografiat conserva el color i el pinzell afegeix textura baixa.');
-  const treeRepresentation={crownDiameterMetres:RELIEF_TREE_DIAMETER_METRES,minimumDiameterMM:RELIEF_TREE_MIN_DIAMETER_MM,
-    omittedBelowThreshold,manualStyle:texture?'texture':'crowns',maximumElevation,crownTaper,thinningMetres:RELIEF_TREE_THINNING};
-  return {placements,budget,treeRepresentation,warnings};
-}
-
-function finishReliefVegetation(model,context,{placements,budget,treeRepresentation,warnings}){
-  const next=groupMaterials({...model,warnings,treeCount:placements.length,
-    triangles:model.categories.reduce((n,p)=>n+p.faces.length/3,0),
-    provenance:{...model.provenance,treeRepresentation,vegetationBudget:budget}});
+function finishReliefVegetation(model,context){
+  const {provenance}=model;
+  const reliefGrid={...model.reliefGrid,vegetationTexture:reliefVegetationTexture(model.reliefGrid,context,provenance.options)};
+  const part=reliefTreesPart(reliefGrid);
+  const categories=part?[...model.categories,part]:model.categories;
+  const treeRepresentation={manualStyle:'texture',areaMM2:part?.areaMM2??0,
+    heightRangeMM:[context.scale/.1,3*context.scale/.1]};
+  const next=groupMaterials({...model,reliefGrid,categories,treeCount:0,
+    triangles:categories.reduce((n,p)=>n+p.faces.length/3,0),provenance:{...provenance,treeRepresentation}});
   Object.defineProperty(next,'reliefVegetationContext',{value:context});
   return next;
 }
@@ -1163,12 +1141,8 @@ export function updateVegetation(previous,changes={},progress=()=>{},preview){
     progress('Actualitzant la capa de vegetació…');
     const context=previous.reliefVegetationContext;
     const options={...previous.provenance.options,...changes};
-    const vegetation=reliefVegetation(context,options);
-    const reliefGrid={...previous.reliefGrid,trees:vegetation.placements,crownTaper:vegetation.treeRepresentation.crownTaper};
     const categories=previous.categories.filter(part=>part.id!=='trees');
-    const part=reliefTreesPart(reliefGrid);
-    if(part)categories.push(part);
-    return finishReliefVegetation({...previous,reliefGrid,categories,provenance:{...previous.provenance,options}},context,vegetation);
+    return finishReliefVegetation({...previous,categories,provenance:{...previous.provenance,options}},context);
   }
   if(!previous.context)throw Error('Cal generar primer el terreny.');const ctx={...previous.context};
   const options={...ctx.options,...changes}, {density=2.5,trees=true,treeType='mixed',strokes=[]}=options;

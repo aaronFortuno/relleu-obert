@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.22.28 — 2026-11-04
+
+- Relleu pur mostra una textura contínua sobre el bosc cartografiat, d’1 a 3 mm a 1:10.000. La casella «Vegetació simulada», activada per defecte, permet amagar la textura. El pinzell i la goma permeten retocar-la.
+
 ## v0.22.26 — 2026-11-04
 
 - Relleu pur recupera el panell de vegetació, el pinzell i la goma. Quan les capçades serien massa fines, els traços afegeixen una textura baixa. Els canvis de vegetació reutilitzen la malla del relleu.

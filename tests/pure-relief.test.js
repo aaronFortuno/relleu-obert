@@ -156,15 +156,15 @@ test('pure relief uses the mapped width of a flowing-water polygon without a cen
   assert(water.dimensions[2]>.36);
 });
 
-test('mapped forest stays green at overview scale and gains canopies at print scale',()=>{
+test('mapped forest stays green and its continuous texture scales proportionally',()=>{
   const [w,s,e,n]=bbox,at=(x,y)=>[w+(e-w)*x,s+(n-s)*y];
   const forests=[{geometry:{type:'Polygon',coordinates:[[at(.2,.2),at(.6,.2),at(.6,.6),at(.2,.6),at(.2,.2)]]}}];
   const data={meta:{bbox},dem,forests};
   const overview=buildModel(data,{...options,resolution:24});
   const local=buildModel(data,{...options,resolution:24,size:400});
   assert(overview.parts.some(part=>part.id==='forest'));
-  assert.equal(overview.treeCount,0);
-  assert(overview.provenance.treeRepresentation.omittedBelowThreshold);
-  assert(local.treeCount>0);
+  const overviewTexture=overview.provenance.treeRepresentation,localTexture=local.provenance.treeRepresentation;
+  assert(overviewTexture.areaMM2>0&&localTexture.areaMM2>overviewTexture.areaMM2);
+  assert.equal(localTexture.heightRangeMM[1],overviewTexture.heightRangeMM[1]*4);
   for(const part of local.parts)assert.deepEqual(auditPart(part).errors,[]);
 });

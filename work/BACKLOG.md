@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-04 · v0.22.26**. Controls i pinzell de vegetació en Relleu pur. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-04 · v0.22.28**. Vegetació contínua a Relleu pur. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -31,7 +31,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts) | P1 | Fonts en estudi | Comparació de parts i petjades en segona zona |
 | [RO-032](#ro-032--cobertes-i-volums-singulars) | P1 | Nucli verificat; servei remot pendent de validar | Consulta real reeixida i dades de coberta de Tamariu |
 | [RO-023](#ro-023--relleu-local-i-fonts-vectorials-de-més-precisió) | P2 | MET5 integrat i auditat al Pedraforca | Contrast visual i refinament de malla |
-| [RO-055](#ro-055--mode-de-relleu-pur) | P2 | Mars fins a la base, tria de filaments i pinzell en Relleu pur | Laminar Tamariu, un panorama amb filaments agrupats i un retall amb textura pintada |
+| [RO-055](#ro-055--mode-de-relleu-pur) | P2 | Textura contínua i editable sobre el bosc en Relleu pur | Laminar Tamariu i un panorama amb textura i comprovar dos talls adjacents |
 | [RO-054](#ro-054--galeria-local-de-projectes) | P2 | Integrat a v0.20.0 | Validar la recuperació en l’ús habitual |
 
 ## Validació i retocs acotats
@@ -167,7 +167,7 @@ Validar la recuperació d’un projecte girat amb traços i materials als dos mo
 
 ### RO-055 — Mode de relleu pur
 
-El panell Vegetació permet editar les capçades amb pinzell i goma. Quan el diàmetre de les capçades queda per sota de 0,45 mm, el pinzell crea una textura baixa a la superfície. Queda pendent comprovar-la al laminador i en una impressió de prova.
+«Vegetació simulada» activa una textura contínua i editable sobre el bosc. A 1:10.000 té 1–3 mm d’altura a l’interior de les zones, amb transicions més baixes a les vores. A escales més àmplies l’altura baixa en proporció. Queda pendent comprovar el laminat i una impressió de prova.
 
 Validar les quatre peces dels Rasos–Gallina Pelada al laminador, sobretot les vores adjacents i la visibilitat de rierols i arbres. [Mesures i fonts](RO-055-RELLEU-PUR.md)
 
