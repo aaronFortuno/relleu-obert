@@ -79,8 +79,18 @@
       <div id="work-indicator" role="status" aria-live="polite" hidden><span class="work-spinner" aria-hidden="true"></span><span id="work-label">Preparant el model…</span></div>
       <div id="welcome">
         <h2 id="welcome-title">Tria la mida de la maqueta</h2>
-        <p id="welcome-instruction">Dimensions finals en centímetres.</p>
+        <p id="welcome-instruction">Passa per una mida per veure quant espai ocupa.</p>
         <div id="piece-choice">
+          <figure class="piece-preview">
+            <svg viewBox="235 225 1190 735" aria-hidden="true">
+              <image href="./assets/size-table.jpg" width="1536" height="1024"></image>
+              <g id="piece-preview-model"></g>
+            </svg>
+            <figcaption>
+              <output id="piece-preview-size" aria-live="off"></output>
+              <span>Taula de 60 × 40 cm · vista orientativa</span>
+            </figcaption>
+          </figure>
           <div id="piece-sizes" role="group" aria-labelledby="welcome-title"></div>
           <details id="custom-piece">
             <summary>Mides personalitzades</summary>
@@ -134,7 +144,7 @@
       <path d="m27 9 7-6" stroke="var(--umbrella-accent)" stroke-width="4.5"/>
     </svg><span>ortogra<span class="umbrella-dot">.</span>fi</span>
   </a></p>
-  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions">v0.22.14</button><button data-open="about-dialog" class="v4v-button">♡ Sobre el projecte · V4V</button></div>
+  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions">v0.22.15</button><button data-open="about-dialog" class="v4v-button">♡ Sobre el projecte · V4V</button></div>
 </footer>
 
 <dialog id="projects-dialog" aria-labelledby="projects-title">
@@ -149,7 +159,14 @@
     <div id="project-list"></div>
   </div>
 </dialog>
-<dialog id="changelog-dialog" aria-labelledby="changelog-title"><div class="dialog-heading"><h2 id="changelog-title">Historial de versions</h2><button data-close aria-label="Tanca">×</button></div><div class="dialog-content"><div id="release-list"></div><a class="dialog-link" href="https://github.com/aaronFortuno/relleu-obert/blob/main/CHANGELOG.md" target="_blank" rel="noreferrer">Changelog complet al repositori ↗</a><p class="hint">Versions experimentals 0.x fins que es declari explícitament una versió estable.</p></div></dialog>
+<dialog id="changelog-dialog" aria-labelledby="changelog-title">
+  <header class="dialog-heading">
+    <h2 id="changelog-title">Historial de versions</h2>
+    <a class="dialog-link" href="https://github.com/aaronFortuno/relleu-obert/blob/main/CHANGELOG.md" target="_blank" rel="noreferrer">Changelog complet ↗</a>
+    <button data-close aria-label="Tanca" autofocus>×</button>
+  </header>
+  <div class="dialog-content" id="release-list"></div>
+</dialog>
 <dialog id="help-dialog" aria-labelledby="help-title"><div class="dialog-heading"><h2 id="help-title">Geografia que pots tocar.</h2><button data-close aria-label="Tanca">×</button></div><div class="dialog-content"><p>Relleu Obert transforma dades de llocs reals en maquetes per explorar el paisatge i imprimir-lo en 3D.</p><ol class="help-steps"><li><strong>Mida i territori.</strong> Tria la mida al centre, situa el retall al mapa i prem «Genera el model» a Territori.</li><li><strong>Vegetació, vies i edificis.</strong> Afina cada apartat. Torna a qualsevol pas des del seu títol. Els canvis a les vies s’apliquen sobre el terreny preparat.</li><li><strong>Descarrega.</strong> Tria 3MF o STL, assigna els filaments i revisa el laminat abans d’imprimir.</li></ol><p class="hint">La cerca d’adreces i la cartografia consulten serveis públics. La geometria i els fitxers es calculen al navegador. Els arbres són una representació del bosc, no individus mesurats.</p></div></dialog>
 
 <dialog id="language-dialog" aria-labelledby="language-title"><div class="dialog-heading"><h2 id="language-title" data-i18n="language.title">Idioma</h2><button data-close aria-label="Tanca" data-i18n-aria="dialog.close">×</button></div><div class="dialog-content"><p class="hint" data-i18n="language.note">De moment només el català està disponible. La resta d’idiomes s’activaran quan hi hagi catàlegs revisats.</p><div class="language-list" role="group" aria-labelledby="language-title"><button type="button" data-locale="ca"><strong>Català</strong><span class="language-state">Idioma actual</span></button><button type="button" data-locale="es" disabled><strong>Castellà</strong><span class="language-state">Pendent de catàleg</span></button><button type="button" data-locale="gl" disabled><strong>Galego</strong><span class="language-state">Pendent de catàleg</span></button><button type="button" data-locale="eu" disabled><strong>Euskara</strong><span class="language-state">Pendent de catàleg</span></button><button type="button" data-locale="en" disabled><strong>English</strong><span class="language-state">Pendent de catàleg</span></button></div></div></dialog>

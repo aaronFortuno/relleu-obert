@@ -45,18 +45,30 @@
 #welcome {position:absolute;inset:0;z-index:2;display:grid;align-content:center;justify-items:center;text-align:center;padding:24px;pointer-events:none}
 #welcome h2 {font-size:17px;color:var(--green)}
 #welcome p {margin:8px 0 16px;color:#65755d;font-size:var(--ui-control)}
-#piece-choice {max-width:100%}
+#welcome:has(#piece-choice:not([hidden])) {
+  align-content:safe center;overflow:auto;padding:16px;pointer-events:auto;
+  scrollbar-width:thin;scrollbar-color:#cbd5c2 transparent;
+}
+#piece-choice {width:min(560px,100%)}
+.piece-preview {margin:0 auto 12px;width:fit-content;max-width:100%}
+.piece-preview svg {display:block;height:clamp(160px,calc(100dvh - 355px),370px);max-width:100%;border-radius:5px;background:var(--paper)}
+#piece-choice:has(#custom-piece[open]) .piece-preview svg {height:clamp(140px,calc(100dvh - 440px),370px)}
+.piece-preview figcaption {
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 12px;
+  margin-top:6px;color:#65755d;font-size:var(--ui-control);text-align:left;
+}
+.piece-preview output {color:var(--green);font-weight:600;font-variant-numeric:tabular-nums}
 #piece-sizes {
-  --piece-unit:2.5px;
-  display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-end;
-  gap:10px;max-width:100%;pointer-events:auto;
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;
 }
 #piece-sizes .piece-size {
-  width:calc(var(--piece-unit) * var(--piece-width));height:calc(var(--piece-unit) * var(--piece-height));
-  min-width:34px;min-height:28px;padding:0;margin:0;background:var(--paper);color:var(--green);white-space:nowrap;font-variant-numeric:tabular-nums;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  min-height:32px;padding:4px;margin:0;background:var(--paper);color:var(--green);
+  white-space:nowrap;font-variant-numeric:tabular-nums;
 }
-#piece-sizes .piece-size:hover {border-color:var(--green);background:#eef3e7}
-#custom-piece {width:min(224px,100%);margin:16px auto 0;pointer-events:auto}
+#piece-sizes .piece-size svg {width:19px;height:19px;flex:none}
+#piece-sizes .piece-size.is-previewed {border-color:var(--green);background:#eef3e7}
+#custom-piece {width:min(224px,100%);margin:12px auto 0;pointer-events:auto}
 #custom-piece summary {color:var(--green);font-size:var(--ui-control);cursor:pointer}
 #custom-piece-form {text-align:left}
 #custom-piece-form input {width:100%;border:1px solid var(--ui-control-border);border-radius:5px;padding:8px;background:var(--ui-control-bg);color:var(--ui-control-text);font-size:var(--ui-control)}

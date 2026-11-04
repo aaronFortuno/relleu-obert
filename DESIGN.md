@@ -49,8 +49,8 @@ classes existents. `output` de formulari no ha de flotar a la dreta.
 - «Marc exterior» i els complements ajornats no apareixen al sidebar;
   retirada demanada per l'usuari el 2026-11-02. El codi reutilitzable es
   conserva per a un desenvolupament futur, sense controls buits a la UI.
-- Centre: selector de mida amb proporcions de peça a l'inici. Després,
-  maqueta i controls flotants discrets.
+- Centre: selector de mida amb botons uniformes i una vista de les proporcions
+  i els talls sobre una taula. Després, maqueta i controls flotants discrets.
 - Els canvis d’aparença o d’una capa conserven càmera/zoom. Restablir és una
   acció explícita; una regió o mida noves poden requerir enquadrament.
 

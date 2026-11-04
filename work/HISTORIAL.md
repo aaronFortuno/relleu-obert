@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-04. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.22.15 — Previsualització de mides i talls
+
+El selector inicial mostra les vuit mides i les personalitzades sobre la mateixa taula. El pla de tall coincideix amb l’exportació. El diàleg de versions mostra l’enllaç al changelog complet a la capçalera. Revisió local a 1280 × 720 i 1100 × 680. Vuit mides verificades amb teclat i 40 × 20 cm comprovat amb dues peces. Pendent de validació d’ús.
+
 ## v0.22.14 — Diverses plaques en un sol 3MF
 
 L’usuari confirma que el projecte de Tamariu 40 × 45 cm s’obre amb les quatre plaques a Bambu Studio. El 3MF amb plaques passa a ser el format per defecte de les maquetes dividides a Bambu. El ZIP de peces queda al menú de descàrrega. [Control de Tamariu](RO-024-RESULTATS.md#projecte-bambu-amb-quatre-plaques-a-la-v02214)
