@@ -1,4 +1,5 @@
 import {sampleReliefMask} from './relief-forest.js';
+import {RELIEF_VEGETATION_DEFAULTS,validVegetationHeight,validVegetationNoise} from './relief-vegetation-options.js';
 
 const unit=value=>Math.max(0,Math.min(1,value));
 const smooth=value=>value*value*(3-2*value);
@@ -15,9 +16,22 @@ function noise(x,y){
   return (a+(b-a)*u)*(1-v)+(c+(d-c)*u)*v;
 }
 
-export function reliefVegetationTexture(grid,context,{trees=true,strokes=[],brushDensity=.5}={}){
+export function reliefVegetationHeightRange(scale,{
+  vegetationHeight=RELIEF_VEGETATION_DEFAULTS.vegetationHeight,
+  vegetationNoise=RELIEF_VEGETATION_DEFAULTS.vegetationNoise
+}={}){
+  if(!validVegetationHeight(vegetationHeight)||!validVegetationNoise(vegetationNoise))
+    throw Error('L’alçada o la irregularitat de la vegetació queda fora del rang admès.');
+  const peak=vegetationHeight*(scale/.1);
+  return [peak*(1-vegetationNoise/100),peak];
+}
+
+export function reliefVegetationTexture(grid,context,options={}){
+  const {trees=true,strokes=[],brushDensity=.5}=options;
   if(!trees||!grid.forestWeights&&!strokes.some(stroke=>stroke.mode==='add'))return null;
   const {width,height,resolution:n,rows=n,forestWeights,oceanWeights,lakeWeights}=grid;
+  const heightRangeMM=reliefVegetationHeightRange(context.scale,options);
+  const [minimum,maximum]=heightRangeMM,amplitude=maximum-minimum;
   const stride=n+1,length=stride*(rows+1),dx=width/n,dy=height/rows;
   const feather=Math.hypot(dx,dy),wavelength=Math.max(2.2,2.8*Math.max(dx,dy));
   const coverage=forestWeights?.slice()??new Float32Array(length).fill(-1);
@@ -42,7 +56,7 @@ export function reliefVegetationTexture(grid,context,{trees=true,strokes=[],brus
   // A channel narrower than one cell can pass between all four nodes.
   // Leave a cell diagonal of clearance so its full width remains open.
   context.waterMask??=sampleReliefMask(context.waterPolygons,width,height,n,rows,2)?.weights??null;
-  const raise=new Float32Array(length),scaleFactor=context.scale/.1;
+  const raise=new Float32Array(length);
   let present=false;
   for(let row=0;row<=rows;row++)for(let col=0;col<=n;col++){
     const index=row*stride+col;
@@ -50,9 +64,9 @@ export function reliefVegetationTexture(grid,context,{trees=true,strokes=[],brus
     if(oceanWeights)coverage[index]=Math.min(coverage[index],-oceanWeights[index]);
     if(lakeWeights)coverage[index]=Math.min(coverage[index],-lakeWeights[index]);
     // Keep noise defined on both sides, so clipping only feathers the height.
-    const value=noise(col*dx/wavelength,row*dy/wavelength);
-    raise[index]=(1+2*value)*scaleFactor*strength[index];
+    const variation=amplitude?amplitude*noise(col*dx/wavelength,row*dy/wavelength):0;
+    raise[index]=(minimum+variation)*strength[index];
     present||=coverage[index]>0;
   }
-  return present?{coverage,raise}:null;
+  return present?{coverage,raise,heightRangeMM}:null;
 }

@@ -11,7 +11,7 @@ const settings={
   ],
   options:{detail:36,streams:true,streamWidth:1.5,exaggeration:1.5,roadRise:.5,railRise:1,trailWidth:1.5,
     estimatedTunnels:true,majorRoads:true,buildingSource:'catastre',buildingMode:'limited',maxBuildingHeight:5,
-    trees:true,treeType:'mixed',brushDensity:.5,brushRadius:5,split:false,exportFormat:'bambu'},
+    trees:true,treeType:'mixed',brushDensity:.5,brushRadius:5,vegetationHeight:1.3,vegetationNoise:65,split:false,exportFormat:'bambu'},
   placeName:'Rasos de Peguera'
 };
 function memoryStorage(){
@@ -64,15 +64,19 @@ test('saved projects store pure relief assignments separately from landscape mat
     reliefMaterials:{...reliefMaterials,count:7}}}),/no és vàlida/);
 });
 
-test('older projects use the default trail width and a new choice persists',()=>{
-  const storage=memoryStorage(),{trailWidth,...options}=settings.options;
+test('older projects use the default trail width and texture controls, and new choices persist',()=>{
+  const storage=memoryStorage(),{trailWidth,vegetationHeight,vegetationNoise,...options}=settings.options;
   const old=saveProject(storage,{name:'Anterior',settings:{...settings,options}},firstDate);
   const stored=JSON.parse(storage.getItem(PROJECT_LIBRARY_KEY));
   delete stored.projects[0].settings.options.trailWidth;
+  delete stored.projects[0].settings.options.vegetationHeight;
+  delete stored.projects[0].settings.options.vegetationNoise;
   storage.setItem(PROJECT_LIBRARY_KEY,JSON.stringify(stored));
-  assert.equal(readProjects(storage)[0].settings.options.trailWidth,1);
+  const restored=readProjects(storage)[0].settings.options;
+  assert.deepEqual([restored.trailWidth,restored.vegetationHeight,restored.vegetationNoise],[1,.8,45]);
   saveProject(storage,{id:old.id,name:old.name,settings},secondDate);
-  assert.equal(readProjects(storage)[0].settings.options.trailWidth,trailWidth);
+  const updated=readProjects(storage)[0].settings.options;
+  assert.deepEqual([updated.trailWidth,updated.vegetationHeight,updated.vegetationNoise],[trailWidth,vegetationHeight,vegetationNoise]);
 });
 
 test('updating retains identity and creation time, and deletion touches only the selected project',()=>{

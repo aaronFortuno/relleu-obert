@@ -1,6 +1,7 @@
 import {normalizeAssignments,normalizeReliefAssignments} from './materials.js';
 import {pieceDimensions,isPanoramicSize,PANORAMIC_SCALE_RANGE} from './selection.js';
 import {TRAIL_WIDTH_MULTIPLIERS} from './transport-width.js';
+import {RELIEF_VEGETATION_DEFAULTS,validVegetationHeight,validVegetationNoise} from './relief-vegetation-options.js';
 
 export const PROJECT_LIBRARY_KEY='relleu-obert.projects';
 const VERSION=1;
@@ -18,8 +19,10 @@ const optionRules={
   estimatedTunnels:boolean,majorRoads:boolean,buildingSource:oneOf('osm','osm3d','icgc','catastre'),
   buildingMode:oneOf('limited','source','flat','none'),maxBuildingHeight:value=>range(value,1,1200),
   trees:boolean,treeType:oneOf('mixed','round','tall'),brushDensity:value=>range(value,.25,2),
+  vegetationHeight:validVegetationHeight,vegetationNoise:validVegetationNoise,
   brushRadius:value=>Number.isInteger(value)&&range(value,2,12),split:boolean,exportFormat:oneOf('bambu','bambu-zip','3mf','stl')
 };
+const optionDefaults={trailWidth:1,...RELIEF_VEGETATION_DEFAULTS};
 
 function validatedSettings(settings){
   const invalid=()=>Error('La configuració del projecte desat no és vàlida.');
@@ -37,7 +40,7 @@ function validatedSettings(settings){
     placeName!=null&&!text(placeName,300)||exampleId!=null&&!text(exampleId,100))throw invalid();
   const cleanedOptions={};
   for(const [key,valid] of Object.entries(optionRules)){
-    const value=key==='trailWidth'&&!Object.hasOwn(options,key)?1:options[key];
+    const value=Object.hasOwn(options,key)?options[key]:optionDefaults[key];
     if(!valid(value))throw invalid();
     cleanedOptions[key]=value;
   }

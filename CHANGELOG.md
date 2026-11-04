@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.22.32 — 2026-11-04
+
+- Relleu pur redueix l’altura de la textura del bosc i permet regular-ne l’alçada i la irregularitat. Les vores internes de les tessel·les deixen de formar franges rectes.
+- Si la consulta opcional de cobertes d’OpenStreetMap torna buida, es conserven les petjades disponibles amb coberta plana. «Com funciona» explica de quines dades depenen les cobertes.
+
 ## v0.22.31 — 2026-11-04
 
 - El carrusel afegeix Barcelona, Girona i Cardona en Model complet, amb imatges estàtiques del visor i generació en clicar. Les tres fitxes urbanes es reparteixen entre les sis de Relleu pur al llarg del bucle.

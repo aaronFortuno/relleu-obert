@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-04 · v0.22.31**. Primer lot de Model complet al carrusel. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-04 · v0.22.32**. Textura forestal regulable i conservació de les petjades si no hi ha dades de coberta. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -10,7 +10,7 @@ Actualitzat el **2026-11-04 · v0.22.31**. Primer lot de Model complet al carrus
 | **Paviment de superfície** | RO-051, RO-052 | Cobertura ampliada al retall de Marganell, amb encaix per tram i secció plana a les vores. Validar visualment i resoldre les unions complexes. [Control de Marganell](RO-051-PERFILS-VIARIS.md#més-cobertura-del-paviment-independent-a-la-v02211) |
 | **Seguiment de les estructures** | RO-033, RO-034, RO-050 | Registrar noves incidències amb retall i escala. A Sant Salvador, dos perfils segueixen el terreny pel pendent dels enllaços. El túnel a 1:20.000 té les dues boques comprovades al 3MF. El pas de Montgròs es conserva al cupó laminat. [Controls de vies](RO-051-PERFILS-VIARIS.md#transicions-pendents-a-la-v0220) · [Montgròs](RO-033-CONTROLS-PROCEDIMENTALS.md#laminat-del-cupó-de-montgròs) |
 | **Validació en paral·lel** | RO-024, RO-046, RO-054, RO-055 | Laminar les vores adjacents de Tamariu i dels Rasos–Gallina Pelada. Comprovar la recuperació d’un projecte girat, de mida personalitzada, amb materials i traços, i la transició quan es carrega un exemple. |
-| **Pilot de cobertes** | RO-032, RO-026 | Ajustar plans de coberta a partir de LiDAR i petjades de Tamariu. Comparar amb una mostra RTL LoD2 quan se’n pugui obtenir el fitxer. |
+| **Cobertes obertes** | RO-032, RO-026 | Integrar l’ICGC si es verifica un servei públic que retorni geometria de coberta. |
 
 Els encàrrecs independents avancen en paral·lel. Cada bloc validat té el seu commit i es manté una sola prova pesada alhora. Els casos que requereixen inspecció al laminador poden quedar pendents mentre avancen altres línies.
 
@@ -29,9 +29,9 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | [RO-052](#ro-052--continuïtat-i-amplada-del-traçat-viari) | P1 | Senders amb amplada ajustable. Quatre enllaços a Millau a 1:20.000 | Validar els senders al laminador i mesurar els enllaços de la C-37 |
 | [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió) | P1 | Filament per peça validat a Montserrat. Projecte de quatre plaques obert a Bambu Studio | Contrastar el laminat de les quatre peces de Tamariu |
 | [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts) | P1 | Fonts en estudi | Comparació de parts i petjades en segona zona |
-| [RO-032](#ro-032--cobertes-i-volums-singulars) | P1 | Motor paramètric verificat i tessel·la LiDAR de Tamariu localitzada | Comparar un cupó de 300 m amb ortofoto i comprovar les cobertes al laminador |
+| [RO-032](#ro-032--cobertes-i-volums-singulars) | P1 | Consulta opcional d’OSM amb retorn a petjades planes si és buida | Verificar una font de cobertes 3D consultable de l’ICGC |
 | [RO-023](#ro-023--relleu-local-i-fonts-vectorials-de-més-precisió) | P2 | MET5 integrat i auditat al Pedraforca | Contrast visual i refinament de malla |
-| [RO-055](#ro-055--mode-de-relleu-pur) | P2 | Textura contínua i editable sobre el bosc en Relleu pur | Laminar Tamariu i un panorama amb textura i comprovar dos talls adjacents |
+| [RO-055](#ro-055--mode-de-relleu-pur) | P2 | Textura regulable en Relleu pur i franges de tessel·la corregides | Laminar Tamariu i un panorama amb textura i comprovar dos talls adjacents |
 | [RO-054](#ro-054--galeria-local-de-projectes) | P2 | Integrat a v0.20.0 | Validar la recuperació en l’ús habitual |
 
 ## Validació i retocs acotats
@@ -115,7 +115,7 @@ Comparar petjades i parts d’edificis d’ICGC, Catastre i OSM en una segona zo
 
 ### RO-032 — Cobertes i volums singulars
 
-El motor admet cobertes a partir d’atributs disponibles. La tessel·la LiDAR de Tamariu és accessible localment. Cal validar l’ajust de plans per petjada i el resultat a 1:1.000, 1:2.000 i 1:5.000. L’RTL documenta plans LoD2 a Riudoms. Resta obtenir una mostra 3D reutilitzable i una font numèrica accessible des del navegador. [Fonts i pilot](RO-032-DADES-COBERTES.md#pilot-proposat) · [Integració](RO-032-INTEGRACIO.md)
+El motor incorpora cobertes amb dades obertes d’OSM quan els atributs ho permeten i conserva les petjades amb coberta plana si la consulta torna buida. L’RTL de l’ICGC documenta plans LoD2, amb un servei públic de careners en 2D. Resta verificar una font de cobertes 3D consultable des del navegador. [Fonts de cobertes](RO-032-DADES-COBERTES.md#seguiment-del-4-de-novembre) · [Integració](RO-032-INTEGRACIO.md)
 
 ### RO-033 — Ponts i viaductes
 
@@ -167,7 +167,7 @@ Validar la recuperació d’un projecte girat amb traços i materials als dos mo
 
 ### RO-055 — Mode de relleu pur
 
-«Vegetació simulada» activa una textura contínua i editable sobre el bosc. A 1:10.000 té 1–3 mm d’altura a l’interior de les zones, amb transicions més baixes a les vores. A escales més àmplies l’altura baixa en proporció. Queda pendent comprovar el laminat i una impressió de prova.
+«Vegetació simulada» activa una textura contínua i editable sobre el bosc. A 1:10.000 l’alçada màxima per defecte és de 0,8 mm, regulable entre 0,2 i 2 mm, i la irregularitat inicial és del 45 %. L’altura varia amb l’escala i se suavitza als límits del bosc. Les vores internes de les tessel·les queden dissoltes, comprovat amb el retall de linies-vegetacio.json. Queda pendent comprovar el laminat i una impressió de prova.
 
 Validar les quatre peces dels Rasos–Gallina Pelada al laminador, sobretot les vores adjacents i la visibilitat de rierols i arbres. [Mesures i fonts](RO-055-RELLEU-PUR.md)
 

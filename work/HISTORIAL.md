@@ -2,6 +2,14 @@
 
 Actualitzat: 2026-11-04. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.22.32 — Textura forestal regulable i cobertura de les cobertes
+
+RO-055 uneix fragments del bosc abans de suavitzar-ne les vores. En el retall de Tamariu de linies-vegetacio.json, 48 fragments cartogràfics donen 19 polígons i es recuperen 1.120 mostres de bosc atenuades a les vores internes. L’alçada màxima per defecte és de 0,8 mm a 1:10.000 i la irregularitat del 45 %. Els dos ajustos es desen amb el projecte.
+
+RO-032 conserva les petjades disponibles quan una consulta opcional de cobertes OSM torna buida. L’ajuda explica la dependència de les fonts obertes. L’ICGC queda pendent d’un servei consultable que retorni geometria 3D de cobertes.
+
+Revisat al navegador amb el mateix retall i els dos controls de textura. Superades 55 proves locals i la construcció estàtica.
+
 ## v0.22.31 — Primer lot de Model complet al carrusel
 
 RO-046 incorpora l’Eixample de Barcelona, el Barri Vell i l’Onyar de Girona, i el castell, la vila i la Vall Salina de Cardona. Hi ha dues fitxes de Relleu pur entre cada parella de Model complet, també en tancar el bucle. Els tres models tenen una sola peça i es generen a 1:10.000 en clicar la fitxa. [Retalls i captures](RO-046-CATALEG.md#primer-lot-de-model-complet-al-carrusel)

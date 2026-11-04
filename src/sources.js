@@ -132,7 +132,14 @@ export async function loadBuildingLayer(region,{source=defaultBuildingSource(reg
   const vectors=region.vectorFeatures||region.features,osm=vectors.filter(f=>f.properties.sourceLayer==='building');let result;
   if(source==='osm')result={features:osm,metadata:{provider:'OpenStreetMap · OpenFreeMap',count:osm.length},warnings:[]};
   else if(source==='osm3d'){
-    try{result=await fetchOSMBuildings(region.meta.bbox,fetch,{onProgress:progress});}
+    try{
+      result=await fetchOSMBuildings(region.meta.bbox,fetch,{onProgress:progress});
+      if(!result.features.length&&osm.length)result={
+        features:osm,
+        metadata:{...result.metadata,provider:'OpenStreetMap · OpenFreeMap (alternativa sense cobertes originals)',count:osm.length,roofSourceEmpty:true},
+        warnings:[...result.warnings,'OpenStreetMap original no ha retornat edificis en aquest retall. Es conserven les petjades disponibles amb coberta plana.']
+      };
+    }
     catch(error){result={features:osm,metadata:{provider:'OpenStreetMap · OpenFreeMap (alternativa sense cobertes originals)',count:osm.length,roofSourceUnavailable:true},warnings:[error.message+' Es conserven els edificis OSM disponibles; les cobertes sense atributs es mostren planes.']};}
   }else if(source==='icgc'){
     if(!inCatalonia(region.meta.bbox))throw Error('ICGC: font disponible només dins de l’àmbit català. Tria OpenStreetMap.');

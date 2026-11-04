@@ -4,7 +4,7 @@ import {reliefDiagonals,reliefParts,reliefGridSize,reliefTreesPart,previewRelief
 import {reliefStreamStrips} from './relief-streams.js';
 import {sampleReliefMask} from './relief-forest.js';
 import {alpineCrownHeightFactor,reliefCrownTaper} from './relief-forest-trees.js';
-import {reliefVegetationTexture} from './relief-vegetation-texture.js';
+import {reliefVegetationHeightRange,reliefVegetationTexture} from './relief-vegetation-texture.js';
 import {waterwayPolygons} from './waterways.js';
 import {polygonOps} from './polygon-ops.js';
 import earcut from 'earcut';
@@ -612,7 +612,13 @@ function buildPureRelief(data,options,progress,preview){
   if(streams&&(data.waterways?.length||data.waterAreas?.length))progress('Traçant els rius i rierols…');
   const paths=waterwayPolygons(data.waterways||[],project,{width,height,scale,multiplier:options.streamWidth});
   const waterAreas=(data.waterAreas||[]).map(feature=>geoPolys(feature,project));
-  const forest=sampleReliefMask((data.forests||[]).flatMap(feature=>geoPolys(feature,project)),width,height,columns,rows);
+  let forestPolygons=(data.forests||[]).flatMap(feature=>geoPolys(feature,project));
+  if(forestPolygons.length>1){
+    // Tile fragments can overlap. Feather the forest outline, not each fragment.
+    try{forestPolygons=mergeLayer(forestPolygons.map(polygon=>[polygon]));}
+    catch{/* Preserve coverage when an invalid fragment prevents the union. */}
+  }
+  const forest=sampleReliefMask(forestPolygons,width,height,columns,rows);
   Object.assign(reliefGrid,{scores,lakeWeights:lakes?.count?lakes.weights:null,
     forestWeights:forest?.cells?forest.weights:null,streamStrips:streams?reliefStreamStrips([...paths,...waterAreas],width,height,columns):null});
   const waterPolygons=[...oceanPolygons,...(data.lakes||[]).flatMap(feature=>geoPolys(feature,project)),...paths.flat(),...waterAreas.flat()];
@@ -632,11 +638,12 @@ function buildPureRelief(data,options,progress,preview){
 
 function finishReliefVegetation(model,context){
   const {provenance}=model;
-  const reliefGrid={...model.reliefGrid,vegetationTexture:reliefVegetationTexture(model.reliefGrid,context,provenance.options)};
+  const vegetationTexture=reliefVegetationTexture(model.reliefGrid,context,provenance.options);
+  const reliefGrid={...model.reliefGrid,vegetationTexture};
   const part=reliefTreesPart(reliefGrid);
   const categories=part?[...model.categories,part]:model.categories;
   const treeRepresentation={manualStyle:'texture',areaMM2:part?.areaMM2??0,
-    heightRangeMM:[context.scale/.1,3*context.scale/.1]};
+    heightRangeMM:vegetationTexture?.heightRangeMM??reliefVegetationHeightRange(context.scale,provenance.options)};
   const next=groupMaterials({...model,reliefGrid,categories,treeCount:0,
     triangles:categories.reduce((n,p)=>n+p.faces.length/3,0),provenance:{...provenance,treeRepresentation}});
   Object.defineProperty(next,'reliefVegetationContext',{value:context});

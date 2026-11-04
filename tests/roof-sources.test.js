@@ -40,6 +40,24 @@ test('osm3d unavailability preserves base OSM buildings, reports fallback and re
  try{for(let i=0;i<2;i++){const r=await loadBuildingLayer(base,{source:'osm3d'});assert.strictEqual(r.features[0],base.features[0]);assert.equal(r.metadata.roofSourceUnavailable,true);assert(r.warnings.some(w=>w.includes('planes')));}assert.equal(calls,4);}finally{globalThis.fetch=prior;}
 });
 
+test('an empty osm3d response keeps base footprints and distinguishes absent data from a failed request',async()=>{
+ const prior=globalThis.fetch,base={meta:{bbox:[0,0,.001,.001]},features:[{...way(1),properties:{sourceLayer:'building'}}]};let calls=0;
+ globalThis.fetch=async()=>{calls++;return Response.json({elements:[]});};
+ try{
+  const layer=await loadBuildingLayer(base,{source:'osm3d'});
+  assert.strictEqual(layer.features[0],base.features[0]);
+  assert.equal(layer.metadata.count,1);
+  assert.equal(layer.metadata.roofSourceEmpty,true);
+  assert.equal(layer.metadata.roofSourceUnavailable,undefined);
+  assert(layer.warnings.some(w=>w.includes('coberta plana')));
+  assert.strictEqual(await loadBuildingLayer(base,{source:'osm3d'}),layer);
+  const empty=await loadBuildingLayer({...base,features:[]},{source:'osm3d'});
+  assert.deepEqual(empty.features,[]);
+  assert.deepEqual(empty.warnings,[]);
+  assert.equal(calls,1);
+ }finally{globalThis.fetch=prior;}
+});
+
 test('roof angle and mapped orientation give pitched roofs; hipped, pyramidal and round use bounded partitions',()=>{
  const outline=[[0,0],[10,0],[10,6],[0,6],[0,0]],g=roofProfile({'roof:shape':'gabled','roof:angle':'45','roof:orientation':'along'},outline,1,12);assert.equal(g.shape,'gabled');assert(Math.abs(g.heightMM-3)<1e-8);assert.equal(g.factor(5,3),1);
  for(const shape of ['hipped','pyramidal','round']){const p=roofProfile({'roof:shape':shape,'roof:height':2},outline,1,10);assert(p.parts.length<=12);assert.equal(p.factor(5,3),1);assert.equal(p.factor(5,0),0);}

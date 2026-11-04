@@ -1,6 +1,8 @@
 # RO-032 — Dades de cobertes fidels (Tamariu): recerca de fonts
 
-Actualitzat el 2026-11-04. Fonts verificades i pilot acotat. La reconstrucció de cobertes a partir de LiDAR continua pendent.
+Actualitzat el 2026-11-04. L’abast queda limitat a les cobertes publicades per fonts obertes. El pilot de reconstrucció amb LiDAR queda descartat.
+
+El flux incorpora la forma de la coberta quan la font la retorna amb dades suficients i conserva el volum pla si falta informació. L’opció «OpenStreetMap · cobertes i parts» ja fa una consulta opcional d’atributs originals. Per incorporar l’ICGC cal verificar un servei públic que retorni geometria LoD2 o atributs equivalents en un retall petit. El catàleg RTL documenta la geometria i el servei de consulta comprovat només exposa careners en 2D. [Integració](RO-032-INTEGRACIO.md) · [Capa RTL](https://maps.icgc.cat/vector01/rest/services/topografia_local/MapServer/15)
 
 ## Seguiment del 4 de novembre
 
@@ -10,7 +12,7 @@ Mataró té un paquet SHP 3D accessible per rangs HTTP. S’han llegit l’índe
 
 La tessel·la LiDAR territorial que conté el centre de Tamariu és `517640`. Una lectura de 512 bytes ha retornat `206 Partial Content` i una mida total de 235.837.493 bytes. La resposta a l’origen `https://relleu.ortogra.fi` no portava `Access-Control-Allow-Origin`. És una font per al pilot local, amb un accés directe des de l’aplicació web encara pendent. El producte MDTe d’1 m continua sent candidat si es valida l’accés a una finestra de dades. [Tessel·la oficial de Tamariu](https://datacloud.icgc.cat/datacloud/lidar-territorial/laz_unzip/full10km5164/lidar-territorial-v3r1-full1km517640-2021-2023.laz) · [Producte MDTe](https://www.icgc.cat/ca/Geoinformacio-i-mapes/Dades-i-productes/Elevacions/Elevacions-territorial/Models-delevacions-especifics-territorials)
 
-### Pilot proposat
+### Pilot descartat
 
 1. En un retall de 300 × 300 m del nucli de Tamariu, conservar les petjades cadastrals i filtrar els punts LiDAR classificats com a edificació dins de cada petjada. Comparar coberta plana, un vessant i dues aigües. Exigir prou punts a cada vessant, una millora clara respecte al pla horitzontal i un carener coherent amb la petjada. Conservar la coberta plana si el resultat és ambigu o incompatible amb el contorn.
 2. Generar un cupó de 150 × 150 mm a 1:2.000. Comparar les cobertes amb l’ortofoto i comprovar que els volums són tancats. Repetir els mateixos edificis a 1:1.000 i 1:5.000 per mesurar quines carenes encara es llegeixen al laminador. Una pujada real de 2 m dona 2, 1 i 0,4 mm respectivament.
