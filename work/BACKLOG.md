@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-04 · v0.21.7**. Obertura estimada recuperada a Sant Salvador a 1:20.000. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-04 · v0.21.7**. Sis controls de transport repetits i pas del torrent de Montgròs identificat. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -8,7 +8,7 @@ Actualitzat el **2026-11-04 · v0.21.7**. Obertura estimada recuperada a Sant Sa
 | --- | --- | --- |
 | **0.22 · 1. Transicions de la C-37** | RO-051, RO-052 | Recuperat un perfil a Sant Salvador a 1:10.000. Queden dos trams sense enllaç dins del pendent admissible i un creuament amb túnel sense cota. Comprovar la continuïtat visual i al laminador. |
 | **0.22 · 2. Coberta del túnel** | RO-034 | Descens limitat de la rasant. A Sant Salvador a 1:20.000 s’han comprovat les dues boques i punts de pas, sostre i base al 3MF. Revisió visual i laminat pendents. |
-| **0.22 · 3. Contrast i rendiment** | RO-033, RO-050, RO-051, RO-052, RO-053 | Repetir la bateria de sis retalls després de les correccions. Comparar unions, pendents, omissions i temps amb la mateixa font, escala i detall. [Resultats de referència](RO-051-PERFILS-VIARIS.md#bateria-de-la-022--control-inicial-amb-v0213) |
+| **0.22 · 3. Contrast i rendiment** | RO-033, RO-050, RO-051, RO-052, RO-053 | Sis controls repetits. Abans de publicar la 0.22, reproduir el fragment omès al torrent de Montgròs i comprovar el tauler i la continuïtat a la posició del creuament. [Comparativa](RO-051-PERFILS-VIARIS.md#bateria-repetida-amb-v0217) |
 | **Validació en paral·lel** | RO-024, RO-046, RO-054, RO-055 | Laminar les vores adjacents de Tamariu i dels Rasos–Gallina Pelada. Comprovar la recuperació d’un projecte girat, de mida personalitzada, amb materials i traços, i la transició quan es carrega un exemple. |
 | **Pilot de relleu rocós** | RO-023, RO-035 | Quatre controls del Cavall Bernat i un cupó local dels Degotalls auditats. Contrastar un segon lloc i resoldre la georeferenciació del cupó. [Resultats](RELLEU-ROCOS.md) |
 | **Després** | RO-026, RO-032 | Comparar les fonts d’edificis en dues zones, amb proves d’accés i cobertura abans de fer canvis al model. |
@@ -120,7 +120,7 @@ El motor admet cobertes a partir d’atributs disponibles. Verificar la consulta
 
 ### RO-033 — Ponts i viaductes
 
-Pilars i taulers procedimentals, amb dades específiques documentades per a Rajadell. Millau i el cupó del Bages estan validats al visor. Contrastar altres retalls, escales i connexions i revisar llums i contacte al laminador. [Controls procedimentals](RO-033-CONTROLS-PROCEDIMENTALS.md) · [Suports segons escala](RO-033-SUPORTS-ESCALA.md)
+Pilars i taulers procedimentals, amb dades específiques documentades per a Rajadell. Millau i el cupó del Bages estan validats al visor. El control de Montgròs ha de verificar el tauler al punt de creuament i provar una regla general per als fragments solapats entre tessel·les. Revisar llums i contacte al laminador. [Controls procedimentals](RO-033-CONTROLS-PROCEDIMENTALS.md) · [Suports segons escala](RO-033-SUPORTS-ESCALA.md)
 
 ### RO-034 — Túnels imprimibles
 

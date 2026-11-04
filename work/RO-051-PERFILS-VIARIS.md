@@ -147,3 +147,22 @@ Quan l’enllaç habitual falla, el motor pot provar dues reserves més llargues
 - **Ferrocarril, 800 m amb MET5.** Es conserva el perfil a l’1,56% i amb zero omissions.
 
 Totes dues malles passen l’auditoria. L’informe de la bateria separa ara els pendents de l’eix i els dels enllaços. Pendent de contrast visual i laminat.
+
+### Bateria repetida amb v0.21.7
+
+Mateixos retalls i ajustos que a v0.21.3. MET5 de 5 m a Sant Salvador i al ferrocarril, i Mapterhorn a zoom 14 a Millau. S’han comprovat els límits dels retalls i del MET5. Les fonts s’han consultat en directe. El diagnòstic ha permès més temps de resposta al MET5 per conservar el proveïdor de referència.
+
+| Retall i escala | Perfils aplicats | Omissions de perfil | Pendent màxim | Canvi màxim de pendent | Unions de perfil | Temps de malla |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Sant Salvador 1:10.000 | 0 → 3 | 4 → 3 | — → 10,69% | — → 2,48 punts | 0 → 4 | 9,87 → 10,02 s |
+| Sant Salvador 1:20.000 | 3 → 8 | 19 → 14 | 8,30% → 12,36% | 1,71 → 2,77 punts | 6 → 12 | 64,80 → 53,68 s |
+| Millau 1:10.000 | 3 → 3 | 9 → 9 | 7,67% → 7,67% | 0,31 → 0,31 punts | 6 → 6 | 4,58 → 5,50 s |
+| Millau 1:20.000 | 7 → 8 | 21 → 20 | 10,47% → 10,47% | 0,54 → 0,84 punts | 11 → 12 | 48,69 → 57,36 s |
+| Ferrocarril 1:2.667 | 1 → 1 | 0 → 0 | 1,51% → 1,51% | 0,00 → 0,00 punts | 0 → 0 | 1,16 → 1,31 s |
+| Ferrocarril 1:5.333 | 0 → 1 | 0 → 0 | — → 1,56% | — → 0,00 punts | 0 → 0 | 2,36 → 2,68 s |
+
+Els màxims corresponen al conjunt de perfils aplicats a cada execució, abans de l’exageració vertical. A Sant Salvador 1:20.000, el 12,36% correspon a un ramal incorporat a la segona passada. L’omissió zero al ferrocarril 1:5.333 amagava una recuperació global del paviment sobre el terreny a v0.21.3. El model de v0.21.7 hi aplica una rasant constant. Totes sis malles passen l’auditoria topològica. Els temps corresponen a una passada per versió amb la càrrega de fonts registrada a banda.
+
+Les unions dels ponts de referència es mantenen. A Sant Salvador, els fragments del pont 317898440 sumen sis unions als dos retalls i el túnel principal passa de zero a un a 1:20.000. A Millau, els dos taulers continuen amb quatre unions al retall ampli i els extrems sense continuació al retall curt.
+
+**Pas de la C-37 al nord de Sant Salvador.** El candidat principal és el torrent de Montgròs, a 41,689049 N, 1,761280 E. És dins del retall de 3 km i fora del d’1,5 km. En un control amb terreny pla, el fragment complet genera el tauler. Quan s’hi afegeix la còpia truncada i solapada de la tessel·la veïna, el motor el rebutja per una corba massa tancada, en tots dos ordres d’entrada. El mateix identificador també produeix un tauler al torrent de la Fessona. Cal validar la presència del tauler al punt de creuament. A la Fessona també hi ha un ramal amb tauler i dos extrems sense enllaç. [Traçat principal a OpenStreetMap](https://www.openstreetmap.org/way/317900710) · [Ramal de la Fessona](https://www.openstreetmap.org/way/457787902)
