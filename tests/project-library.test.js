@@ -35,7 +35,8 @@ test('save and read preserve the settings with detached copies',()=>{
 
 test('custom centimetre dimensions round-trip and define the valid stroke area',()=>{
   const storage=memoryStorage();
-  const custom={...settings,sizePreset:'40x45',strokes:[{mode:'add',x:399,y:449,radius:5}]};
+  const custom={...settings,sizePreset:'40x45',options:{...settings.options,split:true,exportFormat:'bambu-zip'},
+    strokes:[{mode:'add',x:399,y:449,radius:5}]};
   saveProject(storage,{name:'Personalitzada',settings:custom},firstDate);
   assert.deepEqual(readProjects(storage)[0].settings,custom);
   for(const sizePreset of ['9x45','40x51','40.5x45'])

@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.22.14 — 2026-11-04
+
+- Les maquetes dividides s’exporten per defecte en un projecte 3MF amb totes les plaques de Bambu Studio. El menú de formats també permet descarregar les peces en un ZIP.
+
 ## v0.22.13 — 2026-11-04
 
 - El 3MF per a Bambu Studio assigna el filament per peça. A Montserrat, la prova de laminat elimina les franges de colors incorrectes i redueix l’estimació en quatre hores.

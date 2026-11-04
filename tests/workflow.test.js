@@ -6,7 +6,7 @@ import {polygonTester} from '../src/polygon-index.js';
 import {CATEGORIES,groupMaterials} from '../src/materials.js';
 import {parseCoordinates,tilePlan} from '../src/selection.js';
 import {splitModel,tileArchive} from '../src/mesh-tiles.js';
-import {unzipSync} from 'fflate';
+import {unzipSync,strFromU8} from 'fflate';
 const region={meta:{bbox:[0,0,.001,.001]},features:[{type:'Feature',properties:{sourceLayer:'landcover',class:'wood'},geometry:{type:'Polygon',coordinates:[[[0,0],[.001,0],[.001,.001],[0,.001],[0,0]]]}}],dem:[{z:0,x:0,y:0,size:2,elev:new Float32Array([0,0,0,0])}]};
 test('indexed polygon queries match exact boundaries and holes',()=>{const polys=[[[[0,0],[10,0],[8,6],[10,10],[0,10],[0,0]],[[2,2],[2,4],[4,4],[4,2],[2,2]]]],contains=polygonTester(polys);for(let y=-1;y<=11;y+=.25)for(let x=-1;x<=11;x+=.25)assert.equal(contains([x,y]),inMulti([x,y],polys));});
 test('collinear points in a clipped road do not create reversed degenerate faces',async()=>{const api=await Module();api.setup();const s=new Surface();s.polygon([[[0,0],[5,0],[4,1],[3,2],[5,4],[0,4],[0,0]]],()=>2);const p=s.solid(()=>1),m=new api.Manifold(new api.Mesh({numProp:3,vertProperties:p.vertices,triVerts:p.faces}));assert.equal(m.status(),'NoError');m.delete();});
@@ -34,9 +34,16 @@ test('40 × 45 cm models have capped cuts, conserve volume and preserve north-to
     assert.equal(t.provenance.verticalExaggeration,1.5);
   }
   assert(Math.abs(volume-width*height*10)<1);
-  const files=unzipSync(tileArchive(tiles,'3mf'));
-  assert.equal(Object.keys(files).filter(k=>k.endsWith('.3mf')).length,4);
-  assert(files['muntatge.json']);
+  for(const format of ['3mf','bambu']){
+    const files=unzipSync(tileArchive(tiles,format));
+    const names=Object.keys(files).filter(k=>k.endsWith('.3mf'));
+    assert.equal(names.length,4);
+    assert(files['muntatge.json']);
+    if(format==='bambu')for(const name of names){
+      const piece=unzipSync(files[name]);
+      assert.match(strFromU8(piece['Metadata/model_settings.config']),/key="extruder" value="1"/);
+    }
+  }
 });
 test('a water layer absent from three pieces stays empty without trimming an empty solid again',async()=>{
   const api=await Module();api.setup();

@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-04. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.22.14 — Diverses plaques en un sol 3MF
+
+L’usuari confirma que el projecte de Tamariu 40 × 45 cm s’obre amb les quatre plaques a Bambu Studio. El 3MF amb plaques passa a ser el format per defecte de les maquetes dividides a Bambu. El ZIP de peces queda al menú de descàrrega. [Control de Tamariu](RO-024-RESULTATS.md#projecte-bambu-amb-quatre-plaques-a-la-v02214)
+
 ## v0.22.13 — Filament per peça a Bambu Studio
 
 L’usuari valida al laminador el control de Montserrat amb filament per peça. Les franges desapareixen i el temps estimat passa de 3 dies i 21 h a 3 dies i 17 h. El mateix format s’aplica a l’exportació de Bambu Studio. [Prova de laminat](RO-024-RESULTATS.md#filament-per-peça-a-la-v02213)

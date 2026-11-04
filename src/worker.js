@@ -1,5 +1,5 @@
 import {buildModel,updateVegetation,updateBuildings,updateTransport,previewBuildingLayer} from './geometry.js';
-import {threeMF,stlZip} from './export.js';
+import {bambuPlateProject,threeMF,stlZip} from './export.js';
 import {groupMaterials} from './materials.js';
 import {splitModel,tileArchive} from './mesh-tiles.js';
 import {splitPureRelief} from './pure-relief-mesh.js';
@@ -73,7 +73,9 @@ try{
     self.postMessage({type:'download',format:'accessory',archive:true,accessory:data.kind,filename:'relleu-obert-'+data.kind+'.zip',bytes},[bytes.buffer]);return;
   }
   if(data.type==='export'){
-    if(!current)throw Error('Genera primer el model.');const model=groupMaterials(current,data.materialCount,data.assignments);let bytes,archive=false;
+    if(!current)throw Error('Genera primer el model.');
+    const model=groupMaterials(current,data.materialCount,data.assignments),format=data.format==='bambu-zip'?'bambu':data.format;
+    let bytes,archive=false,plateCount;
     if(model.width>MAX_PRINT_TILE_MM||model.height>MAX_PRINT_TILE_MM){
       progress('Preparant els talls de les peces…');
       let pieces=model.reliefGrid&&splitPureRelief(model,MAX_PRINT_TILE_MM,progress);
@@ -81,9 +83,14 @@ try{
         if(!api){api=await Module({locateFile:()=>wasmURL});api.setup();}
         pieces=splitModel(model,api,MAX_PRINT_TILE_MM,progress);
       }
-      bytes=tileArchive(pieces,data.format);archive=true;
+      if(data.format==='bambu'){
+        progress('Preparant el projecte amb les plaques de Bambu Studio…');
+        bytes=bambuPlateProject(model,pieces);plateCount=pieces.length;
+      }else{
+        bytes=tileArchive(pieces,format);archive=true;
+      }
     }
-    else bytes=data.format==='stl'?stlZip(model):threeMF(model,{bambu:data.format==='bambu'});
-    self.postMessage({type:'download',format:data.format,archive,bytes},[bytes.buffer]);
+    else bytes=format==='stl'?stlZip(model):threeMF(model,{bambu:format==='bambu'});
+    self.postMessage({type:'download',format,archive,plateCount,bytes},[bytes.buffer]);
   }
 }catch(e){self.postMessage({type:'error',message:e.message,detail:e.stack,timing:timing?.finish()});}};

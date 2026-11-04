@@ -135,3 +135,9 @@ El retall complet de Marganell amb els ajustos originals té la primera geometri
 La còpia de control de Montserrat conserva les malles, els colors i els filaments assignats a cada peça. Només s’hi retira la pintura per triangle. L’usuari valida que les franges de colors incorrectes desapareixen al laminador i que el temps estimat passa de 3 dies i 21 h a 3 dies i 17 h. El contrast és de laminat i la impressió física queda pendent.
 
 El generador aplica aquesta assignació a tots els 3MF per a Bambu Studio, també quan s’exporten en diverses peces. L’auditoria accepta els arxius antics amb pintura i comprova la coherència dels filaments per peça en tots dos formats de Bambu.
+
+## Projecte Bambu amb quatre plaques a la v0.22.14
+
+L’exportació de Bambu Studio agrupa les maquetes dividides en un projecte 3MF amb una peça per placa i filaments compartits. Fa servir plaques de referència de 256 × 256 mm. L’opció «3MF Bambu · peces en ZIP» conserva els 3MF individuals i el plànol de muntatge.
+
+L’usuari ha obert el projecte de Tamariu 40 × 45 cm a Bambu Studio i hi ha vist les quatre plaques. Les peces de 200 × 225 mm tenen les mateixes malles al projecte únic i al ZIP. Les àrees de les seccions adjacents coincideixen per material. El blau arriba a la base a les tres peces que contenen mar. Queda pendent el contrast del laminat de les quatre peces.

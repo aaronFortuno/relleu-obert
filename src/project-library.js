@@ -18,7 +18,7 @@ const optionRules={
   estimatedTunnels:boolean,majorRoads:boolean,buildingSource:oneOf('osm','osm3d','icgc','catastre'),
   buildingMode:oneOf('limited','source','flat','none'),maxBuildingHeight:value=>range(value,1,1200),
   trees:boolean,treeType:oneOf('mixed','round','tall'),brushDensity:value=>range(value,.25,2),
-  brushRadius:value=>Number.isInteger(value)&&range(value,2,12),split:boolean,exportFormat:oneOf('bambu','3mf','stl')
+  brushRadius:value=>Number.isInteger(value)&&range(value,2,12),split:boolean,exportFormat:oneOf('bambu','bambu-zip','3mf','stl')
 };
 
 function validatedSettings(settings){
