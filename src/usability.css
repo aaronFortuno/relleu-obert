@@ -5,6 +5,19 @@
 
 .presentation-note{position:absolute;z-index:2;bottom:52px;left:18px;max-width:calc(100% - 36px);padding:6px 10px;border-radius:5px;background:#fffdf4db;color:#52614b;font-size:var(--ui-control);pointer-events:none}.presentation-note[hidden]{display:none}#presentation-toggle[aria-pressed=true]{background:#375d45;color:#fff}
 
+.preview-toolbar .viewer-tools{flex-wrap:wrap}
+.preview-options{display:grid;justify-items:end;gap:6px}
+.viewer-tools #preview-orbit{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:var(--ui-label);background:#eceeeb;color:#4c544d;border-color:#cdd2cb;
+}
+.viewer-tools #preview-orbit[aria-checked=true]{
+  background:#e3ebda;color:var(--ui-control-text);border-color:var(--green);
+}
+#preview-orbit span{min-inline-size:9ch;text-align:right;font-weight:600}
+.viewer-tools #preview-orbit:not(:disabled):hover{border-color:currentColor}
+.viewer-tools #preview-orbit:disabled{opacity:.6;cursor:not-allowed}
+
 .source-summary{margin:8px 0 12px;padding:8px 0;border-top:1px solid var(--line);color:#819173}
 .source-summary p{margin:3px 0;font-size:var(--ui-note);line-height:1.6}
 .source-summary strong{font-weight:500;color:#65755d;margin-right:4px}
@@ -40,7 +53,7 @@
 .download-control #export-formats {flex:0 0 32px;width:32px;padding:0;border-radius:0 5px 5px 0}
 #export-options {position:absolute;bottom:calc(100% + 4px);right:0;z-index:5;width:100%;padding:4px;background:var(--paper);border:1px solid var(--line);border-radius:5px}
 #export-options button {display:block;width:100%;border:0;border-radius:4px;background:transparent;padding:8px;text-align:left;font-size:var(--ui-control)}
-#export-options button[aria-pressed=true], #export-options button:hover, .viewer-tools #preview-orbit[aria-pressed=true] {background:#eef3e7}
+#export-options button[aria-pressed=true], #export-options button:hover {background:#eef3e7}
 
 #welcome {position:absolute;inset:0;z-index:2;display:grid;align-content:center;justify-items:center;text-align:center;padding:24px;pointer-events:none}
 #welcome h2 {font-size:17px;color:var(--green)}

@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-04. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.22.24 — Estat visible del gir automàtic
+
+El control del gir passa a la cantonada superior dreta del visor i indica si està activat o desactivat. Revisat al navegador a 1280 × 720 i 1100 × 680, amb clic, teclat i vista zenital. Pendent de validació d’ús.
+
 ## v0.22.23 — Tres exemples a la pantalla inicial
 
 El carrusel de RO-046 mostra Roses, el Cap de Creus i el delta de l’Ebre amb WebP estàtics. Les fitxes i el selector de Territori apliquen el retall, el mode i la mida de cada exemple. Els tres models s’han generat al navegador amb dades reals. El format estàndard de Relleu pur aplica la mateixa comprovació de cobertura marina que el panoràmic quan falten tessel·les d’elevació. [Catàleg i fonts del lot](RO-046-CATALEG.md#primer-lot-al-carrusel)

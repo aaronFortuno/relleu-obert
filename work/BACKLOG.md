@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-04 · v0.22.23**. Tres exemples de Relleu pur a la pantalla inicial. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-04 · v0.22.24**. Estat del gir automàtic visible al visor. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -22,7 +22,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 
 | ID | Prioritat | Estat | Proper resultat comprovable |
 | ------------------------------------------------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| [RO-053](#ro-053--flux-de-treball-per-etapes) | P1 | Canvi de mida al mateix projecte i gir automàtic del visor | Validar els canvis de mida i el gir en ús, i millorar el contrast de les guies al bosc |
+| [RO-053](#ro-053--flux-de-treball-per-etapes) | P1 | Canvi de mida al mateix projecte i control de gir amb estat visible | Validar els canvis de mida i el nou control en ús, i millorar el contrast de les guies al bosc |
 | [RO-033](#ro-033--ponts-i-viaductes) | P1 | Millau i el cupó del Bages validats al visor. Montgròs conserva el pas al laminat del cupó | Comprovar llums i accessos en una placa completa |
 | [RO-034](#ro-034--túnels-imprimibles) | P1 | Dues boques i rasant compartida verificades al cupó 3MF | Validar el cupó i revisar el tram cobert de Sant Salvador al laminador |
 | [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | Encaix per tram i cobertura ampliada, també als talls de la peça | Validar Marganell i resoldre les unions complexes |
