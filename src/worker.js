@@ -3,6 +3,7 @@ import {threeMF,stlZip} from './export.js';
 import {groupMaterials} from './materials.js';
 import {splitModel,tileArchive} from './mesh-tiles.js';
 import {splitPureRelief} from './pure-relief-mesh.js';
+import {MAX_PRINT_TILE_MM} from './selection.js';
 import Module from 'manifold-3d';
 import wasmURL from 'manifold-3d/manifold.wasm?url';
 import {createProcessingTiming} from './processing-timing.js';
@@ -73,12 +74,12 @@ try{
   }
   if(data.type==='export'){
     if(!current)throw Error('Genera primer el model.');const model=groupMaterials(current,data.materialCount,data.assignments);let bytes,archive=false;
-    if(data.split&&(model.width>200||model.height>200)){
+    if(model.width>MAX_PRINT_TILE_MM||model.height>MAX_PRINT_TILE_MM){
       progress('Preparant els talls de les peces…');
-      let pieces=model.reliefGrid&&splitPureRelief(model,200,progress);
+      let pieces=model.reliefGrid&&splitPureRelief(model,MAX_PRINT_TILE_MM,progress);
       if(!pieces){
         if(!api){api=await Module({locateFile:()=>wasmURL});api.setup();}
-        pieces=splitModel(model,api,200,progress);
+        pieces=splitModel(model,api,MAX_PRINT_TILE_MM,progress);
       }
       bytes=tileArchive(pieces,data.format);archive=true;
     }

@@ -45,6 +45,7 @@
 #welcome {position:absolute;inset:0;z-index:2;display:grid;align-content:center;justify-items:center;text-align:center;padding:24px;pointer-events:none}
 #welcome h2 {font-size:17px;color:var(--green)}
 #welcome p {margin:8px 0 16px;color:#65755d;font-size:var(--ui-control)}
+#piece-choice {max-width:100%}
 #piece-sizes {
   --piece-unit:2.5px;
   display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-end;
@@ -52,9 +53,14 @@
 }
 #piece-sizes .piece-size {
   width:calc(var(--piece-unit) * var(--piece-width));height:calc(var(--piece-unit) * var(--piece-height));
-  padding:0;margin:0;background:var(--paper);color:var(--green);white-space:nowrap;font-variant-numeric:tabular-nums;
+  min-width:34px;min-height:28px;padding:0;margin:0;background:var(--paper);color:var(--green);white-space:nowrap;font-variant-numeric:tabular-nums;
 }
 #piece-sizes .piece-size:hover {border-color:var(--green);background:#eef3e7}
+#custom-piece {width:min(224px,100%);margin:16px auto 0;pointer-events:auto}
+#custom-piece summary {color:var(--green);font-size:var(--ui-control);cursor:pointer}
+#custom-piece-form {text-align:left}
+#custom-piece-form input {width:100%;border:1px solid var(--ui-control-border);border-radius:5px;padding:8px;background:var(--ui-control-bg);color:var(--ui-control-text);font-size:var(--ui-control)}
+#custom-piece-form .primary {margin-top:12px}
 #recommended-place {margin-bottom:8px}
 .sidebar-left #new-project {flex:none;min-height:30px;margin:12px 0 8px;padding:6px 10px}
 .selection-frame {--selection-line:#37583e;border-color:var(--selection-line)}

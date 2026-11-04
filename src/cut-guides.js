@@ -3,7 +3,7 @@ import {tilePlan} from './selection.js';
 const surfaceLayers=new Set(['terrain','water','inland-water','forest','grass','roads','railways','rock','snow']);
 
 // Intersect the actual top triangles with the same planes used by the export.
-// The renderer depth-tests the lines against the rest of the model.
+// The renderer overlays the resulting surface lines so trees cannot hide them.
 export function cutGuideSegments({width,height,categories}){
   const {cols,rows}=tilePlan(width,height),cuts=[];
   for(let col=1;col<cols;col++)cuts.push([0,col*width/cols]);

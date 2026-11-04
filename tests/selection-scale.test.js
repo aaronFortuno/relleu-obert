@@ -1,11 +1,34 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {scaledBBox,validateScale,tilePlan} from '../src/selection.js';
+import {pieceDimensions,scaledBBox,validateScale,tilePlan} from '../src/selection.js';
 import {makeProjection,buildModel} from '../src/geometry.js';
 import {threeMF} from '../src/export.js';
 import {unzipSync,strFromU8} from 'fflate';
 import {lonLatTile} from '../src/elevation.js';
 const close=(a,b,tolerance=1e-6)=>assert(Math.abs(a-b)<tolerance,`${a} != ${b}`);
+test('sizes use whole centimetres between 10 and 50 and split only above 25 cm',()=>{
+  assert.deepEqual(pieceDimensions('10x10'),[100,100]);
+  assert.deepEqual(pieceDimensions('50x41'),[500,410]);
+  for(const invalid of ['9x10','10x51','12.5x18','040x20','__proto__'])assert.equal(pieceDimensions(invalid),null);
+  for(const [width,height,count] of [[250,250,1],[400,200,2],[400,450,4],[500,500,4]]){
+    const {tiles}=tilePlan(width,height);
+    assert.equal(tiles.length,count);
+    assert(tiles.every(tile=>tile.width<=250&&tile.height<=250));
+    assert.equal(tiles.reduce((area,tile)=>area+tile.width*tile.height,0),width*height);
+  }
+});
+
+test('both geometry modes accept a 50 cm model side',()=>{
+  const bbox=scaledBBox([0,0],500,400,20000);
+  const data={meta:{bbox},features:[],dem:[{z:0,x:0,y:0,size:2,elev:new Float32Array(4).fill(50)}]};
+  for(const pureRelief of [false,true]){
+    const options={size:500,widthMM:500,heightMM:400,resolution:4,trees:false,pureRelief};
+    const model=buildModel(data,options);
+    assert.equal(model.width,500);
+    assert.equal(model.height,400);
+    assert.throws(()=>buildModel(data,{...options,widthMM:510}),/rang admès|Relleu pur/);
+  }
+});
 test('fixed scales preserve horizontal scale, dimensions and coordinates at different latitudes',()=>{
   for(const lat of [0,41.918,65])for(const [widthMM,heightMM]of [[150,150],[150,200],[200,150],[400,400]])for(const scale of [1000,1500,2000,7345]){
     const bbox=scaledBBox([lat,3.2075],widthMM,heightMM,scale),proj=makeProjection(bbox,Math.max(widthMM,heightMM),{widthMM,heightMM});

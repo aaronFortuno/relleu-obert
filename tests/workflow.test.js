@@ -14,7 +14,30 @@ test('coordinate field accepts lat,lon and leaves natural addresses for the sear
 test('all material counts preserve every semantic triangle',()=>{const categories=CATEGORIES.map((c,i)=>({...c,vertices:new Float32Array([i,0,0,i+1,0,0,i,1,0]),faces:new Uint32Array([0,1,2])}));for(const n of [1,2,4,8]){const m=groupMaterials({categories,provenance:{}},n);assert.equal(m.parts.length,n);assert.equal(m.parts.reduce((s,p)=>s+p.faces.length,0),CATEGORIES.length*3);}});
 test('rectangular presets use exact millimetres and reversible projection',()=>{const p=makeProjection([3.1,41.9,3.12,41.92],200,{widthMM:150,heightMM:200});assert.equal(p.width,150);assert.equal(p.height,200);assert.deepEqual(p.project([3.12,41.92]),[150,200]);});
 test('vegetation changes reuse terrain buffers and brush strokes can erase/add trees',()=>{const base=buildModel(region,{size:100,resolution:2,density:1}),ground=base.categories.find(p=>p.id==='terrain');const empty=updateVegetation(base,{density:1,strokes:[{mode:'erase',x:50,y:50,radius:30}]});assert.strictEqual(empty.categories.find(p=>p.id==='terrain').vertices,ground.vertices);assert(empty.treeCount<base.treeCount);const added=updateVegetation(base,{density:1,strokes:[{mode:'erase',x:50,y:50,radius:30},{mode:'add',x:50,y:50,radius:5}]});assert(added.treeCount>empty.treeCount);const off=updateVegetation(base,{trees:false});assert.equal(off.treeCount,0);assert(!Object.keys(base).includes('context'));});
-test('40 cm tiles have capped cuts, conserve volume and preserve north-to-south placement',async()=>{const api=await Module();api.setup();const s=new Surface();s.polygon([[[0,0],[400,0],[400,400],[0,400],[0,0]]],()=>10);const mesh=s.solid(()=>0),model={width:400,height:400,parts:[{...CATEGORIES[0],...mesh,vertices:new Float32Array(mesh.vertices),faces:new Uint32Array(mesh.faces)}],provenance:{verticalExaggeration:1.5}};const tiles=splitModel(model,api);assert.equal(tiles.length,4);assert.equal(tilePlan(400,400).tiles[0].y0,200);let volume=0;for(const t of tiles){const p=t.parts[0],m=new api.Manifold(new api.Mesh({numProp:3,vertProperties:p.vertices,triVerts:p.faces}));assert.equal(m.status(),'NoError');volume+=m.volume();m.delete();assert.equal(t.width,200);assert.equal(t.height,200);for(let i=0;i<p.vertices.length;i+=3){assert(p.vertices[i]>=0&&p.vertices[i]<=200);assert(p.vertices[i+1]>=0&&p.vertices[i+1]<=200);}assert.equal(t.provenance.verticalExaggeration,1.5);}assert(Math.abs(volume-1600000)<1);const files=unzipSync(tileArchive(tiles,'3mf'));assert.equal(Object.keys(files).filter(k=>k.endsWith('.3mf')).length,4);assert(files['muntatge.json']);});
+test('40 × 45 cm models have capped cuts, conserve volume and preserve north-to-south placement',async()=>{
+  const api=await Module();api.setup();
+  const width=400,height=450,surface=new Surface();
+  surface.polygon([[[0,0],[width,0],[width,height],[0,height],[0,0]]],()=>10);
+  const model={width,height,parts:[{...CATEGORIES[0],...surface.solid(()=>0)}],provenance:{verticalExaggeration:1.5}};
+  const tiles=splitModel(model,api);
+  assert.equal(tiles.length,4);
+  assert.equal(tilePlan(width,height).tiles[0].y0,225);
+  let volume=0;
+  for(const t of tiles){
+    const p=t.parts[0],solid=new api.Manifold(new api.Mesh({numProp:3,vertProperties:p.vertices,triVerts:p.faces}));
+    assert.equal(solid.status(),'NoError');volume+=solid.volume();solid.delete();
+    assert.equal(t.width,200);assert.equal(t.height,225);
+    for(let i=0;i<p.vertices.length;i+=3){
+      assert(p.vertices[i]>=0&&p.vertices[i]<=t.width);
+      assert(p.vertices[i+1]>=0&&p.vertices[i+1]<=t.height);
+    }
+    assert.equal(t.provenance.verticalExaggeration,1.5);
+  }
+  assert(Math.abs(volume-width*height*10)<1);
+  const files=unzipSync(tileArchive(tiles,'3mf'));
+  assert.equal(Object.keys(files).filter(k=>k.endsWith('.3mf')).length,4);
+  assert(files['muntatge.json']);
+});
 test('a water layer absent from three pieces stays empty without trimming an empty solid again',async()=>{
   const api=await Module();api.setup();
   const s=new Surface();s.polygon([[[0,0],[130,0],[100,100],[0,120],[0,0]]],()=>3);const water=s.solid(()=>0);

@@ -92,7 +92,7 @@ export function reliefParts(grid,bounds={left:0,bottom:0,right:grid.resolution,t
 
 // All pieces reuse the same sampled heights and diagonals. Rebuild their
 // perimeter walls directly on grid lines instead of cutting large meshes.
-export function splitPureRelief(model,max,progress){
+export function splitPureRelief(model,max,progress=()=>{}){
   const grid=model.reliefGrid,n=grid.resolution,plan=tilePlan(model.width,model.height,max);
   if(n%plan.cols||n%plan.rows)return null;
   return plan.tiles.map((tile,i)=>{

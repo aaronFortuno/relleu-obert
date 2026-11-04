@@ -33,6 +33,15 @@ test('save and read preserve the settings with detached copies',()=>{
   assert.deepEqual(readProjects(storage)[0].settings,settings);
 });
 
+test('custom centimetre dimensions round-trip and define the valid stroke area',()=>{
+  const storage=memoryStorage();
+  const custom={...settings,sizePreset:'40x45',strokes:[{mode:'add',x:399,y:449,radius:5}]};
+  saveProject(storage,{name:'Personalitzada',settings:custom},firstDate);
+  assert.deepEqual(readProjects(storage)[0].settings,custom);
+  for(const sizePreset of ['9x45','40x51','40.5x45'])
+    assert.throws(()=>saveProject(storage,{name:'Invàlida',settings:{...custom,sizePreset}}),/no és vàlida/);
+});
+
 test('updating retains identity and creation time, and deletion touches only the selected project',()=>{
   const storage=memoryStorage(),first=saveProject(storage,{name:'Primer',settings},firstDate);
   const second=saveProject(storage,{name:'Segon',settings},secondDate);

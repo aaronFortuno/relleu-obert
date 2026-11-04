@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.21.5 — 2026-11-04
+
+- Mida inicial de 10 × 10 cm i mides personalitzades de 10 a 50 cm per costat, en passos d’1 cm.
+- Les maquetes amb algun costat de més de 25 cm s’exporten en peces iguals i el visor en mostra els talls discontinus sobre el relleu.
+
 ## v0.21.4 — 2026-11-03
 
 - La unió de materials reintenta en coordenades locals els components de volum positiu que perden precisió.

@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-03 · v0.21.4**. Unió de paviment validada als dos retalls que perdien els perfils. [Historial](HISTORIAL.md).
+Actualitzat: **2026-11-04 · v0.21.5**. Mides inicials personalitzables i talls automàtics per sobre de 25 cm. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -159,7 +159,7 @@ Revisar les unions i amplades de carretera, pont i túnel a dues escales. Separa
 
 ### RO-053 — Flux de treball per etapes
 
-El progrés per capes està validat en diversos llocs. Mesurar temps i memòria amb els mateixos ajustos i verificar guies de tall i descàrrega. El canvi de mida d’una maqueta existent queda pendent. [Flux](RO-053-UX.md) · [Mesures](RO-053-TEMPS.md)
+El progrés per capes està validat en diversos llocs. La mida inicial admet 10 × 10 cm i valors personalitzats entre 10 i 50 cm per costat. Les guies discontínues i la descàrrega comparteixen el pla de tall de 25 cm per peça. El canvi de mida d’una maqueta existent queda pendent. [Flux](RO-053-UX.md) · [Mesures](RO-053-TEMPS.md)
 
 ### RO-054 — Galeria local de projectes
 

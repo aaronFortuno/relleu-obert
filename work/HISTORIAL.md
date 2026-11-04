@@ -1,6 +1,10 @@
 # Historial i validacions de Relleu Obert
 
-Actualitzat: 2026-11-03. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
+Actualitzat: 2026-11-04. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
+
+## v0.21.5 — Mides i guies de tall
+
+Tria inicial amb 10 × 10 cm i mides personalitzades. El visor i l’exportació comparteixen el límit de 25 cm i les mides de les peces.
 
 ## v0.21.4 — Unió de paviment
 

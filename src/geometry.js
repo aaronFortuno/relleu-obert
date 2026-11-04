@@ -13,7 +13,7 @@ import {polygonTester} from './polygon-index.js';
 import {lineBuffer} from './roads.js';
 import {isRailway,isInactiveRailway,railwayOptions,railwayWidthMetres} from './railways.js';
 import {buildingOptions,buildingRise} from './building-options.js';
-import {validateScale} from './selection.js';
+import {MAX_MODEL_SIDE_MM,validateScale} from './selection.js';
 import {localRasterSampler} from './local-raster.js';
 import {treeDimensions,TREE_CROWN_METRES,MIN_TREE_MM} from './tree-scale.js';
 import {treeSampler,fitTrees,MAX_TREES} from './vegetation-budget.js';
@@ -190,7 +190,7 @@ export function treeMesh({x,y,ground,rx,ry,rz,rotation=0,phase=0,crownTaper=0}){
 }
 function prepareTerrain(data,options,progress,preview,measure){
   const {size=160,exaggeration=1.5,density=2.5,resolution=36}=options,proj=makeProjection(data.meta.bbox,size,options),{width,height,project,scale}=proj,rect=box(width,height),warnings=[];
-  if(!Number.isFinite(density)||density<.25||density>5||!Number.isInteger(resolution)||resolution<2||resolution>100||!Number.isFinite(exaggeration)||exaggeration<1||exaggeration>5||!Number.isFinite(size)||size<50||size>450||width>450||height>450)throw Error('Els ajustos de la maqueta són fora del rang admès.');
+  if(!Number.isFinite(density)||density<.25||density>5||!Number.isInteger(resolution)||resolution<2||resolution>100||!Number.isFinite(exaggeration)||exaggeration<1||exaggeration>5||!Number.isFinite(size)||size<50||size>MAX_MODEL_SIDE_MM||width>MAX_MODEL_SIDE_MM||height>MAX_MODEL_SIDE_MM)throw Error('Els ajustos de la maqueta són fora del rang admès.');
   if(options.targetScale!=null&&Math.abs(1000/scale-validateScale(options.targetScale))>options.targetScale*1e-6)throw Error('El retall no concorda amb l’escala demanada. Torna a seleccionar la regió.');
   preview?.stage('terrain','Revisant les mostres d’altitud…');
   const raster=data.localDEM||data.terrainRaster;
@@ -343,7 +343,7 @@ export function buildModel(data,options={},progress=()=>{},infrastructureApi=nul
 function buildPureRelief(data,options,progress,preview){
   const {size=160,exaggeration=1.5,resolution=56}=options;
   const {width,height,scale,project,unproject}=makeProjection(data.meta.bbox,size,options);
-  if(![width,height,exaggeration].every(Number.isFinite)||Math.min(width,height)<=0||Math.max(width,height)>450||exaggeration<1||exaggeration>5||
+  if(![width,height,exaggeration].every(Number.isFinite)||Math.min(width,height)<=0||Math.max(width,height)>MAX_MODEL_SIDE_MM||exaggeration<1||exaggeration>5||
       !Number.isInteger(resolution)||resolution<2||resolution>PURE_RELIEF_RESOLUTIONS[56]||1000/scale<9999.9||1000/scale>100001)
     throw Error('El mode Relleu pur admet escales d’1:10.000 a 1:100.000.');
   preview?.stage('terrain','Revisant les mostres d’altitud…');

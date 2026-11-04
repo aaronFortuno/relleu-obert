@@ -18,10 +18,22 @@ test('cut guides intersect the same split planes as export and follow the slope'
 });
 
 test('one piece needs no guide, and an edge on the cut is emitted once',()=>{
-  assert.equal(cutGuideSegments({width:200,height:200,categories:[surface]}).length,0);
+  assert.equal(cutGuideSegments({width:250,height:250,categories:[surface]}).length,0);
   const sharedEdge={...surface,vertices:new Float32Array([150,0,5,150,200,20,300,100,40,0,100,20]),
     faces:new Uint32Array([0,2,1,0,1,3])};
   const segments=cutGuideSegments({width:300,height:200,categories:[sharedEdge]});
   assert.equal(segments.length,6);
   assert.deepEqual(Array.from(segments),[150,0,5,150,200,20]);
+});
+
+test('rectangular pieces use one seam per side above 25 cm',()=>{
+  for(const [height,expected] of [[200,['x200']],[450,['x200','y225']]]){
+    const vertices=new Float32Array([0,0,5,400,0,5,400,height,5,0,height,5]);
+    const guides=cutGuideSegments({width:400,height,categories:[{...surface,vertices}]}),seams=new Set();
+    for(let i=0;i<guides.length;i+=6){
+      if(guides[i]===guides[i+3])seams.add('x'+guides[i]);
+      else if(guides[i+1]===guides[i+4])seams.add('y'+guides[i+1]);
+    }
+    assert.deepEqual([...seams].sort(),expected);
+  }
 });

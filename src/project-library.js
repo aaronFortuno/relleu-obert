@@ -1,5 +1,5 @@
 import {normalizeAssignments} from './materials.js';
-import {SIZE_PRESETS} from './selection.js';
+import {pieceDimensions} from './selection.js';
 
 export const PROJECT_LIBRARY_KEY='relleu-obert.projects';
 const VERSION=1;
@@ -22,11 +22,11 @@ const optionRules={
 
 function validatedSettings(settings){
   const invalid=()=>Error('La configuració del projecte desat no és vàlida.');
-  if(!object(settings)||typeof settings.sizePreset!=='string'||!Object.hasOwn(SIZE_PRESETS,settings.sizePreset)||!boolean(settings.pureRelief)||
+  if(!object(settings)||!pieceDimensions(settings.sizePreset)||!boolean(settings.pureRelief)||
     !object(settings.pose)||!object(settings.materials)||!object(settings.options)||!Array.isArray(settings.strokes))
     throw invalid();
   const {sizePreset,pureRelief,pose,materials,options,strokes,placeName,exampleId}=settings;
-  const {center,widthM,heightM,rotation}=pose,[width,height]=SIZE_PRESETS[sizePreset];
+  const {center,widthM,heightM,rotation}=pose,[width,height]=pieceDimensions(sizePreset);
   if(!Array.isArray(center)||center.length!==2||!range(center[0],-70,70)||!range(center[1],-180,180)||
     !range(widthM,0.001,width*100.001)||!range(heightM,0.001,height*100.001)||!range(rotation,-180,180)||
     placeName!=null&&!text(placeName,300)||exampleId!=null&&!text(exampleId,100))throw invalid();
