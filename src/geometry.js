@@ -40,7 +40,7 @@ import {planRegionalSurfaceRoads} from './regional-surface-roads.js';
 import {removeCollapsedSurfaceComponents} from './surface-components.js';
 import {isFlowingWater,isMarineWater,isStandingWater,shorelineLevel} from './standing-water.js';
 export {sampleHeight} from './elevation.js';
-const pc=polygonOps();
+const pc=polygonOps(undefined,{recoverMillimetreUnions:true});
 
 export const MATERIALS=[{id:'terrain',name:'Terreny',color:'#c6b38d'},{id:'water',name:'Aigua',color:'#8dc5ca'},{id:'built',name:'Edificis i camins',color:'#eee9dc'},{id:'green',name:'Vegetació',color:'#4e8966'}];
 const area=r=>r.reduce((s,p,i)=>{const q=r[(i+1)%r.length];return s+p[0]*q[1]-q[0]*p[1];},0)/2;
@@ -748,26 +748,6 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
   }
   let majorMetadata={...majorPlan.metadata,enabled:majorRoadsEnabled,applied:false,count:acceptedMajor.length,omissions:[...(majorPlan.metadata.omissions||[]),...majorOmissions],omitted:(majorPlan.metadata.omitted||0)+majorOmissions.length};
   warnings.push(...majorPlan.warnings,...majorOmissions.map(p=>'Perfil principal omès: '+p.reason));
-  if(acceptedMajor.length){
-    progress('Integrant les vies principals amb les capes…');
-    function remainingSurface(pieces,profiles){
-      if(!profiles.length)return pieces.flatMap(piece=>piece.polys);
-      const mask=measure('major.masks',()=>merge(profiles.flatMap(item=>item.outlines.map(r=>intersect([[r.map(project)]],land))).filter(p=>p.length)));
-      const ids=new Set(profiles.flatMap(item=>item.sourceFeatureIds));
-      return measure('major.road-differences',()=>pieces.flatMap(p=>ids.has(p.id)?subtract(p.polys,mask):p.polys),{pieces:pieces.length,profiles:profiles.length});
-    }
-    const railProfiles=acceptedMajor.filter(item=>item.railway);
-    const remaining=remainingSurface(roadPieces,acceptedMajor.filter(item=>!item.railway));
-    if(railProfiles.length)railPoly=intersect(merge(remainingSurface(railPieces,railProfiles).map(p=>[p])),land);
-    measure('major.road-coverage',()=>{
-      roadOnlyPoly=subtract(intersect(merge(remaining.map(p=>[p])),land),terrain.railPoly);
-      roadPoly=merge([roadOnlyPoly,railPoly].filter(p=>p.length));
-    });
-    measure('major.land-coverage',()=>{forest=subtract(intersect(merge(cropped(green)),land),roadPoly);bare=subtract(subtract(land,roadPoly),forest);});
-    deckItems.push(...acceptedMajor);
-    deckMask=merge([deckMask,...acceptedMajor.flatMap(item=>item.outlines.map(r=>intersect([[r.map(project)]],land)))].filter(p=>p.length));
-    containsDeck=polygonTester(deckMask);
-  }
   const fallbackMajor=message=>{
     const restored=measure('major.fallback',()=>buildTransport(data,{...options,majorRoads:false},terrain,progress,infrastructureApi,diagnostics,buildingGeometry,undefined,preview),{reason:message});restored.warnings.unshift(message);
     restored.provenance.majorRoads={...majorMetadata,attempted:majorMetadata.count,count:0,applied:false,error:message};
@@ -776,6 +756,30 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
     restored.provenance.options.majorRoads=options.majorRoads;
     return restored;
   };
+  if(acceptedMajor.length){
+    progress('Integrant les vies principals amb les capes…');
+    try{
+      function remainingSurface(pieces,profiles){
+        if(!profiles.length)return pieces.flatMap(piece=>piece.polys);
+        const mask=measure('major.masks',()=>merge(profiles.flatMap(item=>item.outlines.map(r=>intersect([[r.map(project)]],land))).filter(p=>p.length)));
+        const ids=new Set(profiles.flatMap(item=>item.sourceFeatureIds));
+        return measure('major.road-differences',()=>pieces.flatMap(p=>ids.has(p.id)?subtract(p.polys,mask):p.polys),{pieces:pieces.length,profiles:profiles.length});
+      }
+      const railProfiles=acceptedMajor.filter(item=>item.railway);
+      const remaining=remainingSurface(roadPieces,acceptedMajor.filter(item=>!item.railway));
+      if(railProfiles.length)railPoly=intersect(merge(remainingSurface(railPieces,railProfiles).map(p=>[p])),land);
+      measure('major.road-coverage',()=>{
+        roadOnlyPoly=subtract(intersect(merge(remaining.map(p=>[p])),land),terrain.railPoly);
+        roadPoly=merge([roadOnlyPoly,railPoly].filter(p=>p.length));
+      });
+      measure('major.land-coverage',()=>{forest=subtract(intersect(merge(cropped(green)),land),roadPoly);bare=subtract(subtract(land,roadPoly),forest);});
+      deckItems.push(...acceptedMajor);
+      deckMask=merge([deckMask,...acceptedMajor.flatMap(item=>item.outlines.map(r=>intersect([[r.map(project)]],land)))].filter(p=>p.length));
+      containsDeck=polygonTester(deckMask);
+    }catch(error){
+      return fallbackMajor('No s’han pogut integrar els perfils suaus amb les capes. '+error.message);
+    }
+  }
   const recoverProfiles=(ids,message)=>{
     const rejected=new Set(ids);
     if(excludedProfiles.size>=3||acceptedMajor.every(item=>rejected.has(item.id)))return fallbackMajor(message);

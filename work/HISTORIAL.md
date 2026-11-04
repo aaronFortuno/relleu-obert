@@ -1,6 +1,12 @@
 # Historial i validacions de Relleu Obert
 
-Actualitzat: 2026-11-04. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
+Actualitzat: 2026-11-05. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
+
+## v0.22.33 — Catàleg complet al carrusel
+
+RO-046 incorpora les 19 fitxes que faltaven. Les 28 fitxes intercalen Relleu pur i Model complet i generen el retall en clicar-lo. Les captures són WebP del visor. Tenerife conserva el panorama de tres peces. [Retalls i fonts](RO-046-CATALEG.md#catàleg-complet-al-carrusel)
+
+Generats els 19 models d’un en un. Granada ha completat el retall amb vies ordinàries en fallar la unió dels perfils suaus. Amsterdam ha completat el retall amb el reintent de precisió de les unions projectades. Chicago i Amsterdam han trigat uns 27 i 24 minuts en aquest equip. Verificades la compilació, les 28 fitxes, l’ordre i la previsualització a 1280 × 720 i 1100 × 680. Superades 85 proves locals. Pendent de validació d’ús.
 
 ## v0.22.32 — Textura forestal regulable i cobertura de les cobertes
 

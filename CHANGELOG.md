@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.22.33 — 2026-11-05
+
+- El carrusel incorpora els 19 retalls restants del catàleg. Cada fitxa mostra una captura estàtica i genera la maqueta del mode corresponent en clicar-la.
+- El motor recupera les vies ordinàries si falla la integració dels perfils suaus i reintenta les unions de polígons problemàtiques amb un ajust de precisió acotat.
+
 ## v0.22.32 — 2026-11-04
 
 - Relleu pur redueix l’altura de la textura del bosc i permet regular-ne l’alçada i la irregularitat. Les vores internes de les tessel·les deixen de formar franges rectes.

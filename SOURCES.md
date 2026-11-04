@@ -19,7 +19,7 @@ L’atribut `altura` de les construccions RTT s’expressa en metres: [especific
 - Fonts originals i atribucions: https://mapterhorn.com/attribution/ i https://download.mapterhorn.com/attribution.json . La precisió real varia segons la font i la regió.
 - Es conserva una còpia del catàleg d’atribucions originals a `public/data/elevation-attribution.json`.
 - Font alternativa: Mapzen / Tilezen Terrain Tiles, AWS Open Data, https://registry.opendata.aws/terrain-tiles/ . Atribucions originals: https://github.com/tilezen/joerd/blob/master/docs/attribution.md . La font efectivament utilitzada queda registrada a les metadades de cada regió.
-- La mostra inclou quatre tessel·les al zoom 14. L’exportació registra el proveïdor, però la identificació automàtica de la font original per regió encara és pendent. Abans de distribuir una biblioteca extensa de mostres o models, cal incorporar l’atribució específica corresponent.
+- La mostra inclou quatre tessel·les al zoom 14. L’exportació registra el proveïdor. El catàleg documenta els proveïdors de les captures i enllaça les fonts originals. [Atribucions del catàleg](work/RO-046-CATALEG.md#catàleg-complet-al-carrusel)
 
 ## Biblioteques
 

@@ -27,6 +27,21 @@ Barcelona, Girona i Cardona utilitzen els centres de la taula de Catalunya, a 1:
 
 Les tres imatges WebP de 720 × 450 píxels ocupen 168 kB en total. Les captures fan servir el MET5 i els edificis de l’ICGC, amb cartografia d’OpenStreetMap via OpenFreeMap.
 
+## Catàleg complet al carrusel
+
+El lot final incorpora els onze retalls de Relleu pur i els vuit de Model complet que faltaven. Els 28 retalls de les taules es poden generar des de la fitxa, amb la mida, el centre, el gir i l’escala documentats. El carrusel reparteix les 17 fitxes de Relleu pur i les 11 de Model complet al llarg del bucle. Els exemples addicionals de Territori es documenten al final de la pàgina.
+
+La captura panoràmica de Tenerife mostra les tres peces. A Granada, el visor conserva les vies ordinàries i els edificis quan falla la integració dels perfils suaus. A Amsterdam, la unió dels carrers es recupera amb un ajust de precisió projectada i es conserva el retall. Els models urbans grans poden trigar diversos minuts en l’equip de prova.
+
+Les dinou captures del lot final són WebP de 720 × 450 píxels i ocupen 729 kB en total. La cartografia i els edificis d’aquest lot provenen d’OpenStreetMap via OpenFreeMap. [Imatges](../public/examples/) · [OpenStreetMap](https://www.openstreetmap.org/copyright)
+
+| Proveïdor d’elevacions registrat | Captures del lot final |
+| --- | --- |
+| Mapterhorn | Tenerife, Teide i Las Cañadas, Ordesa, illes Cíes, Bardenas, Geirangerfjord, Tre Cime, mont Fuji, Gran Canó del Colorado, Granada, Bilbao, Ronda, Amsterdam, Lisboa i Chicago |
+| Mapzen Terrain Tiles via AWS | Santorini, Table Mountain, Venècia i Cusco |
+
+El catàleg de Mapterhorn recull el Sistema Cartográfico Nacional per als retalls de l’Estat espanyol, Kartverket per a Noruega, TINITALY i la província de Bolzano per a Itàlia, GSI per al Japó, USGS 3DEP per als EUA, AHN per als Països Baixos i la Direção-Geral do Território per a Portugal. També hi consta el Copernicus GLO-30. El catàleg de Tilezen recull Copernicus EU-DEM per a Europa i les fonts globals de l’USGS i la NOAA. Les llistes originals detallen els crèdits i la cobertura de cada conjunt. [Fonts originals de Mapterhorn](https://mapterhorn.com/attribution/) · [Atribucions de Tilezen](https://github.com/tilezen/joerd/blob/master/docs/attribution.md) · [Registre d’AWS](https://registry.opendata.aws/terrain-tiles/)
+
 ## Com reproduir els retalls
 
 1. Tria el mode i introdueix la **mida de la maqueta** en l’ordre amplada × alçada. Fes servir la mida personalitzada quan calgui.

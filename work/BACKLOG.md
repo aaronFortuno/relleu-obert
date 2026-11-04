@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-04 · v0.22.32**. Textura forestal regulable i conservació de les petjades si no hi ha dades de coberta. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-05 · v0.22.33**. Catàleg de 28 retalls al carrusel. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -39,7 +39,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | ID | Prioritat | Estat | Què falta |
 | ------------------------------------------------------------------------ | --------- | ------------------------------------ | --------------------------------------------------------------- |
 | [RO-050](#ro-050--ferrocarrils-diferenciats) | P2 | Implementat i comprovat localment | Usuari: realç ferroviari i assignació de material; laminat |
-| [RO-046](#ro-046--catàleg-de-llocs-recomanats) | P2 | Nou fitxes intercalades, tres de Model complet | Validar el ritme, la llegibilitat i la generació en ús |
+| [RO-046](#ro-046--catàleg-de-llocs-recomanats) | P2 | 28 retalls amb captures i generació directa | Revisar la llegibilitat i els temps de generació en ús |
 | [RO-044](#ro-044--catastre-per-seccions-i-recuperació-de-configuracions) | P1 | Vista progressiva validada a Tamariu | Buit/mixt, subdivisions i recuperació després d’error |
 | [RO-045](#ro-045--coherència-visual-dels-sidebars) | P2 | Implementat; pendent d’usuari | Coherència de controls i scroll a escriptori |
 
@@ -139,7 +139,7 @@ Validar a l’escriptori la coherència dels controls i el desplaçament intern 
 
 ### RO-046 — Catàleg de llocs recomanats
 
-El [catàleg inicial](RO-046-CATALEG.md) proposa 28 retalls. El carrusel intercala l’Eixample de Barcelona, el Barri Vell i l’Onyar de Girona, i el castell, la vila i la Vall Salina de Cardona entre les sis fitxes catalanes de Relleu pur. L’ordre es barreja en cada càrrega, amb dues fitxes de Relleu pur entre cada parella de Model complet. Queda validar el ritme, la llegibilitat i la generació en ús.
+El carrusel incorpora els 28 retalls del [catàleg](RO-046-CATALEG.md), amb 17 fitxes de Relleu pur i 11 de Model complet. L’ordre es barreja en cada càrrega i reparteix els modes al llarg del bucle. Queda revisar l’enquadrament, la llegibilitat i els temps de generació en ús.
 
 ### RO-047 — Precàrrega opcional de fonts alternatives
 
