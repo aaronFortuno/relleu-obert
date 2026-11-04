@@ -1,0 +1,105 @@
+# Catàleg inicial de llocs per a maquetes
+
+La proposta de RO-046 recull **28 enquadraments** per al selector de Territori, agrupats per mode i àmbit. En **Relleu pur**, el punt de partida és una forma que es pugui reconèixer al terreny o al contorn de l’aigua. En **Model complet**, cada retall proposa un patró de carrers, edificis o infraestructures que es pugui llegir en relació amb el lloc.
+
+## Primera tria per a les mostres
+
+- **Relleu pur.** Badia de Roses, Cap de Creus i delta de l’Ebre per comparar tres formes del litoral català. Montserrat i l’eix pirinenc que ja ofereix l’aplicació permeten distingir un massís d’una serralada. Tenerife, Geirangerfjord i el Gran Canó del Colorado amplien la tria amb una illa volcànica, un fiord i un canó fluvial.
+- **Model complet.** Barcelona, Girona, Granada i Amsterdam permeten comparar una quadrícula planificada, un nucli històric vora el riu, dos vessants urbans i una ciutat articulada per canals. Cusco afegeix un exemple americà de trama històrica en pendent.
+
+## Com reproduir els retalls
+
+1. Tria el mode i introdueix la **mida de la maqueta** en l’ordre amplada × alçada. Fes servir la mida personalitzada quan calgui.
+2. Enganxa a la cerca de Territori el **centre del retall** en graus decimals WGS84, amb punt decimal i coma entre latitud i longitud. Els enllaços «Mapa» situen aquest punt.
+3. Mou el selector d’**escala horitzontal** fins al valor indicat. Les fletxes permeten avançar un salt d’escala cada vegada. Orienta el nord a dalt (gir de 0°), excepte al panorama de Tenerife, que porta un gir de −25°. L’**extensió** és la mida real del retall, calculada a partir de la mida de la maqueta i l’escala.
+
+El centre de cada fila és el punt mig de l’enquadrament proposat. Pot caure a l’aigua o fora del topònim. La mida i el gir formen part de l’enquadrament. Si es canvia la proporció de la peça, cal mantenir dins del retall els elements citats a la fitxa. El panorama de Tenerife té un format específic.
+
+A la versió 0.22.21, el **Model complet** admet fins a 1:20.000, amb un límit addicional per superfície de càrrega. El **Relleu pur** admet 1:10.000–1:100.000 en formats de fins a 50 cm de costat, i 1:50.000–1:500.000 en el format panoràmic de 51–100 × 10–20 cm. Per comparar les mostres de Relleu pur, la lectura de la forma es farà amb el terreny i l’aigua. La cobertura del sòl i el bosc que ofereix el mode són secundaris per a aquesta tria. [Regles de selecció](../src/selection.js) · [Límits d’escala](../src/place-map.js) · [Seguiment del mode](RO-055-RELLEU-PUR.md)
+
+## Relleu pur
+
+### Catalunya
+
+| Què representa | Lloc | Centre del retall | Extensió real | Maqueta i escala | Què s’hi hauria de llegir |
+| --- | --- | --- | --- | --- | --- |
+| Badia | Badia de Roses (Alt Empordà) | `42.1870,3.1670` [Mapa](https://www.openstreetmap.org/?mlat=42.1870&mlon=3.1670#map=10/42.1870/3.1670) | 24 × 22 km | 24 × 22 cm · 1:100.000 | La concavitat entre la costa de Roses i el Montgrí, amb la plana litoral i els Aiguamolls de l’Empordà. [Turisme de Roses](https://visit.roses.cat/ca/descobreix/natura-i-paisatge/paisatge/badia-de-roses.html) |
+| Cap | Cap de Creus (Alt Empordà) | `42.3150,3.3020` [Mapa](https://www.openstreetmap.org/?mlat=42.3150&mlon=3.3020#map=12/42.3150/3.3020) | 6 × 6 km | 20 × 20 cm · 1:30.000 | La punta del cap, el far, Tudela i el mar a banda i banda. Permet comparar un entrant de mar amb un sortint de terra en la mateixa costa. [ICGC](https://app1.icgc.cat/bd/mapes/igc_GT1_259q11q21q12_79x21_80x21_79x22_v1g.pdf) |
+| Delta fluvial | Delta de l’Ebre (Baix Ebre i Montsià) | `40.6900,0.7750` [Mapa](https://www.openstreetmap.org/?mlat=40.6900&mlon=0.7750#map=10/40.6900/0.7750) | 34 × 32 km | 34 × 32 cm · 1:100.000 | La desembocadura i l’illa de Buda, el Fangar, el Trabucador i la punta de la Banya. La silueta i les llacunes són el centre de la mostra. [Parc Natural](https://parcsnaturals.gencat.cat/web/.content/Xarxa-de-parcs/delta_de_lebre/el_parc/mapa/planol-ca-es.pdf) |
+| Massís de conglomerats | Montserrat (Bages, Anoia i Baix Llobregat) | `41.6020,1.8160` [Mapa](https://www.openstreetmap.org/?mlat=41.6020&mlon=1.8160#map=12/41.6020/1.8160) | 10 × 6 km | 20 × 12 cm · 1:50.000 | Carena allargada, agulles i contrast amb els vessants. De les Agulles fins al sector del monestir. [Patronat de Montserrat](https://muntanyamontserrat.gencat.cat/ca/el_parc/historia-i-origens/) |
+| Estany glacial | Estany de Sant Maurici i els Encantats (Pallars Sobirà) | `42.5760,1.0100` [Mapa](https://www.openstreetmap.org/?mlat=42.5760&mlon=1.0100#map=12/42.5760/1.0100) | 5 × 5 km | 25 × 25 cm · 1:20.000 | L’estany, els cims dels Encantats i l’amfiteatre que envolta la capçalera de la vall. [Parc Nacional](https://parcsnaturals.gencat.cat/ca/xarxa-de-parcs/aiguestortes/el-parc/patrimoni-natural-i-cultural/paisatge/) |
+| Cons volcànics | Croscat i Santa Margarida (Garrotxa) | `42.1500,2.5460` [Mapa](https://www.openstreetmap.org/?mlat=42.1500&mlon=2.5460#map=14/42.1500/2.5460) | 4 × 4 km | 20 × 20 cm · 1:20.000 | El cràter de Santa Margarida al costat del con del Croscat, amb el tall de les antigues extraccions com a detall secundari. [Parc Natural](https://parcsnaturals.gencat.cat/ca/xarxa-de-parcs/garrotxa/el-parc/patrimoni-natural-i-cultural/geologia/) |
+
+### Resta de l’Estat espanyol
+
+| Què representa | Lloc | Centre del retall | Extensió real | Maqueta i escala | Què s’hi hauria de llegir |
+| --- | --- | --- | --- | --- | --- |
+| Illa volcànica | Tenerife (Canàries) | `28.3670,-16.3080` [Mapa](https://www.openstreetmap.org/?mlat=28.3670&mlon=-16.3080#map=8/28.3670/-16.3080) | 153 × 60 km | 51 × 20 cm · 1:300.000 · −25° | El contorn de l’illa sencera, del Teno a Anaga i a la punta de la Rasca, amb el Teide al centre del relleu insular. [Cartografia del Cabildo de Tenerife](https://datos.canarias.es/catalogos/general/dataset/limites-municipales-de-tenerife/resource/91c4573e-d737-4c20-9827-758727d08e3a) |
+| Con volcànic i caldera | Teide i Las Cañadas (Tenerife) | `28.2600,-16.6150` [Mapa](https://www.openstreetmap.org/?mlat=28.2600&mlon=-16.6150#map=10/28.2600/-16.6150) | 24 × 20 km | 24 × 20 cm · 1:100.000 | Retall de detall de l’illa per llegir la vora de la caldera i els cons del Teide i Pico Viejo. [IGN](https://www.ign.es/web/catalogo-cartoteca/resources/pdfcards/card031570.pdf) |
+| Vall glacial | Ordesa i Mont Perdut (Aragó) | `42.6300,0.0250` [Mapa](https://www.openstreetmap.org/?mlat=42.6300&mlon=0.0250#map=10/42.6300/0.0250) | 24 × 20 km | 24 × 20 cm · 1:100.000 | La vall d’Ordesa i les seves parets fins al massís del Mont Perdut. Interessant per comparar la secció amb la d’un canó fluvial. [MITECO](https://www.miteco.gob.es/en/parques-nacionales-oapn/red-parques-nacionales/parques-nacionales/ordesa/valores-naturales/geologia.html) |
+| Arxipèlag litoral | Illes Cíes (Galícia) | `42.2170,-8.9070` [Mapa](https://www.openstreetmap.org/?mlat=42.2170&mlon=-8.9070#map=12/42.2170/-8.9070) | 10 × 12,5 km | 20 × 25 cm · 1:50.000 | Les illes principals, els vessants i el pas entre elles. Cal comprovar que la barra de Rodas i l’aigua que tanca siguin llegibles. [IGN](https://www.ign.es/web/catalogo-cartoteca/resources/pdfcards/card020580.pdf) |
+| Xarxa de barrancs en terreny argilós | Bardenas Reales · Bardena Blanca (Navarra) | `42.2160,-1.5020` [Mapa](https://www.openstreetmap.org/?mlat=42.2160&mlon=-1.5020#map=12/42.2160/-1.5020) | 6 × 6 km | 20 × 20 cm · 1:30.000 | Els barrancs de les Cortinas i els relleus residuals com el Castildetierra. La xarxa de drenatge és el tret principal del retall. [IGME](https://info.igme.es/ielig/LIGInfo.aspx?codigo=EB021) |
+
+### Resta d’Europa
+
+| Què representa | Lloc | Centre del retall | Extensió real | Maqueta i escala | Què s’hi hauria de llegir |
+| --- | --- | --- | --- | --- | --- |
+| Fiord | Geirangerfjord (Noruega) | `62.1100,7.0750` [Mapa](https://www.openstreetmap.org/?mlat=62.1100&mlon=7.0750#map=11/62.1100/7.0750) | 18 × 18 km | 24 × 24 cm · 1:75.000 | El braç de mar fins al poble de Geiranger i el contrast amb les parets escarpades. [UNESCO](https://whc.unesco.org/en/list/1195/maps/) |
+| Caldera marina | Santorini (Grècia) | `36.4070,25.4070` [Mapa](https://www.openstreetmap.org/?mlat=36.4070&mlon=25.4070#map=11/36.4070/25.4070) | 20 × 20 km | 20 × 20 cm · 1:100.000 | El contorn emergit de Thera i Therasia i els illots Kameni dins la caldera. [Smithsonian GVP](https://volcano.si.edu/volcano.cfm?vn=212040) |
+| Torres rocoses alpines | Tre Cime di Lavaredo, Dolomites (Itàlia) | `46.6180,12.3020` [Mapa](https://www.openstreetmap.org/?mlat=46.6180&mlon=12.3020#map=12/46.6180/12.3020) | 10 × 10 km | 20 × 20 cm · 1:50.000 | Les torres i el replà del massís. Cal comprovar si el model d’elevacions separa les tres puntes. [Parc Natural](https://parchi-naturali.provincia.bz.it/it/parco-naturale-tre-cime) |
+
+### Resta del món
+
+| Què representa | Lloc | Centre del retall | Extensió real | Maqueta i escala | Què s’hi hauria de llegir |
+| --- | --- | --- | --- | --- | --- |
+| Estratovolcà | Mont Fuji (Japó) | `35.3610,138.7280` [Mapa](https://www.openstreetmap.org/?mlat=35.3610&mlon=138.7280#map=10/35.3610/138.7280) | 25 × 25 km | 25 × 25 cm · 1:100.000 | El con central i els vessants radials. El cràter és un detall per contrastar amb la resolució disponible. [Smithsonian GVP](https://volcano.si.edu/volcano.cfm?vn=283030) |
+| Canó fluvial | Gran Canó del Colorado, sector de Grand Canyon Village (EUA) | `36.1180,-112.1000` [Mapa](https://www.openstreetmap.org/?mlat=36.1180&mlon=-112.1000#map=10/36.1180/-112.1000) | 25 × 25 km | 25 × 25 cm · 1:100.000 | El Colorado encaixat entre dues vores d’altiplà i els barrancs laterals. [National Park Service](https://www.nps.gov/grca/learn/nature/grca-geology.htm) |
+| Muntanya tabular | Table Mountain (Sud-àfrica) | `-33.9600,18.4180` [Mapa](https://www.openstreetmap.org/?mlat=-33.9600&mlon=18.4180#map=11/-33.9600/18.4180) | 12 × 12 km | 24 × 24 cm · 1:50.000 | El cim pla, els vessants abruptes, Lion’s Head i la costa de Camps Bay. [SANParks](https://www.sanparks.org/wp-content/uploads/2024/02/tmnp-visitors-map.pdf) |
+
+## Model complet
+
+### Catalunya
+
+| Què representa | Lloc | Centre del retall | Extensió real | Maqueta i escala | Què s’hi hauria de llegir |
+| --- | --- | --- | --- | --- | --- |
+| Eixample planificat | Barcelona · Eixample de Cerdà | `41.3950,2.1630` [Mapa](https://www.openstreetmap.org/?mlat=41.3950&mlon=2.1630#map=14/41.3950/2.1630) | 2,4 × 2,4 km | 24 × 24 cm · 1:10.000 | La quadrícula i els xamfrans, amb la Diagonal i el passeig de Gràcia com a referències. [Ajuntament de Barcelona](https://bcnroc.ajuntament.barcelona.cat/jspui/bitstream/11703/129573/5/jardins-eixample-cat_web-compressed_paginaxpagina.pdf) |
+| Nucli històric i riu | Girona · Barri Vell i Onyar | `41.9860,2.8265` [Mapa](https://www.openstreetmap.org/?mlat=41.9860&mlon=2.8265#map=14/41.9860/2.8265) | 1,6 × 1,6 km | 16 × 16 cm · 1:10.000 | El riu, els ponts, els carrers estrets i el pendent cap a la catedral i la muralla. [Ajuntament de Girona](https://web.girona.cat/mobilitat/circulacio/barrivell-criteris) |
+| Vila fortificada i paisatge miner | Cardona · Castell, vila i Vall Salina | `41.9110,1.6800` [Mapa](https://www.openstreetmap.org/?mlat=41.9110&mlon=1.6800#map=14/41.9110/1.6800) | 2,4 × 2,4 km | 24 × 24 cm · 1:10.000 | El turó fortificat, la vila i el paisatge de l’explotació salina en superfície. [Patrimoni Cultural](https://patrimoni.gencat.cat/ca/monuments/monuments/castell-de-cardona/) · [Vall Salina](https://patrimoni.gencat.cat/ca/node/1416) |
+
+### Resta de l’Estat espanyol
+
+| Què representa | Lloc | Centre del retall | Extensió real | Maqueta i escala | Què s’hi hauria de llegir |
+| --- | --- | --- | --- | --- | --- |
+| Patrimoni en dos vessants | Granada · Alhambra i Albaicín | `37.1800,-3.5915` [Mapa](https://www.openstreetmap.org/?mlat=37.1800&mlon=-3.5915#map=14/37.1800/-3.5915) | 2,4 × 2,4 km | 24 × 24 cm · 1:10.000 | Dos vessants urbanitzats, separats pel Darro, amb carrers, recintes i patis segons les petjades disponibles. [UNESCO](https://whc.unesco.org/en/list/314/maps/) |
+| Front fluvial urbà | Bilbao · Ria i Abandoibarra | `43.2690,-2.9380` [Mapa](https://www.openstreetmap.org/?mlat=43.2690&mlon=-2.9380#map=14/43.2690/-2.9380) | 2,4 × 2,4 km | 24 × 24 cm · 1:10.000 | El revolt de la ria, els ponts, els passeigs i la petjada del Guggenheim. [Museu Guggenheim Bilbao](https://www.guggenheim-bilbao.eus/informacion-practica/haz-turismo/que-ver/ria-de-bilbao) |
+| Ciutat sobre un congost | Ronda · Tajo i Pont Nou | `36.7408,-5.1662` [Mapa](https://www.openstreetmap.org/?mlat=36.7408&mlon=-5.1662#map=14/36.7408/-5.1662) | 1,4 × 1,4 km | 14 × 14 cm · 1:10.000 | El congost i la relació entre els dos costats urbans. El pont és una referència de traçat que cal validar al visor. [Ajuntament de Ronda](https://ayuntamientoronda.es/el-ayuntamiento-de-ronda-abrira-la-segunda-fase-del-camino-del-desfiladero-del-tajo-y-completara-su-recorrido-el-16-de-septiembre/) |
+
+### Resta d’Europa
+
+| Què representa | Lloc | Centre del retall | Extensió real | Maqueta i escala | Què s’hi hauria de llegir |
+| --- | --- | --- | --- | --- | --- |
+| Anell de canals | Amsterdam · Singelgracht (Països Baixos) | `52.3695,4.8915` [Mapa](https://www.openstreetmap.org/?mlat=52.3695&mlon=4.8915#map=14/52.3695/4.8915) | 2,5 × 2,5 km | 25 × 25 cm · 1:10.000 | Els canals concèntrics i les illes edificades. La lectura depèn de la continuïtat de l’aigua entre ponts. [UNESCO](https://whc.unesco.org/en/list/1349/maps/) |
+| Trames urbanes en pendent | Lisboa · Alfama i Baixa (Portugal) | `38.7125,-9.1320` [Mapa](https://www.openstreetmap.org/?mlat=38.7125&mlon=-9.1320#map=14/38.7125/-9.1320) | 2 × 2 km | 20 × 20 cm · 1:10.000 | El contrast entre els carrers irregulars d’Alfama i la quadrícula de la Baixa, del castell cap al Tajo. [Turisme de Lisboa](https://www.visitlisboa.com/en/places/baixa-chiado) |
+| Ciutat de canals | Venècia · Gran Canal (Itàlia) | `45.4370,12.3330` [Mapa](https://www.openstreetmap.org/?mlat=45.4370&mlon=12.3330#map=14/45.4370/12.3330) | 3 × 3 km | 15 × 15 cm · 1:20.000 | El Gran Canal i els fronts edificats. Els canals menors són una comprovació de detall. [UNESCO](https://whc.unesco.org/en/list/394/) |
+
+### Resta del món
+
+| Què representa | Lloc | Centre del retall | Extensió real | Maqueta i escala | Què s’hi hauria de llegir |
+| --- | --- | --- | --- | --- | --- |
+| Quadrícula i riu urbà | Chicago · Riu i Loop (EUA) | `41.8870,-87.6265` [Mapa](https://www.openstreetmap.org/?mlat=41.8870&mlon=-87.6265#map=14/41.8870/-87.6265) | 2,5 × 2,5 km | 25 × 25 cm · 1:10.000 | El riu, els ponts i els carrers en quadrícula. La silueta dels gratacels requereix alçades d’edificis contrastades. [Ajuntament de Chicago](https://chicago.gov/city/en/sites/chicagoriverwalk/home.html.html) |
+| Centre històric andí | Cusco · Plaça d’Armes i entorn (Perú) | `-13.5170,-71.9780` [Mapa](https://www.openstreetmap.org/?mlat=-13.5170&mlon=-71.9780#map=14/-13.5170/-71.9780) | 2,4 × 2,4 km | 24 × 24 cm · 1:10.000 | La plaça, el pendent i la trama formada per la ciutat inca i la colonial. Cal comprovar la continuïtat de les petjades. [UNESCO](https://whc.unesco.org/en/list/273/maps/) |
+
+## Exemples de l’aplicació que es poden aprofitar
+
+- **Serralada · Eix dels Pirineus.** Exemple panoràmic existent, amb centre `42.8000,0.7500`. En 100 × 20 cm, a 1:450.000 i amb gir de +15°, abasta 450 × 90 km. Mostra l’eix i els dos mars. El **sector de l’Aneto**, amb centre `42.6350,0.6500`, permet passar de la serralada al detall de l’alta muntanya. [Exemples de Territori](../src/main.js)
+- **Badia petita · Tamariu.** Exemple existent amb centre `41.9180,3.2075` i un retall de referència quadrat d’uns 1,78 km. Pot acompanyar Roses per comparar una badia petita amb una de més oberta. [Fitxa actual](../src/recommended-places.js)
+- **Infraestructura · Viaducte de l’Eix Diagonal.** Exemple existent amb centre `41.71792,1.78391` i retall quadrat de referència d’1,5 km. Es pot aprofitar com a mostra de Model complet centrada en un viaducte. [Fitxa actual](../src/recommended-places.js)
+
+## Validació abans d’incorporar-los al selector
+
+Els retalls tenen mida, escala i centre definits. La comprovació local cobreix els límits geomètrics i de càrrega de l’aplicació. A Tenerife també s’ha contrastat el retall girat amb els límits municipals del Cabildo. L’illa queda sencera i les illes veïnes queden fora del retall. La generació de les mostres queda per després de triar el lot inicial. [Límits municipals de Tenerife](https://datos.canarias.es/catalogos/general/dataset/limites-municipales-de-tenerife/resource/91c4573e-d737-4c20-9827-758727d08e3a) · [Contorns insulars de l’ISTAC](https://datos.canarias.es/catalogos/general/dataset/islas-canarias-delimitaciones-territoriales-para-fines-estadisticos2)
+
+- **Costa i aigües poc profundes.** Comprova el contorn marí, les llacunes i els passos estrets del delta. Revisa la cota de base en mostres de costa, arran de la incidència registrada a Tamariu. A les maquetes el mar és una superfície plana. [Incidència i tractament del mar](BACKLOG.md#ro-055--mode-de-relleu-pur)
+- **Formes de muntanya.** Revisa la silueta amb exageració vertical ×1 abans d’ajustar-la. Les agulles, els cràters petits i els penya-segats depenen de la resolució del terreny.
+- **Trama urbana.** Contrasta les petjades, vies i ponts amb el mapa. La primera mostra s’ha de poder llegir a partir del conjunt urbà. Les alçades i cobertes singulars demanen comprovar els atributs disponibles. [Fonts del projecte](../SOURCES.md)
+- **Peces i captures.** El delta i el panorama de Tenerife es divideixen en quatre i tres peces, respectivament, amb el límit actual de 25 cm per costat. Quan es generin les mostres, convé desar una vista zenital i una d’obliqua amb la mida, l’escala i l’exageració emprades. [Pla de tall](../src/selection.js)

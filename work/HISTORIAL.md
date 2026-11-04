@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-04. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## 2026-11-04 — Proposta de catàleg per als dos modes
+
+RO-046 documenta 28 enquadraments amb coordenades i mides reproduïbles al selector actual. Comprovats els límits de mida, escala i càrrega, i l’encaix del contorn de Tenerife al panorama girat. La tria del primer lot i la generació de mostres continuen pendents. [Catàleg](RO-046-CATALEG.md)
+
 ## v0.22.21 — Filaments configurables en Relleu pur
 
 La tria d’un a sis filaments i l’assignació per capa s’apliquen al visor i a l’exportació. El projecte de Bambu amb diverses plaques comparteix els índexs de filament. La galeria conserva els ajustos de Relleu pur separats dels de Model complet. El valor inicial de sis conserva els colors de les versions anteriors.

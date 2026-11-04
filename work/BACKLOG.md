@@ -39,7 +39,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | ID | Prioritat | Estat | Què falta |
 | ------------------------------------------------------------------------ | --------- | ------------------------------------ | --------------------------------------------------------------- |
 | [RO-050](#ro-050--ferrocarrils-diferenciats) | P2 | Implementat i comprovat localment | Usuari: realç ferroviari i assignació de material; laminat |
-| [RO-046](#ro-046--catàleg-de-llocs-recomanats) | P2 | Catàleg validat; canvi aplicat | Càrrega en seleccionar exemple; comprovar transició |
+| [RO-046](#ro-046--catàleg-de-llocs-recomanats) | P2 | Selector existent. Proposta de 28 retalls documentada | Triar el primer lot per mode i comprovar la transició en seleccionar un exemple |
 | [RO-044](#ro-044--catastre-per-seccions-i-recuperació-de-configuracions) | P1 | Vista progressiva validada a Tamariu | Buit/mixt, subdivisions i recuperació després d’error |
 | [RO-045](#ro-045--coherència-visual-dels-sidebars) | P2 | Implementat; pendent d’usuari | Coherència de controls i scroll a escriptori |
 
@@ -139,7 +139,7 @@ Validar a l’escriptori la coherència dels controls i el desplaçament intern 
 
 ### RO-046 — Catàleg de llocs recomanats
 
-Comprovar que seleccionar cada exemple restaura el retall i els ajustos esperats i que la transició és clara.
+El [catàleg inicial](RO-046-CATALEG.md) proposa 28 retalls per a Relleu pur i Model complet, amb centre, mida, escala, gir i referència cartogràfica. Queda triar el primer lot abans de generar les mostres i incorporar-lo al selector. En integrar-lo, comprovar que seleccionar cada exemple restaura el retall i els ajustos esperats i que la transició és clara.
 
 ### RO-047 — Precàrrega opcional de fonts alternatives
 
