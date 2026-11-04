@@ -12,6 +12,7 @@ export default {
   'section.transport': 'Vies',
   'section.buildings': 'Edificis',
   'footer.tagline': 'Un tros del món, a les teves mans.',
+  'footer.umbrella': 'Un projecte d’',
   'dialog.close': 'Tanca',
   'language.title': 'Idioma',
   'language.note': 'De moment només el català està disponible. La resta d’idiomes s’activaran quan hi hagi catàlegs revisats.',

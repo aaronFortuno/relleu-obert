@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-04 · v0.21.8**. Tauler de Montgròs recuperat i dues unions comprovades sobre la malla. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-04 · v0.21.9**. Tauler de Montgròs recuperat i dues unions comprovades sobre la malla. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 

@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.21.9 — 2026-11-04
+
+- El peu incorpora la signatura d’ortogra.fi amb el logotip i la composició de Plec.
+
 ## v0.21.8 — 2026-11-04
 
 - Si un fragment de pont d’una tessel·la queda contingut en un altre del mateix traçat, es conserva el fragment complet amb els dos extrems. Es recupera així el tauler de la C-37 al torrent de Montgròs.

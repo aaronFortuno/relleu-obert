@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-04. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.21.9 — Signatura d’ortogra.fi
+
+El peu incorpora la signatura centrada de Plec amb el logotip i l’enllaç a ortogra.fi.
+
 ## v0.21.8 — Tauler de la C-37 a Montgròs
 
 La unió entre tessel·les conserva el traçat més llarg quan l’altre hi queda contingut. El retall de Sant Salvador a 1:20.000 recupera el pont al torrent de Montgròs. Les dues connexions amb la C-37 tenen paviment a banda i banda i la diferència de cota mesurada és inferior a 0,007 mm. Pas lliure de 0,27 mm pendent de comprovar al laminador. [Resultats](RO-033-CONTROLS-PROCEDIMENTALS.md#torrent-de-montgròs)
