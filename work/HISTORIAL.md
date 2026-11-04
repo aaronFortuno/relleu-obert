@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-04. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.22.9 — Paviment nou en retalls reals
+
+L’usuari valida el cupó gran. El generador admet la prova optativa `?paviment=nou` en Model complet. El control de Marganell recupera tres fragments i conserva la resta de la xarxa amb el càlcul habitual. [Mesures i límits](RO-051-PERFILS-VIARIS.md#primera-prova-en-retalls-reals-a-la-v0229)
+
 ## v0.22.8 — Xarxa viària de 120 × 120 mm
 
 Un cupó sintètic combina vies sinuoses, una cruïlla en T i un pont sobre una segona via. Es comproven els enllaços sense graó, el pas inferior i el contacte entre el paviment i el terreny. [Cupó i mesures](RO-051-PERFILS-VIARIS.md#xarxa-viària-de-120-mm-a-la-v0228)

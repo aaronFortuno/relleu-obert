@@ -11,10 +11,16 @@ export function carveTransportDecks(surfaceParts,decks,api,limits={},includeRail
   if(!decks.length)return {parts:surfaceParts,warnings:[],metadata:{applied:false,count:0}};
   try{
     const categories=includeRailways?new Set([...SUBSTRATE,'railways']):SUBSTRATE;
-    const cutters=decks.map(d=>d.mesh??d),footprints=decks.map(d=>d.mask),{selected,restore,considered,candidates,footprintExcluded}=selectSurfaceComponents(surfaceParts,cutters,{categories,footprints});
-    const cut=subtractVoids({parts:selected},cutters,api,limits);
-    const cleaned=removeCollapsedSurfaceComponents(cut.parts),warnings=cleaned.count?[`S’han retirat ${cleaned.count} components col·lapsats de volum exactament nul després de separar els materials de carretera.`]:[];
-    return {parts:restore(cleaned.parts),warnings,metadata:{applied:true,count:cutters.length,consideredComponents:considered,excavatedCandidateComponents:candidates,footprintExcludedComponents:footprintExcluded,discardedZeroVolumeComponents:cleaned.count,discardedZeroVolumeByCategory:{...cleaned.byCategory},removedMM3:{...cut.voids.removed}}};
+    const {finishDecks=[],...cutLimits}=limits;
+    const allDecks=[...decks,...finishDecks],meshes=allDecks.map(d=>d.mesh??d);
+    const {selected,restore,considered,candidates,footprintExcluded}=selectSurfaceComponents(surfaceParts,meshes,
+      {categories,footprints:allDecks.map(d=>d.mask)});
+    const cut=subtractVoids({parts:selected},meshes.slice(0,decks.length),api,
+      {...cutLimits,finishCutters:meshes.slice(decks.length)});
+    const floatRoundoff=limits.floatRoundoff===true;
+    const cleaned=removeCollapsedSurfaceComponents(cut.parts,{floatRoundoff}),warnings=cleaned.count?[
+      `S’han retirat ${cleaned.count} components col·lapsats de ${floatRoundoff?'gruix dins la tolerància numèrica':'volum exactament nul'} després de separar els materials de carretera.`]:[];
+    return {parts:restore(cleaned.parts),warnings,metadata:{applied:true,count:meshes.length,consideredComponents:considered,excavatedCandidateComponents:candidates,footprintExcludedComponents:footprintExcluded,discardedZeroVolumeComponents:cleaned.count,discardedZeroVolumeByCategory:{...cleaned.byCategory},removedMM3:{...cut.voids.removed}}};
   }catch(error){
     return {parts:surfaceParts,warnings:[`No s’ha pogut assignar el volum dels taulers al material de carretera; es conserva el terreny anterior. ${error.message}`],metadata:{applied:false,count:0,error:error.message}};
   }

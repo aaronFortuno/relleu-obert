@@ -281,3 +281,11 @@ La prova gran ha detectat petits volums superposats entre el terreny i el pavime
 La cruïlla i els dos estreps tenen zero graó als punts mesurats. El pas lliure mínim calculat és de 3,715 mm, coherent amb la malla exportada. Les 1.452 seccions transversals mesurades tenen menys de 0,011 mm de desnivell entre costats i comproven també el contacte amb el suport.
 
 `node scripts/check-surface-network.mjs` genera `cupo-xarxa-120.3mf` i `xarxa-120.json`. Queda pendent la revisió de l’usuari abans de passar a un retall real.
+
+## Primera prova en retalls reals a la v0.22.9
+
+El paviment nou es pot provar al Model complet afegint `?paviment=nou` a l’adreça. El generador revisa grups de fragments, cus continuacions compatibles i admet traçats aïllats o una T verificada. Cada línia té la seva petjada encara que una tessel·la assigni un sol identificador a camins diferents. Les vies a tocar d’estructures i els grups que no passen les comprovacions conserven el càlcul habitual. «Dades i limitacions» i l’informe JSON recullen el resultat.
+
+El retall de control de Marganell està centrat a 41,6415 N i 1,7912 E. Fa 1,4 × 1,4 km en una peça de 120 × 120 mm, amb MET5, detall 24 i exageració ×1,5. El paviment nou s’aplica a 3 fragments en tres grups aïllats. La xarxa complexa concentra 101 fragments descartats. Les capes del 3MF superen l’auditoria i es conserven els quatre ponts del càlcul habitual. Aquest retall és un control local amb ajustos explícits.
+
+La prova sintètica integra dos fragments que comparteixen extrem i conserva una cruïlla sense connexió cartogràfica al càlcul habitual. Un segon traçat amb el mateix identificador rep el paviment nou de forma independent. El realç es recalcula sobre el terreny ja carregat.

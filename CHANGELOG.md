@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.22.9 — 2026-11-04
+
+- Primera prova del paviment nou al generador de retalls reals. El paràmetre `?paviment=nou` activa la prova. El generador aplica el càlcul als grups de calçades que pot verificar i informa de quants fragments s’han actualitzat.
+
 ## v0.22.8 — 2026-11-04
 
 - Cupó de 120 × 120 mm amb quatre traçats, una cruïlla en T i un pont. El pilot comprova els encreuaments conjuntament i retalla el terreny amb el paviment final perquè els materials encaixin.

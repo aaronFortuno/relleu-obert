@@ -33,23 +33,27 @@ function typedPart(part,solid){
 
 // Torna un model nou; ni el model, ni voidParts, ni les opcions es modifiquen.
 // Tots els sòlids WASM temporals es destrueixen en l'èxit i en qualsevol error.
-export function subtractVoids(model,voidParts,api,{maxTriangles=2_000_000,maxComponents=10_000,maxVoidTriangles=200_000}={}){
+export function subtractVoids(model,voidParts,api,{maxTriangles=2_000_000,maxComponents=10_000,maxVoidTriangles=200_000,finishCutters=[]}={}){
   if(!api?.Manifold||!api?.Mesh)throw Error('Cal injectar l’API de manifold-3d ja inicialitzada.');
   if(!Array.isArray(model?.parts))throw Error('Cal un model amb llista de peces.');
-  if(!Array.isArray(voidParts))throw Error('Cal una llista de peces de buit (pot ser buida).');
+  if(!Array.isArray(voidParts)||!Array.isArray(finishCutters))throw Error('Cal una llista de peces de buit (pot ser buida).');
   for(const [n,v,max]of [['maxTriangles',maxTriangles,2_000_000],['maxComponents',maxComponents,10_000],['maxVoidTriangles',maxVoidTriangles,200_000]])
     if(!Number.isSafeInteger(v)||v<1||v>max)throw Error(`Límit ${n} invàlid (1–${max}).`);
   // Validació i unió dels buits amb el mateix criteri que les capes (fites de
   // complexitat pròpies); la unió del model queda delegada a uniteMaterials.
   // Els talladors no són materials: un sol id imposa el pressupost total,
   // encara que el fitxer original utilitzi ids o colors diferents.
-  const voidModel=uniteMaterials({parts:voidParts.map((p,i)=>({...p,name:`Buit ${i+1}`,color:'#000000',id:'buit'}))},api,{maxTriangles:maxVoidTriangles,maxComponents});
+  const inputCutters=[...voidParts,...finishCutters];
+  if(inputCutters.reduce((n,p)=>n+(p?.faces?.length??0)/3,0)>maxVoidTriangles)
+    throw Error(`Els talladors superen el límit de ${maxVoidTriangles} triangles.`);
+  const cutterGroups=[voidParts,finishCutters].filter(group=>group.length).map(group=>
+    uniteMaterials({parts:group.map((p,i)=>({...p,name:`Buit ${i+1}`,color:'#000000',id:'buit'}))},
+      api,{maxTriangles:maxVoidTriangles,maxComponents}).parts);
   const owned=[]; // tot sòlid temporal creat aquí; es destrueix al finally
   const own=s=>(owned.push(s),s);
   try{
-    const voidInputs=voidModel.parts.filter(p=>p.faces.length).map(p=>own(manifoldOf(api,p,'El buit')));
-    const voidSolid=voidInputs.length>1?own(api.Manifold.union(voidInputs)):voidInputs[0]??null;
-    if(voidSolid){
+    const voidSolids=cutterGroups.flat().filter(p=>p.faces.length).map(p=>own(manifoldOf(api,p,'El buit')));
+    for(const voidSolid of voidSolids){
       const status=voidSolid.status();
       if(status!=='NoError')throw Error(`El buit unionat no és vàlid (${status}).`);
       const volume=voidSolid.volume();
@@ -58,15 +62,18 @@ export function subtractVoids(model,voidParts,api,{maxTriangles=2_000_000,maxCom
     const united=uniteMaterials(model,api,{maxTriangles,maxComponents});
     const out=[],removed=Object.create(null);
     for(const part of united.parts){
-      if(!voidSolid||!part.faces.length){ // capa buida o buit absent: còpia independent
+      if(!voidSolids.length||!part.faces.length){ // capa buida o buit absent: còpia independent
         out.push({...part,vertices:new Float32Array(part.vertices),faces:new Uint32Array(part.faces)});
         continue;
       }
       const input=own(manifoldOf(api,part,`La capa «${label(part)}»`));
       const before=input.volume();
-      const diff=own(input.subtract(voidSolid));
-      const status=diff.status();
-      if(status!=='NoError')throw Error(`No es pot restar el buit de la capa «${label(part)}» (${status}).`);
+      let diff=input;
+      for(const cutter of voidSolids){
+        diff=own(diff.subtract(cutter));
+        const status=diff.status();
+        if(status!=='NoError')throw Error(`No es pot restar el buit de la capa «${label(part)}» (${status}).`);
+      }
       const volume=diff.volume();
       if(!Number.isFinite(volume)||volume<0)throw Error(`La resta de la capa «${label(part)}» ha produït un volum no finit o negatiu.`);
       removed[part.id]=before-volume;
@@ -80,7 +87,7 @@ export function subtractVoids(model,voidParts,api,{maxTriangles=2_000_000,maxCom
     }
     const result={...united,parts:out};
     if('triangles' in united)result.triangles=out.reduce((n,p)=>n+p.faces.length/3,0);
-    result.voids={parts:voidParts.length,triangles:voidModel.parts.reduce((n,p)=>n+p.faces.length/3,0),removed};
+    result.voids={parts:inputCutters.length,triangles:cutterGroups.flat().reduce((n,p)=>n+p.faces.length/3,0),removed};
     return result;
   }finally{for(const s of owned)s.delete();}
 }
