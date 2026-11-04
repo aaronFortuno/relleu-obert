@@ -54,6 +54,16 @@ test('panoramic projects preserve dimensions, mode and scales larger than the re
   assert.throws(()=>saveProject(storage,{name:'Escala insuficient',settings:{...panoramic,pose:{...panoramic.pose,widthM:49900}}}),/no és vàlida/);
 });
 
+test('saved projects store pure relief assignments separately from landscape materials',()=>{
+  const storage=memoryStorage();
+  const reliefMaterials={count:3,assignments:[0,0,2,1,2,1]};
+  const mixed={...settings,pureRelief:true,reliefMaterials};
+  saveProject(storage,{name:'Relleu amb tres filaments',settings:mixed},firstDate);
+  assert.deepEqual(readProjects(storage)[0].settings,mixed);
+  assert.throws(()=>saveProject(storage,{name:'Invàlid',settings:{...mixed,
+    reliefMaterials:{...reliefMaterials,count:7}}}),/no és vàlida/);
+});
+
 test('older projects use the default trail width and a new choice persists',()=>{
   const storage=memoryStorage(),{trailWidth,...options}=settings.options;
   const old=saveProject(storage,{name:'Anterior',settings:{...settings,options}},firstDate);

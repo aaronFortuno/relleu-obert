@@ -18,6 +18,61 @@ export const RELIEF_MATERIALS=[
   CATEGORIES.find(category=>category.id==='forest'),
   CATEGORIES.find(category=>category.id==='water')
 ];
+const nativeReliefColors=RELIEF_MATERIALS.map(category=>category.color);
+const [ground,rock,snow,,forest,sea]=nativeReliefColors;
+export const RELIEF_PALETTES={
+  1:[ground],2:[ground,sea],3:[ground,sea,forest],
+  4:[ground,sea,forest,snow],5:[ground,sea,forest,snow,rock],6:nativeReliefColors
+};
+const reliefAssignments={
+  1:[0,0,0,0,0,0],
+  2:[0,0,0,1,0,1],
+  3:[0,0,0,1,2,1],
+  4:[0,0,3,1,2,1],
+  5:[0,4,3,1,2,1],
+  6:[0,1,2,3,4,5]
+};
+export function defaultReliefAssignments(count){
+  if(!Number.isInteger(count)||!Object.hasOwn(reliefAssignments,count))throw Error('Tria entre 1 i 6 materials.');
+  return reliefAssignments[count].slice();
+}
+export function normalizeReliefAssignments(count,assignments=defaultReliefAssignments(count)){
+  if(!Number.isInteger(count)||!Object.hasOwn(RELIEF_PALETTES,count)||!Array.isArray(assignments)||
+     assignments.length!==RELIEF_MATERIALS.length||assignments.some(i=>!Number.isInteger(i)||i<0||i>=count))
+    throw Error('L’assignació de materials del relleu no és vàlida.');
+  return assignments.slice();
+}
+
+export function groupReliefMaterials(model,count=6,assignments,{paletteOnly=false}={}){
+  assignments=normalizeReliefAssignments(count,assignments);
+  const colors=RELIEF_PALETTES[count],groups=colors.map(()=>[]);
+  for(const part of model.categories||model.parts){
+    if(!part.faces.length)continue;
+    const index=RELIEF_MATERIALS.findIndex(category=>category.id===part.id);
+    if(index<0)throw Error('Categoria de relleu desconeguda.');
+    groups[assignments[index]].push(part);
+  }
+  const parts=groups.flatMap((group,index)=>{
+    if(!group.length)return [];
+    const name=[...new Set(group.map(part=>part.name))].join(' · ');
+    const material={id:`material-${index+1}`,name,color:colors[index]};
+    if(paletteOnly)return [material];
+    if(group.length===1)return [{...group[0],...material}];
+    const vertices=new Float32Array(group.reduce((total,part)=>total+part.vertices.length,0));
+    const faces=new Uint32Array(group.reduce((total,part)=>total+part.faces.length,0));
+    let vertexOffset=0,faceOffset=0;
+    for(const part of group){
+      vertices.set(part.vertices,vertexOffset);
+      const indexOffset=vertexOffset/3;
+      for(const index of part.faces)faces[faceOffset++]=index+indexOffset;
+      vertexOffset+=part.vertices.length;
+    }
+    return [{...material,vertices,faces}];
+  });
+  return {...model,parts,materialCount:count,materialsUsed:parts.length,
+    provenance:{...model.provenance,materials:{requested:count,assignments,colors}}};
+}
+
 export function defaultAssignments(count){
   if(count===1)return CATEGORIES.map(()=>0);
   if(count===2)return [0,1,0,0,0,0,0,1,0];
@@ -31,12 +86,14 @@ export function normalizeAssignments(count,assignments=defaultAssignments(count)
   if(!PALETTES[count]||!Array.isArray(assignments)||![8,9].includes(assignments.length)||assignments.some(i=>!Number.isInteger(i)||i<0||i>=count))throw Error('L’assignació de materials no és vàlida.');
   return assignments.length===8?[...assignments,assignments[3]]:assignments.slice();
 }
-export function groupMaterials(model,count=4,assignments=defaultAssignments(count)){
+export function groupMaterials(model,count,assignments){
   if(model.provenance?.options?.pureRelief){
+    if(count!==undefined)return groupReliefMaterials(model,count,assignments);
     const parts=(model.categories||model.parts).filter(p=>p.faces.length);
     return {...model,parts,materialCount:parts.length,materialsUsed:parts.length,
       provenance:{...model.provenance,materials:{requested:parts.length,colors:parts.map(p=>p.color)}}};
   }
+  if(count===undefined)count=4;
   assignments=normalizeAssignments(count,assignments);
   const palette=PALETTES[count];
   const groups=palette.map((color,i)=>({id:count===4?['terrain','water','built','green'][i]:`material-${i+1}`,name:`Material ${i+1}`,color,vertices:[],faces:[],labels:[]}));

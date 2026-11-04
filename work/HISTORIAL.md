@@ -2,6 +2,12 @@
 
 Actualitzat: 2026-11-04. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.22.21 — Filaments configurables en Relleu pur
+
+La tria d’un a sis filaments i l’assignació per capa s’apliquen al visor i a l’exportació. El projecte de Bambu amb diverses plaques comparteix els índexs de filament. La galeria conserva els ajustos de Relleu pur separats dels de Model complet. El valor inicial de sis conserva els colors de les versions anteriors.
+
+Al visor, el retall de Tamariu de 30 × 30 cm passa de dos filaments a un sense recalcular la malla. El 3MF descarregat declara quatre plaques i dos filaments. Pendent de validar al laminador.
+
 ## v0.22.20 — Mars i oceans en Relleu pur
 
 El carregador envia els polígons marins al motor. La malla divideix la costa entre terreny i aigua, amb la superfície marina a 0 m i el blau fins a la base. Es comproven la separació de les aigües interiors i la continuïtat a les vores dels fragments.

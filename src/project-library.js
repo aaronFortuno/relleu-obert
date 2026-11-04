@@ -1,4 +1,4 @@
-import {normalizeAssignments} from './materials.js';
+import {normalizeAssignments,normalizeReliefAssignments} from './materials.js';
 import {pieceDimensions,isPanoramicSize,PANORAMIC_SCALE_RANGE} from './selection.js';
 import {TRAIL_WIDTH_MULTIPLIERS} from './transport-width.js';
 
@@ -26,7 +26,7 @@ function validatedSettings(settings){
   if(!object(settings)||!pieceDimensions(settings.sizePreset)||!boolean(settings.pureRelief)||
     !object(settings.pose)||!object(settings.materials)||!object(settings.options)||!Array.isArray(settings.strokes))
     throw invalid();
-  const {sizePreset,pureRelief,pose,materials,options,strokes,placeName,exampleId}=settings;
+  const {sizePreset,pureRelief,pose,materials,reliefMaterials,options,strokes,placeName,exampleId}=settings;
   const {center,widthM,heightM,rotation}=pose,[width,height]=pieceDimensions(sizePreset);
   const panoramic=isPanoramicSize(width,height);
   const [minScale,maxScale]=panoramic?PANORAMIC_SCALE_RANGE:[0,100000];
@@ -42,8 +42,15 @@ function validatedSettings(settings){
     cleanedOptions[key]=value;
   }
   if(!oneOf(1,2,4,8)(materials.count)||!Array.isArray(materials.assignments))throw invalid();
-  let assignments;
-  try{assignments=normalizeAssignments(materials.count,Array.from(materials.assignments));}
+  let assignments,cleanedReliefMaterials;
+  try{
+    assignments=normalizeAssignments(materials.count,Array.from(materials.assignments));
+    if(reliefMaterials!==undefined){
+      if(!object(reliefMaterials)||!Array.isArray(reliefMaterials.assignments))throw invalid();
+      cleanedReliefMaterials={count:reliefMaterials.count,
+        assignments:normalizeReliefAssignments(reliefMaterials.count,reliefMaterials.assignments)};
+    }
+  }
   catch{throw invalid();}
   const cleanedStrokes=Array.from(strokes,stroke=>{
     if(!object(stroke))throw invalid();
@@ -55,6 +62,7 @@ function validatedSettings(settings){
   });
   return {sizePreset,pureRelief,pose:{center:center.slice(),widthM,heightM,rotation},
     materials:{count:materials.count,assignments},options:cleanedOptions,strokes:cleanedStrokes,
+    ...(cleanedReliefMaterials?{reliefMaterials:cleanedReliefMaterials}:{}),
     ...(placeName!=null?{placeName}:{}),...(exampleId!=null?{exampleId}:{})};
 }
 

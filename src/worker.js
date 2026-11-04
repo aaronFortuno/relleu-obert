@@ -1,6 +1,6 @@
 import {buildModel,updateVegetation,updateBuildings,updateTransport,previewBuildingLayer} from './geometry.js';
 import {bambuPlateProject,threeMF,stlZip} from './export.js';
-import {groupMaterials} from './materials.js';
+import {groupMaterials,groupReliefMaterials} from './materials.js';
 import {splitModel,tileArchive} from './mesh-tiles.js';
 import {splitPureRelief} from './pure-relief-mesh.js';
 import {MAX_PRINT_TILE_MM} from './selection.js';
@@ -86,14 +86,25 @@ try{
   }
   if(data.type==='export'){
     if(!current)throw Error('Genera primer el model.');
-    const model=groupMaterials(current,data.materialCount,data.assignments),format=data.format==='bambu-zip'?'bambu':data.format;
+    const {materialCount,assignments}=data,format=data.format==='bambu-zip'?'bambu':data.format;
     let bytes,archive=false,plateCount;
-    if(model.width>MAX_PRINT_TILE_MM||model.height>MAX_PRINT_TILE_MM){
+    if(current.width>MAX_PRINT_TILE_MM||current.height>MAX_PRINT_TILE_MM){
+      const pureRelief=current.provenance?.options?.pureRelief;
+      let model=pureRelief?current:groupMaterials(current,materialCount,assignments);
       progress('Preparant els talls de les peces…');
       let pieces=model.reliefGrid&&splitPureRelief(model,MAX_PRINT_TILE_MM,progress);
       if(!pieces){
         if(!api){api=await Module({locateFile:()=>wasmURL});api.setup();}
         pieces=splitModel(model,api,MAX_PRINT_TILE_MM,progress);
+      }
+      if(pureRelief){
+        progress('Agrupant els filaments de les peces…');
+        model=groupReliefMaterials({provenance:current.provenance,parts:pieces.flatMap(piece=>piece.parts)},
+          materialCount,assignments,{paletteOnly:true});
+        for(const [i,piece] of pieces.entries()){
+          // Generic cuts retain the original model categories. Only group the cut geometry.
+          pieces[i]=groupReliefMaterials({...piece,categories:undefined},materialCount,assignments);
+        }
       }
       if(data.format==='bambu'){
         progress('Preparant el projecte amb les plaques de Bambu Studio…');
@@ -102,7 +113,10 @@ try{
         bytes=tileArchive(pieces,format);archive=true;
       }
     }
-    else bytes=format==='stl'?stlZip(model):threeMF(model,{bambu:format==='bambu'});
+    else{
+      const model=groupMaterials(current,materialCount,assignments);
+      bytes=format==='stl'?stlZip(model):threeMF(model,{bambu:format==='bambu'});
+    }
     self.postMessage({type:'download',format,archive,plateCount,bytes},[bytes.buffer]);
   }
 }catch(e){self.postMessage({type:'error',message:e.message,detail:e.stack,timing:timing?.finish()});}};

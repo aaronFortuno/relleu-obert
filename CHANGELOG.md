@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.22.21 — 2026-11-04
+
+- «Colors i materials» permet triar d’un a sis filaments en Relleu pur i assignar-ne un a cada capa. La tria s’aplica al visor, a les descàrregues i als projectes desats.
+
 ## v0.22.20 — 2026-11-04
 
 - Relleu pur mostra els mars i oceans cartografiats. L’aigua marina es manté plana al nivell del mar i el seu material arriba fins a la base, també als talls de les maquetes panoràmiques.
