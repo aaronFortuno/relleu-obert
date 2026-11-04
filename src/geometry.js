@@ -33,6 +33,7 @@ import {transportIdentity,compatibleTransport,continuationRoute} from './transpo
 import {crossSectionFractions} from './transport-sections.js';
 import {fitMajorRoadItem,knownBridgeClearance,openedTunnelClearance} from './major-road-fit.js';
 import {carveTransportDecks} from './transport-carving.js';
+import {planSurfaceRoad} from './surface-road.js';
 import {isFlowingWater,isStandingWater,shorelineLevel} from './standing-water.js';
 export {sampleHeight} from './elevation.js';
 const pc=polygonOps();
@@ -332,6 +333,26 @@ function roadSurface(index,polygons,rise,terrain){
   return surfacePart(index,terrainSolid(polygons,(x,y)=>ground(x,y)+rise,(x,y)=>ground(x,y)-.65,width,height,resolution));
 }
 
+function buildSurfaceRoadPilot(terrain,rise,api,progress){
+  const [road]=terrain.transport;
+  if(terrain.transport.length!==1||road.railway||['bridge','tunnel'].includes(road.brunnel)||terrain.deckItems.length)
+    throw Error('El cupó de paviment admet una sola carretera de superfície.');
+  const {mask,patches,top}=planSurfaceRoad(road,terrain,rise),pavement=new Surface(),fill=new Surface();
+  const thickness=.65+rise;
+  for(const polygon of patches){
+    pavement.polygon(polygon,top);
+    fill.polygon(polygon,(x,y)=>top(x,y)-thickness);
+  }
+  if(!pavement.faces.length)throw Error('El cupó no té una superfície de paviment imprimible.');
+  const land=subtract(terrain.land,mask),forest=intersect(merge(terrain.cropped(terrain.green)),land);
+  const parts=terrainCover(forest,subtract(land,forest),{...terrain,land},progress);
+  const [ground]=uniteMaterials({parts:[parts[0],surfacePart(0,fill.solid(()=>0))]},api).parts;
+  for(const index of [1,7])parts[index]=terrain.surfaces[index];
+  parts[0]=ground;
+  parts[3]=surfacePart(3,pavement.solid((x,y,z)=>z-thickness));
+  return {parts,mask,forest,metadata:{applied:true,featureId:road.sourceFeatureIds[0],widthMM:road.width,pavementThicknessMM:thickness}};
+}
+
 export function buildModel(data,options={},progress=()=>{},infrastructureApi=null,diagnostics=null,preview){
   if(options.pureRelief)return buildPureRelief(data,options,progress,preview);
   preview?.stage('terrain','Preparant el relleu…');
@@ -436,13 +457,18 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
   const roadRise=options.roadRise??0;
   if(![0,.5,1].includes(roadRise))throw Error('Relleu dels camins invàlid.');
   const {railRise}=railwayOptions(options);
+  const surfaceRoad=options.surfaceRoads===true?buildSurfaceRoadPilot(terrain,roadRise,infrastructureApi,progress):null;
+  if(surfaceRoad){
+    roadOnlyPoly=roadPoly=surfaceRoad.mask;
+    forest=surfaceRoad.forest;
+  }
   const knownItems=data.infrastructure?.items||[];
   const knownCrossingSources=knownItems.filter(item=>!item.estimated).map(item=>({item,contains:polygonTester(item.outlines.map(r=>[r.map(project)]))}));
   const representedElevationAt=(lon,lat)=>{
     const [x,y]=project([lon,lat]);if(x<0||y<0||x>width||y>height)return elevationAt(lon,lat);
     return originMeters+(ground(x,y)-5)/(scale*exaggeration);
   };
-  const majorRoadsEnabled=options.majorRoads===true;
+  const majorRoadsEnabled=!surfaceRoad&&options.majorRoads===true;
   if(majorRoadsEnabled)progress('Calculant els perfils de les vies principals…');
   const allowCrossing=(other,p)=>other.properties?.brunnel==='tunnel'?options.estimatedTunnels===true:
     other.properties?.brunnel==='bridge'&&knownCrossingSources.some(source=>source.contains(p)&&!!source.item.railway===isRailway(other.properties));
@@ -534,13 +560,13 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
     if(next.size===excludedProfiles.size)return fallbackMajor(message);
     return buildTransport(data,options,terrain,progress,infrastructureApi,diagnostics,buildingGeometry,next,preview);
   };
-  let staticBase=terrain.surfaces.slice();
+  let staticBase=surfaceRoad?.parts??terrain.surfaces.slice();
   if(acceptedMajor.length){
     const cover=terrainCover(forest,bare,terrain,progress);
     for(const index of [0,4,6])staticBase[index]=cover[index];
   }
   if(preview)progress('Triangulant carreteres i ferrocarrils…');
-  staticBase[3]=roadSurface(3,roadOnlyPoly,roadRise,terrain);
+  if(!surfaceRoad)staticBase[3]=roadSurface(3,roadOnlyPoly,roadRise,terrain);
   staticBase[8]=roadSurface(8,railPoly,roadRise+railRise,terrain);
   preview?.parts('transport',staticBase,proj);
   const bridges=[];
@@ -676,6 +702,7 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
   const containsGroundRoad=polygonTester(roadPoly),approachMask=merge(bridges.flatMap(b=>b.approaches.plans.map(p=>intersect(p.footprint,rect))).filter(p=>p.length)),containsApproach=polygonTester(approachMask);
   const context={ground,verticalReference,proj,rect,forest,land,roadPoly,roadOnlyPoly,railPoly,waterPoly,bridges,tunnelMask,infrastructureApi,containsForest:polygonTester(forest),containsLand:polygonTester(land),containsRoad:p=>containsDeck(p)||containsApproach(p)||containsGroundRoad(p),width,height,scale,staticWarnings:warnings,options:{...options,size,exaggeration,resolution,roadRise,railRise},meta:{...data.meta,tunnels:tunnelMetadata,railways:{incrementMM:railRise,surfaceRiseMM:roadRise+railRise,method:'cartographic railway platform; physical millimetres, no vertical exaggeration',groundPresent:railPoly.length>0,bridges:bridges.filter(b=>b.railway).length},infrastructure:deckCount?{...data.infrastructure,provider:knownCount?'Specific overrides and estimated transport platforms':'Estimated transport platforms from OSM/DEM',items:undefined,count:deckCount,knownCount,proceduralCount,deckProfiles:bridges.map(b=>({id:b.id,mainRoad:b.mainRoad,generatedSurfaceAdjustmentMM:b.generatedSurfaceAdjustmentMM,estimated:b.estimated,elevationMethod:b.elevationMethod,widthMetres:b.widthMetres,sourceFeatureIds:b.sourceFeatureIds,railway:b.railway,surfaceRiseMM:b.surfaceRise,printableThicknessMM:b.thickness})),printableThicknessMM:.6+roadRise,railwayPrintableThicknessMM:bridges.some(b=>b.railway)?.6+roadRise+railRise:undefined}:null},diagnostics:terrain.diagnostics,staticBase,terrain,transportSource:{infrastructure:data.infrastructure,features:data.features},buildingGeometry,buildingFeatures:buildingGeometry?.features??data.features};
   context.meta.majorRoads=majorMetadata;
+  if(surfaceRoad)context.meta.surfaceRoads=surfaceRoad.metadata;
   context.meta.transportContinuity={widthPolicy:'mapped width, then lanes, then road class; scale-sensitive floor; independent of structural deck and bore',minimumCarriagewayMM:MIN_ROAD_WIDTH_MM,connections:bridges.map(b=>({id:b.id,identity:b.identity,carriagewayWidthMM:b.roadWidth,joins:b.approaches.plans.map(p=>({startWidthMM:p.startWidthMM,endWidthMM:p.endWidthMM,targetFeatureIds:p.targetFeatureIds,routingRepairs:p.routingRepairs})),unconnectedEnds:b.approaches.missed})),portals:openedTunnels.flatMap(t=>t.portalConnections||[])};
   if(context.meta.infrastructure)context.meta.infrastructure.mainRoadCount=majorDecks.length;
   if(preview&&(openedTunnels.length||majorDecks.length)){

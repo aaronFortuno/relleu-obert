@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-04. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.22.3 — Cupó de paviment en vessant
+
+Pilot de calçada a la cota de l’eix, amb seccions transversals planes i suport de terreny sota tot el paviment. El cupó 3MF conserva els dos materials. El motor nou es pot provar amb el control reproduïble d’una recta en vessant. [Cupó i mesures](RO-051-PERFILS-VIARIS.md#cupó-de-paviment-en-vessant-v0223)
+
 ## v0.22.2 — Perfils de vies amb cotes fora del retall
 
 Si falta una cota fora de la maqueta, es torna a calcular el perfil dins del retall amb un marge de 5 m. El retall de Millau sud passa de 13 a 17 perfils aplicats. Una part de l’A75 segueix el terreny quan les comprovacions de ponts, túnels o unions fallen. [Diagnòstic i mesures](RO-051-PERFILS-VIARIS.md#millau-sud-a-la-v0222)

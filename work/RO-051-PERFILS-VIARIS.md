@@ -229,3 +229,13 @@ La v0.22.2 conserva el càlcul sobre l’eix complet si disposa de totes les cot
 - Retall complet de Millau sud, amb edificis i vegetació. De 13 a 17 perfils aplicats. Entre els quatre recuperats hi ha la calçada de l’A75 dels fragments 1512307892 i 42968112, amb un pendent longitudinal màxim estimat del 6,35%. Cinc seccions transversals mostrejades a la malla final tenen una diferència inferior a 0,001 mm. Les set capes exportades al 3MF superen l’auditoria de geometria.
 - Control del retall anterior, amb vies i aigua. Es conserven els dos perfils sobre el túnel verificat, amb zero omissions i auditoria correcta.
 - A Millau sud queden 14 omissions de candidats. Inclouen creuaments amb ponts sense cota verificada, túnels que no s’han pogut obrir i enllaços curts. Cal aïllar aquestes zones perquè una incidència local no retorni al relleu tota la resta de l’eix.
+
+## Cupó de paviment en vessant · v0.22.3
+
+El pilot calcula una cota per estació a partir del centre de la calçada. La secció es manté plana i només varia la rasant longitudinal. Dins de la petjada es retalla el costat alt i es reconstrueix el terreny fins a la cara inferior del paviment. Fora de la petjada es conserva el perfil del vessant.
+
+El control representa 200 × 200 m en una peça de 60 × 60 mm amb una calçada de 12 m d’amplada. El vessant té un 50% de pendent transversal i un 1,5% longitudinal. Amb un gruix de paviment de 0,65 mm i realç zero, cinc seccions mesurades al 3MF tenen les vores a la mateixa cota. El desmunt i el terraplè fins a la cara superior fan 0,90 mm als extrems de cada secció. A un 2,5% de l’amplada des de la vora baixa hi ha 0,205 mm de terreny afegit sota el paviment.
+
+El 3MF exporta dos materials amb malles tancades. La unió té un sol component i la intersecció mesurada de 0,000007 mm³ queda dins de la tolerància d’arrodoniment del control. Les mesures també comproven que el relleu immediatament exterior es conserva. El laminat està pendent. Bambu Studio per línia d’ordres es va tancar abans de generar el G-code.
+
+El pilot admet un sol tram recte de superfície. Es reprodueix amb `node scripts/check-surface-road.mjs`, que desa el 3MF i el diagnòstic a `output/surface-road/`. El següent control és mantenir la secció plana en corbes i resoldre les cotes comunes de les cruïlles abans de connectar-hi estructures elevades o soterrades.

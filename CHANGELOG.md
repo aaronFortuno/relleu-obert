@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.22.3 — 2026-11-04
+
+- Primer cupó del nou paviment de superfície. La calçada pren la cota de l’eix i es manté plana transversalment. El terreny s’ajusta a sota amb excavació i reblert. El pilot es pot reproduir amb `node scripts/check-surface-road.mjs`.
+
 ## v0.22.2 — 2026-11-04
 
 - Si falten cotes fora de la maqueta, les vies principals i els ferrocarrils poden recalcular el perfil amb les dades del retall. Es mantenen les comprovacions de pendent, creuaments i separació del terreny.
