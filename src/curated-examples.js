@@ -1,0 +1,40 @@
+const imageBase = `${import.meta.env?.BASE_URL || './'}examples/`;
+
+export const CURATED_EXAMPLES = [
+  {
+    id: 'roses',
+    title: 'Badia de Roses',
+    category: 'Badia',
+    description: 'La costa s’obre entre Roses i el Montgrí, amb els Aiguamolls de l’Empordà al fons de la badia.',
+    center: [42.187, 3.167],
+    width: 240,
+    height: 220,
+    scale: 100000,
+    rotation: 0,
+    image: `${imageBase}roses.webp`,
+  },
+  {
+    id: 'cap-de-creus',
+    title: 'Cap de Creus',
+    category: 'Cap',
+    description: 'La punta rocosa del cap, amb el far, Tudela i mar a banda i banda.',
+    center: [42.315, 3.302],
+    width: 200,
+    height: 200,
+    scale: 30000,
+    rotation: 0,
+    image: `${imageBase}cap-de-creus.webp`,
+  },
+  {
+    id: 'delta-ebre',
+    title: 'Delta de l’Ebre',
+    category: 'Delta fluvial',
+    description: 'La desembocadura, les llacunes i les puntes del Fangar i de la Banya dibuixen el delta.',
+    center: [40.69, 0.775],
+    width: 340,
+    height: 320,
+    scale: 100000,
+    rotation: 0,
+    image: `${imageBase}delta-ebre.webp`,
+  },
+];

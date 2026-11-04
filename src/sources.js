@@ -181,11 +181,11 @@ export async function loadRegion({sample=true,bbox,buildingSource,decodeElevatio
     let vectorsPromise,oceanProof;
     const loadVectors=()=>vectorsPromise??=time(insidePilot?'source.relief-forest':'source.relief-vectors',
       ()=>loadReliefVectors(bbox,sample,progress,insidePilot,panoramic));
-    const isOcean=panoramic?async tile=>{
+    const isOcean=async tile=>{
       // Only request the cartography early when a DEM tile needs coastal proof.
       oceanProof??=loadVectors().then(vectors=>oceanTilePredicate(vectors.oceans,bbox)).catch(()=>()=>false);
       return (await oceanProof)(tile);
-    }:undefined;
+    };
     const terrain=await time('source.terrain',()=>loadPreferredTerrain(bbox,decodeElevation,fetch,progress,isOcean,{
       zooms:panoramic?[14,13,12,11,10,9,8]:[14,13,12,11,10],maxTiles:panoramic?144:96,maxSamples:8*1024**2,
       concurrency:panoramic?4:1

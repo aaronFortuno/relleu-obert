@@ -32,6 +32,21 @@ test('bundled Tamariu sea polygons reach the worker in both pure relief formats'
   }
 });
 
+test('standard pure relief recovers missing elevation over verified open sea',async t=>{
+  const previous=globalThis.fetch;
+  globalThis.fetch=async value=>{
+    const url=String(value);
+    if(url.startsWith('./data/'))return new Response(await readFile(new URL('../public/'+url.slice(2),import.meta.url)));
+    return new Response(null,{status:404});
+  };
+  t.after(()=>{globalThis.fetch=previous;});
+  const region=await loadRegion({bbox:physicalBBox([41.912,3.217],.1,.1),sample:'tamariu',pureRelief:true,
+    decodeElevation:()=>assert.fail('Missing elevation tiles cannot be decoded')});
+  assert.equal(region.meta.terrain.oceanTiles,1);
+  assert.equal(region.dem.length,1);
+  assert(region.dem[0].elev.every(height=>height===0));
+});
+
 test('the coast-to-coast envelope uses bounded terrain and vector loads in panoramic relief',async t=>{
   const previous=globalThis.fetch,requests=[];
   let active=0,peak=0;

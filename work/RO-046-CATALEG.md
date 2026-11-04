@@ -7,6 +7,14 @@ La proposta de RO-046 recull **28 enquadraments** per al selector de Territori, 
 - **Relleu pur.** Badia de Roses, Cap de Creus i delta de l’Ebre per comparar tres formes del litoral català. Montserrat i l’eix pirinenc que ja ofereix l’aplicació permeten distingir un massís d’una serralada. Tenerife, Geirangerfjord i el Gran Canó del Colorado amplien la tria amb una illa volcànica, un fiord i un canó fluvial.
 - **Model complet.** Barcelona, Girona, Granada i Amsterdam permeten comparar una quadrícula planificada, un nucli històric vora el riu, dos vessants urbans i una ciutat articulada per canals. Cusco afegeix un exemple americà de trama històrica en pendent.
 
+## Primer lot al carrusel
+
+La badia de Roses, el Cap de Creus i el delta de l’Ebre tenen una vista obliqua estàtica del model de Relleu pur amb detall equilibrat i exageració ×1,5. Les tres imatges de 720 × 450 píxels ocupen 54 kB en total. Al delta es veuen les guies de les quatre peces. El visor pot generalitzar els cursos d’aigua i les llacunes petites en els retalls més amplis.
+
+Les noves fitxes s’afegeixen a [la llista d’exemples](../src/curated-examples.js) i les captures es desen a [la carpeta d’imatges](../public/examples/). Cada fitxa prepara la maqueta amb la seva mida, escala, centre i gir. Es pot ajustar a Territori abans de prémer «Genera el model».
+
+Cartografia © OpenStreetMap contributors (ODbL), via OpenFreeMap. Elevacions © Mapterhorn. El catàleg d’elevacions del proveïdor inclou el MDT02 i el MDT05 del Sistema Cartográfico Nacional i el Copernicus GLO-30. [OpenStreetMap](https://www.openstreetmap.org/copyright) · [Atribucions de Mapterhorn](https://mapterhorn.com/attribution/)
+
 ## Com reproduir els retalls
 
 1. Tria el mode i introdueix la **mida de la maqueta** en l’ordre amplada × alçada. Fes servir la mida personalitzada quan calgui.

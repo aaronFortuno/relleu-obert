@@ -2,6 +2,12 @@
 
 Actualitzat: 2026-11-04. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.22.23 — Tres exemples a la pantalla inicial
+
+El carrusel de RO-046 mostra Roses, el Cap de Creus i el delta de l’Ebre amb WebP estàtics. Les fitxes i el selector de Territori apliquen el retall, el mode i la mida de cada exemple. Els tres models s’han generat al navegador amb dades reals. El format estàndard de Relleu pur aplica la mateixa comprovació de cobertura marina que el panoràmic quan falten tessel·les d’elevació. [Catàleg i fonts del lot](RO-046-CATALEG.md#primer-lot-al-carrusel)
+
+Revisat a 1280 × 720 i 1100 × 680 amb teclat i ratolí, inclosa la recuperació d’un projecte del Cap de Creus. Construcció estàtica i 38 proves locals superades. Queda la revisió d’ús i de laminat.
+
 ## v0.22.22 — Tamariu, gir automàtic i cota marina del MET5
 
 Tamariu torna a ser el punt de partida i Rajadell surt del selector d’exemples. El visor gira a 3°/s amb una elevació que oscil·la entre 20° i 40°. Després d’una interacció, espera 3,5 s i reprèn el moviment en sentit contrari amb una acceleració de 2 s. La roda manté el moviment i el botó permet pausar-lo. La vista zenital atura el gir i el visor respecta la preferència de moviment reduït.

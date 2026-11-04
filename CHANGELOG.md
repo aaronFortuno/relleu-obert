@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.22.23 — 2026-11-04
+
+- La pantalla inicial mostra un carrusel amb imatges estàtiques de la badia de Roses, el Cap de Creus i el delta de l’Ebre. Cada fitxa prepara la mida, el retall i l’escala en Relleu pur. El càlcul comença en prémer «Genera el model».
+- Relleu pur també pot recuperar les tessel·les d’elevació absents en format estàndard quan la cartografia confirma que la zona afectada és completament marina.
+
 ## v0.22.22 — 2026-11-04
 
 - El mapa s’obre a Tamariu. Es retira l’accés ràpid al viaducte de Rajadell.
