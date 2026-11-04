@@ -48,10 +48,32 @@ function intersectsFootprint(part,triangles,footprint){
   return false;
 }
 
-// Boolean output may contain closed components collapsed to three or fewer
-// exact XYZ positions, or to a plane proven by equal coordinates. These
-// enclose no volume. Never discard a thin component by volume threshold.
-export function removeCollapsedSurfaceComponents(parts){
+// A Boolean can split off a piece of a shared face. After Float32 conversion
+// its vertices may straddle the original plane by at most a few ulps.
+function coplanarAtFloatPrecision(part,component){
+  const ids=new Set(component.flatMap(t=>Array.from(part.faces.subarray(t*3,t*3+3))));
+  const points=[...ids].map(i=>part.vertices.subarray(i*3,i*3+3));
+  const delta=(a,b)=>Array.from(b,(v,i)=>v-a[i]);
+  const norm=p=>Math.hypot(...p);
+  let origin=points[0],axis=[0,0,0],length=0;
+  for(const a of points)for(const b of points){
+    const line=delta(a,b),span=norm(line);
+    if(span>length){origin=a;axis=line;length=span;}
+  }
+  let normal=[0,0,0],area=0;
+  const offsets=points.map(p=>delta(origin,p));
+  for(const [x,y,z] of offsets){
+    const candidate=[axis[1]*z-axis[2]*y,axis[2]*x-axis[0]*z,axis[0]*y-axis[1]*x];
+    const size=norm(candidate);
+    if(size>area){normal=candidate;area=size;}
+  }
+  const tolerance=Math.max(1,...points.flatMap(p=>Array.from(p,Math.abs)))*2**-23;
+  return offsets.every(p=>Math.abs(p.reduce((sum,v,i)=>sum+v*normal[i],0))<=area*tolerance);
+}
+
+// Remove only closed remnants that lie in a plane. Float32 roundoff is
+// allowed explicitly for the terrain assembled from many surface patches.
+export function removeCollapsedSurfaceComponents(parts,{floatRoundoff=false}={}){
   let count=0;const byCategory=Object.create(null),cleaned=parts.map(part=>{
     const keep=[];let removed=0;
     for(const component of partComponents(part.faces)){
@@ -63,7 +85,8 @@ export function removeCollapsedSurfaceComponents(parts){
         for(let j=0;j<3;j++)flat[j]&&=part.vertices[i+j]===part.vertices[anchor+j];
       }if(positions.size>3&&horizontalPositions.size>2&&!flat.some(Boolean))break;}
       let collapsed=false;
-      if(positions.size<=3||horizontalPositions.size<=2||flat.some(Boolean)){
+      if(positions.size<=3||horizontalPositions.size<=2||flat.some(Boolean)||
+          floatRoundoff&&component.length<=24&&coplanarAtFloatPrecision(part,component)){
         const faces=new Uint32Array(component.flatMap(t=>Array.from(part.faces.subarray(t*3,t*3+3)))),edges=rawEdges(faces);
         collapsed=!edges.boundary&&!edges.nonManifold&&!edges.orientationConflicts;
       }

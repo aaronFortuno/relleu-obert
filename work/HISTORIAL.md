@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-04. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.22.8 — Xarxa viària de 120 × 120 mm
+
+Un cupó sintètic combina vies sinuoses, una cruïlla en T i un pont sobre una segona via. Es comproven els enllaços sense graó, el pas inferior i el contacte entre el paviment i el terreny. [Cupó i mesures](RO-051-PERFILS-VIARIS.md#xarxa-viària-de-120-mm-a-la-v0228)
+
 ## v0.22.7 — Túnel amb rasant compartida
 
 L’usuari valida el cupó de pont. El cupó de túnel conserva una rasant del 4% als dos accessos i a l’interior. Es comproven les dues boques obertes i el pas continu al 3MF. [Cupó i mesures](RO-051-PERFILS-VIARIS.md#túnel-amb-rasant-compartida-v0227)

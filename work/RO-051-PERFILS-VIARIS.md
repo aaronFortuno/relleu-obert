@@ -271,3 +271,13 @@ El cupó sintètic de 60 × 60 mm incorpora un túnel recte cartografiat amb dos
 La malla del 3MF conserva el pendent del 4% als dos portals i no té cap graó mesurable en els dotze punts de control, repartits entre els extrems cartografiats i les sortides calculades. Hi ha 1,50 mm de pas vertical al centre de les tres seccions cobertes. Tres raigs longitudinals a 0,5 mm per sobre de la calçada recorren la peça sense travessar material. Les malles són tancades i el control rebutja el túnel si la coberta és insuficient.
 
 `node scripts/check-surface-road.mjs` genera `cupo-tunel-dos-portals.3mf` i `tunel-dos-portals.json`. Queda pendent la comprovació de l’usuari al laminador.
+
+## Xarxa viària de 120 mm a la v0.22.8
+
+El cupó representa 400 × 400 m de terreny sintètic amb tres turons i un fondal. Hi ha sis segments cartogràfics que formen quatre traçats, amb una cruïlla en T i un pont recte de 8 mm sobre una altra via sinuosa. El pilot avalua els solapaments de tota la xarxa amb els plans de la cruïlla i del tauler.
+
+La prova gran ha detectat petits volums superposats entre el terreny i el paviment. L’encaix ara retalla el relleu a la cota inferior de la calçada i fa un segon tall amb el mateix sòlid que s’exporta. El 3MF rellegit té dos materials tancats que formen una sola peça en contacte. L’auditoria mesura 0,00014 mm³ de solapament residual, dins de la tolerància numèrica.
+
+La cruïlla i els dos estreps tenen zero graó als punts mesurats. El pas lliure mínim calculat és de 3,715 mm, coherent amb la malla exportada. Les 1.452 seccions transversals mesurades tenen menys de 0,011 mm de desnivell entre costats i comproven també el contacte amb el suport.
+
+`node scripts/check-surface-network.mjs` genera `cupo-xarxa-120.3mf` i `xarxa-120.json`. Queda pendent la revisió de l’usuari abans de passar a un retall real.

@@ -65,6 +65,16 @@ test('cleanup removes only exact collapsed closed components and preserves real 
   const open={...collapsed,faces:new Uint32Array([0,1,3])};assert.strictEqual(removeCollapsedSurfaceComponents([open]).parts[0],open,'an invalid open surface must not be silently removed');
 });
 
+test('Float32 cleanup can remove a detached face remnant while retaining positive thin layers',()=>{
+  const remnant={...part('collapsed'),vertices:new Float32Array([80,0,0,81,1,0,81.000008,1,1,80,0,1])};
+  const thin=box('roads',200,201,10,10.001),source=combine([remnant,thin]);
+  assert.equal(removeCollapsedSurfaceComponents([source]).count,0);
+  const cleaned=removeCollapsedSurfaceComponents([source],{floatRoundoff:true});
+  assert.equal(cleaned.count,1);
+  assert.deepEqual(cleaned.parts[0].vertices,thin.vertices);
+  assert.deepEqual(cleaned.parts[0].faces,thin.faces);
+});
+
 function injectCollapsedFinalMaterial(target){
   const collapsed=part('collapsed'),Native=api.Manifold;let injected=false,finalCalls=0;
   const decorate=s=>{
