@@ -1,13 +1,13 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-04 · v0.22.5**. Rasant contínua a la corba del cupó. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-04 · v0.22.6**. Cupó de pont i via inferior. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
 | Lot | Línies | Resultat que permet avançar |
 | --- | --- | --- |
 | **Pilot de relleu rocós** | RO-023, RO-035 | Quatre controls del Cavall Bernat i un cupó local dels Degotalls auditats. Contrastar un segon lloc i resoldre la georeferenciació del cupó. [Resultats](RELLEU-ROCOS.md) |
-| **Paviment de superfície** | RO-051, RO-052 | Primer cupó recte validat per l’usuari. Rasant de la corba sense replans repetits, mesurada al 3MF. Pendent de validar al laminador. [Cupó i mesures](RO-051-PERFILS-VIARIS.md#rasant-contínua-a-la-corba-v0225) |
+| **Paviment de superfície** | RO-051, RO-052 | Cupons recte i corb validats per l’usuari. El 3MF del pont conserva els dos enllaços i el pas de la via inferior. Pendent de validar al laminador. [Cupó i mesures](RO-051-PERFILS-VIARIS.md#pont-sobre-una-via-inferior-v0226) |
 | **Seguiment de les estructures** | RO-033, RO-034, RO-050 | Registrar noves incidències amb retall i escala. A Sant Salvador, dos perfils segueixen el terreny pel pendent dels enllaços. El túnel a 1:20.000 té les dues boques comprovades al 3MF. El pas de Montgròs es conserva al cupó laminat. [Controls de vies](RO-051-PERFILS-VIARIS.md#transicions-pendents-a-la-v0220) · [Montgròs](RO-033-CONTROLS-PROCEDIMENTALS.md#laminat-del-cupó-de-montgròs) |
 | **Validació en paral·lel** | RO-024, RO-046, RO-054, RO-055 | Laminar les vores adjacents de Tamariu i dels Rasos–Gallina Pelada. Comprovar la recuperació d’un projecte girat, de mida personalitzada, amb materials i traços, i la transició quan es carrega un exemple. |
 | **Després** | RO-026, RO-032 | Comparar les fonts d’edificis en dues zones, amb proves d’accés i cobertura abans de fer canvis al model. |
@@ -25,7 +25,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | [RO-053](#ro-053--flux-de-treball-per-etapes) | P1 | Progrés per capes i guies de Tamariu verificats | Millorar el contrast de les guies al bosc i estudiar el canvi de mida |
 | [RO-033](#ro-033--ponts-i-viaductes) | P1 | Millau i el cupó del Bages validats al visor. Montgròs conserva el pas al laminat del cupó | Comprovar llums i accessos en una placa completa |
 | [RO-034](#ro-034--túnels-imprimibles) | P1 | Túnel de Sant Salvador obert a les dues escales | Revisar el tram cobert de la maqueta a 1:20.000 al laminador |
-| [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | Rasant contínua a la corba i cota comuna a la T mesurades al 3MF | Validar el cupó i contrastar el paviment amb retalls reals a dues escales |
+| [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | Rasant de la corba validada per l’usuari. Enllaços del pont mesurats al 3MF | Validar el cupó del pont abans de fer el de túnel |
 | [RO-052](#ro-052--continuïtat-i-amplada-del-traçat-viari) | P1 | Quatre enllaços a Millau a 1:20.000 | Mesurar cotes, pendents i amplades als enllaços de la C-37 |
 | [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió) | P1 | Quatre 3MF de Tamariu verificats al ZIP | Contrastar les vores adjacents i els materials al laminador |
 | [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts) | P1 | Fonts en estudi | Comparació de parts i petjades en segona zona |
@@ -151,7 +151,7 @@ Realç i material ferroviari diferenciats, comprovats localment. Pendent de cont
 
 ### RO-051 — Perfils de carreteres principals
 
-Les vies ràpides i el ferrocarril han de conservar una rasant contínua. Validar perfils, connexions i omissions a diverses escales. Registrar per separat les vies que queden sobre el terreny després d’una fallada d’integració. El motor ja pot recuperar el perfil dins del retall quan la cota que falta és a fora. La reescriptura comença per una calçada amb secció transversal plana, excavació i reblert. El primer cupó recte està validat per l’usuari. El segon incorpora una corba amb rasant contínua i una cruïlla en T amb cota comuna, verificades a la malla exportada. La integració amb ponts i túnels queda pendent. [Perfils i control de la C-37](RO-051-PERFILS-VIARIS.md) · [Mesures](RO-051-RENDIMENT.md)
+Les vies ràpides i el ferrocarril han de conservar una rasant contínua. Validar perfils, connexions i omissions a diverses escales. Registrar per separat les vies que queden sobre el terreny després d’una fallada d’integració. El motor ja pot recuperar el perfil dins del retall quan la cota que falta és a fora. La reescriptura comença per una calçada amb secció transversal plana, excavació i reblert. El primer cupó recte està validat per l’usuari. El segon incorpora una corba amb rasant contínua i una cruïlla en T amb cota comuna, verificades a la malla exportada. El primer cupó de pont enllaça les calçades als dos extrems i conserva la via inferior. La validació del cupó precedeix la integració de túnels. [Perfils i control de la C-37](RO-051-PERFILS-VIARIS.md) · [Mesures](RO-051-RENDIMENT.md)
 
 ### RO-052 — Continuïtat i amplada del traçat viari
 

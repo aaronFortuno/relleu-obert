@@ -255,3 +255,11 @@ La vista lateral del cupó anterior mostrava una escala. Cada gir incloïa una f
 Al 3MF, la part ascendent de la corba puja 9,83 mm en 33,24 mm de recorregut mostrejat. Tots els intervals mostrejats pugen i el desnivell transversal màxim entre seccions és de 0,0077 mm. Els nou punts de la cruïlla comparteixen la mateixa cota. Els dos materials són malles tancades i el control del cupó recte continua passant.
 
 `node scripts/check-surface-road.mjs` genera el nou fitxer `cupo-corba-cruilla-rasant-suau.3mf` i el diagnòstic de les seccions. La comprovació al laminador queda a càrrec de l’usuari.
+
+## Pont sobre una via inferior · v0.22.6
+
+Al cupó sintètic de 60 × 60 mm, el motor reutilitza les cotes del tauler estimat als estreps. La via superior conserva una mateixa secció de paviment des dels accessos fins al tauler i la inferior té una rasant pròpia. El pilot requereix un pont recte cartografiat amb accessos alineats i de la mateixa amplada.
+
+El 3MF té un tauler de 8 mm de llum entre estreps i 0,65 mm de gruix. Els sis punts de control mesuren zero graó i un pendent del 4% als dos costats de les unions. El pas lliure mínim calculat és de 3,67 mm i la via inferior conserva el pendent del 6%. Les malles de terreny i paviment són tancades. El control amb una vall menys profunda rebutja el tauler perquè queda per sota dels 0,8 mm mínims de pas lliure del pilot.
+
+`node scripts/check-surface-road.mjs` genera `cupo-pont-dos-nivells.3mf` i el diagnòstic. La validació al laminador queda a càrrec de l’usuari abans de seguir amb el cupó de túnel.

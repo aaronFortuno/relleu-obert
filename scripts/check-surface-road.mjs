@@ -80,8 +80,8 @@ const api=await Module();api.setup();
 const directory=new URL('../output/surface-road/',import.meta.url);
 await mkdir(directory,{recursive:true});
 
-async function checkedExport(data,filename){
-  const model=buildModel(data,options,()=>{},api),pilot=model.provenance.surfaceRoads;
+async function checkedExport(data,filename,{resolution=options.resolution,pavementComponents=1}={}){
+  const model=buildModel(data,{...options,resolution},()=>{},api),pilot=model.provenance.surfaceRoads;
   assert.equal(pilot?.applied,true,JSON.stringify({pilot,warnings:model.warnings}));
   assert.equal(pilot.pavementThicknessMM,.65);
   const coupon=new URL(filename,directory);
@@ -90,7 +90,10 @@ async function checkedExport(data,filename){
   assert.equal(audit.dialect,'bambu');
   assert(audit.valid,JSON.stringify(audit));
   assert.equal(audit.parts.length,2);
-  assert(audit.parts.every(part=>part.geometry.closed&&part.geometry.components===1));
+  for(const {name,geometry} of audit.parts){
+    assert(geometry.closed,`La malla de ${name} ha d’estar tancada.`);
+    assert.equal(geometry.components,name==='Camins i carreteres'?pavementComponents:1,`Nombre de cossos a ${name}.`);
+  }
   assert.equal(new Set(audit.parts.map(part=>part.material.extruder)).size,2);
   const terrain=meshes.get('Terreny'),road=meshes.get('Camins i carreteres');
   assert(terrain&&road,'Calen materials separats per al terreny i la calçada.');
@@ -100,7 +103,7 @@ async function checkedExport(data,filename){
   assert(Math.abs(overlapMM3)<overlapToleranceMM3,`Intersecció volumètrica entre materials: ${overlapMM3} mm³.`);
   assert.equal(unionComponents,1,'La calçada i el relleu han de formar un únic cos en contacte.');
   const parts=audit.parts.map(({name,material,geometry})=>({name,extruder:material.extruder,
-    triangles:geometry.triangles,closed:geometry.closed,volumeMM3:geometry.signedVolume}));
+    triangles:geometry.triangles,closed:geometry.closed,components:geometry.components,volumeMM3:geometry.signedVolume}));
   return {model,pilot,terrain,road,bounds:audit.parts.find(part=>part.name==='Camins i carreteres').geometry.bbox,
     contact:{overlapMM3,overlapToleranceMM3,unionComponents,unionRoundingMM3,parts}};
 }
@@ -154,8 +157,9 @@ console.log(JSON.stringify(report));
 
 const mainAxis=[[0,24],[13,24],[20,24],[30,24],[36,25.5],[42,29],[47,34],[60,45]];
 const branchAxis=[[20,0],[20,24]];
-const networkRoad=(id,axis)=>({...fixture.features[0],id,geometry:{type:'LineString',
-  coordinates:axis.map(([x,y])=>[x*longitudeSpan/footprintMM,y*latitudeSpan/footprintMM])}});
+const networkRoad=(id,axis,properties={})=>({...fixture.features[0],id,
+  properties:{...fixture.features[0].properties,...properties},geometry:{type:'LineString',
+    coordinates:axis.map(([x,y])=>[x*longitudeSpan/footprintMM,y*latitudeSpan/footprintMM])}});
 const network={...fixture,meta:{...fixture.meta,name:'Cupó de carretera corba amb cruïlla en T'},
   features:[networkRoad('curved-road',mainAxis),networkRoad('branch-road',branchAxis)]};
 const curved=await checkedExport(network,'cupo-corba-cruilla-rasant-suau.3mf');
@@ -247,3 +251,116 @@ const curvedReport={fixture:{...dimensions,mainAxis,branchAxis},pilot:curvedPilo
 await writeFile(new URL('corba-cruilla-rasant-suau.json',directory),JSON.stringify(curvedReport,null,2)+'\n');
 console.log(JSON.stringify({curvedPilot,maximumStationCrossfallMM,maximumMidpointCrossfallMM,risingDistanceMM,
   risingHeightMM,minimumRisingGrade,maximumAdjacentGradeChange,...curved.contact}));
+
+// Read all levels of the exported pavement at (x,y). Upward and downward faces
+// at the same height are kept distinct, while triangles sharing an edge deduplicate.
+function verticalHits({vertices,faces}){
+  const triangles=[];
+  for(let i=0;i<faces.length;i+=3){
+    const [a,b,c]=Array.from(faces.subarray(i,i+3),index=>vertices.subarray(index*3,index*3+3));
+    const ux=b[0]-a[0],uy=b[1]-a[1],vx=c[0]-a[0],vy=c[1]-a[1];
+    const det=ux*vy-uy*vx;
+    if(Math.abs(det)>1e-12)triangles.push({a,b,c,ux,uy,vx,vy,det});
+  }
+  return (x,y)=>{
+    const hits=[];
+    for(const {a,b,c,ux,uy,vx,vy,det} of triangles){
+      const dx=x-a[0],dy=y-a[1],u=(dx*vy-dy*vx)/det,v=(ux*dy-uy*dx)/det;
+      if(u>=-1e-6&&v>=-1e-6&&u+v<=1.000001){
+        const hit={z:a[2]+u*(b[2]-a[2])+v*(c[2]-a[2]),upward:det>0};
+        if(!hits.some(other=>other.upward===hit.upward&&Math.abs(other.z-hit.z)<toleranceMM))hits.push(hit);
+      }
+    }
+    return hits.sort((a,b)=>a.z-b.z);
+  };
+}
+
+const bridgeAxes={
+  'upper-west':[[0,30],[26,30]],'upper-bridge':[[26,30],[34,30]],
+  'upper-east':[[34,30],[60,30]],'lower-road':[[30,0],[30,60]]
+};
+const bridgeResolution=30,bridgeDEMSide=bridgeResolution+1;
+const bridgeTerrainZ=(u,v,depth)=>100+8*u+12*v-depth*Math.max(0,1-Math.abs(u-.5)*15);
+const bridgeElevations=depth=>Float32Array.from({length:bridgeDEMSide**2},(_,i)=>bridgeTerrainZ(
+  (i%bridgeDEMSide)/bridgeResolution,Math.floor(i/bridgeDEMSide)/bridgeResolution,depth));
+const bridgeFixture={...fixture,meta:{...fixture.meta,name:'Cupó de pont amb dues vies a diferent nivell'},
+  localDEM:{...fixture.localDEM,width:bridgeDEMSide,height:bridgeDEMSide,
+    affine:[longitudeSpan/bridgeResolution,0,0,0,latitudeSpan/bridgeResolution,0],
+    values:bridgeElevations(15)},
+  features:[
+    networkRoad('upper-west',bridgeAxes['upper-west'],{ref:'upper-route'}),
+    networkRoad('upper-bridge',bridgeAxes['upper-bridge'],{ref:'upper-route',brunnel:'bridge',layer:1}),
+    networkRoad('upper-east',bridgeAxes['upper-east'],{ref:'upper-route'}),
+    networkRoad('lower-road',bridgeAxes['lower-road'],{class:'secondary',ref:'lower-route'})
+  ]
+};
+const shallowValley={...bridgeFixture,localDEM:{...bridgeFixture.localDEM,values:bridgeElevations(3)}};
+assert.throws(()=>buildModel(shallowValley,{...options,resolution:bridgeResolution},()=>{},api),/0,8 mm de llum mínima/);
+const bridge=await checkedExport(bridgeFixture,'cupo-pont-dos-nivells.3mf',{resolution:bridgeResolution,pavementComponents:2});
+const bridgeInfo=bridge.pilot.bridge;
+assert(bridgeInfo?.id&&bridgeInfo.sourceFeatureIds.includes('upper-bridge'),'El pilot ha d’identificar el tram de pont.');
+assert(Math.abs(bridgeInfo.spanMM-8)<toleranceMM,'El tauler ha de cobrir el tram cartografiat de 8 mm.');
+const roadHits=verticalHits(bridge.road),terrainHits=verticalHits(bridge.terrain);
+function pavementLayers(x,y){
+  const hits=roadHits(x,y);
+  assert(hits.length>0&&hits.length%2===0,`Falta un sòlid de paviment a ${x}, ${y}.`);
+  const layers=[];
+  for(let i=0;i<hits.length;i+=2){
+    const [bottom,top]=hits.slice(i,i+2);
+    assert(!bottom.upward&&top.upward&&top.z>bottom.z,`El paviment no defineix un sòlid a ${x}, ${y}.`);
+    assert(Math.abs(top.z-bottom.z-bridge.pilot.pavementThicknessMM)<toleranceMM);
+    layers.push({bottom:bottom.z,top:top.z});
+  }
+  return layers;
+}
+function supportError(x,y,bottom){
+  const support=terrainHits(x,y).filter(hit=>hit.upward).at(-1);
+  assert(support,`Falta relleu de suport a ${x}, ${y}.`);
+  const error=Math.abs(bottom-support.z);
+  assert(error<toleranceMM,`El paviment no recolza sobre el relleu a ${x}, ${y}.`);
+  return error;
+}
+
+const shoulders=[26,34].flatMap(x=>[28.4,30,31.6].map(y=>{
+  const delta=.01;
+  const [beforeFar,beforeNear,afterNear,afterFar]=[-2,-1,1,2].map(step=>pavementLayers(x+step*delta,y).at(-1));
+  const gradeBefore=(beforeNear.top-beforeFar.top)/delta,gradeAfter=(afterFar.top-afterNear.top)/delta;
+  const projectedBefore=beforeNear.top+delta*gradeBefore,projectedAfter=afterNear.top-delta*gradeAfter;
+  const stepMM=Math.abs(projectedBefore-projectedAfter);
+  assert(stepMM<toleranceMM,`El tauler fa un graó de ${stepMM} mm a ${x}, ${y}.`);
+  assert(Math.abs(gradeBefore-.04)<.005&&Math.abs(gradeAfter-.04)<.005,
+    `La rasant d’accés al pont no es conserva a ${x}, ${y}.`);
+  const supportX=x===26?x-delta:x+delta;
+  const support=supportError(supportX,y,pavementLayers(supportX,y).at(-1).bottom);
+  return {x,y,stepMM,gradeBefore,gradeAfter,supportErrorMM:support};
+}));
+const lowerSections=[27.8,28.4,30,31.6,32.2].map((y,index)=>{
+  const layers=pavementLayers(30,y);
+  assert.equal(layers.length,index===0||index===4?1:2,`Nombre de nivells de calçada a 30, ${y}.`);
+  const lower=layers[0];
+  return {y,top:lower.top,supportErrorMM:supportError(30,y,lower.bottom)};
+});
+const lowerGradeErrors=lowerSections.slice(1).map(({y,top},index)=>{
+  const previous=lowerSections[index];
+  return Math.abs((top-previous.top)/(y-previous.y)-.06);
+});
+const maximumLowerGradeError=Math.max(...lowerGradeErrors);
+assert(maximumLowerGradeError<toleranceMM,'La via inferior ha de mantenir la rasant sota el pont.');
+
+const crossingSamples=[28.21,30,31.79].flatMap(x=>[28.21,30,31.79].map(y=>{
+  const layers=pavementLayers(x,y);
+  assert.equal(layers.length,2,`Calen dos nivells de paviment a ${x}, ${y}.`);
+  const [lower,upper]=layers;
+  const clearanceMM=upper.bottom-lower.top;
+  assert(clearanceMM>3.5,`No hi ha pas lliure sota el pont a ${x}, ${y}.`);
+  return {x,y,lowerTop:lower.top,deckTop:upper.top,deckBottom:upper.bottom,clearanceMM,
+    supportErrorMM:supportError(x,y,lower.bottom)};
+}));
+const minimumMeasuredClearanceMM=Math.min(...crossingSamples.map(sample=>sample.clearanceMM));
+assert(bridgeInfo.minimumClearanceMM>3.5&&Math.abs(bridgeInfo.minimumClearanceMM-minimumMeasuredClearanceMM)<.02,
+  `El gàlib exportat (${minimumMeasuredClearanceMM} mm) difereix del calculat (${bridgeInfo.minimumClearanceMM} mm).`);
+const bridgeReport={fixture:{footprintM,footprintMM,roadWidthM,bridgeResolution,bridgeAxes},bridge:bridgeInfo,
+  shoulders,maximumStepMM:Math.max(...shoulders.map(sample=>sample.stepMM)),lowerSections,maximumLowerGradeError,
+  crossingSamples,minimumMeasuredClearanceMM,...bridge.contact};
+await writeFile(new URL('pont-dos-nivells.json',directory),JSON.stringify(bridgeReport,null,2)+'\n');
+console.log(JSON.stringify(bridgeReport));

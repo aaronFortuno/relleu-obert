@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-04. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.22.6 — Pont i via inferior al nou paviment
+
+L’usuari valida la rasant suavitzada de la corba. Al cupó següent, un pont recte conserva el pendent de les calçades d’accés als dos estreps i deixa 3,67 mm de pas lliure sobre la via inferior. El 3MF queda disponible per a la validació de l’usuari. [Cupó i mesures](RO-051-PERFILS-VIARIS.md#pont-sobre-una-via-inferior-v0226)
+
 ## v0.22.5 — Rasant contínua a la corba del cupó
 
 La vista lateral del primer cupó de corba mostrava replans als girs. El nou traçat els substitueix per arcs i una rasant interpolada. La part ascendent puja de forma contínua a la malla exportada i la T conserva la cota comuna. [Cupó i mesures](RO-051-PERFILS-VIARIS.md#rasant-contínua-a-la-corba-v0225)

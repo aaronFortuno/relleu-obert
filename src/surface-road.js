@@ -1,4 +1,6 @@
 import {polygonOps} from './polygon-ops.js';
+import {projectInfrastructurePath} from './infrastructure-solids.js';
+import {compatibleTransport} from './transport-network.js';
 
 const pc=polygonOps(),epsilon=1e-5;
 const distance=(a,b)=>Math.hypot(b[0]-a[0],b[1]-a[1]);
@@ -91,7 +93,7 @@ function centreline(points,width,pad){
 // Monotone cubic interpolation rounds changes of grade without introducing
 // crests, hollows or extra flats. A constant junction span forces zero slope
 // at both of its transitions.
-function applyGrade(stations,ground,rise,junctionHeight){
+function applyGrade(stations,ground,rise,junctionHeight,connection){
   const knots=[];
   for(const [i,station] of stations.entries()){
     const previous=stations[i-1],next=stations[i+1];
@@ -100,6 +102,7 @@ function applyGrade(stations,ground,rise,junctionHeight){
       knots.push({distanceMM:station.distanceMM,heightMM:station.inPad?junctionHeight:ground(...station.centre)+rise});
     }
   }
+  if(connection)knots[connection.end?knots.length-1:0].heightMM=connection.height;
   const intervals=knots.slice(1).map((b,i)=>{
     const a=knots[i],length=b.distanceMM-a.distanceMM;
     return {length,grade:(b.heightMM-a.heightMM)/length};
@@ -111,6 +114,13 @@ function applyGrade(stations,ground,rise,junctionHeight){
     const w1=2*b.length+a.length,w2=b.length+2*a.length;
     return (w1+w2)/(w1/a.grade+w2/b.grade);
   });
+  if(connection){
+    const adjacent=intervals[connection.end?intervals.length-1:0].grade;
+    const slope=connection.grade;
+    if(Math.abs(slope)>epsilon&&(slope*adjacent<=0||Math.abs(slope)>3*Math.abs(adjacent)))
+      throw Error('El pendent del pont no es pot enllaçar suaument amb la calçada.');
+    slopes[connection.end?slopes.length-1:0]=slope;
+  }
   let index=0;
   for(const station of stations){
     while(index<intervals.length-1&&station.distanceMM>knots[index+1].distanceMM)index++;
@@ -128,9 +138,19 @@ function planarTop([a,b,c],[za,zb,zc]){
   };
 }
 
-function planRoute({points,width,sourceFeatureIds},pad,{rect,ground},rise){
+function planRoute({points,width,sourceFeatureIds},pad,{rect,ground},rise,bridge){
   const stations=centreline(points,width,pad),half=width/2;
-  applyGrade(stations,ground,rise,pad?ground(...points[pad.index])+rise:null);
+  let start=-1,end=-1;
+  if(bridge){
+    start=stations.findIndex(s=>distance(s.centre,bridge.ends[0])<=epsilon);
+    end=stations.findIndex(s=>distance(s.centre,bridge.ends[1])<=epsilon);
+    if(start<=0||end<=start||end>=stations.length-1)throw Error('Falten seccions als dos extrems del tauler.');
+    const origin=stations[start].distanceMM,span=stations[end].distanceMM-origin;
+    const [first,last]=bridge.heights,grade=(last-first)/span;
+    applyGrade(stations.slice(0,start+1),ground,rise,null,{end:true,height:first,grade});
+    applyGrade(stations.slice(end),ground,rise,null,{end:false,height:last,grade});
+    for(const s of stations.slice(start,end+1))s.heightMM=first+(s.distanceMM-origin)*grade;
+  }else applyGrade(stations,ground,rise,pad?ground(...points[pad.index])+rise:null);
   const patches=[],padPolygons=[];
   const edge=(station,sign)=>snap(move(station.centre,station.normal,sign*half));
   for(let i=1;i<stations.length;i++){
@@ -142,7 +162,7 @@ function planRoute({points,width,sourceFeatureIds},pad,{rect,ground},rise){
     for(const indices of triangles){
       const triangle=indices.map(j=>ring[j]),top=planarTop(triangle,indices.map(j=>heights[j]));
       const clipped=pc.intersection([[triangle.concat([triangle[0]])]],rect);
-      for(const polygon of clipped)patches.push({polygon,top});
+      for(const polygon of clipped)patches.push({polygon,top,elevated:start>=0&&i>start&&i<=end});
       if(a.inPad&&b.inPad&&clipped.length)padPolygons.push(clipped);
     }
   }
@@ -151,15 +171,82 @@ function planRoute({points,width,sourceFeatureIds},pad,{rect,ground},rise){
   const insideJunction=stations.filter(s=>s.inPad);
   const profile={featureIds:sourceFeatureIds,stations:stations.map(({inPad,...section})=>section)};
   if(insideJunction.length)profile.junctionIntervalMM=[insideJunction[0].distanceMM,insideJunction.at(-1).distanceMM];
+  if(bridge)profile.bridgeIntervalMM=[stations[start].distanceMM,stations[end].distanceMM];
   return {patches,mask,profile,pad:padPolygons.length?pc.union(...padPolygons):[]};
 }
 
+function planOverpass(roads,terrain,rise,thickness){
+  const tagged=roads.filter(road=>road.brunnel==='bridge'),[bridge]=tagged,[deck]=terrain.deckItems;
+  if(roads.length!==4||tagged.length!==1||bridge.points.length!==2||terrain.deckItems.length!==1||
+      !deck.estimated||deck.axis.length!==2||deck.coordinates.length!==4||
+      !deck.sourceFeatureIds.some(id=>bridge.sourceFeatureIds.includes(id)))
+    throw Error('El pilot necessita un pont recte cartografiat amb un tauler estimat.');
+  const ends=bridge.points,heading=tangent(...ends);
+  const groundRoads=roads.filter(road=>road!==bridge);
+  const approaches=ends.map((point,index)=>{
+    const matches=groundRoads.filter(road=>compatibleTransport(bridge,road)&&
+      (distance(road.points[0],point)<=epsilon||distance(road.points.at(-1),point)<=epsilon));
+    if(matches.length!==1)throw Error('El pont ha de tenir una continuació de superfície a cada extrem.');
+    const [road]=matches;
+    const points=(distance(road.points[index?0:road.points.length-1],point)<=epsilon?road.points:road.points.slice().reverse());
+    const direction=index?tangent(points[0],points[1]):tangent(points.at(-2),points.at(-1));
+    if(Math.abs(road.width-bridge.width)>epsilon||dot(direction,heading)<.999999)
+      throw Error('El pilot requereix la mateixa amplada i direcció de calçada als estreps.');
+    return {road,points};
+  });
+  if(approaches[0].road===approaches[1].road)throw Error('El pont necessita dos accessos independents.');
+  const lower=groundRoads.find(road=>approaches.every(a=>a.road!==road));
+  const deckEnds=deck.axis.map(terrain.proj.project);
+  const vertices=projectInfrastructurePath(deck.coordinates,terrain.proj,terrain.verticalReference,terrain.exaggeration);
+  const heights=[vertices[0][2]+rise,vertices[2][2]+rise];
+  if(distance(deckEnds[0],ends[1])<=epsilon){deckEnds.reverse();heights.reverse();}
+  if(deckEnds.some((p,i)=>distance(p,ends[i])>epsilon)||
+      Math.abs(deck.widthMetres*terrain.proj.scale-bridge.width)>1e-4)
+    throw Error('L’eix i el tauler del pont han de compartir amplada i extrems.');
+  const upperAxis={...bridge,points:[...approaches[0].points.slice(0,-1),...ends,...approaches[1].points.slice(1)],
+    sourceFeatureIds:[...approaches[0].road.sourceFeatureIds,...bridge.sourceFeatureIds,...approaches[1].road.sourceFeatureIds]};
+  const upper=planRoute(upperAxis,null,terrain,rise,{ends,heights}),below=planRoute(lower,null,terrain,rise);
+  const elevated=upper.patches.filter(p=>p.elevated);
+  if(!elevated.length)throw Error('El tauler del cupó ha de quedar dins del retall.');
+  const deckMask=pc.union(...elevated.map(p=>[p.polygon]));
+  const overlap=pc.intersection(upper.mask,below.mask);
+  if(area(overlap)<=epsilon||area(pc.difference(overlap,deckMask))>1e-6)
+    throw Error('La via inferior només pot creuar la superior sota el tauler.');
+  const bounds=({polygon:[ring]})=>{
+    const xs=ring.map(p=>p[0]),ys=ring.map(p=>p[1]);
+    return [Math.min(...xs),Math.min(...ys),Math.max(...xs),Math.max(...ys)];
+  };
+  const belowBounds=below.patches.map(patch=>({patch,bounds:bounds(patch)}));
+  let minimumClearanceMM=Infinity;
+  for(const a of elevated){
+    const [x0,y0,x1,y1]=bounds(a);
+    for(const {patch:b,bounds:[bx0,by0,bx1,by1]} of belowBounds){
+      if(x0>=bx1||bx0>=x1||y0>=by1||by0>=y1)continue;
+      for(const polygon of pc.intersection([a.polygon],[b.polygon]))for(const ring of polygon)for(const [x,y] of ring)
+        minimumClearanceMM=Math.min(minimumClearanceMM,a.top(x,y)-thickness-b.top(x,y));
+    }
+  }
+  if(!Number.isFinite(minimumClearanceMM)||minimumClearanceMM<.8)
+    throw Error('El tauler no deixa els 0,8 mm de llum mínima sobre la via inferior.');
+  const spanMM=distance(...ends),grade=(heights[1]-heights[0])/spanMM;
+  const underside=(x,y)=>heights[0]+dot(vector(ends[0],[x,y]),heading)*grade-thickness;
+  return {planned:[upper,below],structure:{id:deck.id,sourceFeatureIds:bridge.sourceFeatureIds,spanMM,
+    minimumClearanceMM,mask:deckMask,underside,maximumHeightMM:Math.max(...heights)}};
+}
+
 // Initial surface pilot: one open polyline, or two surface routes meeting
-// in one explicit T. Only the junction pad may be covered by both routes.
-export function planSurfaceRoad(roads,terrain,rise){
+// in one explicit T or through one tagged bridge with two approaches.
+export function planSurfaceRoad(roads,terrain,rise,thickness){
   const routes=roads.map(road=>({...road,points:road.points.filter((p,i,all)=>!i||distance(p,all[i-1])>epsilon)}));
   if(routes.some(r=>r.points.length<2||r.points.length>128))
     throw Error('El traçat del cupó ha de tenir entre 2 i 128 punts diferents.');
+  if(routes.some(r=>r.brunnel==='bridge')){
+    const {planned,structure}=planOverpass(routes,terrain,rise,thickness);
+    const mask=pc.union(...planned.map(p=>p.mask));
+    if(area(pc.difference(mask,terrain.land))>1e-6)throw Error('El cupó de pont ha de quedar sobre el terreny.');
+    const fillMask=pc.union(...planned.flatMap(route=>route.patches.filter(p=>!p.elevated).map(p=>[p.polygon])));
+    return {mask,fillMask,routes:planned,junctionCount:0,structure};
+  }
   const pads=junctionOf(routes);
   const planned=routes.map((route,i)=>planRoute(route,pads[i],terrain,rise));
   if(planned.length===2){
@@ -170,5 +257,5 @@ export function planSurfaceRoad(roads,terrain,rise){
   const mask=pc.union(...planned.map(p=>p.mask));
   if(!mask.length||area(pc.difference(mask,terrain.land))>1e-6)
     throw Error('El tram del cupó ha de quedar sobre el terreny i dins de la peça.');
-  return {mask,routes:planned,junctionCount:pads.length?1:0};
+  return {mask,fillMask:mask,routes:planned,junctionCount:pads.length?1:0};
 }

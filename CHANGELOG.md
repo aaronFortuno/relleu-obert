@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.22.6 — 2026-11-04
+
+- El pilot de paviment enllaça els dos extrems d’un pont recte cartografiat amb les calçades d’accés i comprova l’espai sobre la via inferior.
+
 ## v0.22.5 — 2026-11-04
 
 - La calçada del cupó segueix un eix arrodonit i una rasant contínua a la corba. La cruïlla conserva una cota compartida amb transicions de pendent progressives.

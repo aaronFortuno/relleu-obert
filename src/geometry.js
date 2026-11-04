@@ -336,28 +336,42 @@ function roadSurface(index,polygons,rise,terrain){
 
 function buildSurfaceRoadPilot(terrain,rise,api,progress){
   const roads=terrain.transport;
-  if(!roads.length||roads.length>2||roads.some(road=>road.railway||['bridge','tunnel'].includes(road.brunnel))||terrain.deckItems.length)
-    throw Error('El pilot de paviment admet un traçat de superfície o una cruïlla en T.');
-  const {mask,routes,junctionCount}=planSurfaceRoad(roads,terrain,rise);
+  const overpass=roads.some(road=>road.brunnel==='bridge');
+  if(!roads.length||roads.length>(overpass?4:2)||roads.some(road=>road.railway||road.brunnel==='tunnel')||!overpass&&terrain.deckItems.length)
+    throw Error('El pilot admet un traçat, una cruïlla en T o un pont amb dos accessos.');
   const thickness=.65+rise;
+  const {mask,fillMask,routes,junctionCount,structure}=planSurfaceRoad(roads,terrain,rise,thickness);
   const corridorParts=routes.flatMap(({patches})=>{
     const pavement=new Surface(),fill=new Surface();
-    for(const {polygon,top} of patches){
+    for(const {polygon,top,elevated} of patches){
       pavement.polygon(polygon,top);
-      fill.polygon(polygon,(x,y)=>top(x,y)-thickness);
+      if(!elevated)fill.polygon(polygon,(x,y)=>top(x,y)-thickness);
     }
     return [surfacePart(0,fill.solid(()=>0)),surfacePart(3,pavement.solid((x,y,z)=>z-thickness))];
   });
-  const land=subtract(terrain.land,mask),forest=intersect(merge(terrain.cropped(terrain.green)),land);
-  const parts=terrainCover(forest,subtract(land,forest),{...terrain,land},progress);
+  const land=subtract(terrain.land,fillMask),forest=intersect(merge(terrain.cropped(terrain.green)),land);
+  let parts=terrainCover(forest,subtract(land,forest),{...terrain,land},progress);
   const united=uniteMaterials({parts:[parts[0],...corridorParts]},api);
   const [ground,road]=removeCollapsedSurfaceComponents(united.parts).parts;
   if(!road.faces.length)throw Error('El cupó no té una superfície de paviment imprimible.');
   for(const index of [1,7])parts[index]=terrain.surfaces[index];
   parts[0]=ground;
+  let bridge;
+  if(structure){
+    progress('Obrint el pas sota el tauler…');
+    const {mask:deckMask,underside,maximumHeightMM,...details}=structure;
+    const terrainTop=5+(terrain.maximumElevation-terrain.verticalReference.originMeters)*terrain.proj.scale*terrain.exaggeration;
+    const cutter=new Surface();
+    for(const polygon of deckMask)cutter.polygon(polygon,()=>Math.max(terrainTop,maximumHeightMM)+1);
+    const cleared=carveTransportDecks(parts,[{mask:deckMask,mesh:cutter.solid(underside)}],api);
+    if(!cleared.metadata.applied)throw Error('No s’ha pogut obrir el pas sota el tauler. '+(cleared.metadata.error??''));
+    parts=cleared.parts;
+    bridge=details;
+  }
   parts[3]=road;
   const featureIds=roads.flatMap(route=>route.sourceFeatureIds);
-  return {parts,mask,forest,metadata:{applied:true,featureId:featureIds[0],featureIds,junctionCount,widthMM:roads[0].width,pavementThicknessMM:thickness,profiles:routes.map(route=>route.profile)}};
+  return {parts,mask,forest,metadata:{applied:true,featureId:featureIds[0],featureIds,junctionCount,widthMM:roads[0].width,
+    pavementThicknessMM:thickness,profiles:routes.map(route=>route.profile),...(bridge?{bridge}:{})}};
 }
 
 export function buildModel(data,options={},progress=()=>{},infrastructureApi=null,diagnostics=null,preview){
@@ -468,6 +482,7 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
   if(surfaceRoad){
     roadOnlyPoly=roadPoly=surfaceRoad.mask;
     forest=surfaceRoad.forest;
+    if(surfaceRoad.metadata.bridge)deckItems.length=0;
   }
   const knownItems=data.infrastructure?.items||[];
   const knownCrossingSources=knownItems.filter(item=>!item.estimated).map(item=>({item,contains:polygonTester(item.outlines.map(r=>[r.map(project)]))}));
