@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.22.11 — 2026-11-04
+
+- El paviment independent cobreix més trams de cada retall i arriba fins als talls de la peça amb la secció transversal plana. Cada tram s’encaixa amb el seu suport i una incidència local només afecta el tram implicat.
+
 ## v0.22.10 — 2026-11-04
 
 - El Model complet prova per defecte les calçades independents amb excavació i reblert. En xarxes complexes, també les pot construir entre cruïlles i enllaçar-les amb la resta del traçat.

@@ -43,6 +43,7 @@ const pc=polygonOps();
 
 export const MATERIALS=[{id:'terrain',name:'Terreny',color:'#c6b38d'},{id:'water',name:'Aigua',color:'#8dc5ca'},{id:'built',name:'Edificis i camins',color:'#eee9dc'},{id:'green',name:'Vegetació',color:'#4e8966'}];
 const area=r=>r.reduce((s,p,i)=>{const q=r[(i+1)%r.length];return s+p[0]*q[1]-q[0]*p[1];},0)/2;
+const footprintArea=polys=>polys.reduce((total,poly)=>total+Math.abs(poly.reduce((sum,ring)=>sum+area(ring),0)),0);
 export function pointIn(p,ring){let inside=false;for(let i=0,j=ring.length-1;i<ring.length;j=i++){const a=ring[i],b=ring[j];if((a[1]>p[1])!==(b[1]>p[1])&&p[0]<(b[0]-a[0])*(p[1]-a[1])/(b[1]-a[1])+a[0])inside=!inside;}return inside;}
 export function inMulti(p,m){return m.some(poly=>pointIn(p,poly[0])&&!poly.slice(1).some(r=>pointIn(p,r)));}
 const box=(w,h)=>[[[[0,0],[w,0],[w,h],[0,h],[0,0]]]];
@@ -352,18 +353,18 @@ function buildSurfaceRoadPilot(terrain,rise,api,progress){
 }
 
 function* surfaceRoadPatches(route,terrain,rise){
-  const {transitionMM}=route;
+  const {transitionMM,edgeEnds=[false,false]}=route;
   const {ground,proj:{width,height},resolution}=terrain;
   const length=route.profile.stations.at(-1).distanceMM;
+  const [startBlend,endBlend]=edgeEnds.map(atEdge=>atEdge?0:transitionMM);
   for(const patch of route.patches){
-    if(!transitionMM){
+    if(!transitionMM||patch.startMM>=startBlend&&patch.endMM<=length-endBlend){
       yield patch;
       continue;
     }
-    const inside=patch.startMM>=transitionMM&&patch.endMM<=length-transitionMM;
-    const top=inside?patch.top:(x,y)=>{
+    const top=(x,y)=>{
       const station=patch.stationAt(x,y);
-      const t=Math.max(0,Math.min(1,Math.min(station,length-station)/transitionMM));
+      const t=Math.max(0,Math.min(1,startBlend?station/startBlend:1,endBlend?(length-station)/endBlend:1));
       const legacy=ground(x,y)+rise;
       return legacy+t*t*(3-2*t)*(patch.top(x,y)-legacy);
     };
@@ -374,7 +375,87 @@ function* surfaceRoadPatches(route,terrain,rise){
   }
 }
 
-function assembleSurfaceRoads(terrain,rise,api,progress,plan,regional){
+function regionalPavement(terrain,rise,api,routes){
+  const thickness=.65+rise;
+  const pavements=routes.map(route=>{
+    const surface=new Surface();
+    for(const {polygon,top} of surfaceRoadPatches(route,terrain,rise))surface.polygon(polygon,top);
+    return surfacePart(3,surface.solid((x,y,z)=>z-thickness));
+  });
+  const [road]=removeCollapsedSurfaceComponents(uniteMaterials({parts:pavements},api).parts).parts;
+  if(!road.faces.length)throw Error('El retall no té una superfície de paviment imprimible.');
+
+  // The terrain outside the road and the new road occupy disjoint footprints.
+  // Use the actual underside of the road as the top of its foundation.
+  const foundation=new Surface();
+  for(let i=0;i<road.faces.length;i+=3){
+    const [a,b,c]=Array.from(road.faces.subarray(i,i+3),id=>Array.from(road.vertices.subarray(3*id,3*id+3)));
+    if((b[0]-a[0])*(c[1]-a[1])<(b[1]-a[1])*(c[0]-a[0]))foundation.tri(c,b,a);
+  }
+  const topIndexCount=foundation.faces.length;
+  if(!topIndexCount)throw Error('Falta el suport sota el paviment.');
+  let support=foundation.solid(()=>0);
+  if(auditPart(support).errors.length){
+    // Two very close underside vertices may snap to the same point at z=0.
+    // In that case keep their prisms separate, as for the terrain cells.
+    const pieces={vertices:[],faces:[]};
+    for(let i=0;i<topIndexCount;i+=3){
+      const triangle=foundation.faces.slice(i,i+3).map(id=>foundation.vertices.slice(id*3,id*3+3));
+      const prism=new Surface();
+      prism.tri(...triangle);
+      append(pieces,prism.solid(()=>0));
+    }
+    [support]=removeCollapsedSurfaceComponents([surfacePart(0,pieces)],{floatRoundoff:true}).parts;
+    if(!support.faces.length||auditPart(support).errors.length)throw Error('El suport sota el paviment no forma una malla tancada.');
+  }
+  return {road,support};
+}
+
+function assembleRegionalSurfaceRoads(terrain,rise,api,progress,{regions,metadata},originalRoadPoly,railPoly){
+  const accepted=[],roads={vertices:[],faces:[]},base={vertices:[],faces:[]};
+  progress('Encaixant el paviment amb el relleu…');
+  for(const region of regions){
+    try{
+      const {road,support}=regionalPavement(terrain,rise,api,region.routes);
+      append(roads,road);
+      append(base,support);
+      accepted.push(region);
+    }catch(error){
+      const {sourceFeatureIds}=region.info,reason='mesh-rejected',count=sourceFeatureIds.length;
+      metadata.omissionCounts[reason]=(metadata.omissionCounts[reason]||0)+count;
+      if(metadata.omissions.length<64)metadata.omissions.push({reason,sourceFeatureIds,detail:error.message,count});
+    }
+  }
+  if(!accepted.length)return null;
+  const mask=merge(accepted.map(region=>region.mask));
+  const legacyRoadPoly=subtract(originalRoadPoly,merge([mask,...accepted.map(region=>region.replaces)]));
+  const legacyMask=merge([legacyRoadPoly,railPoly].filter(p=>p.length));
+  const land=subtract(terrain.land,mask);
+  const forest=subtract(intersect(merge(terrain.cropped(terrain.green)),land),legacyMask);
+  const bare=subtract(subtract(land,forest),legacyMask);
+  const parts=terrainCover(forest,bare,{...terrain,land},progress);
+  for(const index of [1,7])parts[index]=terrain.surfaces[index];
+  append(base,parts[0]);
+  [parts[0]]=removeCollapsedSurfaceComponents([surfacePart(0,base)],{floatRoundoff:true}).parts;
+  append(roads,roadSurface(3,legacyRoadPoly,rise,terrain));
+  parts[3]=surfacePart(3,roads);
+  const roadPoly=merge([legacyMask,mask].filter(p=>p.length));
+
+  metadata.groups=accepted.filter(region=>!region.partial).map(region=>region.info);
+  metadata.partialGroups=accepted.filter(region=>region.partial).map(region=>region.info);
+  metadata.stations=accepted.reduce((sum,region)=>sum+region.info.stations,0);
+  metadata.junctionCount=metadata.groups.reduce((sum,group)=>sum+group.junctions,0);
+  metadata.fullAccepted=metadata.groups.reduce((sum,group)=>sum+group.fragments,0);
+  metadata.partialAccepted=new Set(metadata.partialGroups.map(group=>group.sourcePiece)).size;
+  metadata.partialLengthMM=metadata.partialGroups.reduce((sum,group)=>sum+group.lengthMM,0);
+  metadata.accepted=metadata.fullAccepted+metadata.partialAccepted;
+  metadata.applied=true;
+  const originalMM2=footprintArea(originalRoadPoly),legacyMM2=footprintArea(legacyRoadPoly);
+  metadata.coverage={originalMM2,legacyMM2,replacedPercent:originalMM2>0?100*(1-legacyMM2/originalMM2):0};
+  return {parts,forest,mask,legacyRoadPoly,roadPoly};
+}
+
+function assembleSurfaceRoads(terrain,rise,api,progress,plan){
   const {mask,fillMask,routes,junctionCount,structure,tunnel}=plan,thickness=.65+rise;
   let sharedPavement;
   const cutters=[];
@@ -398,29 +479,14 @@ function assembleSurfaceRoads(terrain,rise,api,progress,plan,regional){
     return [surfacePart(0,fill.solid(()=>0)),surfacePart(3,pavement.solid((x,y,z)=>z-thickness))];
   });
   const land=subtract(terrain.land,fillMask);
-  const forest=subtract(intersect(merge(terrain.cropped(terrain.green)),land),regional?.legacyMask??[]);
-  const bare=subtract(subtract(land,forest),regional?.legacyMask??[]);
-  let parts=terrainCover(forest,bare,{...terrain,land},progress);
+  const forest=intersect(merge(terrain.cropped(terrain.green)),land);
+  const bare=subtract(land,forest);
+  const parts=terrainCover(forest,bare,{...terrain,land},progress);
   const united=uniteMaterials({parts:corridorParts.filter(p=>p.id==='roads')},api);
   const [road]=removeCollapsedSurfaceComponents(united.parts).parts;
   if(!road.faces.length)throw Error('El cupó no té una superfície de paviment imprimible.');
   for(const index of [1,7])parts[index]=terrain.surfaces[index];
   const terrainParts=[parts[0],...corridorParts.filter(p=>p.id==='terrain')];
-  if(regional){
-    // Only material components touching the new roads need a Boolean pass.
-    const terrainMesh={vertices:[],faces:[]};
-    for(const part of terrainParts)append(terrainMesh,part);
-    parts[0]=surfacePart(0,terrainMesh);
-    progress('Encaixant el paviment amb el relleu…');
-    const carved=carveTransportDecks(parts,cutters,api,{floatRoundoff:true,finishDecks:[{mask,mesh:road}]});
-    if(!carved.metadata.applied)throw Error(carved.metadata.error??'No s’ha pogut encaixar el paviment.');
-    parts=carved.parts;
-    const mixed={vertices:[],faces:[]};
-    append(mixed,roadSurface(3,regional.legacyRoadPoly,rise,terrain));
-    append(mixed,road);
-    parts[3]=surfacePart(3,mixed);
-    return {parts,forest};
-  }
   if(cutters.length){
     progress('Encaixant el paviment amb el relleu…');
     const cleared=subtractVoids({parts:[...terrainParts,parts[4],parts[6]]},cutters.map(c=>c.mesh),api);
@@ -656,16 +722,14 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
       const blockedMask=merge([deckMask,railPoly].filter(p=>p.length));
       const plan=measure('surface-road.regional-plan',()=>planRegionalSurfaceRoads(terrain,{rise:roadRise,thickness:.65+roadRise,blockedMask,blockedIds}));
       regionalMetadata=plan.metadata;
-      if(plan.routes.length){
-        const sourceMask=merge([plan.partialMask??[],...[...plan.replacedPieces].flatMap(i=>roadPieces[i].polys.map(poly=>[poly]))].filter(p=>p.length));
-        const legacyRoadPoly=subtract(roadOnlyPoly,sourceMask);
-        const legacyMask=merge([legacyRoadPoly,railPoly].filter(p=>p.length));
-        const built=measure('surface-road.regional-mesh',()=>assembleSurfaceRoads(terrain,roadRise,infrastructureApi,progress,plan,{legacyRoadPoly,legacyMask}));
-        const allRoads=merge([legacyMask,plan.mask].filter(p=>p.length));
-        surfaceRoad={...built,mask:plan.mask};
-        roadOnlyPoly=legacyRoadPoly;
-        roadPoly=allRoads;
-        forest=built.forest;
+      if(plan.regions.length){
+        const built=measure('surface-road.regional-mesh',()=>assembleRegionalSurfaceRoads(terrain,roadRise,infrastructureApi,progress,plan,roadOnlyPoly,railPoly));
+        if(built){
+          surfaceRoad=built;
+          roadOnlyPoly=built.legacyRoadPoly;
+          roadPoly=built.roadPoly;
+          forest=built.forest;
+        }
       }
     }catch(error){
       regionalMetadata={...regionalMetadata,mode:'regional',applied:false,accepted:0,fullAccepted:0,partialAccepted:0,
