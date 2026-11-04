@@ -12,6 +12,8 @@ Revisat al navegador amb el mateix retall i els dos controls de textura. Superad
 
 La compilació i la pujada de l’artefacte també passen a GitHub. El desplegament 107 va esgotar el temps d’espera i Pages encara el considerava en curs quan s’hi va intentar publicar la v0.22.32. El flux inclou una petició puntual per cancel·lar aquell desplegament i deixa acabar les execucions en curs quan arriba un altre commit. Publicació pendent de verificació. [Execució 107](https://github.com/aaronFortuno/relleu-obert/actions/runs/41915377179) · [Execució 111](https://github.com/aaronFortuno/relleu-obert/actions/runs/41919926012)
 
+L’intent 112 va tornar a entrar a Pages i va esgotar els deu minuts a `updating_pages`. L’artefacte de GitHub pesa 13,5 MB, davant dels 13,2 MB de l’últim desplegament correcte, i la construcció local genera un paquet estàtic sense enllaços. El flux actualitza les accions de pujada i publicació i prova de cancel·lar només el desplegament 112 abans de tornar a publicar. Si el mateix estat es torna a encallar, GitHub Support pot investigar els desplegaments 7558234054 i 7558947105. [Execució 112](https://github.com/aaronFortuno/relleu-obert/actions/runs/41920637942) · [GitHub Support](https://support.github.com/contact)
+
 ## v0.22.31 — Primer lot de Model complet al carrusel
 
 RO-046 incorpora l’Eixample de Barcelona, el Barri Vell i l’Onyar de Girona, i el castell, la vila i la Vall Salina de Cardona. Hi ha dues fitxes de Relleu pur entre cada parella de Model complet, també en tancar el bucle. Els tres models tenen una sola peça i es generen a 1:10.000 en clicar la fitxa. [Retalls i captures](RO-046-CATALEG.md#primer-lot-de-model-complet-al-carrusel)
