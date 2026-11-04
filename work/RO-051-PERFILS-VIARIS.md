@@ -191,3 +191,32 @@ Quatre retalls amb les mateixes fonts i opcions que a la bateria anterior. Les m
 | Ferrocarril 800 m, 1:5.333 | 1 / 0 | 1,56% / 0,00 punts | 0 | 2,68 → 2,39 s |
 
 Sant Salvador conserva el pont i el túnel del control. Els dos taulers de Millau són presents a les dues escales i sumen quatre enllaços al retall de 3 km. El temps de Millau a 3 km queda registrat per contrastar-lo amb més passades.
+
+### Accés sud de Millau a la v0.22.1
+
+Retall de l’informe de l’usuari, centrat a **44,066336 N, 3,030207 E**.
+Peça de 150 × 150 mm, escala 1:10.539, detall Equilibrat, exageració
+×1,5, arbres actius i edificis OSM. El retall de control anterior era
+centrat al viaducte i feia servir detall Ràpid.
+
+L’informe original mostrava les dues calçades de l’A75 rebutjades per
+un creuament amb el túnel `810885922`. La carretera tornava a seguir
+els triangles del terreny, també en sentit transversal. Ara el motor
+comprova la volta excavada contra els triangles del paviment i els
+seus enllaços. Si falla la comprovació, es recupera la via sobre el
+terreny. La separació sota el paviment i la coberta del túnel es
+comproven per separat.
+
+També s’ha mesurat un solapament entre calçades d’amplada estimada.
+Les autopistes de sentit únic passen a una estimació de 10 m quan
+falten tant l’amplada com el nombre de carrils. El valor s’aplica al
+paviment i als taulers procedimentals perquè els enllaços facin servir
+la mateixa amplada.
+
+El control complet recupera els dos perfils de l’A75 i manté els dos
+taulers i els enllaços sud. La diferència de cota és inferior a 0,001 mm
+en deu seccions transversals mesurades a la malla prop del túnel. La
+separació mínima entre la volta i la cara inferior del paviment és de
+0,72 i 0,55 mm. Totes les categories de la malla superen l’auditoria.
+Els enllaços curts amb el paviment sobre el terreny encara hi adapten
+la secció transversal. Queda pendent el contrast visual i el laminat.

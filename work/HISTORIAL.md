@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-04. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.22.1 — Calçades de l’accés sud de Millau
+
+Es recuperen els dos perfils de l’A75 després de comprovar la separació entre el paviment i la volta excavada. L’amplada estimada per a autopistes de sentit únic evita el solapament observat al retall de l’usuari. Deu seccions transversals mesurades a la malla final. [Diagnòstic i mesures](RO-051-PERFILS-VIARIS.md#accés-sud-de-millau-a-la-v0221)
+
 ## v0.22.0 — Consolidació de les vies
 
 Els dos perfils pendents de Sant Salvador tenen enllaços que superen el pendent admissible. Les reserves de traçat asimètriques provades tampoc resolen els enllaços. Es publica amb el paviment sobre el terreny en aquests trams. Els controls de Sant Salvador, Millau a dues escales i el ferrocarril de 800 m superen l’auditoria. [Diagnòstic i comparativa](RO-051-PERFILS-VIARIS.md#transicions-pendents-a-la-v0220)

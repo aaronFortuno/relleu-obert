@@ -17,7 +17,11 @@ export function roadWidthMetres(properties={}){
   // Decimal lane widths must compare equal to an explicit width such as 9.6;
   // avoid a 9.600000000000001 group splitting a three-lane continuation.
   if(Number.isInteger(lanes)&&lanes>=1&&lanes<=12)return Math.min(lanes*32,384)/10;
-  return isLink(properties)?7:WIDTHS.get(properties.class)??4;
+  if(isLink(properties))return 7;
+  // A mapped one-way motorway is normally one carriageway. Using the full
+  // class width for both axes can overlap adjacent pavement surfaces.
+  if(properties.class==='motorway'&&[true,1,-1,'1','-1','yes','true'].includes(properties.oneway))return 10;
+  return WIDTHS.get(properties.class)??4;
 }
 
 export function roadMinimumWidthMM(properties={},scale){

@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.22.1 — 2026-11-04
+
+- Una via principal pot conservar el perfil suau sobre un túnel estimat quan el model ha obert la volta i hi ha separació sota tota la calçada al creuament.
+- Les autopistes de sentit únic tenen una amplada estimada de 10 m quan falten dades d’amplada i carrils. Això redueix el solapament entre calçades paral·leles.
+
 ## v0.22.0 — 2026-11-04
 
 - Es consoliden els perfils suaus de vies principals i ferrocarrils amb les comprovacions de Sant Salvador, Millau i el retall ferroviari de 800 m.

@@ -8,6 +8,30 @@ function region(roadClass='motorway'){
   return {meta:{bbox:[0,0,.01,.01]},localDEM:{width:11,height:11,epsg:4326,affine:[.001,0,0,0,.001,0],pixelIsArea:false,values,metadata:{}},features:[{type:'Feature',id:'main-road',properties:{sourceLayer:'transportation',class:roadClass},geometry:{type:'LineString',coordinates:[[.0001,.005],[.0099,.005]]}}]};
 }
 const options={size:100,resolution:6,trees:false,estimatedTunnels:false,majorRoads:true};
+test('a major road keeps its flat platform only when the crossing bore is opened and clear',()=>{
+  const data=region(),{values}=data.localDEM;
+  for(let y=0;y<11;y++)values.set([0,10,20,30,40,50,40,30,20,10,0],y*11);
+  data.features[0].geometry.coordinates=[[.005,0],[.005,.01]];
+  const bore={id:'hill-bore',properties:{sourceLayer:'transportation',class:'trunk',brunnel:'tunnel'},
+    geometry:{type:'LineString',coordinates:[[.001,.005],[.009,.005]]}};
+  data.features.push(bore);
+  const config={...options,resolution:12,smoothProfiles:true,estimatedTunnels:true};
+  const opened=buildModel(data,config,()=>{},api);
+  assert.equal(opened.provenance.tunnels.applied,true);
+  assert.equal(opened.provenance.majorRoads.applied,true);
+  assert(opened.provenance.majorRoads.tunnelCrossings.some(c=>c.featureId===bore.id&&c.minimumClearanceMM>.6));
+  const platform=opened.context.bridges.find(bridge=>bridge.mainRoad);
+  assert(Math.abs(platform.top(49.8,50)-platform.top(50.2,50))<.00001);
+
+  bore.geometry.coordinates[0]=[-.01,.005]; // outside DEM, so the bore cannot open
+  const fallback=buildModel(data,config,()=>{},api);
+  assert.equal(fallback.provenance.tunnels.count,0);
+  assert.equal(fallback.provenance.majorRoads.applied,false);
+  assert.match(fallback.provenance.majorRoads.error,/no s’ha pogut obrir la volta/);
+  assert(fallback.categories.find(p=>p.id==='roads')?.faces.length);
+  for(const model of [opened,fallback])for(const part of model.categories)assert.deepEqual(auditPart(part).errors,[]);
+});
+
 test('updating transport keeps the MET5 window when the mapped axis extends outside it',()=>{
   const {localDEM,...data}=region();
   data.terrainRaster={...localDEM,width:13,height:13,affine:[.001,0,-.001,0,.001,-.001],values:new Float32Array(169).fill(100)};

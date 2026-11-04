@@ -5,6 +5,7 @@ import {generateProceduralTunnelVoids} from '../src/procedural-tunnels.js';
 
 test('carriageways use explicit metres before whole lane counts, then a common class estimate',()=>{
   assert.equal(roadWidthMetres({class:'motorway',width:'6',lanes:4}),6);
+  assert.equal(roadWidthMetres({class:'motorway',oneway:1,lanes:3}),9.6);
   assert.equal(roadWidthMetres({class:'trunk',lanes:'3'}),9.6);
   assert.equal(roadWidthMetres({class:'primary',width:9000,lanes:2}),6.4);
   assert.equal(roadWidthMetres({class:'primary',lanes:'2;3'}),10);
@@ -15,7 +16,7 @@ test('carriageways use explicit metres before whole lane counts, then a common c
 });
 
 test('one route keeps the same carriageway width in surface, bridge and tunnel tags',()=>{
-  for(const [properties,expected]of [[{class:'motorway'},14],[{class:'trunk'},10],[{class:'primary'},10],[{class:'secondary'},8],[{class:'tertiary'},6],[{class:'path'},2],[{class:'trunk',ramp:1},7],[{class:'motorway_link'},7],[{class:'primary',width:6},6]]){
+  for(const [properties,expected]of [[{class:'motorway'},14],[{class:'motorway',oneway:1},10],[{class:'trunk'},10],[{class:'primary'},10],[{class:'secondary'},8],[{class:'tertiary'},6],[{class:'path'},2],[{class:'trunk',ramp:1},7],[{class:'motorway_link'},7],[{class:'primary',width:6},6]]){
     for(const brunnel of [undefined,'bridge','tunnel']){
       assert.equal(roadWidthMetres({...properties,brunnel}),expected);
       assert.equal(roadWidthMM({...properties,brunnel},.05),roadWidthMM(properties,.05));

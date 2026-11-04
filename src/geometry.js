@@ -31,7 +31,7 @@ import {generateMajorRoadItems,reserveProfileEnds} from './major-roads.js';
 import {roadWidthMM,MIN_ROAD_WIDTH_MM} from './transport-width.js';
 import {transportIdentity,compatibleTransport,continuationRoute} from './transport-network.js';
 import {crossSectionFractions} from './transport-sections.js';
-import {fitMajorRoadItem,knownBridgeClearance} from './major-road-fit.js';
+import {fitMajorRoadItem,knownBridgeClearance,openedTunnelClearance} from './major-road-fit.js';
 import {carveTransportDecks} from './transport-carving.js';
 import {isFlowingWater,isStandingWater,shorelineLevel} from './standing-water.js';
 export {sampleHeight} from './elevation.js';
@@ -444,7 +444,9 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
   };
   const majorRoadsEnabled=options.majorRoads===true;
   if(majorRoadsEnabled)progress('Calculant els perfils de les vies principals…');
-  const majorPlan=majorRoadsEnabled&&infrastructureApi?generateMajorRoadItems(data.features,elevationAt,{projection:proj,bbox:data.meta.bbox,roi:rect,renderedElevationAt:representedElevationAt,allowEndpointLift:true,cropToElevationWindow:terrain.cropToElevationWindow,smoothProfiles:options.smoothProfiles===true,maxLiftMetres:30,allowCrossing:(other,p)=>other.properties?.brunnel==='bridge'&&knownCrossingSources.some(source=>source.contains(p)&&!!source.item.railway===isRailway(other.properties))}):{items:[],metadata:{count:0,terrainModified:false},warnings:[]};
+  const allowCrossing=(other,p)=>other.properties?.brunnel==='tunnel'?options.estimatedTunnels===true:
+    other.properties?.brunnel==='bridge'&&knownCrossingSources.some(source=>source.contains(p)&&!!source.item.railway===isRailway(other.properties));
+  const majorPlan=majorRoadsEnabled&&infrastructureApi?generateMajorRoadItems(data.features,elevationAt,{projection:proj,bbox:data.meta.bbox,roi:rect,renderedElevationAt:representedElevationAt,allowEndpointLift:true,cropToElevationWindow:terrain.cropToElevationWindow,smoothProfiles:options.smoothProfiles===true,maxLiftMetres:30,allowCrossing}):{items:[],metadata:{count:0,terrainModified:false},warnings:[]};
   const acceptedMajor=[],majorOmissions=[];
   for(const [itemIndex,profile]of majorPlan.items.entries()){
     if(excludedProfiles.has(profile.id)){
@@ -466,7 +468,9 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
         previous=ends;
         const fit=fitMajorRoadItem(item,{projection:proj,verticalReference,exaggeration,ground,maxLiftMetres:30,patches:polys=>terrainPatches(intersect(polys,land),width,height,resolution)});
         if(!fit.accepted){if(fit.present)omission??={reason:fit.reason};break;}
-        const clearance=knownBridgeClearance(item,fit,knownCrossingSources.map(p=>p.item),{projection:proj,verticalReference,exaggeration,roadRise,railRise});
+        const tunnelChecks=item.crossingChecks.filter(check=>check.kind==='tunnel');
+        const bridgeChecks=item.crossingChecks.filter(check=>check.kind!=='tunnel');
+        const clearance=knownBridgeClearance({...item,crossingChecks:bridgeChecks},fit,knownCrossingSources.map(p=>p.item),{projection:proj,verticalReference,exaggeration,roadRise,railRise});
         if(!clearance.accepted){omission??={reason:clearance.reason};break;}
         let terminalApproaches;
         if(item.terminalRoutes){
@@ -485,7 +489,7 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
             continue;
           }
         }
-        acceptedMajor.push({...item,terminalApproaches,generatedSurfaceAdjustmentMM:fit.adjustmentMM,maximumPrintedLiftMetres:fit.maximumPrintedLiftMetres,checkedCrossings:clearance.checkedCrossings,knownCrossingClearanceMM:Number.isFinite(clearance.minimumClearanceMM)?clearance.minimumClearanceMM:null});
+        acceptedMajor.push({...item,terminalApproaches,tunnelChecks,generatedSurfaceAdjustmentMM:fit.adjustmentMM,maximumPrintedLiftMetres:fit.maximumPrintedLiftMetres,checkedCrossings:clearance.checkedCrossings,knownCrossingClearanceMM:Number.isFinite(clearance.minimumClearanceMM)?clearance.minimumClearanceMM:null});
         omission=undefined;
         break;
       }
@@ -565,7 +569,7 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
     const roadWidth=item.mainRoad?item.widthMetres*scale:matches[0]?.t.width||.44;
     const layout=data.infrastructure?.layouts?.items?.[item.id],pierAxis=layout?.start==='south'&&proj.unproject(axis[0])[1]>proj.unproject(axis.at(-1))[1]?axis.slice().reverse():axis;
     pierAxis.identity=identity;pierAxis.roadClass=axis.roadClass;
-    bridges.push({id:item.id,mesh,axis:pierAxis,points,sourceFaces:item.faces,identity,roadWidth,top,mask,contains,approaches:item.terminalApproaches||{plans:[],missed:[]},terminalApproaches:!!item.terminalApproaches,layout,railway,category,thickness,surfaceRise,mainRoad:!!item.mainRoad,generatedSurfaceAdjustmentMM:item.generatedSurfaceAdjustmentMM||0,maximumPrintedLiftMetres:item.maximumPrintedLiftMetres,estimated:!!item.estimated,elevationMethod:item.elevationMethod,widthMetres:item.widthMetres,sourceFeatureIds:item.sourceFeatureIds});
+    bridges.push({id:item.id,mesh,axis:pierAxis,points,sourceFaces:item.faces,identity,roadWidth,top,mask,contains,approaches:item.terminalApproaches||{plans:[],missed:[]},terminalApproaches:!!item.terminalApproaches,layout,railway,category,thickness,surfaceRise,mainRoad:!!item.mainRoad,tunnelChecks:item.tunnelChecks,generatedSurfaceAdjustmentMM:item.generatedSurfaceAdjustmentMM||0,maximumPrintedLiftMetres:item.maximumPrintedLiftMetres,estimated:!!item.estimated,elevationMethod:item.elevationMethod,widthMetres:item.widthMetres,sourceFeatureIds:item.sourceFeatureIds});
     }catch(error){
       if(item.mainRoad)return recoverProfiles([item.id],error.message);
       warnings.push(`Pont ${item.id} omès: ${error.message}`);
@@ -623,7 +627,20 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
     staticBase=carved.parts;warnings.push(...carved.warnings);tunnelMetadata={...tunnelMetadata,...carved.metadata};
     openedTunnels=carved.tunnels;
     if(carved.metadata.applied)tunnelMask=merge(openedTunnels.flatMap(t=>t.footprints));
-    if(carved.metadata.applied)for(const bridge of majorDecks){
+  }
+  const tunnelCrossings=[],rejectedCrossings=[];
+  for(const bridge of majorDecks){
+    if(!bridge.tunnelChecks.length)continue;
+    try{
+      const clearance=openedTunnelClearance(bridge,openedTunnels);
+      if(clearance.accepted)tunnelCrossings.push(...clearance.results.map(check=>({id:bridge.id,...check})));
+      else rejectedCrossings.push({id:bridge.id,reason:clearance.reason});
+    }catch(error){rejectedCrossings.push({id:bridge.id,reason:`No s’ha pogut comprovar la separació del túnel. ${error.message}`});}
+  }
+  if(rejectedCrossings.length)return recoverProfiles(rejectedCrossings.map(c=>c.id),[...new Set(rejectedCrossings.map(c=>c.reason))].join('. '));
+  if(tunnelCrossings.length)majorMetadata={...majorMetadata,tunnelCrossings};
+  if(openedTunnels.length){
+    for(const bridge of majorDecks){
       const opened=carveTransportDecks([{...CATEGORIES[bridge.category],...bridge.mesh}],openedTunnels,infrastructureApi,{},bridge.railway);
       if(!opened.metadata.applied||!opened.parts[0]?.faces.length)return recoverProfiles([bridge.id],'No s’han pogut conservar els passos sota el perfil principal.');
       warnings.push(...opened.warnings);

@@ -381,7 +381,7 @@ export function generateMajorRoadItems(features,elevationAt,options={}){
         for(const pointXY of crossingPoints){
           let allowed=false;try{allowed=allowCrossing?.(obstacle.feature,pointXY)===true;}catch{}
           if(!allowed){rejected=obstacle;break;}
-          crossingChecks.push({featureId:obstacle.id,pointXY,allowed:true});
+          crossingChecks.push({featureId:obstacle.id,pointXY,allowed:true,...(obstacle.type==='túnel'?{kind:'tunnel'}:{})});
         }
         if(rejected)break;
       }

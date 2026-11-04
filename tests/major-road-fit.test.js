@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {fitMajorRoadItem,knownBridgeClearance} from '../src/major-road-fit.js';
+import {fitMajorRoadItem,knownBridgeClearance,openedTunnelClearance} from '../src/major-road-fit.js';
 import {topSampler} from '../src/bridge-completion.js';
 
 const projection={scale:.1,project:p=>p.slice(0,2)},verticalReference={originMeters:100,minimumSurfaceMM:5};
@@ -117,4 +117,18 @@ test('crossings lacking a real XYZ footprint or a verified fit fail with an expl
   const r=knownBridgeClearance(crossing,fit,[elsewhere],crossingParameters);assert.equal(r.accepted,false);assert.match(r.reason,/cap font XYZ/);
   assert.equal(knownBridgeClearance(crossing,{accepted:false,adjustmentMM:0},[known(100)],crossingParameters).accepted,false);
   const invalid={...known(100),coordinates:[[NaN,0,100]]};assert.equal(knownBridgeClearance(crossing,fit,[invalid],crossingParameters).accepted,false);
+});
+test('a flat carriageway is accepted only above an opened tunnel with clearance across its width',()=>{
+  const surface=(a,b,c,d)=>({vertices:Float32Array.from([...a,...b,...c,...d]),faces:Uint32Array.from([0,1,2,0,2,3])});
+  const deck=surface([0,3,8],[10,3,8],[10,7,8],[0,7,8]);
+  const roof=surface([4,0,6],[6,0,6],[6,10,7],[4,10,7]);
+  const bridge={mesh:deck,thickness:.6,approaches:{plans:[]},tunnelChecks:[{featureId:12,pointXY:[5,5]}]};
+  const tunnel={...roof,sourceFeatureIds:[12]};
+  const accepted=openedTunnelClearance(bridge,[tunnel]);
+  assert.equal(accepted.accepted,true);
+  close(accepted.results[0].minimumClearanceMM,.7);
+  assert.equal(openedTunnelClearance(bridge,[]).accepted,false);
+  // The crossing centre is clear, but the outside of the same bore is too high.
+  const highEdge=surface([4,0,6],[6,0,6],[6,10,8.3],[4,10,8.3]);
+  assert.match(openedTunnelClearance(bridge,[{...highEdge,sourceFeatureIds:[12]}]).reason,/separació insuficient/);
 });

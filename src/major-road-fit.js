@@ -4,14 +4,62 @@ import {polygonOps} from './polygon-ops.js';
 
 function projectedTriangles(item,projection,verticalReference,exaggeration,lift=0){
   if(!Array.isArray(item?.faces)||item.faces.length%3||item.faces.some(i=>!Number.isSafeInteger(i)||i<0||i>=item.coordinates?.length))throw Error('Triangles de font XYZ invàlids.');
-  const points=projectInfrastructurePath(item.coordinates,projection,verticalReference,exaggeration).map(p=>[p[0],p[1],p[2]+lift]),triangles=[];
-  for(let i=0;i<item.faces.length;i+=3){
-    const [a,b,c]=item.faces.slice(i,i+3).map(j=>points[j]),det=(b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]);if(Math.abs(det)<1e-12)continue;
+  const points=projectInfrastructurePath(item.coordinates,projection,verticalReference,exaggeration).map(p=>[p[0],p[1],p[2]+lift]);
+  return planarTriangles(item.faces,i=>points[i]);
+}
+
+function planarTriangles(faces,point,upwards=false,window){
+  const triangles=[];
+  for(let i=0;i<faces.length;i+=3){
+    const a=point(faces[i]),b=point(faces[i+1]),c=point(faces[i+2]);
+    const det=(b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]);
+    if(upwards?det<1e-12:Math.abs(det)<1e-12)continue;
+    const box=[Math.min(a[0],b[0],c[0]),Math.min(a[1],b[1],c[1]),Math.max(a[0],b[0],c[0]),Math.max(a[1],b[1],c[1])];
+    if(window&&!boundsOverlap(box,window))continue;
     const top=(x,y)=>{const u=((x-a[0])*(c[1]-a[1])-(y-a[1])*(c[0]-a[0]))/det,v=((b[0]-a[0])*(y-a[1])-(b[1]-a[1])*(x-a[0]))/det;return a[2]+u*(b[2]-a[2])+v*(c[2]-a[2]);};
     const contains=([x,y])=>{const u=((x-a[0])*(c[1]-a[1])-(y-a[1])*(c[0]-a[0]))/det,v=((b[0]-a[0])*(y-a[1])-(b[1]-a[1])*(x-a[0]))/det;return u>=-1e-7&&v>=-1e-7&&u+v<=1.0000001;};
-    triangles.push({top,contains,poly:[[a.slice(0,2),b.slice(0,2),c.slice(0,2),a.slice(0,2)]],box:[Math.min(a[0],b[0],c[0]),Math.min(a[1],b[1],c[1]),Math.max(a[0],b[0],c[0]),Math.max(a[1],b[1],c[1])]});
+    const xy=([x,y])=>[x,y];
+    triangles.push({top,contains,poly:[[xy(a),xy(b),xy(c),xy(a)]],box});
   }
   return triangles;
+}
+
+const boundsOverlap=(a,b)=>a[0]<b[2]&&a[2]>b[0]&&a[1]<b[3]&&a[3]>b[1];
+const roofTriangles=({faces,vertices},window)=>planarTriangles(faces,i=>vertices.subarray(i*3,i*3+3),true,window);
+
+// A tunnel tag is a provisional crossing. Certify it only on a bore that
+// was actually opened, comparing whole roof and pavement triangles in XY.
+// The pavement underside must leave the bore clear, including at the edges.
+export function openedTunnelClearance(bridge,tunnels){
+  const pavement=[bridge.mesh,...bridge.approaches.plans.map(p=>p.mesh)].flatMap(mesh=>roofTriangles(mesh));
+  const window=[Infinity,Infinity,-Infinity,-Infinity];
+  for(const {box:[w,s,e,n]} of pavement){
+    window[0]=Math.min(window[0],w);window[1]=Math.min(window[1],s);
+    window[2]=Math.max(window[2],e);window[3]=Math.max(window[3],n);
+  }
+  const pc=polygonOps(),results=[];
+  let comparisons=0;
+  for(const featureId of new Set(bridge.tunnelChecks.map(check=>check.featureId))){
+    const failure=reason=>({accepted:false,reason:`Túnel ${featureId}: ${reason}`});
+    const roofs=tunnels.filter(t=>t.sourceFeatureIds.includes(featureId)).flatMap(t=>roofTriangles(t,window));
+    if(!roofs.length)return failure('no s’ha pogut obrir la volta del creuament');
+    for(const {pointXY} of bridge.tunnelChecks.filter(check=>check.featureId===featureId)){
+      if(!roofs.some(t=>t.contains(pointXY))||!pavement.some(t=>t.contains(pointXY)))
+        return failure('la volta i el paviment calculats no coincideixen al punt del creuament');
+    }
+    comparisons+=pavement.length*roofs.length;
+    if(comparisons>2_000_000)return failure('pressupost de comprovació de la volta superat');
+    let minimum=Infinity;
+    for(const a of pavement)for(const b of roofs){
+      if(!boundsOverlap(a.box,b.box))continue;
+      for(const polygon of pc.intersection([a.poly],[b.poly]))for(const ring of polygon)for(const [x,y] of ring)
+        minimum=Math.min(minimum,a.top(x,y)-bridge.thickness-b.top(x,y));
+    }
+    if(!Number.isFinite(minimum))return failure('no hi ha una superfície comuna entre el paviment i la volta');
+    if(minimum<.005)return failure(`separació insuficient sota la calçada (${minimum.toFixed(3)} mm)`);
+    results.push({featureId,minimumClearanceMM:minimum});
+  }
+  return {accepted:true,results};
 }
 
 // Fit an estimated road TOP above the intact generated terrain. Source XYZ,
@@ -74,7 +122,7 @@ export function knownBridgeClearance(item,fit,knownItems,{projection,verticalRef
       for(const source of covering){
         let minDiff=Infinity,maxDiff=-Infinity,overlapCount=0;
         for(const a of proposed)for(const b of source.triangles){
-          if(a.box[0]>=b.box[2]||a.box[2]<=b.box[0]||a.box[1]>=b.box[3]||a.box[3]<=b.box[1])continue;
+          if(!boundsOverlap(a.box,b.box))continue;
           if(++pairCount>100000)return failure('pressupost de comprovació de creuaments superat');
           for(const polygon of pc.intersection([a.poly],[b.poly]))for(const ring of polygon)for(const [x,y]of ring){
             const diff=a.top(x,y)-b.top(x,y);if(!Number.isFinite(diff))return failure('cota XYZ de creuament invàlida');

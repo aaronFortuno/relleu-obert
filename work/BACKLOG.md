@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-04 · v0.22.0**. Consolidació de les vies amb les omissions de Sant Salvador documentades. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-04 · v0.22.1**. Calçades de l’accés sud de Millau recuperades. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -24,7 +24,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | [RO-053](#ro-053--flux-de-treball-per-etapes) | P1 | Progrés per capes i guies de Tamariu verificats | Millorar el contrast de les guies al bosc i estudiar el canvi de mida |
 | [RO-033](#ro-033--ponts-i-viaductes) | P1 | Millau i el cupó del Bages validats al visor. Montgròs conserva el pas al laminat del cupó | Comprovar llums i accessos en una placa completa |
 | [RO-034](#ro-034--túnels-imprimibles) | P1 | Túnel de Sant Salvador obert a les dues escales | Revisar el tram cobert de la maqueta a 1:20.000 al laminador |
-| [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | Tres perfils de la C-37 i rasant ferroviària de 800 m comprovats | Contrastar noves omissions en altres retalls |
+| [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | Dues calçades planes recuperades a l’accés sud de Millau | Contrastar les unions curtes al visor i al laminador |
 | [RO-052](#ro-052--continuïtat-i-amplada-del-traçat-viari) | P1 | Quatre enllaços a Millau a 1:20.000 | Mesurar cotes, pendents i amplades als enllaços de la C-37 |
 | [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió) | P1 | Quatre 3MF de Tamariu verificats al ZIP | Contrastar les vores adjacents i els materials al laminador |
 | [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts) | P1 | Fonts en estudi | Comparació de parts i petjades en segona zona |
