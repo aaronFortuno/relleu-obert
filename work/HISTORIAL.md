@@ -6,6 +6,8 @@ Actualitzat: 2026-11-04. Les entrades validades surten del [backlog actiu](BACKL
 
 El peu incorpora la signatura centrada de Plec amb el logotip i l’enllaç a ortogra.fi.
 
+**Control de Montgròs.** Un cupó de 19 × 13 mm extret de la maqueta conserva el pas al punt del torrent amb capes de 0,10 i 0,20 mm a Bambu Studio. El control de 0,20 mm també passa amb quatre materials. [Laminat](RO-033-CONTROLS-PROCEDIMENTALS.md#laminat-del-cupó-de-montgròs)
+
 ## v0.21.8 — Tauler de la C-37 a Montgròs
 
 La unió entre tessel·les conserva el traçat més llarg quan l’altre hi queda contingut. El retall de Sant Salvador a 1:20.000 recupera el pont al torrent de Montgròs. Les dues connexions amb la C-37 tenen paviment a banda i banda i la diferència de cota mesurada és inferior a 0,007 mm. Pas lliure de 0,27 mm pendent de comprovar al laminador. [Resultats](RO-033-CONTROLS-PROCEDIMENTALS.md#torrent-de-montgròs)

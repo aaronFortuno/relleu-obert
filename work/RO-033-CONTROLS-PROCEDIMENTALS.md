@@ -24,8 +24,25 @@ unions a l’eix de la calçada.
 
 Auditoria de les sis categories sense errors. El pont de la Fessona
 conserva els dos accessos. Temps del control de Montgròs de 6,3 s de
-càrrega i 44,2 s de càlcul i auditoria. Queda pendent comprovar el pas
-lliure i els accessos al laminador.
+càrrega i 44,2 s de càlcul i auditoria.
+
+### Laminat del cupó de Montgròs
+
+Cupó de **19 × 13 mm** extret del 3MF de Sant Salvador, amb les mateixes
+cotes i els dos accessos. Bambu Studio 2.8.1.55, Bambu Lab A1, PLA Basic
+i suports desactivats. S’ha comprovat el G-code en una secció de 2 mm
+perpendicular al tauler i centrada a les coordenades del torrent. El
+control inclou els arcs d’extrusió i l’amplada estimada de cada traç.
+
+| Broquet | Alçada de capa | Filaments | Cotes de capa amb la secció lliure | Primera capa de tauler al punt de creuament |
+| --- | --- | --- | --- | --- |
+| 0,2 mm | 0,10 mm | 1 | 7,10 · 7,20 · 7,30 · 7,40 mm | 7,50 mm |
+| 0,4 mm | 0,20 mm | 1 | 7,20 · 7,40 mm | 7,60 mm |
+| 0,4 mm | 0,20 mm | 4 | 7,20 · 7,40 mm | 7,60 mm |
+
+Els tres perfils conserven una obertura a la secció mesurada. Es manté
+la geometria amb els dos accessos auditats. Queda pendent la impressió
+física i la comprovació en una placa completa.
 
 ## Pas inferior al Bages
 
