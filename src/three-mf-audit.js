@@ -80,6 +80,10 @@ export function auditThreeMF(bytes,{heightMm}={}){
   const materials=byId(many(model.resources?.basematerials),'Grup de materials',errors);
   const meshes=[...objects].filter(([,object])=>object.mesh);
   if(!meshes.length||meshes.length>MAX_PARTS)throw Error('Calen entre 1 i '+MAX_PARTS+' peces de malla.');
+  // Older exports painted every face in addition to assigning a filament to
+  // each part. Reject missing or inconsistent paint if any face uses it.
+  const hasLegacyPaint=report.dialect==='bambu'&&meshes.some(([,object])=>
+    many(object.mesh.triangles?.triangle).some(face=>attr(face,'paint_color')!==undefined));
   const triangles=meshes.reduce((sum,[,object])=>sum+many(object.mesh.triangles?.triangle).length,0);
   const vertices=meshes.reduce((sum,[,object])=>sum+many(object.mesh.vertices?.vertex).length,0);
   if(triangles>MAX_TRIANGLES||vertices>MAX_VERTICES)throw Error('Malla massa gran per a l’auditoria de controls.');
@@ -127,7 +131,7 @@ export function auditThreeMF(bytes,{heightMm}={}){
       if(config.length!==1||index===null||extruder!==index+1)partErrors.push('Bambu: extrusor inconsistent amb el material 3MF.');
       if(!color||typeof filaments[extruder-1]!=='string'||filaments[extruder-1].toUpperCase()!==color.slice(0,7).toUpperCase())
         partErrors.push('Bambu: color de filament inconsistent amb el material 3MF.');
-      if(index!==null&&index<meshes.length){
+      if(hasLegacyPaint&&index!==null&&index<meshes.length){
         paint=paintFor(index);
         const mismatches=faces.reduce((sum,face)=>sum+(attr(face,'paint_color')?.toUpperCase()!==paint),0);
         if(mismatches)partErrors.push('Bambu: '+mismatches+' triangles tenen el codi de color incorrecte o absent.');

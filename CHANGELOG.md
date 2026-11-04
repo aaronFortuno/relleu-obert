@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.22.13 — 2026-11-04
+
+- El 3MF per a Bambu Studio assigna el filament per peça. A Montserrat, la prova de laminat elimina les franges de colors incorrectes i redueix l’estimació en quatre hores.
+
 ## v0.22.12 — 2026-11-04
 
 - Els senders tenen menys amplada per defecte. El selector de Vies permet ajustar-la entre ×0,75 i ×2.

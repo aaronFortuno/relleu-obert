@@ -129,3 +129,9 @@ Els llacs i cursos d’aigua s’imprimeixen com una capa de 0,65 mm. El terreny
 El control de `tests/standing-water.test.js` rellegeix un 3MF amb el mar, un llac, un riu i un rierol. A 0,2 mm només hi ha geometria de mar i de terreny. Les sis mostres del contacte d’aigua continental coincideixen amb el terreny fins a menys de 0,00001 mm. Queda pendent el contrast al laminador.
 
 El retall complet de Marganell amb els ajustos originals té la primera geometria d’aigua continental a 4,53 mm. Les set malles superen l’auditoria. La mostra costanera de Tamariu de 100 × 100 mm conserva tant el mar com l’aigua continental i totes les seves malles superen l’auditoria.
+
+## Filament per peça a la v0.22.13
+
+La còpia de control de Montserrat conserva les malles, els colors i els filaments assignats a cada peça. Només s’hi retira la pintura per triangle. L’usuari valida que les franges de colors incorrectes desapareixen al laminador i que el temps estimat passa de 3 dies i 21 h a 3 dies i 17 h. El contrast és de laminat i la impressió física queda pendent.
+
+El generador aplica aquesta assignació a tots els 3MF per a Bambu Studio, també quan s’exporten en diverses peces. L’auditoria accepta els arxius antics amb pintura i comprova la coherència dels filaments per peça en tots dos formats de Bambu.

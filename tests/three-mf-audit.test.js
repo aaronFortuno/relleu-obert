@@ -26,7 +26,7 @@ test('audits core and Bambu assembly and reports possible overlaps separately',(
     assert.deepEqual(report.overlapCandidates,[[2,3]]);
     assert.equal(report.parts[1].geometry.closed,true);
     assert.equal(report.parts[1].material.extruder,bambu?2:null);
-    assert.equal(report.parts[1].material.paint,bambu?'8':null);
+    assert.equal(report.parts[1].material.paint,null);
     assert.equal(Object.hasOwn(report,'heightQuery'),false);
   }
 });
@@ -48,10 +48,25 @@ test('queries material at an exact model height, including coplanar faces and ex
   assert.throws(()=>auditThreeMF(bytes,{heightMm:Infinity}),/nombre finit/);
 });
 
-test('rejects a mismatched Bambu extruder, filament or paint even if all values exist',()=>{
-  const paint=auditThreeMF(alter(modelPath,xml=>xml.replace('paint_color="4"','paint_color="8"')));
-  assert.equal(paint.valid,false);
-  assert.match(paint.parts[0].errors.join(' '),/1 triangles/);
+test('accepts consistent legacy paint and detects wrong or missing legacy tags',()=>{
+  const addPaint=xml=>{
+    let part=-1;
+    return xml.replace(/<triangles>|<triangle [^>]*\/>/g,tag=>{
+      if(tag==='<triangles>'){part++;return tag;}
+      return tag.replace('/>',` paint_color="${['4','8'][part]}"/>`);
+    });
+  };
+  const legacy=auditThreeMF(alter(modelPath,addPaint));
+  assert.equal(legacy.valid,true);
+  assert.deepEqual(legacy.parts.map(part=>part.material.paint),['4','8']);
+  for(const tag of [' paint_color="8"','']){
+    const report=auditThreeMF(alter(modelPath,xml=>addPaint(xml).replace(' paint_color="4"',tag)));
+    assert.equal(report.valid,false);
+    assert.match(report.parts[0].errors.join(' '),/1 triangles/);
+  }
+});
+
+test('rejects a mismatched Bambu extruder or filament even if all values exist',()=>{
   const extruder=auditThreeMF(alter(configPath,xml=>xml.replace('<part id="3" subtype="normal_part"><metadata key="name" value="bosc"/><metadata key="extruder" value="2"/>',
     '<part id="3" subtype="normal_part"><metadata key="name" value="bosc"/><metadata key="extruder" value="1"/>')));
   assert.equal(extruder.valid,false);

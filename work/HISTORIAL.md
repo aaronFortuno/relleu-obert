@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-04. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.22.13 — Filament per peça a Bambu Studio
+
+L’usuari valida al laminador el control de Montserrat amb filament per peça. Les franges desapareixen i el temps estimat passa de 3 dies i 21 h a 3 dies i 17 h. El mateix format s’aplica a l’exportació de Bambu Studio. [Prova de laminat](RO-024-RESULTATS.md#filament-per-peça-a-la-v02213)
+
 ## v0.22.12 — Senders i aigua continental
 
 Els senders tenen un mínim de 0,30 mm i una amplada ajustable que es desa a la galeria local. El 3MF de control confirma que a la cota de 0,2 mm hi ha terreny i mar. Rius, rierols i llacs tenen una capa de 0,65 mm sobre terreny sòlid. Pendent de revisió al laminador. [Control d’aigua](RO-024-RESULTATS.md#capes-baixes-del-model-complet-a-la-v02212) · [Amplada dels senders](RO-052-CONTINUITAT.md#amplada-dels-senders-a-la-v02212)

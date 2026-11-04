@@ -29,7 +29,15 @@ export function threeMF(model,{bambu=false}={}){
   if(bambu)xml.push('<metadata name="Application">BambuStudio-02.00.00.00</metadata>','<metadata name="BambuStudio:3mfVersion">1</metadata>','<metadata name="Designer">Relleu Obert</metadata>','<metadata name="RelleuObert:Generator">Relleu Obert · Bambu-compatible dialect</metadata>');
   xml.push('<resources><basematerials id="1">');
   for(const p of parts)xml.push(`<base name="${esc(p.name)}" displaycolor="${p.color}FF"/>`);xml.push('</basematerials>');
-  parts.forEach((p,i)=>{xml.push(`<object id="${i+2}" name="${esc(p.name)}" type="model" pid="1" pindex="${i}"><mesh><vertices>`);for(let j=0;j<p.vertices.length;j+=3)xml.push(`<vertex x="${p.vertices[j].toFixed(6)}" y="${p.vertices[j+1].toFixed(6)}" z="${p.vertices[j+2].toFixed(6)}"/>`);xml.push('</vertices><triangles>');const paint=i<2?((i+1)*4).toString(16).toUpperCase():(12+(i-2)*16).toString(16).toUpperCase().padStart(2,'0');for(let j=0;j<p.faces.length;j+=3)xml.push(`<triangle v1="${p.faces[j]}" v2="${p.faces[j+1]}" v3="${p.faces[j+2]}"${bambu?` paint_color="${paint}"`:''}/>`);xml.push('</triangles></mesh></object>');});
+  parts.forEach((part,index)=>{
+    xml.push(`<object id="${index+2}" name="${esc(part.name)}" type="model" pid="1" pindex="${index}"><mesh><vertices>`);
+    for(let i=0;i<part.vertices.length;i+=3)
+      xml.push(`<vertex x="${part.vertices[i].toFixed(6)}" y="${part.vertices[i+1].toFixed(6)}" z="${part.vertices[i+2].toFixed(6)}"/>`);
+    xml.push('</vertices><triangles>');
+    for(let i=0;i<part.faces.length;i+=3)
+      xml.push(`<triangle v1="${part.faces[i]}" v2="${part.faces[i+1]}" v3="${part.faces[i+2]}"/>`);
+    xml.push('</triangles></mesh></object>');
+  });
   const assembly=parts.length+2;xml.push(`<object id="${assembly}" name="Relleu Obert" type="model"><components>`);parts.forEach((p,i)=>xml.push(`<component objectid="${i+2}"/>`));xml.push(`</components></object></resources><build><item objectid="${assembly}"/></build></model>`);
   const files={'[Content_Types].xml':strToU8('<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/><Default Extension="config" ContentType="application/octet-stream"/><Default Extension="json" ContentType="application/json"/></Types>'),'_rels/.rels':strToU8('<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Target="/3D/3dmodel.model" Id="rel-1" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/></Relationships>'),'3D/3dmodel.model':xml.finish(),'Metadata/provenance.json':strToU8(JSON.stringify({...model.provenance,exportDialect:bambu?'bambu-compatible':'3mf-core'},null,2))};
   if(bambu){
