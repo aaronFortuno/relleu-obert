@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-04. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.22.19 — Peces panoràmiques a escala al selector
+
+La taula de 60 × 40 cm manté la proporció de les peces. A partir de 61 cm de costat llarg, la vista inicial les distribueix en dues files. Es comproven les mides panoràmiques admeses en ambdues orientacions.
+
 ## v0.22.18 — Format panoràmic i relleu per peces
 
 Format de fins a 100 × 20 cm en Relleu pur, amb escales d’1:50.000 a 1:500.000. El pas de la malla s’ajusta a les proporcions i a les línies de tall. El terreny es previsualitza per fragments en maquetes dividides dels dos modes. Les proves del panorama de 100 × 20 cm amb dades simulades comproven quatre fragments de previsualització i les mateixes cotes als talls de l’exportació.

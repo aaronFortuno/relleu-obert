@@ -1,5 +1,5 @@
 import {isPanoramicSize, pieceDimensions, SIZE_PRESETS, tilePlan} from './selection.js';
-import {createPiecePreview} from './piece-preview.js';
+import {createPiecePreview,layoutPiecePreview} from './piece-preview.js';
 
 const svgNS = 'http://www.w3.org/2000/svg';
 const formatCentimetres = value => (value / 10).toLocaleString('ca', {maximumFractionDigits: 2});
@@ -55,10 +55,10 @@ export function initPiecePicker(container, select) {
       const plan = tilePlan(width, height);
       const count = plan.tiles.length;
       const {width: tileWidth, height: tileHeight} = plan.tiles[0];
-      const panorama=isPanoramicSize(width,height);
-      const displayScale=panorama?Math.min(1,560/width,360/height):1;
-      drawPreview(width, height, plan, displayScale);
-      note.textContent=displayScale<1?'Vista reduïda · format panoràmic':'Taula de 60 × 40 cm · vista orientativa';
+      const layout=layoutPiecePreview(width,height,plan);
+      drawPreview(width, height, layout);
+      const arrangement=layout.twoRows?'dues files':layout.rotated?'peces girades':'vista orientativa';
+      note.textContent=`Taula 60 × 40 cm · ${arrangement}`;
       caption.value = `${formatSize(width, height)} cm · ${count === 1 ? '1 peça' : `${count} peces de ${formatSize(tileWidth, tileHeight)} cm`}`;
       activePreset = preset;
     }

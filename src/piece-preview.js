@@ -1,4 +1,7 @@
+import {MAX_MODEL_SIDE_MM} from './selection.js';
+
 // Corners of the 600 × 400 mm tabletop, clockwise from the back-left.
+const tableWidth=600,tableDepth=400;
 const [backLeft, backRight, frontRight, frontLeft] = [[549, 253], [1126, 369], [909, 558], [293, 400]];
 const [dx1, dy1] = [backRight[0] - frontRight[0], backRight[1] - frontRight[1]];
 const [dx2, dy2] = [frontLeft[0] - frontRight[0], frontLeft[1] - frontRight[1]];
@@ -7,8 +10,37 @@ const det = dx1 * dy2 - dx2 * dy1;
 const g = (dx3 * dy2 - dx2 * dy3) / det, h = (dx1 * dy3 - dx3 * dy1) / det;
 const gap = 7, sampleSpacing = 3;
 
+export function layoutPiecePreview(width,height,plan){
+  const rotated=height>MAX_MODEL_SIDE_MM;
+  const span=rotated?height:width;
+  const twoRows=span>tableWidth;
+  if(!twoRows&&!rotated){
+    const spacing=Math.min(gap,(tableWidth-width)/Math.max(1,plan.cols-1));
+    return {rotated,twoRows,pieces:plan.tiles.map(tile=>({
+      tile,x:tile.x0-width/2+(tile.col-(plan.cols+1)/2)*spacing,
+      y:tile.y0-height/2+((plan.rows+1)/2-tile.row)*gap
+    }))};
+  }
+
+  const depth=rotated?width:height;
+  const ordered=rotated?[...plan.tiles].reverse():plan.tiles;
+  const perRow=Math.ceil(ordered.length/(twoRows?2:1));
+  const pieceWidth=span/ordered.length;
+  const rowGap=twoRows?Math.min(gap,tableDepth-2*depth):0;
+  return {rotated,twoRows,pieces:ordered.map((tile,index)=>{
+    const row=Math.floor(index/perRow),col=index%perRow;
+    const count=Math.min(perRow,ordered.length-row*perRow);
+    const spacing=Math.min(gap,(tableWidth-count*pieceWidth)/Math.max(1,count-1));
+    const rowWidth=count*pieceWidth+(count-1)*spacing;
+    // Two 20 cm rows use all of the depth. Stagger them to keep the two rows legible.
+    const stagger=twoRows&&rowGap===0?(row===0?-1:1)*Math.min(20,(tableWidth-rowWidth)/2):0;
+    return {tile,x:-rowWidth/2+col*(pieceWidth+spacing)+stagger,
+      y:twoRows?(row===0?-depth-rowGap/2:rowGap/2):-depth/2};
+  })};
+}
+
 function project(x, y, z, color) {
-  const u = x / 600 + .5, v = y / 400 + .5;
+  const u = x / tableWidth + .5, v = y / tableDepth + .5;
   const depth = 1 / (1 + g * u + h * v);
   const px = (backLeft[0] + ((1 + g) * backRight[0] - backLeft[0]) * u + ((1 + h) * frontLeft[0] - backLeft[0]) * v) * depth;
   const py = (backLeft[1] + ((1 + g) * backRight[1] - backLeft[1]) * u + ((1 + h) * frontLeft[1] - backLeft[1]) * v - 1.1 * z) * depth;
@@ -114,19 +146,19 @@ export function createPiecePreview(canvas) {
     triangle(topA, topB, baseB);
     triangle(topA, baseB, baseA);
   }
-  return (width, height, plan, displayScale=1) => {
+  return (width, height, {pieces,rotated}) => {
     clear();
-    for (const tile of plan.tiles) {
-      const cols = Math.ceil(tile.width / sampleSpacing), rows = Math.ceil(tile.height / sampleSpacing);
-      const shiftX = (tile.col - (plan.cols + 1) / 2) * gap;
-      const shiftY = ((plan.rows + 1) / 2 - tile.row) * gap;
+    for (const {tile,x:left,y:back} of pieces) {
+      const tabletopWidth=rotated?tile.height:tile.width,tabletopDepth=rotated?tile.width:tile.height;
+      const sampleLeft=rotated?tile.y0-height/2:tile.x0-width/2;
+      const sampleBack=rotated?width/2-tile.x1:tile.y0-height/2;
+      const cols = Math.ceil(tabletopWidth / sampleSpacing), rows = Math.ceil(tabletopDepth / sampleSpacing);
       const grid = Array.from({length: rows + 1}, (_, row) =>
         Array.from({length: cols + 1}, (_, col) => {
-          const x = tile.x0 + tile.width * col / cols - width / 2;
-          const y = tile.y0 + tile.height * row / rows - height / 2;
-          const {z, color, water} = sample(x, y);
-          const px=(x+shiftX)*displayScale,py=(y+shiftY)*displayScale;
-          const top = project(px, py, z*displayScale, color);
+          const dx=tabletopWidth*col/cols,dy=tabletopDepth*row/rows;
+          const {z, color, water} = sample(sampleLeft+dx, sampleBack+dy);
+          const px=left+dx,py=back+dy;
+          const top = project(px, py, z, color);
           const base = row === rows || col === cols ? project(px, py, 0) : null;
           return {top, base, water};
         }));

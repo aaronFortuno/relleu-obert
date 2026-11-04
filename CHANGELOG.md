@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.22.19 — 2026-11-04
+
+- La vista inicial manté les dimensions de les peces panoràmiques respecte de la taula de 60 × 40 cm. Si el costat llarg supera els 60 cm, presenta les peces en dues files.
+
 ## v0.22.18 — 2026-11-04
 
 - Les mides panoràmiques admeten un costat de fins a 100 cm i l’altre de fins a 20 cm. Treballen en Relleu pur, d’1:50.000 a 1:500.000, amb una graella ajustada a les proporcions de la peça.

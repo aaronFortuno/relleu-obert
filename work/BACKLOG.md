@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-04 · v0.22.18**. Format panoràmic i previsualització per peces. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-04 · v0.22.19**. Peces panoràmiques a escala sobre la taula de previsualització. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -169,4 +169,4 @@ Validar la recuperació d’un projecte girat amb traços i materials als dos mo
 
 Validar les quatre peces dels Rasos–Gallina Pelada al laminador, sobretot les vores adjacents i la visibilitat de rierols i arbres. [Mesures i fonts](RO-055-RELLEU-PUR.md)
 
-El format panoràmic admet de 51 a 100 cm de costat llarg i de 10 a 20 cm de costat curt, en Relleu pur. La malla rectangular segueix un pas físic similar als dos eixos i comparteix mostres i cota de base als talls. Queden el control de dades reals de tot l’eix pirinenc, la mesura de memòria i la comprovació al laminador.
+El format panoràmic admet de 51 a 100 cm de costat llarg i de 10 a 20 cm de costat curt, en Relleu pur. A la vista inicial, les peces que superen conjuntament els 60 cm es disposen en dues files a la mateixa escala que la taula. La malla rectangular segueix un pas físic similar als dos eixos i comparteix mostres i cota de base als talls. Queden el control de dades reals de tot l’eix pirinenc, la mesura de memòria i la comprovació al laminador.
