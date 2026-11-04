@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.22.26 — 2026-11-04
+
+- Relleu pur recupera el panell de vegetació, el pinzell i la goma. Quan les capçades serien massa fines, els traços afegeixen una textura baixa. Els canvis de vegetació reutilitzen la malla del relleu.
+
 ## v0.22.25 — 2026-11-04
 
 - Els exemples es desplacen lentament en bucle, amb els extrems difuminats. En passar-hi per sobre o enfocar una fitxa amb el teclat, el carrusel s’atura i la fitxa s’amplia per mostrar la descripció i l’escala. Hi ha un botó de pausa i el carrusel respecta la preferència de moviment reduït.

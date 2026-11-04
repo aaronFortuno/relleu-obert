@@ -1,9 +1,9 @@
 import {sampleCoverage} from './relief-contours.js';
 import {levelReliefLakes} from './relief-lakes.js';
-import {reliefDiagonals,reliefParts,reliefGridSize,previewReliefPieces,assemblePanoramicRelief,PURE_RELIEF_RESOLUTIONS} from './pure-relief-mesh.js';
+import {reliefDiagonals,reliefParts,reliefGridSize,reliefTreesPart,previewReliefPieces,assemblePanoramicRelief,PURE_RELIEF_RESOLUTIONS} from './pure-relief-mesh.js';
 import {reliefStreamStrips} from './relief-streams.js';
 import {sampleReliefMask} from './relief-forest.js';
-import {alpineCrownHeightFactor,reliefCrownTaper,reliefForestTrees,RELIEF_TREE_MIN_DIAMETER_MM,RELIEF_TREE_DIAMETER_METRES,RELIEF_TREE_THINNING} from './relief-forest-trees.js';
+import {alpineCrownHeightFactor,reliefCrownTaper,reliefForestTrees,reliefBrushTrees,RELIEF_TREE_MIN_DIAMETER_MM,RELIEF_TREE_DIAMETER_METRES,RELIEF_TREE_THINNING} from './relief-forest-trees.js';
 import {waterwayPolygons} from './waterways.js';
 import {polygonOps} from './polygon-ops.js';
 import earcut from 'earcut';
@@ -610,33 +610,59 @@ function buildPureRelief(data,options,progress,preview){
   }
   const streams=options.streams!==false;
   if(streams&&(data.waterways?.length||data.waterAreas?.length))progress('Traçant els rius i rierols…');
-  const paths=streams?waterwayPolygons(data.waterways||[],project,{width,height,scale,multiplier:options.streamWidth}):[];
-  const waterAreas=streams?(data.waterAreas||[]).map(feature=>geoPolys(feature,project)):[];
-  const streamStrips=reliefStreamStrips([...paths,...waterAreas],width,height,columns);
+  const paths=waterwayPolygons(data.waterways||[],project,{width,height,scale,multiplier:options.streamWidth});
+  const waterAreas=(data.waterAreas||[]).map(feature=>geoPolys(feature,project));
+  const plantingStreamStrips=reliefStreamStrips([...paths,...waterAreas],width,height,columns);
   const forest=sampleReliefMask((data.forests||[]).flatMap(feature=>geoPolys(feature,project)),width,height,columns,rows);
-  const crownTaper=reliefCrownTaper(maximumElevation);
   Object.assign(reliefGrid,{scores,lakeWeights:lakes?.count?lakes.weights:null,
-    forestWeights:forest?.cells?forest.weights:null,streamStrips,crownTaper});
-  const trees=options.trees!==false;
-  if(trees&&forest?.cells)reliefGrid.trees=reliefForestTrees(reliefGrid,forest.contains,scale);
+    forestWeights:forest?.cells?forest.weights:null,streamStrips:streams?plantingStreamStrips:null});
+  const containsMappedLake=polygonTester((data.lakes||[]).flatMap(feature=>geoPolys(feature,project)));
+  const containsMappedWater=point=>ocean?.contains(point)||containsMappedLake(point);
+  const treeContext={scale,maximumElevation,containsForest:forest?.cells?forest.contains:null,
+    plantingGrid:{...reliefGrid,plantingStreamStrips,containsMappedWater},baseWarnings:[...(data.meta.sourceWarnings||[])]};
+  const vegetation=reliefVegetation(treeContext,options);
+  Object.assign(reliefGrid,{trees:vegetation.placements,crownTaper:vegetation.treeRepresentation.crownTaper});
   progress('Construint el sòlid del relleu…');
   const categories=panoramic?assemblePanoramicRelief(reliefGrid,(completed,total)=>{
     preview?.stage('terrain','Acabant el relleu i les capes de cada peça',completed,total);
   }):reliefParts(reliefGrid);
   const verticalReference={originMeters,minimumSurfaceMM:5,seaLevelMM,
     method:oceanWeights?'lowest generated-terrain sample at 5 mm; mapped sea at zero metres; no bathymetry':'lowest generated-terrain sample at 5 mm'};
-  const warnings=[...(data.meta.sourceWarnings||[])];
-  const treeCount=reliefGrid.trees?.length??0;
-  const omittedBelowThreshold=trees&&!!forest?.cells&&RELIEF_TREE_DIAMETER_METRES*scale<RELIEF_TREE_MIN_DIAMETER_MM;
-  if(omittedBelowThreshold)warnings.push('A aquesta escala, els boscos es representen amb color. Les capçades quedarien per sota de 0,45 mm.');
-  const provenance={...data.meta,options:{...options,pureRelief:true,trees},verticalExaggeration:exaggeration,verticalReference,
+  const provenance={...data.meta,options:{...options,pureRelief:true,trees:options.trees!==false},verticalExaggeration:exaggeration,verticalReference,
     units:'millimeters',reliefSampling:{columns,rows,stepMM:[width/columns,height/rows]},
     coverageCells:{bare:cells[0],snow:cells[1],total:columns*rows},lakeCount:lakes?.count??0,
-    streamCount:paths.length,flowingWaterAreaCount:waterAreas.length,forestSamples:forest?.cells??0,
-    treeRepresentation:{crownDiameterMetres:RELIEF_TREE_DIAMETER_METRES,minimumDiameterMM:RELIEF_TREE_MIN_DIAMETER_MM,
-      omittedBelowThreshold,maximumElevation,crownTaper,thinningMetres:RELIEF_TREE_THINNING}};
-  return groupMaterials({width,height,scale:Math.round(1000/scale),treeCount,buildingCount:0,categories,warnings,reliefGrid,
-    triangles:categories.reduce((n,p)=>n+p.faces.length/3,0),elevationDiagnostics:prepared.diagnostics,provenance});
+    streamCount:streams?paths.length:0,flowingWaterAreaCount:streams?waterAreas.length:0,forestSamples:forest?.cells??0};
+  return finishReliefVegetation({width,height,scale:Math.round(1000/scale),buildingCount:0,categories,reliefGrid,
+    elevationDiagnostics:prepared.diagnostics,provenance},treeContext,vegetation);
+}
+
+function reliefVegetation(context,options){
+  const {scale,maximumElevation,containsForest,plantingGrid,baseWarnings}=context;
+  const {trees=true,treeType='mixed',density=2.5,brushDensity=density,strokes=[]}=options;
+  if(!Number.isFinite(density)||density<.25||density>5)throw Error('Densitat fora del rang admès.');
+  if(!Number.isFinite(brushDensity)||brushDensity<.25||brushDensity>5)throw Error('Densitat del pinzell fora del rang admès.');
+  const texture=RELIEF_TREE_DIAMETER_METRES*scale<RELIEF_TREE_MIN_DIAMETER_MM;
+  const crownTaper=treeType==='round'?0:treeType==='tall'?1:reliefCrownTaper(maximumElevation);
+  let candidates=[];
+  if(trees&&!texture&&containsForest){
+    if(context.cache?.density!==density)context.cache={density,candidates:reliefForestTrees(plantingGrid,containsForest,scale,density)};
+    candidates=context.cache.candidates;
+  }
+  const {placements,budget}=reliefBrushTrees(plantingGrid,candidates,{strokes:trees?strokes:[],brushDensity},scale,texture);
+  const omittedBelowThreshold=!!trees&&texture;
+  const warnings=baseWarnings.slice();
+  if(omittedBelowThreshold&&containsForest)warnings.push('A aquesta escala, el bosc cartografiat conserva el color i el pinzell afegeix textura baixa.');
+  const treeRepresentation={crownDiameterMetres:RELIEF_TREE_DIAMETER_METRES,minimumDiameterMM:RELIEF_TREE_MIN_DIAMETER_MM,
+    omittedBelowThreshold,manualStyle:texture?'texture':'crowns',maximumElevation,crownTaper,thinningMetres:RELIEF_TREE_THINNING};
+  return {placements,budget,treeRepresentation,warnings};
+}
+
+function finishReliefVegetation(model,context,{placements,budget,treeRepresentation,warnings}){
+  const next=groupMaterials({...model,warnings,treeCount:placements.length,
+    triangles:model.categories.reduce((n,p)=>n+p.faces.length/3,0),
+    provenance:{...model.provenance,treeRepresentation,vegetationBudget:budget}});
+  Object.defineProperty(next,'reliefVegetationContext',{value:context});
+  return next;
 }
 
 export function updateTransport(previous,changes={},progress=()=>{},infrastructureApi=previous.context?.infrastructureApi){
@@ -1133,6 +1159,17 @@ export function updateBuildings(previous,layer={},changes={},progress=()=>{},pre
 }
 
 export function updateVegetation(previous,changes={},progress=()=>{},preview){
+  if(previous.reliefVegetationContext){
+    progress('Actualitzant la capa de vegetació…');
+    const context=previous.reliefVegetationContext;
+    const options={...previous.provenance.options,...changes};
+    const vegetation=reliefVegetation(context,options);
+    const reliefGrid={...previous.reliefGrid,trees:vegetation.placements,crownTaper:vegetation.treeRepresentation.crownTaper};
+    const categories=previous.categories.filter(part=>part.id!=='trees');
+    const part=reliefTreesPart(reliefGrid);
+    if(part)categories.push(part);
+    return finishReliefVegetation({...previous,reliefGrid,categories,provenance:{...previous.provenance,options}},context,vegetation);
+  }
   if(!previous.context)throw Error('Cal generar primer el terreny.');const ctx={...previous.context};
   const options={...ctx.options,...changes}, {density=2.5,trees=true,treeType='mixed',strokes=[]}=options;
   if(!Number.isFinite(density)||density<.25||density>5)throw Error('Densitat fora del rang admès.');

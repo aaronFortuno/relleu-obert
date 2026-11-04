@@ -2,6 +2,10 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {reliefCrownTaper,reliefForestTrees,reliefTreePart} from '../src/relief-forest-trees.js';
 import {auditPart} from '../src/solid-audit.js';
+import {buildModel,makeProjection,updateVegetation} from '../src/geometry.js';
+import {groupReliefMaterials} from '../src/materials.js';
+import {splitPureRelief} from '../src/pure-relief-mesh.js';
+import {physicalBBox,selectionPose} from '../src/selection.js';
 
 const resolution=4;
 const grid={width:40,height:40,resolution,
@@ -61,4 +65,71 @@ test('pure relief crowns stay clear of water and print cuts',()=>{
   assert.deepEqual(auditPart(left).errors,[]);
   assert.deepEqual(auditPart(right).errors,[]);
   assert.equal(left.vertices.length+right.vertices.length,trees.length*42*3);
+});
+
+function brushFixture(width,height,scale,extraOptions={}){
+  const bbox=physicalBBox([0,0],width*scale/1e6,height*scale/1e6);
+  const dem=[{x:0,y:0,z:0,size:2,elev:Float32Array.of(100,100,100,100)}];
+  const options={size:Math.max(width,height),widthMM:width,heightMM:height,selectionPose:selectionPose(bbox),
+    pureRelief:true,resolution:12,brushDensity:.5,...extraOptions};
+  const {unproject}=makeProjection(bbox,options.size,options);
+  const polygon=(x0,y0,x1,y1)=>({geometry:{type:'Polygon',coordinates:[[
+    [x0,y0],[x1,y0],[x1,y1],[x0,y1],[x0,y0]
+  ].map(unproject)]}});
+  return {data:{meta:{bbox},dem},options,polygon,unproject};
+}
+
+test('at 1:10,000 the brush adds editable crowns on unwooded land with the forest filament',()=>{
+  const {data,options}=brushFixture(100,100,10000);
+  const initial=buildModel(data,options);
+  const add={mode:'add',x:45,y:46,radius:8,gesture:1};
+  const round=updateVegetation(initial,{strokes:[add,add],treeType:'round'});
+  const tall=updateVegetation(round,{treeType:'tall'});
+  assert.equal(round.scale,10000);
+  assert.equal(round.provenance.treeRepresentation.manualStyle,'crowns');
+  assert.equal(round.categories.find(part=>part.id==='terrain'),initial.categories[0]);
+  assert.equal(tall.reliefGrid.heights,initial.reliefGrid.heights);
+  assert(round.treeCount>0);
+  assert.equal(round.treeCount,updateVegetation(initial,{strokes:[add]}).treeCount);
+  assert.equal(tall.treeCount,round.treeCount);
+  const crowns=round.categories.find(part=>part.id==='trees');
+  assert.deepEqual(auditPart(crowns).errors,[]);
+  assert(auditPart(tall.categories.find(part=>part.id==='trees')).bbox.max[2]>auditPart(crowns).bbox.max[2]);
+  assert.equal(round.parts.find(part=>part.id==='forest').vertices,crowns.vertices);
+  assert.equal(groupReliefMaterials(round,6).parts.find(part=>part.id==='material-5').vertices,crowns.vertices);
+  const erased=updateVegetation(round,{strokes:[add,{...add,mode:'erase',gesture:2}]});
+  assert.equal(erased.treeCount,0);
+  assert(!erased.categories.some(part=>part.id==='trees'));
+  const disabled=updateVegetation(round,{trees:false});
+  assert.equal(disabled.treeCount,0);
+  assert.equal(updateVegetation(disabled,{trees:true}).treeCount,round.treeCount);
+});
+
+test('painted texture skips mapped water and print cuts in a panoramic model',()=>{
+  const {data,options,polygon,unproject}=brushFixture(510,100,450000,{streams:false});
+  data.lakes=[polygon(90,20,110,80)];
+  data.oceans=[polygon(300,-2,520,102)];
+  data.waterways=[{properties:{waterway:'stream'},geometry:{type:'LineString',coordinates:[[80,50],[220,50]].map(unproject)}}];
+  const strokes=[100,170,310].map((x,i)=>({mode:'add',x,y:50,radius:14,gesture:i+1,density:1}));
+  const initial=buildModel(data,options);
+  const model=updateVegetation(initial,{strokes});
+  assert.equal(model.provenance.treeRepresentation.manualStyle,'texture');
+  assert.equal(initial.treeCount,0);
+  assert(model.treeCount>0);
+  assert.equal(model.categories.find(part=>part.id==='water'),initial.categories.find(part=>part.id==='water'));
+  for(const tree of model.reliefGrid.trees){
+    const {x,y,radius,texture}=tree;
+    assert(texture&&radius>=.27&&radius<=.3&&x+radius<300&&Math.abs(x-170)>=radius&&
+      (x>220||Math.abs(y-50)>.225+radius)&&(x+radius<90||x-radius>110),JSON.stringify(tree));
+  }
+  const crowns=model.categories.find(part=>part.id==='trees');
+  assert.deepEqual(auditPart(crowns).errors,[]);
+  for(const [i,{ground}] of model.reliefGrid.trees.entries()){
+    const tip=crowns.vertices[(i*42+41)*3+2];
+    assert(tip-ground>=.24&&tip-ground<=.31);
+  }
+  const pieces=splitPureRelief(model,250);
+  assert.equal(pieces.length,3);
+  assert.equal(pieces.reduce((n,piece)=>n+(piece.parts.find(part=>part.id==='forest')?.faces.length??0),0),crowns.faces.length);
+  assert(!pieces[2].parts.some(part=>part.id==='forest'));
 });

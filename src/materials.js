@@ -18,6 +18,7 @@ export const RELIEF_MATERIALS=[
   CATEGORIES.find(category=>category.id==='forest'),
   CATEGORIES.find(category=>category.id==='water')
 ];
+export const reliefMaterialId=id=>id==='trees'?'forest':id;
 const nativeReliefColors=RELIEF_MATERIALS.map(category=>category.color);
 const [ground,rock,snow,,forest,sea]=nativeReliefColors;
 export const RELIEF_PALETTES={
@@ -48,7 +49,7 @@ export function groupReliefMaterials(model,count=6,assignments,{paletteOnly=fals
   const colors=RELIEF_PALETTES[count],groups=colors.map(()=>[]);
   for(const part of model.categories||model.parts){
     if(!part.faces.length)continue;
-    const index=RELIEF_MATERIALS.findIndex(category=>category.id===part.id);
+    const index=RELIEF_MATERIALS.findIndex(category=>category.id===reliefMaterialId(part.id));
     if(index<0)throw Error('Categoria de relleu desconeguda.');
     groups[assignments[index]].push(part);
   }
@@ -58,19 +59,37 @@ export function groupReliefMaterials(model,count=6,assignments,{paletteOnly=fals
     const material={id:`material-${index+1}`,name,color:colors[index]};
     if(paletteOnly)return [material];
     if(group.length===1)return [{...group[0],...material}];
-    const vertices=new Float32Array(group.reduce((total,part)=>total+part.vertices.length,0));
-    const faces=new Uint32Array(group.reduce((total,part)=>total+part.faces.length,0));
-    let vertexOffset=0,faceOffset=0;
-    for(const part of group){
-      vertices.set(part.vertices,vertexOffset);
-      const indexOffset=vertexOffset/3;
-      for(const index of part.faces)faces[faceOffset++]=index+indexOffset;
-      vertexOffset+=part.vertices.length;
-    }
-    return [{...material,vertices,faces}];
+    return [{...material,...joinReliefMeshes(group)}];
   });
   return {...model,parts,materialCount:count,materialsUsed:parts.length,
     provenance:{...model.provenance,materials:{requested:count,assignments,colors}}};
+}
+
+function joinReliefMeshes(parts){
+  const vertices=new Float32Array(parts.reduce((total,part)=>total+part.vertices.length,0));
+  const faces=new Uint32Array(parts.reduce((total,part)=>total+part.faces.length,0));
+  let vertexOffset=0,faceOffset=0;
+  for(const part of parts){
+    vertices.set(part.vertices,vertexOffset);
+    const indexOffset=vertexOffset/3;
+    for(const index of part.faces)faces[faceOffset++]=index+indexOffset;
+    vertexOffset+=part.vertices.length;
+  }
+  return {vertices,faces};
+}
+
+export function nativeReliefParts(categories){
+  const groups=new Map();
+  for(const part of categories){
+    if(!part.faces.length)continue;
+    const id=reliefMaterialId(part.id),group=groups.get(id);
+    if(group)group.push(part);else groups.set(id,[part]);
+  }
+  return [...groups].map(([id,group])=>{
+    if(group.length===1&&group[0].id===id)return group[0];
+    const material=RELIEF_MATERIALS.find(category=>category.id===id);
+    return {...material,...(group.length===1?{vertices:group[0].vertices,faces:group[0].faces}:joinReliefMeshes(group))};
+  });
 }
 
 export function defaultAssignments(count){
@@ -89,7 +108,7 @@ export function normalizeAssignments(count,assignments=defaultAssignments(count)
 export function groupMaterials(model,count,assignments){
   if(model.provenance?.options?.pureRelief){
     if(count!==undefined)return groupReliefMaterials(model,count,assignments);
-    const parts=(model.categories||model.parts).filter(p=>p.faces.length);
+    const parts=nativeReliefParts(model.categories||model.parts);
     return {...model,parts,materialCount:parts.length,materialsUsed:parts.length,
       provenance:{...model.provenance,materials:{requested:parts.length,colors:parts.map(p=>p.color)}}};
   }

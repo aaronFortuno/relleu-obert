@@ -1,5 +1,5 @@
 import {coverageSkins,RELIEF_SKIN_DEPTH} from './relief-contours.js';
-import {RELIEF_MATERIALS} from './materials.js';
+import {RELIEF_MATERIALS,nativeReliefParts} from './materials.js';
 import {tilePlan} from './selection.js';
 import {reliefStreamPart} from './relief-streams.js';
 import {reliefTreePart} from './relief-forest-trees.js';
@@ -31,6 +31,12 @@ export function reliefDiagonals(heights,n,midpoint,rows=n){
 
 const directions=[[0,-1],[1,0],[0,1],[-1,0]];
 const corners=[[0,0],[1,0],[1,1],[0,1]];
+const reliefTreeCategory={...RELIEF_MATERIALS[4],id:'trees',name:'Arbres'};
+
+export function reliefTreesPart(grid,bounds={left:0,bottom:0,right:grid.resolution,top:grid.rows??grid.resolution}){
+  const mesh=reliefTreePart(grid,bounds);
+  return mesh&&{...reliefTreeCategory,...mesh};
+}
 
 function reliefBase(grid,bounds,layered){
   const {resolution:n,rows:ny=n,heights,diagonals,width,height}=grid;
@@ -108,8 +114,9 @@ export function reliefParts(grid,bounds={left:0,bottom:0,right:grid.resolution,t
   for(let kind=1;kind<3;kind++)if(skins[kind])parts.push({...RELIEF_MATERIALS[kind],...skins[kind]});
   const stream=reliefStreamPart(grid,bounds),lake=skins[3];
   if(lake||stream)parts.push({...RELIEF_MATERIALS[3],...(lake?combine(lake,stream):stream)});
-  const forest=skins[4],trees=reliefTreePart(grid,bounds);
-  if(forest||trees)parts.push({...RELIEF_MATERIALS[4],...(forest?combine(forest,trees):trees)});
+  if(skins[4])parts.push({...RELIEF_MATERIALS[4],...skins[4]});
+  const trees=reliefTreesPart(grid,bounds);
+  if(trees)parts.push(trees);
   if(skins[5])parts.push({...RELIEF_MATERIALS[5],...skins[5]});
   return parts;
 }
@@ -148,7 +155,7 @@ export function assemblePanoramicRelief(grid,progress){
     }
     progress(i+1,plan.tiles.length);
   }
-  return RELIEF_MATERIALS.filter(({id})=>partsByMaterial.has(id)).map(material=>{
+  return [...RELIEF_MATERIALS,reliefTreeCategory].filter(({id})=>partsByMaterial.has(id)).map(material=>{
     const parts=partsByMaterial.get(material.id);
     if(parts.length===1)return parts[0];
     const vertices=new Float32Array(parts.reduce((sum,part)=>sum+part.vertices.length,0));
@@ -170,7 +177,7 @@ export function splitPureRelief(model,max,progress=()=>{}){
   if(n%plan.cols||(grid.rows??n)%plan.rows)return null;
   return plan.tiles.map((tile,i)=>{
     progress('Tancant la peça '+(i+1)+'/'+plan.tiles.length+'…');
-    const parts=reliefParts(grid,tileBounds(grid,plan,tile));
+    const parts=nativeReliefParts(reliefParts(grid,tileBounds(grid,plan,tile)));
     const provenance={...model.provenance,tile,
       assembly:{width:model.width,height:model.height,columns:plan.cols,rows:plan.rows},
       name:(model.provenance.name||'Maqueta')+' · '+tile.name};

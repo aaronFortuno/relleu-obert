@@ -2,6 +2,12 @@
 
 Actualitzat: 2026-11-04. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.22.26 — Pinzell de vegetació en Relleu pur
+
+Relleu pur recupera el panell Vegetació, amb capçades automàtiques segons l’escala i un pinzell per afegir o esborrar volums sobre terra. Quan el diàmetre de les capçades baixa de 0,45 mm, el pinzell afegeix una textura de 0,54–0,60 mm de diàmetre nominal i 0,25–0,31 mm d’altura nominal. La textura comparteix el filament del bosc i es conserva en tallar la maqueta en peces. Els canvis de vegetació reutilitzen la malla del relleu.
+
+A Tamariu, a 1:10.000, un traç fora del bosc cartografiat ha afegit 16 capçades. Desfer ha recuperat les 195 originals. A 1:30.000, el visor ha afegit 16 volums de textura amb un sol traç. Revisat a 1280 × 720 i 1100 × 680. La prova de malla panoràmica comprova que la textura es conserva a l’exportació i evita les vores de tall i l’aigua cartografiada. Pendent de laminat i impressió.
+
 ## v0.22.25 — Carrusel en bucle i generació directa
 
 RO-046 desplaça les imatges a 12 px/s i encadena el final amb el principi. Pausa amb punter, teclat o el botó de control. La fitxa ampliada mostra la descripció, el tipus, l’escala i la mida de la maqueta. En triar l’exemple es genera amb els ajustos de relleu predeterminats.
