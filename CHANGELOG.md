@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.22.25 — 2026-11-04
+
+- Els exemples es desplacen lentament en bucle, amb els extrems difuminats. En passar-hi per sobre o enfocar una fitxa amb el teclat, el carrusel s’atura i la fitxa s’amplia per mostrar la descripció i l’escala. Hi ha un botó de pausa i el carrusel respecta la preferència de moviment reduït.
+- En triar un exemple curat, la maqueta es genera directament amb el retall i els ajustos de relleu predeterminats.
+
 ## v0.22.24 — 2026-11-04
 
 - El control «Gir automàtic» es mostra separat a la cantonada superior dreta del visor. Indica l’estat amb text i passa a gris quan es desactiva.

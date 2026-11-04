@@ -11,7 +11,7 @@ La proposta de RO-046 recull **28 enquadraments** per al selector de Territori, 
 
 La badia de Roses, el Cap de Creus i el delta de l’Ebre tenen una vista obliqua estàtica del model de Relleu pur amb detall equilibrat i exageració ×1,5. Les tres imatges de 720 × 450 píxels ocupen 54 kB en total. Al delta es veuen les guies de les quatre peces. El visor pot generalitzar els cursos d’aigua i les llacunes petites en els retalls més amplis.
 
-Les noves fitxes s’afegeixen a [la llista d’exemples](../src/curated-examples.js) i les captures es desen a [la carpeta d’imatges](../public/examples/). Cada fitxa prepara la maqueta amb la seva mida, escala, centre i gir. Es pot ajustar a Territori abans de prémer «Genera el model».
+Les noves fitxes s’afegeixen a [la llista d’exemples](../src/curated-examples.js) i les captures es desen a [la carpeta d’imatges](../public/examples/). El carrusel es desplaça lentament i s’atura quan es consulta una fitxa. En triar-la, l’aplicació genera la maqueta amb la mida, escala, centre i gir de la fitxa i els ajustos de relleu predeterminats. Els ajustos es poden editar a Territori després de la generació.
 
 Cartografia © OpenStreetMap contributors (ODbL), via OpenFreeMap. Elevacions © Mapterhorn. El catàleg d’elevacions del proveïdor inclou el MDT02 i el MDT05 del Sistema Cartográfico Nacional i el Copernicus GLO-30. [OpenStreetMap](https://www.openstreetmap.org/copyright) · [Atribucions de Mapterhorn](https://mapterhorn.com/attribution/)
 

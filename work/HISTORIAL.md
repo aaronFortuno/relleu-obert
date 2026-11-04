@@ -2,6 +2,12 @@
 
 Actualitzat: 2026-11-04. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.22.25 — Carrusel en bucle i generació directa
+
+RO-046 desplaça les imatges a 12 px/s i encadena el final amb el principi. Pausa amb punter, teclat o el botó de control. La fitxa ampliada mostra la descripció, el tipus, l’escala i la mida de la maqueta. En triar l’exemple es genera amb els ajustos de relleu predeterminats.
+
+Revisió local a 1280 × 720 i 1100 × 680, amb retorn del bucle, pausa i fitxes ampliades. La generació automàtica de Roses s’ha comprovat amb teclat i la del Cap de Creus des de Territori. Construcció estàtica i 38 proves locals superades. Pendent de validació d’ús.
+
 ## v0.22.24 — Estat visible del gir automàtic
 
 El control del gir passa a la cantonada superior dreta del visor i indica si està activat o desactivat. Revisat al navegador a 1280 × 720 i 1100 × 680, amb clic, teclat i vista zenital. Pendent de validació d’ús.
