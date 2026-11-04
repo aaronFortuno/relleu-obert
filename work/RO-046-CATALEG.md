@@ -11,7 +11,7 @@ La proposta de RO-046 recull **28 enquadraments** per al selector de Territori, 
 
 La badia de Roses, el Cap de Creus i el delta de l’Ebre tenen una vista obliqua estàtica del model de Relleu pur amb detall equilibrat i exageració ×1,5. Les tres imatges de 720 × 450 píxels ocupen 52 kB en total. Al delta es veuen les guies de les quatre peces. El visor pot generalitzar els cursos d’aigua i les llacunes petites en els retalls més amplis.
 
-Les noves fitxes s’afegeixen a [la llista d’exemples](../src/curated-examples.js) i les captures es desen a [la carpeta d’imatges](../public/examples/). El carrusel barreja les fitxes cada cop que s’obre i alterna els dos modes mentre en queden de cadascun. Les fletxes acceleren el moviment i un clic desplaça una fitxa sencera. El moviment es frena quan es consulta una fitxa ampliada. En triar-la, l’aplicació genera la maqueta amb la mida, escala, centre i gir de la fitxa i els ajustos predeterminats. Els ajustos es poden editar a Territori després de la generació.
+Les noves fitxes s’afegeixen a [la llista d’exemples](../src/curated-examples.js) i les captures es desen a [la carpeta d’imatges](../public/examples/). El carrusel barreja les fitxes cada cop que s’obre i reparteix els dos modes al llarg del bucle segons la proporció disponible. Les fletxes acceleren el moviment i un clic desplaça una fitxa sencera. El moviment es frena quan es consulta una fitxa ampliada. En triar-la, l’aplicació genera la maqueta amb la mida, escala, centre i gir de la fitxa i els ajustos predeterminats. Els ajustos es poden editar a Territori després de la generació.
 
 Cartografia © OpenStreetMap contributors (ODbL), via OpenFreeMap. Elevacions © Mapterhorn. El catàleg d’elevacions del proveïdor inclou el MDT02 i el MDT05 del Sistema Cartográfico Nacional i el Copernicus GLO-30. [OpenStreetMap](https://www.openstreetmap.org/copyright) · [Atribucions de Mapterhorn](https://mapterhorn.com/attribution/)
 
@@ -20,6 +20,12 @@ Cartografia © OpenStreetMap contributors (ODbL), via OpenFreeMap. Elevacions ©
 Montserrat, l’estany de Sant Maurici i els volcans del Croscat i Santa Margarida s’afegeixen després dels tres exemples litorals. Són retalls d’una sola peça i tenen vistes obliqües estàtiques de 720 × 450 píxels. A Sant Maurici, la càmera mira l’estany des del nord per deixar els Encantats al fons.
 
 Les elevacions de les captures de Montserrat i Sant Maurici són de Mapterhorn. La dels volcans utilitza el MET5 de l’ICGC. L’aigua i el bosc dels tres retalls provenen d’OpenStreetMap via OpenFreeMap. [Atribucions de Mapterhorn](https://mapterhorn.com/attribution/) · [Models d’elevacions de l’ICGC](https://www.icgc.cat/ca/Geoinformacio-i-mapes/Dades-i-productes/Elevacions/Elevacions-territorial/Models-delevacions) · [OpenStreetMap](https://www.openstreetmap.org/copyright)
+
+## Primer lot de Model complet al carrusel
+
+Barcelona, Girona i Cardona utilitzen els centres de la taula de Catalunya, a 1:10.000, amb una sola peça i el nord a dalt. Les tres fitxes tenen una vista obliqua estàtica del visor i queden intercalades entre les sis de Relleu pur. A l’Eixample interessa el traçat dels carrers i dels xamfrans. A Girona, el contrast entre el riu i el nucli històric. A Cardona, la relació entre el castell, la vila i el relleu de la Vall Salina.
+
+Les tres imatges WebP de 720 × 450 píxels ocupen 168 kB en total. Les captures fan servir el MET5 i els edificis de l’ICGC, amb cartografia d’OpenStreetMap via OpenFreeMap.
 
 ## Com reproduir els retalls
 

@@ -15,10 +15,18 @@ function shuffle(examples) {
 function orderExamples(examples) {
   const relief = shuffle(examples.filter(example => example.pureRelief !== false));
   const complete = shuffle(examples.filter(example => example.pureRelief === false));
-  const groups = Math.random() < .5 ? [relief, complete] : [complete, relief];
-  const result = [];
-  while (groups[0].length && groups[1].length) result.push(groups[0].shift(), groups[1].shift());
-  return result.concat(...groups);
+  const [majority, minority] = relief.length >= complete.length ? [relief, complete] : [complete, relief];
+  if (!minority.length) return majority;
+
+  const ordered = [];
+  let start = 0;
+  for (const [index, example] of minority.entries()) {
+    const end = Math.floor((index + 1) * majority.length / minority.length);
+    ordered.push(...majority.slice(start, end), example);
+    start = end;
+  }
+  const offset = Math.floor(Math.random() * ordered.length);
+  return ordered.slice(offset).concat(ordered.slice(0, offset));
 }
 
 function createCard(expanded = false) {

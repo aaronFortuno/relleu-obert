@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.22.31 — 2026-11-04
+
+- El carrusel afegeix Barcelona, Girona i Cardona en Model complet, amb imatges estàtiques del visor i generació en clicar. Les tres fitxes urbanes es reparteixen entre les sis de Relleu pur al llarg del bucle.
+
 ## v0.22.30 — 2026-11-04
 
 - Les fletxes laterals del carrusel acceleren el moviment en passar-hi per sobre. Un clic desplaça una fitxa sencera amb acceleració i frenada graduals. Les fitxes s’amplien en una vista flotant i l’ordre es barreja en cada càrrega. El carrusel alterna els modes quan hi ha fitxes de tots dos.

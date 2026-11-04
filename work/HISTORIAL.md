@@ -2,6 +2,12 @@
 
 Actualitzat: 2026-11-04. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.22.31 — Primer lot de Model complet al carrusel
+
+RO-046 incorpora l’Eixample de Barcelona, el Barri Vell i l’Onyar de Girona, i el castell, la vila i la Vall Salina de Cardona. Hi ha dues fitxes de Relleu pur entre cada parella de Model complet, també en tancar el bucle. Els tres models tenen una sola peça i es generen a 1:10.000 en clicar la fitxa. [Retalls i captures](RO-046-CATALEG.md#primer-lot-de-model-complet-al-carrusel)
+
+Generades les tres maquetes des del carrusel amb edificis de l’ICGC i elevacions del MET5. La de Barcelona ha trigat 4 min 8 s en aquest equip. Verificades les imatges i la barreja a la construcció estàtica a 1280 × 720 i 1100 × 680. Superades 27 proves locals. Pendent de validació d’ús.
+
 ## v0.22.30 — Fletxes laterals i fitxes flotants
 
 RO-046 barreja les sis fitxes en cada càrrega i alternarà els modes quan hi hagi exemples de Model complet. Les fletxes dels extrems acceleren el moviment amb el punter i cada activació avança o retrocedeix una fitxa exacta. La fitxa s’amplia al centre i conserva la generació en seleccionar-la. Les mides queden a la dreta de la taula. El Cap de Creus té un nou render estàtic de la península amb un retall de 20 × 20 km, a 1:100.000 i amb un gir de +10°. [Retall i imatge](RO-046-CATALEG.md#primer-lot-al-carrusel)
