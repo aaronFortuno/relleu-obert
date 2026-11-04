@@ -1,14 +1,15 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat: **2026-11-04 · v0.21.5**. Mides inicials personalitzables i talls automàtics per sobre de 25 cm. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-04 · v0.21.5**. Guies i ZIP de Tamariu 40 × 45 cm verificats localment. [Historial](HISTORIAL.md#v0215--mides-i-guies-de-tall).
 
 ## Ordre de treball
 
 | Lot | Línies | Resultat que permet avançar |
 | --- | --- | --- |
-| **0.21 · Exportació comprovable** | RO-024, RO-033, RO-034, RO-050, RO-052, RO-055 | Auditar els 3MF amb controls petits i identificar el primer defecte reproduïble. Les comprovacions de Bambu Studio i d’impressió es registren a banda. |
-| **0.22 · Vies i rendiment** | RO-033, RO-034, RO-050, RO-051, RO-052, RO-053 | Bateria inicial completada i unió de paviment corregida en els dos controls afectats. Revisar transicions de la C-37 i la coberta del túnel a 1:20.000. [Resultats](RO-051-PERFILS-VIARIS.md#bateria-de-la-022--control-inicial-amb-v0213) |
-| **Retocs en paral·lel** | RO-046, RO-054 | Validar la càrrega dels exemples i la recuperació de projectes girats, amb els dos modes i traços. Reproduir qualsevol pèrdua d’ajustos abans de tocar el flux. |
+| **0.22 · 1. Transicions de la C-37** | RO-051, RO-052 | Reproduir els extrems omesos a Sant Salvador a 1:10.000. Comprovar la continuïtat de cota i el canvi de pendent a les unions, i registrar quins trams tornen a seguir el terreny. |
+| **0.22 · 2. Coberta del túnel** | RO-034 | Comparar el mateix túnel a 1:10.000 i 1:20.000 i aïllar si el límit ve del mostreig, del perfil estimat o de la secció imprimible. Si es pot obrir, comprovar que les dues boques són visibles i que es conserva la coberta interior i la base. |
+| **0.22 · 3. Contrast i rendiment** | RO-033, RO-050, RO-051, RO-052, RO-053 | Repetir la bateria de sis retalls després de les correccions. Comparar unions, pendents, omissions i temps amb la mateixa font, escala i detall. [Resultats de referència](RO-051-PERFILS-VIARIS.md#bateria-de-la-022--control-inicial-amb-v0213) |
+| **Validació en paral·lel** | RO-024, RO-046, RO-054, RO-055 | Laminar les vores adjacents de Tamariu i dels Rasos–Gallina Pelada. Comprovar la recuperació d’un projecte girat, de mida personalitzada, amb materials i traços, i la transició quan es carrega un exemple. |
 | **Pilot de relleu rocós** | RO-023, RO-035 | Quatre controls del Cavall Bernat i un cupó local dels Degotalls auditats. Contrastar un segon lloc i resoldre la georeferenciació del cupó. [Resultats](RELLEU-ROCOS.md) |
 | **Després** | RO-026, RO-032 | Comparar les fonts d’edificis en dues zones, amb proves d’accés i cobertura abans de fer canvis al model. |
 
@@ -22,12 +23,12 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 
 | ID | Prioritat | Estat | Proper resultat comprovable |
 | ------------------------------------------------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| [RO-053](#ro-053--flux-de-treball-per-etapes) | P1 | Previsualització i progrés validats en diversos llocs | Mesurar temps i memòria; validar guies i descàrrega |
+| [RO-053](#ro-053--flux-de-treball-per-etapes) | P1 | Progrés per capes i guies de Tamariu verificats | Comparar temps i memòria a la bateria de la 0.22 |
 | [RO-033](#ro-033--ponts-i-viaductes) | P1 | Millau i el cupó del Bages validats al visor | Revisar accessos i llums al laminador, contrastar altres ponts |
-| [RO-034](#ro-034--túnels-imprimibles) | P1 | Corregit en controls locals; pendent d'usuari/laminat | Revisar portals amb mode experimental activat |
-| [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | Radi intermedi verificat en carretera i ferrocarril sintètics | Contrastar Millau, Rajadell i un retall ferroviari |
-| [RO-052](#ro-052--continuïtat-i-amplada-del-traçat-viari) | P1 | Accessos de Millau visualment acceptables; camins massa amples en retalls grans | Comparar amplades a dues escales i revisar el laminat |
-| [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió) | P1 | Consulta per altura verificada amb el cupó del Bages | Reproduir el primer defecte al laminador amb un fitxer controlat |
+| [RO-034](#ro-034--túnels-imprimibles) | P1 | Túnel de Sant Salvador obert a 1:10.000 i omès a 1:20.000 | Aïllar la causa de la coberta discontínua a 1:20.000 |
+| [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | Dos perfils de la C-37 i rasant ferroviària de 800 m recuperats | Resoldre les transicions omeses i repetir la bateria |
+| [RO-052](#ro-052--continuïtat-i-amplada-del-traçat-viari) | P1 | Quatre enllaços a Millau a 1:20.000 | Mesurar cotes, pendents i amplades als enllaços de la C-37 |
+| [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió) | P1 | Quatre 3MF de Tamariu verificats al ZIP | Contrastar les vores adjacents i els materials al laminador |
 | [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts) | P1 | Fonts en estudi | Comparació de parts i petjades en segona zona |
 | [RO-032](#ro-032--cobertes-i-volums-singulars) | P1 | Nucli verificat; servei remot pendent de validar | Consulta real reeixida i dades de coberta de Tamariu |
 | [RO-023](#ro-023--relleu-local-i-fonts-vectorials-de-més-precisió) | P2 | MET5 integrat i auditat al Pedraforca | Contrast visual i refinament de malla |
@@ -103,7 +104,7 @@ Comparar la font actual i un MDT de detall al mateix retall de Montserrat, a due
 
 ### RO-024 — Unió de volums i validació d’impressió
 
-El cupó del Bages permet consultar els materials per altura. Bambu Studio lamina bé en general segons el retorn d’usuari. Si reapareix un material inesperat, conservar el 3MF, el perfil i la cota de la primera capa afectada. Pendents els controls de Rajadell i dels Rasos–Gallina Pelada al laminador i la impressió física. [Resultats i controls](RO-024-RESULTATS.md)
+El cupó del Bages permet consultar els materials per altura. Bambu Studio lamina bé en general segons el retorn d’usuari. Si reapareix un material inesperat, conservar el 3MF, el perfil i la cota de la primera capa afectada. Laminar Tamariu 40 × 45 cm i els Rasos–Gallina Pelada per contrastar vores i capes, i Rajadell per revisar el pas inferior. Impressió física pendent. [Resultats i controls](RO-024-RESULTATS.md)
 
 ### RO-025 — Vegetació mesurada i paisatges històrics
 
@@ -159,7 +160,7 @@ Revisar les unions i amplades de carretera, pont i túnel a dues escales. Separa
 
 ### RO-053 — Flux de treball per etapes
 
-El progrés per capes està validat en diversos llocs. La mida inicial admet 10 × 10 cm i valors personalitzats entre 10 i 50 cm per costat. Les guies discontínues i la descàrrega comparteixen el pla de tall de 25 cm per peça. El canvi de mida d’una maqueta existent queda pendent. [Flux](RO-053-UX.md) · [Mesures](RO-053-TEMPS.md)
+El progrés per capes està validat en diversos llocs. A Tamariu 40 × 45 cm, les guies es veuen en zenital i perspectiva i coincideixen amb les cares de tall dels quatre 3MF. El traç es distingeix menys al bosc dens. Queden el contrast de les guies al bosc i el canvi de mida d’una maqueta existent. [Validació](HISTORIAL.md#v0215--mides-i-guies-de-tall) · [Flux](RO-053-UX.md) · [Mesures](RO-053-TEMPS.md)
 
 ### RO-054 — Galeria local de projectes
 
