@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-04. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.22.0 — Consolidació de les vies
+
+Els dos perfils pendents de Sant Salvador tenen enllaços que superen el pendent admissible. Les reserves de traçat asimètriques provades tampoc resolen els enllaços. Es publica amb el paviment sobre el terreny en aquests trams. Els controls de Sant Salvador, Millau a dues escales i el ferrocarril de 800 m superen l’auditoria. [Diagnòstic i comparativa](RO-051-PERFILS-VIARIS.md#transicions-pendents-a-la-v0220)
+
 ## v0.21.9 — Signatura d’ortogra.fi
 
 El peu incorpora la signatura centrada de Plec amb el logotip i l’enllaç a ortogra.fi.

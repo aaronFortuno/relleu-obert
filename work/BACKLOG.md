@@ -1,16 +1,14 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-04 · v0.21.9**. Pas de Montgròs comprovat al laminat d’un cupó. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-04 · v0.22.0**. Consolidació de les vies amb les omissions de Sant Salvador documentades. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
 | Lot | Línies | Resultat que permet avançar |
 | --- | --- | --- |
-| **0.22 · 1. Transicions de la C-37** | RO-051, RO-052 | Recuperat un perfil a Sant Salvador a 1:10.000. Queden dos trams sense enllaç dins del pendent admissible i un creuament amb túnel sense cota. Comprovar la continuïtat visual i al laminador. |
-| **0.22 · 2. Coberta del túnel** | RO-034 | Descens limitat de la rasant. A Sant Salvador a 1:20.000 s’han comprovat les dues boques i punts de pas, sostre i base al 3MF. Revisió visual i laminat pendents. |
-| **0.22 · 3. Contrast i rendiment** | RO-033, RO-050, RO-051, RO-052, RO-053 | Sis controls repetits a la 0.21.7. Montgròs recuperat amb dues unions mesurades a la 0.21.8 i obertura comprovada al laminat del cupó. [Comparativa](RO-051-PERFILS-VIARIS.md#bateria-repetida-amb-v0217) · [Montgròs](RO-033-CONTROLS-PROCEDIMENTALS.md#laminat-del-cupó-de-montgròs) |
-| **Validació en paral·lel** | RO-024, RO-046, RO-054, RO-055 | Laminar les vores adjacents de Tamariu i dels Rasos–Gallina Pelada. Comprovar la recuperació d’un projecte girat, de mida personalitzada, amb materials i traços, i la transició quan es carrega un exemple. |
 | **Pilot de relleu rocós** | RO-023, RO-035 | Quatre controls del Cavall Bernat i un cupó local dels Degotalls auditats. Contrastar un segon lloc i resoldre la georeferenciació del cupó. [Resultats](RELLEU-ROCOS.md) |
+| **Seguiment de les vies** | RO-033, RO-034, RO-050, RO-051, RO-052 | Registrar noves incidències amb retall i escala. A Sant Salvador, dos perfils segueixen el terreny pel pendent dels enllaços. El túnel a 1:20.000 té les dues boques comprovades al 3MF. El pas de Montgròs es conserva al cupó laminat. [Controls de vies](RO-051-PERFILS-VIARIS.md#transicions-pendents-a-la-v0220) · [Montgròs](RO-033-CONTROLS-PROCEDIMENTALS.md#laminat-del-cupó-de-montgròs) |
+| **Validació en paral·lel** | RO-024, RO-046, RO-054, RO-055 | Laminar les vores adjacents de Tamariu i dels Rasos–Gallina Pelada. Comprovar la recuperació d’un projecte girat, de mida personalitzada, amb materials i traços, i la transició quan es carrega un exemple. |
 | **Després** | RO-026, RO-032 | Comparar les fonts d’edificis en dues zones, amb proves d’accés i cobertura abans de fer canvis al model. |
 
 Els encàrrecs independents avancen en paral·lel. Cada bloc validat té el seu commit i es manté una sola prova pesada alhora. Els casos que requereixen inspecció al laminador poden quedar pendents mentre avancen altres línies.
@@ -23,10 +21,10 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 
 | ID | Prioritat | Estat | Proper resultat comprovable |
 | ------------------------------------------------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| [RO-053](#ro-053--flux-de-treball-per-etapes) | P1 | Progrés per capes i guies de Tamariu verificats | Comparar temps i memòria a la bateria de la 0.22 |
+| [RO-053](#ro-053--flux-de-treball-per-etapes) | P1 | Progrés per capes i guies de Tamariu verificats | Millorar el contrast de les guies al bosc i estudiar el canvi de mida |
 | [RO-033](#ro-033--ponts-i-viaductes) | P1 | Millau i el cupó del Bages validats al visor. Montgròs conserva el pas al laminat del cupó | Comprovar llums i accessos en una placa completa |
 | [RO-034](#ro-034--túnels-imprimibles) | P1 | Túnel de Sant Salvador obert a les dues escales | Revisar el tram cobert de la maqueta a 1:20.000 al laminador |
-| [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | Tres perfils de la C-37 i rasant ferroviària de 800 m comprovats | Resoldre les transicions omeses i repetir la bateria |
+| [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | Tres perfils de la C-37 i rasant ferroviària de 800 m comprovats | Contrastar noves omissions en altres retalls |
 | [RO-052](#ro-052--continuïtat-i-amplada-del-traçat-viari) | P1 | Quatre enllaços a Millau a 1:20.000 | Mesurar cotes, pendents i amplades als enllaços de la C-37 |
 | [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió) | P1 | Quatre 3MF de Tamariu verificats al ZIP | Contrastar les vores adjacents i els materials al laminador |
 | [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts) | P1 | Fonts en estudi | Comparació de parts i petjades en segona zona |

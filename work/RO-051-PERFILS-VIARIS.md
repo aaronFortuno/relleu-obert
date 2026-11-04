@@ -166,3 +166,28 @@ Els màxims corresponen al conjunt de perfils aplicats a cada execució, abans d
 Les unions dels ponts de referència es mantenen. A Sant Salvador, els fragments del pont 317898440 sumen sis unions als dos retalls i el túnel principal passa de zero a un a 1:20.000. A Millau, els dos taulers continuen amb quatre unions al retall ampli i els extrems sense continuació al retall curt.
 
 **Pas de la C-37 al nord de Sant Salvador.** El candidat principal és el torrent de Montgròs, a 41,689049 N, 1,761280 E. És dins del retall de 3 km i fora del d’1,5 km. En un control amb terreny pla, el fragment complet genera el tauler. Quan s’hi afegeix la còpia truncada i solapada de la tessel·la veïna, el motor el rebutja per una corba massa tancada, en tots dos ordres d’entrada. El mateix identificador també produeix un tauler al torrent de la Fessona. Cal validar la presència del tauler al punt de creuament. A la Fessona també hi ha un ramal amb tauler i dos extrems sense enllaç. [Traçat principal a OpenStreetMap](https://www.openstreetmap.org/way/317900710) · [Ramal de la Fessona](https://www.openstreetmap.org/way/457787902)
+
+### Transicions pendents a la v0.22.0
+
+Sant Salvador a 1:10.000, amb el mateix retall, MET5 i ajustos de la bateria. Els dos perfils pertanyen a la via `317898410`. La traça registra el pendent màxim de cada corba candidata abans de l’exageració vertical. El valor de la taula és el mínim dels màxims de les corbes provades a cada extrem. El límit de la C-37 és del 12%.
+
+| Extrems del tram cartografiat (N, E) | Extrem rebutjat | Millor pendent amb la reserva inicial | Millor pendent amb les reserves alternatives |
+| --- | --- | ---: | ---: |
+| 41,680092, 1,753693 → 41,681214, 1,753757 | Sud | 17,88% | 15,90% |
+| 41,682303, 1,754245 → 41,683213, 1,754653 | Sud | 22,18% | 22,18% |
+| Mateix tram | Nord | 39,83% | 33,62% |
+
+Els tres extrems fallen el control de pendent abans que calgui comprovar el suport o el contacte amb el relleu. Un prototip amb reserves de traçat més curtes i asimètriques conserva un mínim de 2 mm de perfil central a la maqueta. Cap combinació provada aconsegueix els dos enllaços d’un perfil. Es manté el paviment sobre el terreny en aquests trams. El creuament amb el túnel `1941444752` queda separat perquè hi manca una cota fiable.
+
+### Controls de publicació de la v0.22.0
+
+Quatre retalls amb les mateixes fonts i opcions que a la bateria anterior. Les mètriques de perfils, unions, omissions i l’auditoria de triangles coincideixen amb els informes de v0.21.7. Els temps corresponen a una sola execució de cada versió i inclouen el càlcul i l’auditoria.
+
+| Retall | Perfils / omissions | Pendent màxim / canvi màxim | Unions de perfil | Temps v0.21.7 → v0.22.0 |
+| --- | ---: | ---: | ---: | ---: |
+| Sant Salvador 1:10.000 | 3 / 3 | 10,69% / 2,48 punts | 4 | 10,02 → 16,14 s |
+| Millau 1:10.000 | 3 / 9 | 7,67% / 0,31 punts | 6 | 5,50 → 4,42 s |
+| Millau 1:20.000 | 8 / 20 | 10,47% / 0,84 punts | 12 | 57,36 → 110,76 s |
+| Ferrocarril 800 m, 1:5.333 | 1 / 0 | 1,56% / 0,00 punts | 0 | 2,68 → 2,39 s |
+
+Sant Salvador conserva el pont i el túnel del control. Els dos taulers de Millau són presents a les dues escales i sumen quatre enllaços al retall de 3 km. El temps de Millau a 3 km queda registrat per contrastar-lo amb més passades.

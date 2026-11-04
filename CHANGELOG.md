@@ -1,5 +1,11 @@
 # Canvis
 
+## v0.22.0 — 2026-11-04
+
+- Es consoliden els perfils suaus de vies principals i ferrocarrils amb les comprovacions de Sant Salvador, Millau i el retall ferroviari de 800 m.
+- Els trams que no poden enllaçar dins del límit de pendent conserven el paviment sobre el relleu. A Sant Salvador s’han identificat els dos perfils de la C-37 afectats.
+- La versió incorpora la recuperació del pont de Montgròs i del túnel de Sant Salvador, les mides de peça personalitzades i les guies de tall sobre el relleu.
+
 ## v0.21.9 — 2026-11-04
 
 - El peu incorpora la signatura d’ortogra.fi amb el logotip i la composició de Plec.
