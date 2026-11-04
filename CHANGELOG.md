@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.22.16 — 2026-11-04
+
+- Les previsualitzacions inicials mostren retalls a la mateixa escala, amb ombrejat suau i més detall a les maquetes grans. El selector ofereix una sola mida rectangular predefinida, 20 × 15 cm.
+
 ## v0.22.15 — 2026-11-04
 
 - El selector inicial mostra les mides en perspectiva sobre una taula de 60 × 40 cm. Les mides dividides indiquen els talls i mostren les peces separades.

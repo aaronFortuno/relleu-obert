@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-04. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.22.16 — Acabat de les previsualitzacions
+
+La mostra il·lustrativa es retalla a escala constant i mostra més superfície i detall quan augmenta la mida. L’ombrejat és continu. Es manté el 20 × 15 cm com a únic rectangle predefinit. Control visual local del 20 × 15, el 30 × 30 i el 40 × 40. S’han recorregut les set mides amb el teclat i s’ha verificat el 15 × 20 personalitzat. Pendent de validació d’ús.
+
 ## v0.22.15 — Previsualització de mides i talls
 
 El selector inicial mostra les vuit mides i les personalitzades sobre la mateixa taula. El pla de tall coincideix amb l’exportació. El diàleg de versions mostra l’enllaç al changelog complet a la capçalera. Revisió local a 1280 × 720 i 1100 × 680. Vuit mides verificades amb teclat i 40 × 20 cm comprovat amb dues peces. Pendent de validació d’ús.
