@@ -10,6 +10,8 @@ RO-032 conserva les petjades disponibles quan una consulta opcional de cobertes 
 
 Revisat al navegador amb el mateix retall i els dos controls de textura. Superades 55 proves locals i la construcció estàtica.
 
+La compilació i la pujada de l’artefacte també passen a GitHub. El desplegament 107 va esgotar el temps d’espera i Pages encara el considerava en curs quan s’hi va intentar publicar la v0.22.32. El flux inclou una petició puntual per cancel·lar aquell desplegament i deixa acabar les execucions en curs quan arriba un altre commit. Publicació pendent de verificació. [Execució 107](https://github.com/aaronFortuno/relleu-obert/actions/runs/41915377179) · [Execució 111](https://github.com/aaronFortuno/relleu-obert/actions/runs/41919926012)
+
 ## v0.22.31 — Primer lot de Model complet al carrusel
 
 RO-046 incorpora l’Eixample de Barcelona, el Barri Vell i l’Onyar de Girona, i el castell, la vila i la Vall Salina de Cardona. Hi ha dues fitxes de Relleu pur entre cada parella de Model complet, també en tancar el bucle. Els tres models tenen una sola peça i es generen a 1:10.000 en clicar la fitxa. [Retalls i captures](RO-046-CATALEG.md#primer-lot-de-model-complet-al-carrusel)

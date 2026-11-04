@@ -9,7 +9,7 @@ permissions:
   id-token: write
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -35,6 +35,20 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
+      - name: Cancel the stalled Pages deployment from run 107
+        if: github.event.before == 'c477726c112901b5b911ac41afad02e9db3997fb'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          deployment=2dae1699c13057ee50e4de36138c80350cdc8a61
+          status=$(curl --silent --show-error --max-time 30 \
+            --output /dev/null --write-out '%{http_code}' --request POST \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header 'Accept: application/vnd.github+json' \
+            "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/pages/deployments/$deployment/cancel")
+          echo "Pages cancellation returned HTTP $status"
+          [[ "$status" == 204 || "$status" == 404 ]]
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
