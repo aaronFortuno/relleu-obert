@@ -6,6 +6,8 @@ Actualitzat: 2026-11-04. Les entrades validades surten del [backlog actiu](BACKL
 
 Tria inicial amb 10 × 10 cm i mides personalitzades. El visor i l’exportació comparteixen el límit de 25 cm i les mides de les peces.
 
+**Control local de Tamariu, 40 × 45 cm.** S’han vist les dues guies discontínues en zenital i en perspectiva. El traç es distingeix menys al bosc dens. El ZIP descarregat al navegador conté quatre 3MF de 200 × 225 mm. El plànol i les cares de tall de les quatre malles coincideixen a X = 200 mm i Y = 225 mm en coordenades de muntatge.
+
 ## v0.21.4 — Unió de paviment
 
 La unió en coordenades locals i la correcció del sentit de cares en prismes aïllats recuperen perfils en els dos retalls afectats de la bateria. [Resultats](RO-051-PERFILS-VIARIS.md#repetició-amb-v0214)
