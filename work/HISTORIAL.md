@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-04. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.22.10 — Paviment independent entre cruïlles
+
+El Model complet prova el paviment nou per defecte. El retall de Marganell de l’usuari recupera quatre trams entre cruïlles. Queda pendent validar la maqueta al visor i al laminador. [Control de Marganell](RO-051-PERFILS-VIARIS.md#paviment-independent-entre-cruïlles-a-la-v02210)
+
 ## v0.22.9 — Paviment nou en retalls reals
 
 L’usuari valida el cupó gran. El generador admet la prova optativa `?paviment=nou` en Model complet. El control de Marganell recupera tres fragments i conserva la resta de la xarxa amb el càlcul habitual. [Mesures i límits](RO-051-PERFILS-VIARIS.md#primera-prova-en-retalls-reals-a-la-v0229)

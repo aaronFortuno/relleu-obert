@@ -351,15 +351,38 @@ function buildSurfaceRoadPilot(terrain,rise,api,progress){
   return assembleSurfaceRoads(terrain,rise,api,progress,planSurfaceRoad(roads,terrain,rise,.65+rise));
 }
 
+function* surfaceRoadPatches(route,terrain,rise){
+  const {transitionMM}=route;
+  const {ground,proj:{width,height},resolution}=terrain;
+  const length=route.profile.stations.at(-1).distanceMM;
+  for(const patch of route.patches){
+    if(!transitionMM){
+      yield patch;
+      continue;
+    }
+    const inside=patch.startMM>=transitionMM&&patch.endMM<=length-transitionMM;
+    const top=inside?patch.top:(x,y)=>{
+      const station=patch.stationAt(x,y);
+      const t=Math.max(0,Math.min(1,Math.min(station,length-station)/transitionMM));
+      const legacy=ground(x,y)+rise;
+      return legacy+t*t*(3-2*t)*(patch.top(x,y)-legacy);
+    };
+    // At the ends the new pavement meets the actual terrain triangles, so
+    // include their breakpoints before replacing part of the old road.
+    for(const polygon of terrainPatches([patch.polygon],width,height,resolution))
+      yield {...patch,polygon,top};
+  }
+}
+
 function assembleSurfaceRoads(terrain,rise,api,progress,plan,regional){
   const {mask,fillMask,routes,junctionCount,structure,tunnel}=plan,thickness=.65+rise;
   let sharedPavement;
   const cutters=[];
   const terrainTop=5+(terrain.maximumElevation-terrain.verticalReference.originMeters)*terrain.proj.scale*terrain.exaggeration;
   const ceiling=Math.max(terrainTop,...routes.flatMap(r=>r.profile.stations.map(s=>s.heightMM)))+2;
-  const corridorParts=routes.flatMap(({patches,mask:routeMask})=>{
+  const corridorParts=routes.flatMap(route=>{
     const pavement=new Surface(),fill=new Surface(),cutter=tunnel?null:new Surface();
-    for(const {polygon,top,structural} of patches){
+    for(const {polygon,top,structural} of surfaceRoadPatches(route,terrain,rise)){
       pavement.polygon(polygon,top);
       if(!structural)fill.polygon(polygon,tunnel?(x,y)=>top(x,y)-thickness:top);
       cutter?.polygon(polygon,()=>ceiling);
@@ -367,7 +390,7 @@ function assembleSurfaceRoads(terrain,rise,api,progress,plan,regional){
     const points=Array.from({length:pavement.vertices.length/3},(_,i)=>pavement.vertices.slice(i*3,i*3+3));
     const pavementTop=topSampler(points,pavement.faces);
     if(tunnel)sharedPavement={top:pavementTop,exposed:polygonTester(fillMask),thicknessMM:thickness};
-    else cutters.push({mask:routeMask,mesh:cutter.solid((x,y)=>{
+    else cutters.push({mask:route.mask,mesh:cutter.solid((x,y)=>{
       const top=pavementTop(x,y);
       if(top===null)throw Error('Falta una cota de calçada per encaixar el paviment.');
       return top-thickness;
@@ -388,6 +411,7 @@ function assembleSurfaceRoads(terrain,rise,api,progress,plan,regional){
     const terrainMesh={vertices:[],faces:[]};
     for(const part of terrainParts)append(terrainMesh,part);
     parts[0]=surfacePart(0,terrainMesh);
+    progress('Encaixant el paviment amb el relleu…');
     const carved=carveTransportDecks(parts,cutters,api,{floatRoundoff:true,finishDecks:[{mask,mesh:road}]});
     if(!carved.metadata.applied)throw Error(carved.metadata.error??'No s’ha pogut encaixar el paviment.');
     parts=carved.parts;
@@ -633,7 +657,7 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
       const plan=measure('surface-road.regional-plan',()=>planRegionalSurfaceRoads(terrain,{rise:roadRise,thickness:.65+roadRise,blockedMask,blockedIds}));
       regionalMetadata=plan.metadata;
       if(plan.routes.length){
-        const sourceMask=merge([...plan.replacedPieces].flatMap(i=>roadPieces[i].polys.map(poly=>[poly])));
+        const sourceMask=merge([plan.partialMask??[],...[...plan.replacedPieces].flatMap(i=>roadPieces[i].polys.map(poly=>[poly]))].filter(p=>p.length));
         const legacyRoadPoly=subtract(roadOnlyPoly,sourceMask);
         const legacyMask=merge([legacyRoadPoly,railPoly].filter(p=>p.length));
         const built=measure('surface-road.regional-mesh',()=>assembleSurfaceRoads(terrain,roadRise,infrastructureApi,progress,plan,{legacyRoadPoly,legacyMask}));
@@ -644,9 +668,10 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
         forest=built.forest;
       }
     }catch(error){
-      regionalMetadata={...regionalMetadata,mode:'regional',applied:false,accepted:0,error:error.message};
+      regionalMetadata={...regionalMetadata,mode:'regional',applied:false,accepted:0,fullAccepted:0,partialAccepted:0,
+        partialLengthMM:0,error:error.message};
     }
-    warnings.push(regionalMetadata.applied
+    if(regionalMetadata.eligible||regionalMetadata.error)warnings.push(regionalMetadata.applied
       ?`Paviment de superfície nou aplicat a ${regionalMetadata.accepted} fragments viaris. La resta conserva el càlcul habitual.`
       :`Paviment de superfície nou sense aplicar al retall. ${regionalMetadata.error??'Cap grup ha superat les comprovacions.'}`);
   }

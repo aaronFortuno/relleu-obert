@@ -289,3 +289,11 @@ El paviment nou es pot provar al Model complet afegint `?paviment=nou` a l’adr
 El retall de control de Marganell està centrat a 41,6415 N i 1,7912 E. Fa 1,4 × 1,4 km en una peça de 120 × 120 mm, amb MET5, detall 24 i exageració ×1,5. El paviment nou s’aplica a 3 fragments en tres grups aïllats. La xarxa complexa concentra 101 fragments descartats. Les capes del 3MF superen l’auditoria i es conserven els quatre ponts del càlcul habitual. Aquest retall és un control local amb ajustos explícits.
 
 La prova sintètica integra dos fragments que comparteixen extrem i conserva una cruïlla sense connexió cartogràfica al càlcul habitual. Un segon traçat amb el mateix identificador rep el paviment nou de forma independent. El realç es recalcula sobre el terreny ja carregat.
+
+## Paviment independent entre cruïlles a la v0.22.10
+
+El Model complet prova les calçades independents per defecte. `?paviment=antic` permet comparar-les amb el motor anterior. Si un grup és massa complex, el generador cerca trams que es puguin separar de les cruïlles, els ponts, els túnels i les altres vies. Verifica la petjada completa abans de retallar el terreny i afegir el paviment i el seu suport. Els extrems recuperen progressivament la cota de la calçada existent en un màxim de 3 mm per extrem. Les cruïlles complexes encara fan servir el càlcul habitual.
+
+El control de `marganell-random.json` usa un retall de 560 × 560 m centrat a 41,63645635 N, 1,81968765 E, amb MET5, peça de 180 × 180 mm i exageració ×1,5. El càlcul original no tenia activat el pilot. Amb el pilot activat, la v0.22.9 també descartava els 19 fragments elegibles perquè formaven un sol grup. La v0.22.10 recupera quatre trams amb 251 mm d’eix sobre la peça, uns 782 m de traçat real. Amb el detall 64 i la vegetació originals, la generació local a partir de les dades desades triga 48,2 s i les set malles exportades superen l’auditoria. Amb detall 24 i sense arbres, els mateixos quatre trams es generen en 17,2 s.
+
+El control sintètic comprova la secció transversal plana i els dos enllaços sense graó als punts de mostreig. Canviar el realç conserva la selecció de trams i reutilitza el terreny. Queda pendent el contrast al visor i al laminador de l’usuari.

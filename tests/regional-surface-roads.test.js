@@ -16,8 +16,8 @@ const fixture={
     pixelIsArea:false,metadata:{},values:Float32Array.from({length:side**2},(_,i)=>100+Math.floor(i/side)*5)},
   features:[
     road('west',[[0,24],[45,24]],'shared'),road('east',[[45,24],[100,24]],'shared'),
-    {...road('other',[[5,70],[45,70]],'a'),geometry:{type:'MultiLineString',
-      coordinates:[toGeo([[5,70],[45,70]]),toGeo([[0,39],[100,39]])]}},
+    {...road('other',[[5,70],[65,70]],'a'),geometry:{type:'MultiLineString',
+      coordinates:[toGeo([[5,70],[65,70]]),toGeo([[0,39],[100,39]])]}},
     road('crossing',[[25,52],[25,90]],'b')
   ]
 };
@@ -37,7 +37,7 @@ test('regional pavement stitches compatible fragments and leaves an untagged cro
   const legacy=buildModel(fixture,options,()=>{},api);
   const model=buildModel(fixture,{...options,surfaceRoads:'regional'},()=>{},api);
   assert(model.provenance.surfaceRoads.applied,JSON.stringify(model.provenance.surfaceRoads));
-  assert.equal(model.provenance.surfaceRoads.accepted,3);
+  assert.equal(model.provenance.surfaceRoads.fullAccepted,3);
   assert.equal(model.provenance.surfaceRoads.groups.length,2);
   assert.deepEqual(model.provenance.surfaceRoads.groups.find(group=>group.fragments===2).sourceFeatureIds.slice().sort(),['east','west']);
   const before=roadTop(legacy),after=roadTop(model);
@@ -45,9 +45,20 @@ test('regional pavement stitches compatible fragments and leaves an untagged cro
   assert(Math.abs(after(45,23)-after(45,25))<.0001);
   assert(Math.abs(after(50,38)-after(50,40))<.0001);
   assert(Math.abs(before(25,70)-after(25,70))<.0001);
+  const partial=model.provenance.surfaceRoads.partialGroups.find(group=>group.sourceFeatureIds.includes('other'));
+  assert(partial,'Cal conservar un tram interior abans o després de la cruïlla.');
+  const [start,end]=partial.ends,mid=start.map((v,i)=>(v+end[i])/2);
+  assert(Math.abs(after(mid[0],mid[1]-1)-after(mid[0],mid[1]+1))<.001,'El tram interior ha de quedar pla de banda a banda.');
+  for(const [x,y] of [start,end])for(const offset of [-1,0,1]){
+    const heights=[-.02,-.01,.01,.02].map(dx=>after(x+dx,y+offset));
+    assert(heights.every(Number.isFinite));
+    const [farBefore,beforeEnd,afterEnd,farAfter]=heights;
+    const step=Math.abs((2*beforeEnd-farBefore)-(2*afterEnd-farAfter));
+    assert(step<.001,`Graó a ${x}, ${y+offset}: ${step} mm`);
+  }
   for(const part of model.categories)assert.deepEqual(auditPart(part).errors,[]);
   const raised=updateTransport(model,{roadRise:.5},()=>{},api);
   assert.equal(raised.context.ground,model.context.ground);
-  assert.equal(raised.provenance.surfaceRoads.accepted,3);
+  assert.equal(raised.provenance.surfaceRoads.accepted,model.provenance.surfaceRoads.accepted);
   assert(Math.abs(roadTop(raised)(45,24)-after(45,24)-.5)<.0001);
 });

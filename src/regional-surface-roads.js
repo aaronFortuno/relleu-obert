@@ -1,10 +1,12 @@
 import {polygonOps} from './polygon-ops.js';
+import {polygonTester} from './polygon-index.js';
 import {lineBuffer} from './roads.js';
 import {planSurfaceRoad} from './surface-road.js';
 import {compatibleTransport} from './transport-network.js';
 
 const pc=polygonOps(),epsilon=1e-5,portalMarginMM=8;
-const limits={sources:1000,candidates:256,groupSize:16,groupAttempts:24,stations:2000,overlapChecks:4000};
+const limits={sources:1000,candidates:256,groupSize:16,groupAttempts:24,stations:2000,overlapChecks:4000,
+  partialCandidates:48,partialAttempts:32,partialStations:640,slicesPerSource:2};
 const distance=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
 const point=p=>Array.isArray(p)&&Number.isFinite(p[0])&&Number.isFinite(p[1]);
 const overlapsBox=(a,b)=>a[0]<=b[2]&&b[0]<=a[2]&&a[1]<=b[3]&&b[1]<=a[3];
@@ -88,11 +90,70 @@ function sourceFragments(routes,box){
   return [...fragments.values()];
 }
 
+function axisSampler(points){
+  const stations=[0];
+  for(let i=1;i<points.length;i++)stations.push(stations[i-1]+distance(points[i-1],points[i]));
+  const length=stations.at(-1);
+  const at=station=>{
+    let low=0,high=stations.length-1;
+    while(high-low>1){
+      const mid=(low+high)>>1;
+      if(stations[mid]<=station)low=mid;
+      else high=mid;
+    }
+    const a=points[low],b=points[high],step=stations[high]-stations[low],t=(station-stations[low])/step;
+    return {p:a.map((v,i)=>v+t*(b[i]-v)),normal:[(a[1]-b[1])/step,(b[0]-a[0])/step]};
+  };
+  const slice=(from,to)=>[at(from).p,...points.filter((_,i)=>stations[i]>from+epsilon&&stations[i]<to-epsilon),at(to).p];
+  return {stations,length,at,slice};
+}
+
+function blockedBends(points,width,stations){
+  const stationsAtBends=[];
+  for(let i=1;i<points.length-1;i++){
+    const [a,b,c]=points.slice(i-1,i+2),before=stations[i]-stations[i-1],after=stations[i+1]-stations[i];
+    const dot=((b[0]-a[0])*(c[0]-b[0])+(b[1]-a[1])*(c[1]-b[1]))/(before*after);
+    const trim=Math.min(1.5*width,.35*before,.35*after);
+    // Keep tight corners as legacy and leave the pilot enough room to round
+    // all remaining turns without overlapping its inside carriageway edge.
+    if(dot<.5||trim<=(width/2+.01)*Math.sqrt(Math.max(0,(1-dot)/(1+dot))))stationsAtBends.push(stations[i]);
+  }
+  return stationsAtBends;
+}
+
+function clearWindows(entry,box,insideLand,blockers){
+  const {points,width}=entry.route,{stations,length,at,slice}=axisSampler(points);
+  const side=width/2+.28,minLength=Math.max(12,width*4),stepCount=Math.min(1600,Math.ceil(length/.65));
+  if(length<minLength||!stepCount)return [];
+  const blocked=polygonTester(blockers.flat()),bends=blockedBends(points,width,stations),windows=[];
+  const isClear=station=>{
+    if(bends.some(s=>Math.abs(s-station)<Math.max(1,width)))return false;
+    const {p,normal}=at(station);
+    return [-side,0,side].every(offset=>{
+      const q=p.map((v,i)=>v+offset*normal[i]);
+      return q[0]>.15&&q[0]<box[2]-.15&&q[1]>.15&&q[1]<box[3]-.15&&insideLand(q)&&!blocked(q);
+    });
+  };
+  let start=null,last=null;
+  for(let i=0;i<=stepCount;i++){
+    const station=length*i/stepCount;
+    if(i!==stepCount&&isClear(station)){
+      start??=station;last=station;continue;
+    }
+    if(start===null)continue;
+    const from=start+.65,to=last-.65;
+    if(to-from>=minLength)windows.push({entry,from,to,length:to-from,points:slice(from,to),blockers});
+    start=null;
+  }
+  return windows;
+}
+
 // Candidate planning only. The caller keeps legacy roads until both the
 // replacement pavements and their common terrain interface have been built.
 export function planRegionalSurfaceRoads(terrain,{rise,thickness,blockedMask=[],blockedIds=new Set()}={}){
-  const result={routes:[],mask:[],fillMask:[],replacedPieces:new Set(),metadata:{mode:'regional',applied:false,
-    eligible:0,accepted:0,groups:[],omissions:[],omissionCounts:{},junctionCount:0,stations:0,limits}};
+  const result={routes:[],mask:[],fillMask:[],partialMask:[],replacedPieces:new Set(),metadata:{mode:'regional',applied:false,
+    eligible:0,accepted:0,fullAccepted:0,partialAccepted:0,partialLengthMM:0,groups:[],partialGroups:[],
+    omissions:[],omissionCounts:{},junctionCount:0,stations:0,limits}};
   const {metadata,replacedPieces}=result;
   const omit=(reason,ids,detail,count=ids.length)=>{
     metadata.omissionCounts[reason]=(metadata.omissionCounts[reason]||0)+count;
@@ -205,7 +266,49 @@ export function planRegionalSurfaceRoads(terrain,{rise,thickness,blockedMask=[],
       metadata.groups.push({sourceFeatureIds:[...new Set(ids)],fragments:group.length,routes:plan.routes.length,junctions:plan.junctionCount,stations});
     }catch(error){omit('rejected-group',ids,error.message);}
   }
-  metadata.accepted=replacedPieces.size;
+
+  // A dense group can keep its legacy junctions and still get a new profile
+  // on independent internal stretches. The actual filleted mask, rather than
+  // the sampled corridor, is authoritative for overlap checks.
+  const insideLand=polygonTester(terrain.land),windows=[];
+  for(const entry of candidates.filter(entry=>!replacedPieces.has(entry.key)).slice(0,limits.partialCandidates)){
+    const boxAlongAxis=expand(bounds(entry.route.points),entry.route.width*1.5+.5);
+    try{
+      const blockers=[blockedMask,result.mask,
+        ...visible.filter(other=>other!==entry&&!replacedPieces.has(other.key)&&overlapsBox(other.box,boxAlongAxis)).map(sourceMask),
+        ...structures.filter(other=>overlapsBox(other.box,boxAlongAxis)).map(structureMask)];
+      if(blockers.some(mask=>!mask))continue;
+      windows.push(...clearWindows(entry,box,insideLand,blockers));
+    }catch(error){omit('partial-analysis',[entry.id],error.message);}
+  }
+  windows.sort((a,b)=>b.length-a.length||a.entry.key-b.entry.key||a.from-b.from);
+  const partialSources=new Map();
+  let partialAttempts=0,partialStations=0;
+  for(const window of windows){
+    const {entry,points,length,from,to,blockers}=window,count=partialSources.get(entry.key)||0;
+    if(count>=limits.slicesPerSource)continue;
+    if(partialAttempts>=limits.partialAttempts||metadata.stations>=limits.stations||
+        partialStations>=limits.partialStations||overlapChecks>=limits.overlapChecks)break;
+    partialAttempts++;
+    try{
+      const plan=planSurfaceRoad([{...entry.route,points}],terrain,rise,thickness);
+      if(blockers.some(mask=>collides(plan.mask,mask))||collides(plan.mask,result.mask))continue;
+      const [route]=plan.routes,stations=route.profile.stations.length;
+      if(metadata.stations+stations>limits.stations||partialStations+stations>limits.partialStations)continue;
+      const combined=pc.union(result.mask,plan.mask),partialMask=pc.union(result.partialMask,plan.mask);
+      const transitionMM=Math.min(3,length/4);
+      result.mask=combined;result.fillMask=combined;result.partialMask=partialMask;
+      result.routes.push({...route,transitionMM});
+      partialSources.set(entry.key,count+1);
+      metadata.stations+=stations;partialStations+=stations;metadata.partialLengthMM+=length;
+      const ends=[route.profile.stations[0].centre,route.profile.stations.at(-1).centre];
+      metadata.partialGroups.push({sourceFeatureIds:entry.route.sourceFeatureIds,sourcePiece:entry.key,
+        fromMM:from,toMM:to,lengthMM:length,ends,transitionMM,stations});
+    }catch(error){omit('partial-rejected',[entry.id],error.message);}
+  }
+  metadata.fullAccepted=replacedPieces.size;
+  metadata.partialAccepted=partialSources.size;
+  metadata.accepted=metadata.fullAccepted+metadata.partialAccepted;
   metadata.applied=metadata.accepted>0;
   metadata.overlapChecks=overlapChecks;
   return result;

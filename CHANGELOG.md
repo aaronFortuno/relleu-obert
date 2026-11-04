@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.22.10 — 2026-11-04
+
+- El Model complet prova per defecte les calçades independents amb excavació i reblert. En xarxes complexes, també les pot construir entre cruïlles i enllaçar-les amb la resta del traçat.
+
 ## v0.22.9 — 2026-11-04
 
 - Primera prova del paviment nou al generador de retalls reals. El paràmetre `?paviment=nou` activa la prova. El generador aplica el càlcul als grups de calçades que pot verificar i informa de quants fragments s’han actualitzat.

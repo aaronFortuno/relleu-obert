@@ -166,7 +166,9 @@ function planRoute({points,width,sourceFeatureIds},pad,{rect,ground},rise,struct
     for(const indices of triangles){
       const triangle=indices.map(j=>ring[j]),top=planarTop(triangle,indices.map(j=>heights[j]));
       const clipped=pc.intersection([[triangle.concat([triangle[0]])]],rect);
-      for(const polygon of clipped)patches.push({polygon,top,structural:start>=0&&i>start&&i<=end});
+      const stationAt=planarTop(triangle,indices.map(j=>j===0||j===3?a.distanceMM:b.distanceMM));
+      for(const polygon of clipped)patches.push({polygon,top,stationAt,startMM:a.distanceMM,endMM:b.distanceMM,
+        structural:start>=0&&i>start&&i<=end});
       if(a.inPad&&b.inPad&&clipped.length)padPolygons.push(clipped);
     }
   }
