@@ -7,11 +7,24 @@ import {auditPart} from '../src/solid-audit.js';
 import {physicalBBox} from '../src/selection.js';
 import {groupMaterials} from '../src/materials.js';
 import {reliefDiagonals,reliefParts,splitPureRelief} from '../src/pure-relief-mesh.js';
-import {reliefStreamPart} from '../src/relief-streams.js';
+import {reliefStreamPart,reliefStreamStrips} from '../src/relief-streams.js';
+import {lineBuffer} from '../src/roads.js';
+import {polygonTester} from '../src/polygon-index.js';
 
 const bbox=physicalBBox([0,0],10,10);
 const dem=[{z:0,x:0,y:0,size:2,elev:new Float32Array([100,200,500,650])}];
 const options={size:100,pureRelief:true,resolution:12};
+
+test('nearly coincident stream buffers merge at the Montserrat confluence',()=>{
+  const bounds=[200,120];
+  const west=[[-17.48582,11.88459],[-14.69937,16.1192],[-10.3768,20.44303],[-5.28617,20.85396],
+    [-2.07103,19.76409],[-.12409,19.54969],[1.55493,18.37047],[3.09105,18.54914],[4.26993,18.53127]];
+  const east=[[1.98361,18.42407],[3.09105,18.54914],[4.51999,18.53127],[6.28832,19.03155],[7.43148,18.63847]];
+  const strips=reliefStreamStrips([west,east].map(line=>lineBuffer(line,.225,bounds)),...bounds,384);
+  const contains=polygonTester(strips[5]);
+  assert.ok(contains([2.9,18.52]));
+  assert.ok(!contains([2.9,18.9]));
+});
 
 test('pure relief builds solid coverage colours from mapped classes, independent of altitude',()=>{
   const model=buildModel({meta:{bbox},dem,coverage:[{bbox,width:2,height:2,values:new Uint8Array([60,70,70,60])}]},options);

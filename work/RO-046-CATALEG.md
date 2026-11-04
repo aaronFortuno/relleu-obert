@@ -15,6 +15,12 @@ Les noves fitxes s’afegeixen a [la llista d’exemples](../src/curated-example
 
 Cartografia © OpenStreetMap contributors (ODbL), via OpenFreeMap. Elevacions © Mapterhorn. El catàleg d’elevacions del proveïdor inclou el MDT02 i el MDT05 del Sistema Cartográfico Nacional i el Copernicus GLO-30. [OpenStreetMap](https://www.openstreetmap.org/copyright) · [Atribucions de Mapterhorn](https://mapterhorn.com/attribution/)
 
+## Segon lot al carrusel
+
+Montserrat, l’estany de Sant Maurici i els volcans del Croscat i Santa Margarida s’afegeixen després dels tres exemples litorals. Són retalls d’una sola peça i tenen vistes obliqües estàtiques de 720 × 450 píxels. A Sant Maurici, la càmera mira l’estany des del nord per deixar els Encantats al fons.
+
+Les elevacions de les captures de Montserrat i Sant Maurici són de Mapterhorn. La dels volcans utilitza el MET5 de l’ICGC. L’aigua i el bosc dels tres retalls provenen d’OpenStreetMap via OpenFreeMap. [Atribucions de Mapterhorn](https://mapterhorn.com/attribution/) · [Models d’elevacions de l’ICGC](https://www.icgc.cat/ca/Geoinformacio-i-mapes/Dades-i-productes/Elevacions/Elevacions-territorial/Models-delevacions) · [OpenStreetMap](https://www.openstreetmap.org/copyright)
+
 ## Com reproduir els retalls
 
 1. Tria el mode i introdueix la **mida de la maqueta** en l’ordre amplada × alçada. Fes servir la mida personalitzada quan calgui.

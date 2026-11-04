@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.22.29 — 2026-11-04
+
+- El carrusel afegeix Montserrat, l’estany de Sant Maurici i els volcans del Croscat i Santa Margarida. Tots tres tenen una imatge estàtica del visor i es generen en triar-los.
+- L’ajust de precisió dels contorns dels rierols evita que s’encalli el càlcul al retall de Montserrat.
+
 ## v0.22.28 — 2026-11-04
 
 - Relleu pur mostra una textura contínua sobre el bosc cartografiat, d’1 a 3 mm a 1:10.000. La casella «Vegetació simulada», activada per defecte, permet amagar la textura. El pinzell i la goma permeten retocar-la.

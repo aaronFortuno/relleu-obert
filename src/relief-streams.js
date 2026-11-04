@@ -8,7 +8,9 @@ const rectangle=(x0,y0,x1,y1)=>[[[[x0,y0],[x1,y0],[x1,y1],[x0,y1],[x0,y0]]]];
 export function reliefStreamStrips(polygons,width,height,n){
   if(!polygons.length)return [];
   const columns=Array.from({length:n},()=>[]);
-  for(const buffer of polygons)for(const polygon of buffer){
+  for(const buffer of polygons)for(const outline of buffer){
+    // Snap tangential joins before the union, far below printable detail.
+    const polygon=outline.map(ring=>ring.map(point=>point.map(value=>Math.round(value*1e4)/1e4)));
     let min=Infinity,max=-Infinity;
     for(const [x] of polygon[0]){min=Math.min(min,x);max=Math.max(max,x);}
     const left=Math.max(0,Math.floor(min*n/width)),right=Math.min(n-1,Math.floor(max*n/width));

@@ -2,6 +2,14 @@
 
 Actualitzat: 2026-11-04. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.22.29 — Segon lot de Catalunya al carrusel
+
+Montserrat, l’estany de Sant Maurici i els volcans del Croscat i Santa Margarida s’incorporen al carrusel de RO-046. Les imatges són renders estàtics i les fitxes obren la generació de Relleu pur amb els retalls del catàleg. [Retalls i fonts](RO-046-CATALEG.md#segon-lot-al-carrusel)
+
+Al retall de Montserrat, dos rierols amb contorns gairebé coincidents feien que la unió de polígons s’encallés. La normalització a 0,0001 mm abans de la unió permet conservar els cursos d’aigua i completar el model amb l’escala i el detall previstos. La prova de regressió reprodueix la confluència.
+
+Comprovada la generació dels tres models i la càrrega de les sis imatges a la construcció estàtica. El carrusel s’ha revisat a 1280 × 720 i 1100 × 680. Superades 46 proves locals. Queda la revisió d’ús i de laminat.
+
 ## v0.22.28 — Vegetació contínua en Relleu pur
 
 El bosc cartografiat presenta una superfície rugosa contínua, d’1 a 3 mm a 1:10.000, que escala proporcionalment. El pinzell i la goma modifiquen la capa de textura, i la casella «Vegetació simulada» l’amaga conservant el color cartografiat.
