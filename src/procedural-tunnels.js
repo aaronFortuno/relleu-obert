@@ -117,13 +117,16 @@ function requiredLowering(samples,minLength){
  * Items contain a closed Float32/Uint32 cutter plus path/section/source IDs.
  */
 export function generateProceduralTunnelVoids(features,elevationAt,options={}){
-  const {enabled=false,projection,verticalReference,exaggeration=1.5,ground,waterMask=[],minBaseMM=2.5,minOpeningMM=1.2,maxTunnels=24,surfaceRiseMM=0,railSurfaceRiseMM=surfaceRiseMM,surfaceAt,surfaceBreaks,portalRoute}=options;
-  const pavementThicknessMM=.3,sectionProfile='estimated-parabolic-arch';
-  const warnings=[],metadata={enabled:enabled===true,estimated:true,method:'linear-dem-with-generated-surface-portal-ramps',section:sectionProfile,sectionWallHeightRatio:.55,sectionRoofSegments:16,pavementThicknessMM,minimumBaseMM:minBaseMM,minimumOpeningMM:minOpeningMM,count:0,omitted:0,omissions:[]};
+  const {enabled=false,projection,verticalReference,exaggeration=1.5,ground,waterMask=[],minBaseMM=2.5,minOpeningMM=1.2,maxTunnels=24,surfaceRiseMM=0,railSurfaceRiseMM=surfaceRiseMM,surfaceAt,surfaceBreaks,portalRoute,sharedPavement}=options;
+  const pavementThicknessMM=sharedPavement?.thicknessMM??.3,sectionProfile='estimated-parabolic-arch';
+  const warnings=[],metadata={enabled:enabled===true,estimated:true,method:sharedPavement?'shared-surface-road-grade':'linear-dem-with-generated-surface-portal-ramps',section:sectionProfile,sectionWallHeightRatio:.55,sectionRoofSegments:16,pavementThicknessMM,minimumBaseMM:minBaseMM,minimumOpeningMM:minOpeningMM,count:0,omitted:0,omissions:[]};
   if(!enabled)return {items:[],warnings,metadata};
   if(enabled!==true||!Array.isArray(features)||typeof elevationAt!=='function'||typeof ground!=='function'||typeof projection?.project!=='function'||![projection?.scale,projection?.width,projection?.height,verticalReference?.originMeters,verticalReference?.minimumSurfaceMM,exaggeration,minBaseMM,minOpeningMM,surfaceRiseMM,railSurfaceRiseMM].every(Number.isFinite)||projection.scale<=0||projection.width<=0||projection.height<=0||exaggeration<=0||minBaseMM<1||minOpeningMM<.8||minOpeningMM>5||surfaceRiseMM<0||surfaceRiseMM>1||railSurfaceRiseMM<0||railSurfaceRiseMM>2||!Number.isSafeInteger(maxTunnels)||maxTunnels<1||maxTunnels>24)
     throw Error('Configuració de túnels experimentals invàlida.');
   if(surfaceAt!=null&&typeof surfaceAt!=='function'||surfaceBreaks!=null&&typeof surfaceBreaks!=='function'||portalRoute!=null&&typeof portalRoute!=='function')throw Error('Connexió de portals invàlida.');
+  if(sharedPavement&&(![sharedPavement.top,sharedPavement.exposed].every(f=>typeof f==='function')||
+      !Number.isFinite(pavementThicknessMM)||pavementThicknessMM<.1||pavementThicknessMM>1.65))
+    throw Error('Paviment compartit del túnel invàlid.');
   const fragments=[],seen=new Set();let totalPoints=0,dropped=0;
   const fail=(id,why)=>{metadata.omitted++;metadata.omissions.push({id,reason:why});warnings.push(`Túnel ${id} omès: ${why}`);};
   if(features.length>MAX_FEATURES)warnings.push(`Túnels: entrada limitada a ${MAX_FEATURES} entitats.`);
@@ -163,13 +166,15 @@ export function generateProceduralTunnelVoids(features,elevationAt,options={}){
     try{z0=elevationAt(...f.points[0]);z1=elevationAt(...f.points.at(-1));}catch{fail(id,'falten dades DEM als extrems originals.');continue;}
     if(![z0,z1].every(z=>Number.isFinite(z)&&z>=-500&&z<=9000)){fail(id,'cota DEM invàlida.');continue;}
     const modelZ=z=>verticalReference.minimumSurfaceMM+(z-verticalReference.originMeters)*projection.scale*exaggeration-.15;
-    const startZ=modelZ(z0),endZ=modelZ(z1),path=xy.map(([x,y],i)=>[x,y,startZ+(endZ-startZ)*distances[i]/length]);
-    const floorMargin=Math.min(startZ,endZ)-pavementThicknessMM-minBaseMM;
+    const startZ=modelZ(z0),endZ=modelZ(z1),path=xy.map(([x,y],i)=>[x,y,sharedPavement?
+      sharedPavement.top(x,y):startZ+(endZ-startZ)*distances[i]/length]);
+    if(path.some(p=>!Number.isFinite(p[2]))){fail(id,'la rasant compartida no cobreix l’eix del túnel.');continue;}
+    const floorMargin=Math.min(...path.map(p=>p[2]))-pavementThicknessMM-minBaseMM;
     if(floorMargin<0){fail(id,'la cota del paviment tallaria el gruix mínim de base.');continue;}
     let loweringMM=0;
     let coverSamples=sampleRoofCover(path,distances,projection,ground,widthMM,heightMM,1);
     let covered=coveredRoof(coverSamples,minOpeningMM);
-    if(!covered&&coverSamples&&inside(path[0],projection)&&inside(path.at(-1),projection)){
+    if(!sharedPavement&&!covered&&coverSamples&&inside(path[0],projection)&&inside(path.at(-1),projection)){
       // At coarse print scales the minimum printable bore can exceed the
       // clearance of the DEM-derived grade. Try only a small, uniform offset.
       coverSamples=sampleRoofCover(path,distances,projection,ground,widthMM,heightMM,.25);
@@ -214,6 +219,17 @@ export function generateProceduralTunnelVoids(features,elevationAt,options={}){
         const selected=samples.filter(s=>s.distance<=sample.distance+1e-8),extension=selected.map(s=>[...s.xy,a[2]+(z-a[2])*s.distance/sample.distance]);
         return {p:extension.at(-1),points:extension,distances:selected.map(s=>s.distance),distance:sample.distance,adjustment,grade:(z-a[2])/sample.distance,edgeZ,mapped,line:sample.line};
       };
+      if(sharedPavement){
+        const points=[],distances=[];
+        for(const sample of samples){
+          const {xy:[x,y],direction:[ux,uy],distance}=sample,z=sharedPavement.top(x,y);
+          if(!Number.isFinite(z))return null;
+          points.push([x,y,z]);distances.push(distance);
+          const exposed=[-.499,0,.499].every(t=>sharedPavement.exposed([x-uy*t*widthMM,y+ux*t*widthMM]));
+          if(exposed)return {points,distances,distance,adjustment:0,grade:(z-a[2])/distance,mapped,line:sample.line};
+        }
+        return null;
+      }
       let ramp=null;
       for(const sample of samples){
         const {distance,direction:[ux,uy]}=sample,p=[...sample.xy,a[2]-(b[2]-a[2])/d*distance];
@@ -259,7 +275,12 @@ export function generateProceduralTunnelVoids(features,elevationAt,options={}){
       for(const [portal,i]of [[first,0],[last,extended.length-1]])if(portal.edgeZ)fractions.push(...fractionsAt(extended[i].slice(0,2),directionAt(i),portal.line));
       pavementFractions=normalizeFractions(fractions);
       pavementSections=extended.map((p,i)=>{
-        const n=directionAt(i),across=pavementFractions.map(t=>[p[0]+n[0]*carriagewayWidthMM*t,p[1]+n[1]*carriagewayWidthMM*t,p[2]]);
+        const n=directionAt(i),across=pavementFractions.map(t=>{
+          const x=p[0]+n[0]*carriagewayWidthMM*t,y=p[1]+n[1]*carriagewayWidthMM*t;
+          const z=sharedPavement?sharedPavement.top(x,y):p[2];
+          if(!Number.isFinite(z))throw Error('La rasant compartida no cobreix tota l’amplada del túnel.');
+          return [x,y,z];
+        });
         return {left:across[0],right:across.at(-1),centre:across[pavementFractions.indexOf(0)],across};
       });
     }

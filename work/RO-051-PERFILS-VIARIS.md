@@ -263,3 +263,11 @@ Al cupó sintètic de 60 × 60 mm, el motor reutilitza les cotes del tauler esti
 El 3MF té un tauler de 8 mm de llum entre estreps i 0,65 mm de gruix. Els sis punts de control mesuren zero graó i un pendent del 4% als dos costats de les unions. El pas lliure mínim calculat és de 3,67 mm i la via inferior conserva el pendent del 6%. Les malles de terreny i paviment són tancades. El control amb una vall menys profunda rebutja el tauler perquè queda per sota dels 0,8 mm mínims de pas lliure del pilot.
 
 `node scripts/check-surface-road.mjs` genera `cupo-pont-dos-nivells.3mf` i el diagnòstic. La validació al laminador queda a càrrec de l’usuari abans de seguir amb el cupó de túnel.
+
+## Túnel amb rasant compartida · v0.22.7
+
+El cupó sintètic de 60 × 60 mm incorpora un túnel recte cartografiat amb dos accessos alineats. El paviment de 0,65 mm pren la mateixa rasant des d’un accés fins a l’altre. El motor de túnels reutilitza les cotes d’aquest paviment per obrir la volta parabòlica i cerca la primera secció on la calçada ja és a cel obert a cada extrem.
+
+La malla del 3MF conserva el pendent del 4% als dos portals i no té cap graó mesurable en els dotze punts de control, repartits entre els extrems cartografiats i les sortides calculades. Hi ha 1,50 mm de pas vertical al centre de les tres seccions cobertes. Tres raigs longitudinals a 0,5 mm per sobre de la calçada recorren la peça sense travessar material. Les malles són tancades i el control rebutja el túnel si la coberta és insuficient.
+
+`node scripts/check-surface-road.mjs` genera `cupo-tunel-dos-portals.3mf` i `tunel-dos-portals.json`. Queda pendent la comprovació de l’usuari al laminador.

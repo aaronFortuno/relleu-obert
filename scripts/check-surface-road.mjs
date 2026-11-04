@@ -80,8 +80,8 @@ const api=await Module();api.setup();
 const directory=new URL('../output/surface-road/',import.meta.url);
 await mkdir(directory,{recursive:true});
 
-async function checkedExport(data,filename,{resolution=options.resolution,pavementComponents=1}={}){
-  const model=buildModel(data,{...options,resolution},()=>{},api),pilot=model.provenance.surfaceRoads;
+async function checkedExport(data,filename,{resolution=options.resolution,pavementComponents=1,estimatedTunnels=false}={}){
+  const model=buildModel(data,{...options,resolution,estimatedTunnels},()=>{},api),pilot=model.provenance.surfaceRoads;
   assert.equal(pilot?.applied,true,JSON.stringify({pilot,warnings:model.warnings}));
   assert.equal(pilot.pavementThicknessMM,.65);
   const coupon=new URL(filename,directory);
@@ -254,10 +254,13 @@ console.log(JSON.stringify({curvedPilot,maximumStationCrossfallMM,maximumMidpoin
 
 // Read all levels of the exported pavement at (x,y). Upward and downward faces
 // at the same height are kept distinct, while triangles sharing an edge deduplicate.
-function verticalHits({vertices,faces}){
+function verticalHits({vertices,faces},project){
   const triangles=[];
   for(let i=0;i<faces.length;i+=3){
-    const [a,b,c]=Array.from(faces.subarray(i,i+3),index=>vertices.subarray(index*3,index*3+3));
+    const [a,b,c]=Array.from(faces.subarray(i,i+3),index=>{
+      const point=vertices.subarray(index*3,index*3+3);
+      return project?project(point):point;
+    });
     const ux=b[0]-a[0],uy=b[1]-a[1],vx=c[0]-a[0],vy=c[1]-a[1];
     const det=ux*vy-uy*vx;
     if(Math.abs(det)>1e-12)triangles.push({a,b,c,ux,uy,vx,vy,det});
@@ -273,6 +276,15 @@ function verticalHits({vertices,faces}){
     }
     return hits.sort((a,b)=>a.z-b.z);
   };
+}
+
+function measureSeam(x,y,topAt){
+  const delta=.01;
+  const [beforeFar,beforeNear,afterNear,afterFar]=[-2,-1,1,2].map(step=>topAt(x+step*delta,y));
+  assert([beforeFar,beforeNear,afterNear,afterFar].every(Number.isFinite),`Falta calçada al voltant de ${x}, ${y}.`);
+  const gradeBefore=(beforeNear-beforeFar)/delta,gradeAfter=(afterFar-afterNear)/delta;
+  const stepMM=Math.abs(beforeNear+delta*gradeBefore-(afterNear-delta*gradeAfter));
+  return {x,y,stepMM,gradeBefore,gradeAfter};
 }
 
 const bridgeAxes={
@@ -322,17 +334,13 @@ function supportError(x,y,bottom){
 }
 
 const shoulders=[26,34].flatMap(x=>[28.4,30,31.6].map(y=>{
-  const delta=.01;
-  const [beforeFar,beforeNear,afterNear,afterFar]=[-2,-1,1,2].map(step=>pavementLayers(x+step*delta,y).at(-1));
-  const gradeBefore=(beforeNear.top-beforeFar.top)/delta,gradeAfter=(afterFar.top-afterNear.top)/delta;
-  const projectedBefore=beforeNear.top+delta*gradeBefore,projectedAfter=afterNear.top-delta*gradeAfter;
-  const stepMM=Math.abs(projectedBefore-projectedAfter);
+  const seam=measureSeam(x,y,(x,y)=>pavementLayers(x,y).at(-1).top),{stepMM,gradeBefore,gradeAfter}=seam;
   assert(stepMM<toleranceMM,`El tauler fa un graó de ${stepMM} mm a ${x}, ${y}.`);
   assert(Math.abs(gradeBefore-.04)<.005&&Math.abs(gradeAfter-.04)<.005,
     `La rasant d’accés al pont no es conserva a ${x}, ${y}.`);
-  const supportX=x===26?x-delta:x+delta;
+  const supportX=x===26?x-.01:x+.01;
   const support=supportError(supportX,y,pavementLayers(supportX,y).at(-1).bottom);
-  return {x,y,stepMM,gradeBefore,gradeAfter,supportErrorMM:support};
+  return {...seam,supportErrorMM:support};
 }));
 const lowerSections=[27.8,28.4,30,31.6,32.2].map((y,index)=>{
   const layers=pavementLayers(30,y);
@@ -364,3 +372,92 @@ const bridgeReport={fixture:{footprintM,footprintMM,roadWidthM,bridgeResolution,
   crossingSamples,minimumMeasuredClearanceMM,...bridge.contact};
 await writeFile(new URL('pont-dos-nivells.json',directory),JSON.stringify(bridgeReport,null,2)+'\n');
 console.log(JSON.stringify(bridgeReport));
+
+const tunnelAxes={
+  'tunnel-west':[[0,30],[18,30]],'middle-tunnel':[[18,30],[42,30]],'tunnel-east':[[42,30],[60,30]]
+};
+const tunnelResolution=20,tunnelDEMSide=tunnelResolution+1,tunnelGrade=.04;
+const tunnelElevations=height=>Float32Array.from({length:tunnelDEMSide**2},(_,i)=>{
+  const u=(i%tunnelDEMSide)/tunnelResolution;
+  return 100+8*u+height*Math.max(0,Math.min(1,(u-.3)*10,(.7-u)*10));
+});
+const tunnelFixture={...fixture,meta:{...fixture.meta,name:'Cupó de túnel amb dos portals'},
+  localDEM:{...fixture.localDEM,width:tunnelDEMSide,height:tunnelDEMSide,
+    affine:[longitudeSpan/tunnelResolution,0,0,0,latitudeSpan/tunnelResolution,0],
+    values:tunnelElevations(24)},
+  features:[
+    networkRoad('tunnel-west',tunnelAxes['tunnel-west'],{ref:'tunnel-route'}),
+    networkRoad('middle-tunnel',tunnelAxes['middle-tunnel'],{ref:'tunnel-route',brunnel:'tunnel',layer:-1}),
+    networkRoad('tunnel-east',tunnelAxes['tunnel-east'],{ref:'tunnel-route'})
+  ]
+};
+const shallowHill={...tunnelFixture,localDEM:{...tunnelFixture.localDEM,values:tunnelElevations(2)}};
+assert.throws(()=>buildModel(shallowHill,{...options,resolution:tunnelResolution,estimatedTunnels:true},()=>{},api),/coberta contínua/);
+const tunnel=await checkedExport(tunnelFixture,'cupo-tunel-dos-portals.3mf',{resolution:tunnelResolution,estimatedTunnels:true});
+const tunnelInfo=tunnel.pilot.tunnel,{tunnels}=tunnel.model.provenance;
+assert(tunnelInfo?.sourceFeatureIds.includes('middle-tunnel'),'El pilot ha d’identificar el tram de túnel.');
+assert(tunnels.applied,'S’ha d’haver obert el túnel a la malla final.');
+const tunnelProfile=tunnels.profiles.find(profile=>profile.sourceFeatureIds.includes('middle-tunnel'));
+assert(tunnelProfile?.portalConnections.length===2,'Calen dos portals per al túnel cartografiat.');
+const portalCentres=tunnelProfile.portalConnections.map(portal=>portal.centre).sort((a,b)=>a[0]-b[0]);
+const [[mappedWest],[mappedEast]]=tunnelAxes['middle-tunnel'];
+const tunnelTop=surfaceSampler(tunnel.road,true),tunnelBottom=surfaceSampler(tunnel.road,false);
+const tunnelTerrainHits=verticalHits(tunnel.terrain);
+const tunnelSeams=[...new Set([mappedWest,mappedEast,...portalCentres.map(centre=>centre[0])])].flatMap(x=>
+  [28.4,30,31.6].map(y=>{
+    const seam=measureSeam(x,y,tunnelTop),{stepMM,gradeBefore,gradeAfter}=seam;
+    assert(stepMM<toleranceMM,`El paviment del túnel fa un graó de ${stepMM} mm a ${x}, ${y}.`);
+    assert(Math.abs(gradeBefore-tunnelGrade)<.005&&Math.abs(gradeAfter-tunnelGrade)<.005,
+      `La rasant canvia al portal a ${x}, ${y}.`);
+    return seam;
+  }));
+
+function measureOpening(x,y,{airHeightMM=.5,covered=false}={}){
+  const top=tunnelTop(x,y),bottom=tunnelBottom(x,y),hits=tunnelTerrainHits(x,y);
+  assert(Number.isFinite(top)&&Number.isFinite(bottom),`Falta paviment al túnel a ${x}, ${y}.`);
+  assert(Math.abs(top-bottom-tunnel.pilot.pavementThicknessMM)<toleranceMM);
+  const support=hits.filter(hit=>hit.upward&&hit.z<top-toleranceMM).at(-1);
+  assert(support&&Math.abs(support.z-bottom)<toleranceMM,`Falta suport sota el paviment del túnel a ${x}, ${y}.`);
+  const from=top+.2,to=top+airHeightMM;
+  const winding=hits.filter(hit=>hit.z<from).reduce((sum,hit)=>sum+(hit.upward?-1:1),0);
+  assert(winding===0&&!hits.some(hit=>hit.z>=from&&hit.z<=to),`L’obertura no queda lliure a ${x}, ${y}.`);
+  const roof=hits.find(hit=>!hit.upward&&hit.z>to);
+  const outer=roof&&hits.find(hit=>hit.upward&&hit.z>roof.z);
+  if(covered)assert(roof&&outer&&outer.z-roof.z>=.4,`Falta coberta contínua a ${x}, ${y}.`);
+  return {x,y,pavementTop:top,headroomMM:roof?roof.z-top:null,roofThicknessMM:outer?outer.z-roof.z:null,
+    supportErrorMM:Math.abs(support.z-bottom)};
+}
+
+const openings=portalCentres.map(([x,y],index)=>{
+  const inward=index===0?1:-1;
+  const outside=measureOpening(x-inward*.1,y),inside=measureOpening(x+inward*.1,y);
+  assert.equal(outside.roofThicknessMM,null,`El portal exterior no queda a cel obert a x=${outside.x}.`);
+  return {centre:[x,y],outside,inside};
+});
+const [coveredFrom,coveredTo]=tunnelProfile.coveredIntervalMM;
+assert(coveredTo-coveredFrom>2,'Calen seccions cobertes prop de tots dos portals.');
+const coveredSections=[coveredFrom+.25,(coveredFrom+coveredTo)/2,coveredTo-.25].map(station=>
+  measureOpening(mappedWest+station,30,{airHeightMM:1.2,covered:true}));
+
+const gradeOrigin=tunnelTop(.2,30)-.2*tunnelGrade;
+assert(Number.isFinite(gradeOrigin),'Falta la rasant a l’accés oest.');
+const gradeSamples=Array.from({length:61},(_,i)=>.2+i*59.6/60).map(x=>{
+  const top=tunnelTop(x,30);
+  assert(Number.isFinite(top)&&Math.abs(top-gradeOrigin-x*tunnelGrade)<toleranceMM,`La rasant del túnel varia a x=${x}.`);
+  return Math.abs(top-gradeOrigin-x*tunnelGrade);
+});
+// Rotate the ray axis to X and remove the known grade so the same ray query
+// tests a continuous line in the air above the whole pavement, including both caps.
+const gradeCoordinates=([x,y,z])=>[y,z-gradeOrigin-x*tunnelGrade,x];
+const passageHits=[verticalHits(tunnel.terrain,gradeCoordinates),verticalHits(tunnel.road,gradeCoordinates)];
+const continuousPassage=[29.4,30,30.6].map(y=>{
+  const obstructions=passageHits.flatMap(query=>query(y,.5)).filter(hit=>hit.z>.2&&hit.z<59.8);
+  assert.equal(obstructions.length,0,`El pas continu del túnel queda tallat a y=${y}.`);
+  return {y,heightAbovePavementMM:.5,obstructions:obstructions.length};
+});
+const tunnelReport={fixture:{footprintM,footprintMM,roadWidthM,tunnelResolution,tunnelAxes},tunnel:tunnelInfo,
+  coveredIntervalMM:tunnelProfile.coveredIntervalMM,minimumCoveredRoofMM:tunnelProfile.minimumCoveredRoofMM,
+  tunnelSeams,maximumStepMM:Math.max(...tunnelSeams.map(seam=>seam.stepMM)),openings,coveredSections,continuousPassage,
+  grade:tunnelGrade,maximumGradeHeightErrorMM:Math.max(...gradeSamples),...tunnel.contact};
+await writeFile(new URL('tunel-dos-portals.json',directory),JSON.stringify(tunnelReport,null,2)+'\n');
+console.log(JSON.stringify(tunnelReport));

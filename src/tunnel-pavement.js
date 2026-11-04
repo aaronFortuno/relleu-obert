@@ -20,7 +20,7 @@ function sectionPavement(sections,thickness){
 export function tunnelPavements(tunnels){
   return tunnels.filter(t=>t.pavementCategory!=null).map(t=>{
     const thickness=t.pavementThicknessMM,base=t.minimumBaseMM;
-    if(!['roads','railways'].includes(t.pavementCategory)||!Number.isFinite(thickness)||thickness<.1||thickness>1||!Number.isFinite(base)||base<1||!Array.isArray(t.path)||t.path.some(p=>p[2]-thickness<base-1e-6))
+    if(!['roads','railways'].includes(t.pavementCategory)||!Number.isFinite(thickness)||thickness<.1||thickness>1.65||!Number.isFinite(base)||base<1||!Array.isArray(t.path)||t.path.some(p=>p[2]-thickness<base-1e-6))
       throw Error('El paviment del túnel tallaria la base mínima o té una configuració invàlida.');
     const category=CATEGORIES.find(p=>p.id===t.pavementCategory);
     const width=t.carriagewayWidthMM??t.widthMM;

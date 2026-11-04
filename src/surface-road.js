@@ -118,7 +118,7 @@ function applyGrade(stations,ground,rise,junctionHeight,connection){
     const adjacent=intervals[connection.end?intervals.length-1:0].grade;
     const slope=connection.grade;
     if(Math.abs(slope)>epsilon&&(slope*adjacent<=0||Math.abs(slope)>3*Math.abs(adjacent)))
-      throw Error('El pendent del pont no es pot enllaçar suaument amb la calçada.');
+      throw Error('El pendent de l’estructura no es pot enllaçar suaument amb la calçada.');
     slopes[connection.end?slopes.length-1:0]=slope;
   }
   let index=0;
@@ -138,15 +138,15 @@ function planarTop([a,b,c],[za,zb,zc]){
   };
 }
 
-function planRoute({points,width,sourceFeatureIds},pad,{rect,ground},rise,bridge){
+function planRoute({points,width,sourceFeatureIds},pad,{rect,ground},rise,structure){
   const stations=centreline(points,width,pad),half=width/2;
   let start=-1,end=-1;
-  if(bridge){
-    start=stations.findIndex(s=>distance(s.centre,bridge.ends[0])<=epsilon);
-    end=stations.findIndex(s=>distance(s.centre,bridge.ends[1])<=epsilon);
-    if(start<=0||end<=start||end>=stations.length-1)throw Error('Falten seccions als dos extrems del tauler.');
+  if(structure){
+    start=stations.findIndex(s=>distance(s.centre,structure.ends[0])<=epsilon);
+    end=stations.findIndex(s=>distance(s.centre,structure.ends[1])<=epsilon);
+    if(start<=0||end<=start||end>=stations.length-1)throw Error('Falten seccions als dos extrems de l’estructura.');
     const origin=stations[start].distanceMM,span=stations[end].distanceMM-origin;
-    const [first,last]=bridge.heights,grade=(last-first)/span;
+    const [first,last]=structure.heights,grade=(last-first)/span;
     applyGrade(stations.slice(0,start+1),ground,rise,null,{end:true,height:first,grade});
     applyGrade(stations.slice(end),ground,rise,null,{end:false,height:last,grade});
     for(const s of stations.slice(start,end+1))s.heightMM=first+(s.distanceMM-origin)*grade;
@@ -162,7 +162,7 @@ function planRoute({points,width,sourceFeatureIds},pad,{rect,ground},rise,bridge
     for(const indices of triangles){
       const triangle=indices.map(j=>ring[j]),top=planarTop(triangle,indices.map(j=>heights[j]));
       const clipped=pc.intersection([[triangle.concat([triangle[0]])]],rect);
-      for(const polygon of clipped)patches.push({polygon,top,elevated:start>=0&&i>start&&i<=end});
+      for(const polygon of clipped)patches.push({polygon,top,structural:start>=0&&i>start&&i<=end});
       if(a.inPad&&b.inPad&&clipped.length)padPolygons.push(clipped);
     }
   }
@@ -171,8 +171,29 @@ function planRoute({points,width,sourceFeatureIds},pad,{rect,ground},rise,bridge
   const insideJunction=stations.filter(s=>s.inPad);
   const profile={featureIds:sourceFeatureIds,stations:stations.map(({inPad,...section})=>section)};
   if(insideJunction.length)profile.junctionIntervalMM=[insideJunction[0].distanceMM,insideJunction.at(-1).distanceMM];
-  if(bridge)profile.bridgeIntervalMM=[stations[start].distanceMM,stations[end].distanceMM];
+  if(structure)profile[structure.kind+'IntervalMM']=[stations[start].distanceMM,stations[end].distanceMM];
   return {patches,mask,profile,pad:padPolygons.length?pc.union(...padPolygons):[]};
+}
+
+function connectStructure(road,roads){
+  const ends=road.points,heading=tangent(...ends);
+  const groundRoads=roads.filter(r=>r!==road);
+  const approaches=ends.map((point,index)=>{
+    const matches=groundRoads.filter(r=>compatibleTransport(road,r)&&
+      (distance(r.points[0],point)<=epsilon||distance(r.points.at(-1),point)<=epsilon));
+    if(matches.length!==1)throw Error('L’estructura ha de tenir una continuació de superfície a cada extrem.');
+    const [approach]=matches;
+    const points=distance(approach.points[index?0:approach.points.length-1],point)<=epsilon?
+      approach.points:approach.points.slice().reverse();
+    const direction=index?tangent(points[0],points[1]):tangent(points.at(-2),points.at(-1));
+    if(Math.abs(road.width-approach.width)>epsilon||dot(direction,heading)<.999999)
+      throw Error('El pilot requereix la mateixa amplada i direcció de calçada als enllaços.');
+    return {road:approach,points};
+  });
+  if(approaches[0].road===approaches[1].road)throw Error('L’estructura necessita dos accessos independents.');
+  const axis={...road,points:[...approaches[0].points.slice(0,-1),...ends,...approaches[1].points.slice(1)],
+    sourceFeatureIds:[...approaches[0].road.sourceFeatureIds,...road.sourceFeatureIds,...approaches[1].road.sourceFeatureIds]};
+  return {axis,ends,heading,other:groundRoads.find(r=>approaches.every(a=>a.road!==r))};
 }
 
 function planOverpass(roads,terrain,rise,thickness){
@@ -181,21 +202,7 @@ function planOverpass(roads,terrain,rise,thickness){
       !deck.estimated||deck.axis.length!==2||deck.coordinates.length!==4||
       !deck.sourceFeatureIds.some(id=>bridge.sourceFeatureIds.includes(id)))
     throw Error('El pilot necessita un pont recte cartografiat amb un tauler estimat.');
-  const ends=bridge.points,heading=tangent(...ends);
-  const groundRoads=roads.filter(road=>road!==bridge);
-  const approaches=ends.map((point,index)=>{
-    const matches=groundRoads.filter(road=>compatibleTransport(bridge,road)&&
-      (distance(road.points[0],point)<=epsilon||distance(road.points.at(-1),point)<=epsilon));
-    if(matches.length!==1)throw Error('El pont ha de tenir una continuació de superfície a cada extrem.');
-    const [road]=matches;
-    const points=(distance(road.points[index?0:road.points.length-1],point)<=epsilon?road.points:road.points.slice().reverse());
-    const direction=index?tangent(points[0],points[1]):tangent(points.at(-2),points.at(-1));
-    if(Math.abs(road.width-bridge.width)>epsilon||dot(direction,heading)<.999999)
-      throw Error('El pilot requereix la mateixa amplada i direcció de calçada als estreps.');
-    return {road,points};
-  });
-  if(approaches[0].road===approaches[1].road)throw Error('El pont necessita dos accessos independents.');
-  const lower=groundRoads.find(road=>approaches.every(a=>a.road!==road));
+  const {axis,ends,heading,other:lower}=connectStructure(bridge,roads);
   const deckEnds=deck.axis.map(terrain.proj.project);
   const vertices=projectInfrastructurePath(deck.coordinates,terrain.proj,terrain.verticalReference,terrain.exaggeration);
   const heights=[vertices[0][2]+rise,vertices[2][2]+rise];
@@ -203,10 +210,8 @@ function planOverpass(roads,terrain,rise,thickness){
   if(deckEnds.some((p,i)=>distance(p,ends[i])>epsilon)||
       Math.abs(deck.widthMetres*terrain.proj.scale-bridge.width)>1e-4)
     throw Error('L’eix i el tauler del pont han de compartir amplada i extrems.');
-  const upperAxis={...bridge,points:[...approaches[0].points.slice(0,-1),...ends,...approaches[1].points.slice(1)],
-    sourceFeatureIds:[...approaches[0].road.sourceFeatureIds,...bridge.sourceFeatureIds,...approaches[1].road.sourceFeatureIds]};
-  const upper=planRoute(upperAxis,null,terrain,rise,{ends,heights}),below=planRoute(lower,null,terrain,rise);
-  const elevated=upper.patches.filter(p=>p.elevated);
+  const upper=planRoute(axis,null,terrain,rise,{kind:'bridge',ends,heights}),below=planRoute(lower,null,terrain,rise);
+  const elevated=upper.patches.filter(p=>p.structural);
   if(!elevated.length)throw Error('El tauler del cupó ha de quedar dins del retall.');
   const deckMask=pc.union(...elevated.map(p=>[p.polygon]));
   const overlap=pc.intersection(upper.mask,below.mask);
@@ -234,8 +239,8 @@ function planOverpass(roads,terrain,rise,thickness){
     minimumClearanceMM,mask:deckMask,underside,maximumHeightMM:Math.max(...heights)}};
 }
 
-// Initial surface pilot: one open polyline, or two surface routes meeting
-// in one explicit T or through one tagged bridge with two approaches.
+// The pilot accepts an open polyline, a T junction, or one mapped structure
+// with two approaches. A bridge also needs a separate route below its deck.
 export function planSurfaceRoad(roads,terrain,rise,thickness){
   const routes=roads.map(road=>({...road,points:road.points.filter((p,i,all)=>!i||distance(p,all[i-1])>epsilon)}));
   if(routes.some(r=>r.points.length<2||r.points.length>128))
@@ -244,8 +249,20 @@ export function planSurfaceRoad(roads,terrain,rise,thickness){
     const {planned,structure}=planOverpass(routes,terrain,rise,thickness);
     const mask=pc.union(...planned.map(p=>p.mask));
     if(area(pc.difference(mask,terrain.land))>1e-6)throw Error('El cupó de pont ha de quedar sobre el terreny.');
-    const fillMask=pc.union(...planned.flatMap(route=>route.patches.filter(p=>!p.elevated).map(p=>[p.polygon])));
+    const fillMask=pc.union(...planned.flatMap(route=>route.patches.filter(p=>!p.structural).map(p=>[p.polygon])));
     return {mask,fillMask,routes:planned,junctionCount:0,structure};
+  }
+  const underground=routes.filter(r=>r.brunnel==='tunnel');
+  if(underground.length){
+    const [tunnel]=underground;
+    if(routes.length!==3||underground.length!==1||tunnel.points.length!==2)
+      throw Error('El pilot necessita un túnel recte cartografiat amb dos accessos.');
+    const {axis,ends}=connectStructure(tunnel,routes),heights=ends.map(p=>terrain.ground(...p)+rise);
+    const route=planRoute(axis,null,terrain,rise,{kind:'tunnel',ends,heights});
+    if(!route.mask.length||area(pc.difference(route.mask,terrain.land))>1e-6)
+      throw Error('El cupó de túnel ha de quedar sobre el terreny.');
+    const fillMask=pc.union(...route.patches.filter(p=>!p.structural).map(p=>[p.polygon]));
+    return {mask:route.mask,fillMask,routes:[route],junctionCount:0,tunnel:{sourceFeatureIds:tunnel.sourceFeatureIds}};
   }
   const pads=junctionOf(routes);
   const planned=routes.map((route,i)=>planRoute(route,pads[i],terrain,rise));

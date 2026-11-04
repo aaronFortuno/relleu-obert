@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-04. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.22.7 — Túnel amb rasant compartida
+
+L’usuari valida el cupó de pont. El cupó de túnel conserva una rasant del 4% als dos accessos i a l’interior. Es comproven les dues boques obertes i el pas continu al 3MF. [Cupó i mesures](RO-051-PERFILS-VIARIS.md#túnel-amb-rasant-compartida-v0227)
+
 ## v0.22.6 — Pont i via inferior al nou paviment
 
 L’usuari valida la rasant suavitzada de la corba. Al cupó següent, un pont recte conserva el pendent de les calçades d’accés als dos estreps i deixa 3,67 mm de pas lliure sobre la via inferior. El 3MF queda disponible per a la validació de l’usuari. [Cupó i mesures](RO-051-PERFILS-VIARIS.md#pont-sobre-una-via-inferior-v0226)

@@ -337,15 +337,22 @@ function roadSurface(index,polygons,rise,terrain){
 function buildSurfaceRoadPilot(terrain,rise,api,progress){
   const roads=terrain.transport;
   const overpass=roads.some(road=>road.brunnel==='bridge');
-  if(!roads.length||roads.length>(overpass?4:2)||roads.some(road=>road.railway||road.brunnel==='tunnel')||!overpass&&terrain.deckItems.length)
-    throw Error('El pilot admet un traçat, una cruïlla en T o un pont amb dos accessos.');
+  const underground=roads.some(road=>road.brunnel==='tunnel');
+  if(!roads.length||roads.length>(overpass?4:underground?3:2)||roads.some(road=>road.railway)||
+      overpass&&underground||!overpass&&terrain.deckItems.length)
+    throw Error('El pilot admet un traçat, una cruïlla en T, un pont o un túnel amb dos accessos.');
   const thickness=.65+rise;
-  const {mask,fillMask,routes,junctionCount,structure}=planSurfaceRoad(roads,terrain,rise,thickness);
+  const {mask,fillMask,routes,junctionCount,structure,tunnel}=planSurfaceRoad(roads,terrain,rise,thickness);
+  let sharedPavement;
   const corridorParts=routes.flatMap(({patches})=>{
     const pavement=new Surface(),fill=new Surface();
-    for(const {polygon,top,elevated} of patches){
+    for(const {polygon,top,structural} of patches){
       pavement.polygon(polygon,top);
-      if(!elevated)fill.polygon(polygon,(x,y)=>top(x,y)-thickness);
+      if(!structural)fill.polygon(polygon,(x,y)=>top(x,y)-thickness);
+    }
+    if(tunnel){
+      const points=Array.from({length:pavement.vertices.length/3},(_,i)=>pavement.vertices.slice(i*3,i*3+3));
+      sharedPavement={top:topSampler(points,pavement.faces),exposed:polygonTester(fillMask),thicknessMM:thickness};
     }
     return [surfacePart(0,fill.solid(()=>0)),surfacePart(3,pavement.solid((x,y,z)=>z-thickness))];
   });
@@ -370,8 +377,8 @@ function buildSurfaceRoadPilot(terrain,rise,api,progress){
   }
   parts[3]=road;
   const featureIds=roads.flatMap(route=>route.sourceFeatureIds);
-  return {parts,mask,forest,metadata:{applied:true,featureId:featureIds[0],featureIds,junctionCount,widthMM:roads[0].width,
-    pavementThicknessMM:thickness,profiles:routes.map(route=>route.profile),...(bridge?{bridge}:{})}};
+  return {parts,mask,forest,sharedPavement,metadata:{applied:true,featureId:featureIds[0],featureIds,junctionCount,widthMM:roads[0].width,
+    pavementThicknessMM:thickness,profiles:routes.map(route=>route.profile),...(bridge?{bridge}:{}),...(tunnel?{tunnel}:{})}};
 }
 
 export function buildModel(data,options={},progress=()=>{},infrastructureApi=null,diagnostics=null,preview){
@@ -650,7 +657,7 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
     return fractions;
   };
   if(preview&&options.estimatedTunnels)progress('Calculant els traçats i portals dels túnels…');
-  const tunnelVoids=generateProceduralTunnelVoids(data.features,elevationAt,{enabled:options.estimatedTunnels===true,projection:proj,verticalReference,exaggeration,ground,surfaceRiseMM:roadRise,railSurfaceRiseMM:roadRise+railRise,waterMask:waterPoly,surfaceAt:exteriorSurface,surfaceBreaks:exteriorBreaks,portalRoute:({point,outward,properties,sourceFeatureIds,maxLengthMM})=>{
+  const tunnelVoids=generateProceduralTunnelVoids(data.features,elevationAt,{enabled:options.estimatedTunnels===true,projection:proj,verticalReference,exaggeration,ground,surfaceRiseMM:roadRise,railSurfaceRiseMM:roadRise+railRise,waterMask:waterPoly,surfaceAt:exteriorSurface,surfaceBreaks:exteriorBreaks,sharedPavement:surfaceRoad?.sharedPavement,portalRoute:({point,outward,properties,sourceFeatureIds,maxLengthMM})=>{
     const own=new Set(sourceFeatureIds),lines=transport.filter(t=>t.brunnel!=='tunnel'&&!t.sourceFeatureIds?.some(id=>own.has(id)));
     const route=continuationRoute(point,outward,lines,transportIdentity(properties),maxLengthMM,{allowStructures:true});return route.segments.length?route:null;
   }});
@@ -676,6 +683,8 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
     openedTunnels=carved.tunnels;
     if(carved.metadata.applied)tunnelMask=merge(openedTunnels.flatMap(t=>t.footprints));
   }
+  if(surfaceRoad?.metadata.tunnel&&!openedTunnels.length)
+    throw Error('El pilot no ha pogut obrir el túnel. '+(tunnelMetadata.error??tunnelVoids.warnings.join(' ')));
   const tunnelCrossings=[],rejectedCrossings=[];
   for(const bridge of majorDecks){
     if(!bridge.tunnelChecks.length)continue;

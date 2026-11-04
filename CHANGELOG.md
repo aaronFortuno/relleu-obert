@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.22.7 — 2026-11-04
+
+- El pilot de paviment comparteix la rasant entre els accessos i el túnel. El cupó comprova les dues boques i el pas continu a la malla exportada.
+
 ## v0.22.6 — 2026-11-04
 
 - El pilot de paviment enllaça els dos extrems d’un pont recte cartografiat amb les calçades d’accés i comprova l’espai sobre la via inferior.
