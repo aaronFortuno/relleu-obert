@@ -158,7 +158,7 @@ const networkRoad=(id,axis)=>({...fixture.features[0],id,geometry:{type:'LineStr
   coordinates:axis.map(([x,y])=>[x*longitudeSpan/footprintMM,y*latitudeSpan/footprintMM])}});
 const network={...fixture,meta:{...fixture.meta,name:'Cupó de carretera corba amb cruïlla en T'},
   features:[networkRoad('curved-road',mainAxis),networkRoad('branch-road',branchAxis)]};
-const curved=await checkedExport(network,'cupo-corba-cruilla.3mf');
+const curved=await checkedExport(network,'cupo-corba-cruilla-rasant-suau.3mf');
 assert.equal(curved.pilot.junctionCount,1);
 assert.deepEqual([...curved.pilot.featureIds].sort(),['branch-road','curved-road']);
 const networkTop=surfaceSampler(curved.road,true),networkBottom=surfaceSampler(curved.road,false);
@@ -172,26 +172,59 @@ function measurePavement(x,y){
   return {top,interfaceErrorMM};
 }
 
-function normalBetween(a,b){
-  const dx=b[0]-a[0],dy=b[1]-a[1],length=Math.hypot(dx,dy);
-  return [-dy/length,dx/length];
+const interpolatedCrossfallLimitMM=.02,gradeChangeLimit=.12;
+const fractions=[-.499,-.25,0,.25,.499];
+function sectionPoints({centre,normal}){
+  return fractions.map(fraction=>centre.map((coordinate,index)=>coordinate+normal[index]*fraction*expectedWidthMM));
 }
-function measureSection(centre,normal){
-  const samples=[-.499,-.25,0,.25,.499].map(fraction=>measurePavement(
-    centre[0]+normal[0]*fraction*expectedWidthMM,centre[1]+normal[1]*fraction*expectedWidthMM));
+function measureSection({centre,normal,distanceMM,heightMM,midpoint=false}){
+  const samples=sectionPoints({centre,normal}).map(point=>measurePavement(...point));
   const heights=samples.map(sample=>sample.top),crossfallMM=Math.max(...heights)-Math.min(...heights);
-  assert(crossfallMM<toleranceMM,`La calçada té pendent transversal a ${centre.join(', ')}.`);
-  return {centre,heights,crossfallMM,interfaceErrorMM:Math.max(...samples.map(sample=>sample.interfaceErrorMM))};
+  const limit=midpoint?interpolatedCrossfallLimitMM:toleranceMM;
+  assert(crossfallMM<limit,`El pendent transversal fa ${crossfallMM} mm a ${centre.join(', ')}.`);
+  const centreZ=heights[2];
+  if(!midpoint)assert(Math.abs(centreZ-heightMM)<toleranceMM,`La cota exportada difereix a ${centre.join(', ')}.`);
+  return {centre,distanceMM,midpoint,centreZ,heights,crossfallMM,
+    interfaceErrorMM:Math.max(...samples.map(sample=>sample.interfaceErrorMM))};
 }
-const curveSections=mainAxis.slice(3,-1).map((a,index)=>{
-  const b=mainAxis[index+4];
-  return measureSection([(a[0]+b[0])/2,(a[1]+b[1])/2],normalBetween(a,b));
+
+const insideCoupon=point=>point.every(coordinate=>coordinate>=toleranceMM&&coordinate<=footprintMM-toleranceMM);
+const midpointVector=(a,b)=>a.map((coordinate,index)=>(coordinate+b[index])/2);
+const measuredProfiles=curved.pilot.profiles.map(({featureIds,stations,junctionIntervalMM})=>{
+  assert(stations.length>=2&&stations.every((station,index)=>!index||station.distanceMM>stations[index-1].distanceMM),
+    'Les seccions del perfil han d’anar ordenades per distància.');
+  const sections=stations.flatMap((station,index)=>{
+    if(!index)return [station];
+    const previous=stations[index-1];
+    // Interpolate the full normal vector so both edge points are midpoints of the rendered strip edges.
+    const between={midpoint:true,distanceMM:(previous.distanceMM+station.distanceMM)/2,
+      centre:midpointVector(previous.centre,station.centre),normal:midpointVector(previous.normal,station.normal)};
+    return [between,station];
+  }).filter(section=>sectionPoints(section).every(insideCoupon)).map(measureSection);
+  const grades=sections.slice(1).map((end,index)=>{
+    const start=sections[index],spanMM=end.distanceMM-start.distanceMM;
+    return {startX:start.centre[0],endX:end.centre[0],startMM:start.distanceMM,endMM:end.distanceMM,
+      grade:(end.centreZ-start.centreZ)/spanMM};
+  });
+  const junctionTransitions=junctionIntervalMM?.map(distanceMM=>({distanceMM,
+    gradeBefore:grades.find(({endMM})=>Math.abs(endMM-distanceMM)<toleranceMM)?.grade??null,
+    gradeAfter:grades.find(({startMM})=>Math.abs(startMM-distanceMM)<toleranceMM)?.grade??null}));
+  return {featureIds,junctionIntervalMM,junctionTransitions,sections,grades};
 });
-const cornerSections=mainAxis.slice(3,-1).map((centre,index)=>{
-  const incoming=normalBetween(mainAxis[index+2],centre),outgoing=normalBetween(centre,mainAxis[index+4]);
-  const x=incoming[0]+outgoing[0],y=incoming[1]+outgoing[1],length=Math.hypot(x,y);
-  return measureSection(centre,[x/length,y/length]);
-});
+const measuredMain=measuredProfiles.find(({featureIds})=>featureIds.includes('curved-road'));
+assert(measuredMain,'Falta el perfil de la calçada principal.');
+const risingGrades=measuredMain.grades.filter(({startX,endX})=>Math.min(startX,endX)>=31&&Math.max(startX,endX)<=58);
+assert(risingGrades.length>=8,'Falten mostres de rasant al tram ascendent de la corba.');
+const minimumRisingGrade=Math.min(...risingGrades.map(({grade})=>grade));
+assert(minimumRisingGrade>toleranceMM,`La rasant conté un replà o una baixada al tram ascendent (${minimumRisingGrade}).`);
+const maximumAdjacentGradeChange=Math.max(...risingGrades.slice(1).map(({grade},index)=>Math.abs(grade-risingGrades[index].grade)));
+assert(maximumAdjacentGradeChange<gradeChangeLimit,`Canvi de pendent abrupte al tram ascendent (${maximumAdjacentGradeChange}).`);
+const risingSections=measuredMain.sections.filter(({centre:[x]})=>x>=31&&x<=58);
+const risingDistanceMM=risingSections.at(-1).distanceMM-risingSections[0].distanceMM;
+const risingHeightMM=risingSections.at(-1).centreZ-risingSections[0].centreZ;
+const allSections=measuredProfiles.flatMap(({sections})=>sections);
+const maximumStationCrossfallMM=Math.max(...allSections.filter(section=>!section.midpoint).map(section=>section.crossfallMM));
+const maximumMidpointCrossfallMM=Math.max(...allSections.filter(section=>section.midpoint).map(section=>section.crossfallMM));
 
 const junctionCentreZ=measurePavement(...branchAxis.at(-1)).top;
 const seamY=branchAxis.at(-1)[1]-expectedWidthMM/2;
@@ -205,9 +238,12 @@ const intermediateGrade=(measurePavement(26,24).top-measurePavement(24,24).top)/
 assert(intermediateGrade>toleranceMM,'El tram intermedi ha de conservar una rasant ascendent.');
 const exits=[[.01,24],[59.99,44.99],[20,.01]].map(([x,y])=>measurePavement(x,y).top);
 
-const curvedReport={fixture:{...dimensions,mainAxis,branchAxis},pilot:curved.pilot,curveSections,cornerSections,
-  maximumCrossfallMM:Math.max(...[...curveSections,...cornerSections].map(section=>section.crossfallMM)),
+const {profiles:_,...curvedPilot}=curved.pilot;
+const curvedReport={fixture:{...dimensions,mainAxis,branchAxis},pilot:curvedPilot,measuredProfiles,
+  maximumStationCrossfallMM,maximumMidpointCrossfallMM,interpolatedCrossfallLimitMM,
+  risingDistanceMM,risingHeightMM,minimumRisingGrade,maximumAdjacentGradeChange,gradeChangeLimit,
   junctionCentreZ,seamSections,maximumJunctionDeltaMM:Math.max(...seamSections.map(section=>section.junctionDeltaMM)),
   intermediateGrade,exits,...curved.contact};
-await writeFile(new URL('corba-cruilla.json',directory),JSON.stringify(curvedReport,null,2)+'\n');
-console.log(JSON.stringify(curvedReport));
+await writeFile(new URL('corba-cruilla-rasant-suau.json',directory),JSON.stringify(curvedReport,null,2)+'\n');
+console.log(JSON.stringify({curvedPilot,maximumStationCrossfallMM,maximumMidpointCrossfallMM,risingDistanceMM,
+  risingHeightMM,minimumRisingGrade,maximumAdjacentGradeChange,...curved.contact}));

@@ -49,20 +49,21 @@ function intersectsFootprint(part,triangles,footprint){
 }
 
 // Boolean output may contain closed components collapsed to three or fewer
-// exact XYZ positions, or to a single axis-aligned plane. These enclose no
-// volume. Never discard a thin component using a signed-volume threshold.
+// exact XYZ positions, or to a plane proven by equal coordinates. These
+// enclose no volume. Never discard a thin component by volume threshold.
 export function removeCollapsedSurfaceComponents(parts){
   let count=0;const byCategory=Object.create(null),cleaned=parts.map(part=>{
     const keep=[];let removed=0;
     for(const component of partComponents(part.faces)){
-      const positions=new Set(),anchor=part.faces[component[0]*3]*3,flat=[true,true,true];
+      const positions=new Set(),horizontalPositions=new Set(),anchor=part.faces[component[0]*3]*3,flat=[true,true,true];
       for(const t of component){for(let k=0;k<3;k++){
         const i=part.faces[t*3+k]*3;
         if(positions.size<=3)positions.add(`${part.vertices[i]},${part.vertices[i+1]},${part.vertices[i+2]}`);
+        if(horizontalPositions.size<=2)horizontalPositions.add(`${part.vertices[i]},${part.vertices[i+1]}`);
         for(let j=0;j<3;j++)flat[j]&&=part.vertices[i+j]===part.vertices[anchor+j];
-      }if(positions.size>3&&!flat.some(Boolean))break;}
+      }if(positions.size>3&&horizontalPositions.size>2&&!flat.some(Boolean))break;}
       let collapsed=false;
-      if(positions.size<=3||flat.some(Boolean)){
+      if(positions.size<=3||horizontalPositions.size<=2||flat.some(Boolean)){
         const faces=new Uint32Array(component.flatMap(t=>Array.from(part.faces.subarray(t*3,t*3+3)))),edges=rawEdges(faces);
         collapsed=!edges.boundary&&!edges.nonManifold&&!edges.orientationConflicts;
       }

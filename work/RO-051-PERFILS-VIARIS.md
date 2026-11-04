@@ -247,3 +247,11 @@ El mateix vessant del 50% incorpora una calçada corba de 3,6 mm i una branca en
 Al 3MF, cinc punts per secció cobreixen pràcticament tota l’amplada en quatre trams de la corba i en quatre girs. El desnivell transversal màxim és de 0,000019 mm. Nou punts a banda i banda de la unió tenen la mateixa cota. Les dues malles són tancades i el volum d’intersecció mesurat és inferior a 0,00002 mm³. La unió de prova té un únic cos dins de la tolerància volumètrica de 0,0003 mm³.
 
 El control anterior de la recta també es conserva. `node scripts/check-surface-road.mjs` regenera tots dos 3MF. El pilot cobreix un únic traçat o una T amb node compartit i espai per aplanar les aproximacions. La validació al laminador queda a càrrec de l’usuari abans de continuar amb les estructures.
+
+## Rasant contínua a la corba · v0.22.5
+
+La vista lateral del cupó anterior mostrava una escala. Cada gir incloïa una franja horitzontal seguida d’un tram més dret. Els girs ara segueixen arcs tangents i la cota de l’eix s’interpola amb una corba cúbica monòtona. La T conserva la seva cota comuna i la rasant s’hi aproxima amb pendent que tendeix a zero.
+
+Al 3MF, la part ascendent de la corba puja 9,83 mm en 33,24 mm de recorregut mostrejat. Tots els intervals mostrejats pugen i el desnivell transversal màxim entre seccions és de 0,0077 mm. Els nou punts de la cruïlla comparteixen la mateixa cota. Els dos materials són malles tancades i el control del cupó recte continua passant.
+
+`node scripts/check-surface-road.mjs` genera el nou fitxer `cupo-corba-cruilla-rasant-suau.3mf` i el diagnòstic de les seccions. La comprovació al laminador queda a càrrec de l’usuari.

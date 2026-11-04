@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.22.5 — 2026-11-04
+
+- La calçada del cupó segueix un eix arrodonit i una rasant contínua a la corba. La cruïlla conserva una cota compartida amb transicions de pendent progressives.
+
 ## v0.22.4 — 2026-11-04
 
 - El pilot de paviment admet un traçat amb corbes i una cruïlla en T amb cota compartida. El control reproduïble exporta els dos cupons en 3MF.

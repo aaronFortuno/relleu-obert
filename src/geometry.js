@@ -357,7 +357,7 @@ function buildSurfaceRoadPilot(terrain,rise,api,progress){
   parts[0]=ground;
   parts[3]=road;
   const featureIds=roads.flatMap(route=>route.sourceFeatureIds);
-  return {parts,mask,forest,metadata:{applied:true,featureId:featureIds[0],featureIds,junctionCount,widthMM:roads[0].width,pavementThicknessMM:thickness}};
+  return {parts,mask,forest,metadata:{applied:true,featureId:featureIds[0],featureIds,junctionCount,widthMM:roads[0].width,pavementThicknessMM:thickness,profiles:routes.map(route=>route.profile)}};
 }
 
 export function buildModel(data,options={},progress=()=>{},infrastructureApi=null,diagnostics=null,preview){

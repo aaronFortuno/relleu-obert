@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-04. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.22.5 — Rasant contínua a la corba del cupó
+
+La vista lateral del primer cupó de corba mostrava replans als girs. El nou traçat els substitueix per arcs i una rasant interpolada. La part ascendent puja de forma contínua a la malla exportada i la T conserva la cota comuna. [Cupó i mesures](RO-051-PERFILS-VIARIS.md#rasant-contínua-a-la-corba-v0225)
+
 ## v0.22.4 — Corba i cruïlla en T en vessant
 
 El cupó recte queda validat per l’usuari. Al nou cupó, les seccions de la corba tenen un desnivell transversal inferior a 0,00002 mm i els nou punts de la cruïlla comparteixen cota. Es lliura el 3MF per comprovar al laminador. [Cupó i mesures](RO-051-PERFILS-VIARIS.md#cupó-de-corba-i-cruïlla-v0224)
