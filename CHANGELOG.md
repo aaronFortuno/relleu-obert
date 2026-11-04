@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.21.7 — 2026-11-04
+
+- Si la secció mínima d’un túnel estimat queda sense coberta, el motor pot provar un descens limitat de la rasant. Es comproven de nou les dues connexions, la coberta i el gruix de base.
+
 ## v0.21.6 — 2026-11-04
 
 - Els perfils principals poden reservar més traçat per enllaçar amb el paviment sobre el terreny. Cada intent conserva les comprovacions de pendent, suport i encreuaments.

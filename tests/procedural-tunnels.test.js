@@ -57,6 +57,24 @@ test('base thickness, water and open intermediate trenches reject unsafe estimat
   assert.equal(generateProceduralTunnelVoids(f,flat,{...options,ground:()=>5}).items.length,0);
 });
 
+test('a shallow bore can recover continuous cover with a bounded drop and two matched portals',()=>{
+  const projection={width:100,height:80,scale:.05,project:([x,y])=>[x*10000,y*10000]};
+  const ground=x=>x>25&&x<75?6.15:5;
+  const bore=feature([[.002,.004],[.008,.004]]);
+  const config={...options,projection,ground};
+  const result=generateProceduralTunnelVoids([bore],flat,config);
+  const [tunnel]=result.items;
+  assert(tunnel,result.warnings.join(' '));
+  assert(tunnel.loweringMM>0&&tunnel.loweringMM<=.75);
+  assert(tunnel.minimumCoveredRoofMM>=.3);
+  assert.equal(tunnel.heightMM,1.2);
+  assert.equal(tunnel.portalConnections.length,2);
+  for(const {centre:[x,y,z]} of tunnel.portalConnections)assert.equal(z,ground(x,y));
+  assert(tunnel.pavementSections.every(section=>section.across.every(point=>point[2]-.3>=2.5)));
+  assert.deepEqual(auditPart(tunnel).errors,[]);
+  assert.equal(generateProceduralTunnelVoids([bore],flat,{...config,minBaseMM:4.5}).items.length,0);
+});
+
 test('cropped/rotated views use the original DEM endpoints and keep the same absolute profile',()=>{
   const pose=selectionPose(physicalBBox([.0006,.002],.2,.2),25),small=makeProjection(pose.bbox,100,{widthMM:100,heightMM:100,selectionPose:pose});
   const calls=[];const elevation=(lon,lat)=>(calls.push([lon,lat]),100+lon*10);

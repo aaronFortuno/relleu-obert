@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-04. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.21.7 — Coberta dels túnels estimats
+
+Un descens limitat recupera l’obertura de Sant Salvador a 1:20.000. Comprovacions sobre la malla exportada de pas a les dues boques i de sòlid al sostre i a la base al tram cobert. [Resultats](RO-034-OBERTURES.md#sant-salvador-a-120000)
+
 ## v0.21.6 — Transicions de la C-37
 
 Una reserva més llarga de traçat recupera un tercer perfil de la C-37 a Sant Salvador a 1:10.000. Queden dues omissions d’enllaç i un creuament sense cota acreditada. El control ferroviari de 800 m conserva la rasant. [Resultats](RO-051-PERFILS-VIARIS.md#transicions-amb-v0216)

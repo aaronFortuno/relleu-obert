@@ -234,3 +234,11 @@ lliure al 3MF serialitzat: 180 s i mínim de 4,18 GB lliures. Suite
 ordinària final de 336 casos correcta, build i control activat revisats
 localment a 1280×720. Total del lot: 342 proves úniques correctes. Laminat,
 obertures visibles en detall i impressió continuen pendents d'usuari.
+
+## Sant Salvador a 1:20.000
+
+Amb MET5 i detall ràpid, el perfil inicial del túnel 317900732 deixava la volta entre 0,12 i 0,51 mm per damunt de la malla. Amb el MET5 natiu el marge de coberta màxim era d’uns 0,16 mm, per sota dels 0,30 mm exigits. La secció mínima imprimible d’1,2 mm és determinant en aquest retall.
+
+La v0.21.7 pot estimar un descens uniforme de fins a 0,75 mm i 12 m reals, subjecte al marge de la base. Manté la secció i exigeix coberta contínua i connexions vàlides als dos extrems amb els límits habituals. El retall de Sant Salvador aplica 0,53 mm de descens, amb 1,62 mm de tram cobert mostrejat i un mínim de 0,315 mm de coberta. El fons del paviment queda a almenys 9,98 mm sobre la part inferior de la maqueta. Set comprovacions sobre el 3MF confirmen el pas i la base en punts prop de les boques i dins del tram cobert. Tres d’aquestes comprovacions, dins del tram cobert, confirmen també el sostre. El laminat és pendent.
+
+El control de Sant Salvador a 1:10.000 conserva el túnel amb MET5 i un descens de 0 mm.
