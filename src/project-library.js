@@ -1,5 +1,6 @@
 import {normalizeAssignments} from './materials.js';
 import {pieceDimensions} from './selection.js';
+import {TRAIL_WIDTH_MULTIPLIERS} from './transport-width.js';
 
 export const PROJECT_LIBRARY_KEY='relleu-obert.projects';
 const VERSION=1;
@@ -13,7 +14,7 @@ const timestamp=value=>typeof value==='string'&&Number.isFinite(Date.parse(value
 
 const optionRules={
   detail:oneOf(24,36,56),streams:boolean,streamWidth:oneOf(1,1.5,2,3),
-  exaggeration:value=>range(value,1,3),roadRise:oneOf(0,.5,1),railRise:oneOf(0,.5,1),
+  exaggeration:value=>range(value,1,3),roadRise:oneOf(0,.5,1),railRise:oneOf(0,.5,1),trailWidth:oneOf(...TRAIL_WIDTH_MULTIPLIERS),
   estimatedTunnels:boolean,majorRoads:boolean,buildingSource:oneOf('osm','osm3d','icgc','catastre'),
   buildingMode:oneOf('limited','source','flat','none'),maxBuildingHeight:value=>range(value,1,1200),
   trees:boolean,treeType:oneOf('mixed','round','tall'),brushDensity:value=>range(value,.25,2),
@@ -32,8 +33,9 @@ function validatedSettings(settings){
     placeName!=null&&!text(placeName,300)||exampleId!=null&&!text(exampleId,100))throw invalid();
   const cleanedOptions={};
   for(const [key,valid] of Object.entries(optionRules)){
-    if(!valid(options[key]))throw invalid();
-    cleanedOptions[key]=options[key];
+    const value=key==='trailWidth'&&!Object.hasOwn(options,key)?1:options[key];
+    if(!valid(value))throw invalid();
+    cleanedOptions[key]=value;
   }
   if(!oneOf(1,2,4,8)(materials.count)||!Array.isArray(materials.assignments))throw invalid();
   let assignments;

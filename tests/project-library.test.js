@@ -9,7 +9,7 @@ const settings={
     {mode:'add',x:20,y:40,radius:5,gesture:1,density:.5},
     {mode:'erase',x:70,y:90,radius:8,gesture:2,density:1}
   ],
-  options:{detail:36,streams:true,streamWidth:1.5,exaggeration:1.5,roadRise:.5,railRise:1,
+  options:{detail:36,streams:true,streamWidth:1.5,exaggeration:1.5,roadRise:.5,railRise:1,trailWidth:1.5,
     estimatedTunnels:true,majorRoads:true,buildingSource:'catastre',buildingMode:'limited',maxBuildingHeight:5,
     trees:true,treeType:'mixed',brushDensity:.5,brushRadius:5,split:false,exportFormat:'bambu'},
   placeName:'Rasos de Peguera'
@@ -40,6 +40,17 @@ test('custom centimetre dimensions round-trip and define the valid stroke area',
   assert.deepEqual(readProjects(storage)[0].settings,custom);
   for(const sizePreset of ['9x45','40x51','40.5x45'])
     assert.throws(()=>saveProject(storage,{name:'Invàlida',settings:{...custom,sizePreset}}),/no és vàlida/);
+});
+
+test('older projects use the default trail width and a new choice persists',()=>{
+  const storage=memoryStorage(),{trailWidth,...options}=settings.options;
+  const old=saveProject(storage,{name:'Anterior',settings:{...settings,options}},firstDate);
+  const stored=JSON.parse(storage.getItem(PROJECT_LIBRARY_KEY));
+  delete stored.projects[0].settings.options.trailWidth;
+  storage.setItem(PROJECT_LIBRARY_KEY,JSON.stringify(stored));
+  assert.equal(readProjects(storage)[0].settings.options.trailWidth,1);
+  saveProject(storage,{id:old.id,name:old.name,settings},secondDate);
+  assert.equal(readProjects(storage)[0].settings.options.trailWidth,trailWidth);
 });
 
 test('updating retains identity and creation time, and deletion touches only the selected project',()=>{

@@ -40,7 +40,7 @@ test('width: attribute, lanes or class table, with physical minimum and absurd v
   assert.equal(items.length,4);
   const byId=Object.fromEntries(items.map(i=>[i.sourceFeatureIds[0],i]));
   assert.equal(byId.a.widthMetres,10);
-  assert(Math.abs(byId.b.widthMetres-4.4)<1e-9); // minWidthMM/scale = .44/.1
+  assert(Math.abs(byId.b.widthMetres-3)<1e-9); // minWidthMM/scale = .30/.1
   assert(Math.abs(byId.c.widthMetres-9.6)<1e-9); // 3 carrils * 3.2
   assert.equal(byId.d.widthMetres,10); // amplada absurda rebutjada → política comuna primary
   assert.equal(warnings.length,1);assert.match(warnings[0],/rebutjada/);
@@ -53,8 +53,8 @@ test('width: attribute, lanes or class table, with physical minimum and absurd v
 test('a distant path bridge uses the same width as its road continuation',()=>{
   const f=bridge([[0,0],[0.002,0]],{class:'path'},'path');
   const scale=.05;
-  const estimated=generateProceduralBridgeItems([f],flat,{scale}).items[0];
-  assert(Math.abs(estimated.widthMetres*scale-roadWidthMM(f.properties,scale))<1e-12);
+  const estimated=generateProceduralBridgeItems([f],flat,{scale,trailWidth:2}).items[0];
+  assert(Math.abs(estimated.widthMetres*scale-roadWidthMM(f.properties,scale,{trailWidth:2}))<1e-12);
   const overridden=generateProceduralBridgeItems([f],flat,{scale,minWidthMM:.44}).items[0];
   assert(Math.abs(overridden.widthMetres*scale-.44)<1e-12);
 });

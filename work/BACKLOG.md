@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-04 · v0.22.11**. Més cobertura del paviment independent i encaix per tram. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-04 · v0.22.12**. Senders més estrets i aigua continental superficial. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -26,8 +26,8 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | [RO-033](#ro-033--ponts-i-viaductes) | P1 | Millau i el cupó del Bages validats al visor. Montgròs conserva el pas al laminat del cupó | Comprovar llums i accessos en una placa completa |
 | [RO-034](#ro-034--túnels-imprimibles) | P1 | Dues boques i rasant compartida verificades al cupó 3MF | Validar el cupó i revisar el tram cobert de Sant Salvador al laminador |
 | [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | Encaix per tram i cobertura ampliada, també als talls de la peça | Validar Marganell i resoldre les unions complexes |
-| [RO-052](#ro-052--continuïtat-i-amplada-del-traçat-viari) | P1 | Quatre enllaços a Millau a 1:20.000 | Mesurar cotes, pendents i amplades als enllaços de la C-37 |
-| [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió) | P1 | Quatre 3MF de Tamariu verificats al ZIP | Contrastar les vores adjacents i els materials al laminador |
+| [RO-052](#ro-052--continuïtat-i-amplada-del-traçat-viari) | P1 | Senders amb amplada ajustable. Quatre enllaços a Millau a 1:20.000 | Validar els senders al laminador i mesurar els enllaços de la C-37 |
+| [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió) | P1 | Aigua continental superficial comprovada al 3MF. Quatre peces de Tamariu verificades | Contrastar les vores adjacents i els materials al laminador |
 | [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts) | P1 | Fonts en estudi | Comparació de parts i petjades en segona zona |
 | [RO-032](#ro-032--cobertes-i-volums-singulars) | P1 | Nucli verificat; servei remot pendent de validar | Consulta real reeixida i dades de coberta de Tamariu |
 | [RO-023](#ro-023--relleu-local-i-fonts-vectorials-de-més-precisió) | P2 | MET5 integrat i auditat al Pedraforca | Contrast visual i refinament de malla |
@@ -103,7 +103,7 @@ Comparar la font actual i un MDT de detall al mateix retall de Montserrat, a due
 
 ### RO-024 — Unió de volums i validació d’impressió
 
-El cupó del Bages permet consultar els materials per altura. Bambu Studio lamina bé en general segons el retorn d’usuari. Si reapareix un material inesperat, conservar el 3MF, el perfil i la cota de la primera capa afectada. Laminar Tamariu 40 × 45 cm i els Rasos–Gallina Pelada per contrastar vores i capes, i Rajadell per revisar el pas inferior. Impressió física pendent. [Resultats i controls](RO-024-RESULTATS.md)
+El cupó del Bages permet consultar els materials per altura. El control de la v0.22.12 confirma que el 3MF del Model complet té terreny sota l’aigua continental i mar a la primera capa. Si reapareix un material inesperat, conservar el 3MF, el perfil i la cota de la primera capa afectada. Laminar Tamariu 40 × 45 cm i els Rasos–Gallina Pelada per contrastar vores i capes, i Rajadell per revisar el pas inferior. Impressió física pendent. [Resultats i controls](RO-024-RESULTATS.md)
 
 ### RO-025 — Vegetació mesurada i paisatges històrics
 
@@ -155,7 +155,7 @@ Les vies ràpides i el ferrocarril han de conservar una rasant contínua. Valida
 
 ### RO-052 — Continuïtat i amplada del traçat viari
 
-Revisar les unions i amplades de carretera, pont i túnel a dues escales. Separar l’amplada de calçada del contorn estructural i l’obertura imprimible. [Controls i reproducció](RO-052-CONTINUITAT.md)
+Els senders tenen un mínim de 0,30 mm i el selector de Vies en modifica l’amplada. Comprovar-ne la visibilitat al laminador. Revisar les unions i amplades de carretera, pont i túnel a dues escales. Separar l’amplada de calçada del contorn estructural i l’obertura imprimible. [Controls i reproducció](RO-052-CONTINUITAT.md)
 
 ### RO-053 — Flux de treball per etapes
 

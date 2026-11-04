@@ -6,7 +6,7 @@
 // retalla el perfil: el mateix pont té les mateixes cotes en qualsevol retall.
 
 import {isRailway,isInactiveRailway,railwayWidthMetres} from './railways.js';
-import {roadWidthMetres,roadMinimumWidthMM} from './transport-width.js';
+import {mappedRoadWidthMetres,roadMinimumWidthMM,roadWidthMetres,roadWidthMultiplier} from './transport-width.js';
 const LAT_METRES=111320;
 const MAX_FEATURES=50000,MAX_BRIDGES=200,MAX_AXIS_POINTS=1000;
 const MAX_FRAGMENTS=1000,MAX_TOTAL_POINTS=20000,MAX_LINE_POINTS=2000;
@@ -34,12 +34,13 @@ function endKey(p){
 }
 
 function widthFromProperties(props,warnings,label){
+  const railway=isRailway(props);
   if(props.width!==undefined&&props.width!==null&&props.width!==''){
     const raw=Number(props.width);
-    if(!Number.isFinite(raw)||raw<.5||raw>60)
+    if(railway?(!Number.isFinite(raw)||raw<.5||raw>60):mappedRoadWidthMetres(props)===null)
       warnings.push(`Pont ${label}: amplada «${props.width}» rebutjada; s'usa una estimació de carrils o classe.`);
   }
-  return isRailway(props)?railwayWidthMetres(props):roadWidthMetres(props);
+  return railway?railwayWidthMetres(props):roadWidthMetres(props);
 }
 
 const groupOf=props=>JSON.stringify([String(props.class??''),String(props.layer??0),String(props.name??''),String(props.ref??''),String(props.oneway??''),props.railway??'',props.subclass??'',isRailway(props)?railwayWidthMetres(props):roadWidthMetres(props)]);
@@ -201,7 +202,7 @@ function joinFragments(fragments){
   return merged;
 }
 
-export function generateProceduralBridgeItems(features,elevationAt,{scale=.1,minWidthMM,bbox}={}){
+export function generateProceduralBridgeItems(features,elevationAt,{scale=.1,minWidthMM,bbox,trailWidth}={}){
   if(!Array.isArray(features))throw Error('Les entitats d’entrada han de ser un array.');
   if(typeof elevationAt!=='function')throw Error('Cal un callback elevationAt(lon,lat).');
   if(!Number.isFinite(scale)||scale<=0)throw Error('Escala invàlida.');
@@ -276,8 +277,9 @@ export function generateProceduralBridgeItems(features,elevationAt,{scale=.1,min
     }
     const railway=isRailway(axis.props);
     const sourceWidthMetres=widthFromProperties(axis.props,warnings,id);
-    const minimumMM=minWidthMM??(railway ? .44 : roadMinimumWidthMM(axis.props,scale));
-    const widthMetres=Math.max(sourceWidthMetres,minimumMM/scale);
+    const minimumMM=minWidthMM??(railway ? .44 : roadMinimumWidthMM(axis.props,scale,{trailWidth}));
+    const multiplier=railway ? 1 : roadWidthMultiplier(axis.props,trailWidth);
+    const widthMetres=Math.max(sourceWidthMetres*multiplier,minimumMM/scale);
     const latRef=points[0][1],kx=LAT_METRES*Math.cos(latRef*Math.PI/180);
     const xy=points.map(([lon,lat])=>[lon*kx,lat*LAT_METRES]);
     const distance=[0];

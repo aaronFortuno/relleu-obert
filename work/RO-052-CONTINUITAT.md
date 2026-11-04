@@ -335,3 +335,11 @@ seves proves es conserven per a un desenvolupament posterior. La UI
 opcional de complements tolera l'absència dels contenidors retirats.
 Ajornar el marc no vol dir eliminar-ne el motor ni donar per validat un
 disseny futur.
+
+## Amplada dels senders a la v0.22.12
+
+Els senders, camins de vianants i graons tenen una amplada pròpia. Es fa servir l’amplada cartografiada quan està disponible. En absència de dades, el sender s’estima en 1 m. L’amplada mínima per defecte és 0,30 mm a la peça i el selector de Vies aplica factors de ×0,75, ×1, ×1,5 o ×2. El factor s’aplica també als taulers estimats i a les calçades dels túnels de vianants, de manera que coincideixin amb els seus accessos.
+
+El canvi reutilitza la cartografia carregada i conserva la vista i els traços. Es desa a la galeria local. El control de geometria confirma que el sender passa de 0,30 a 0,60 mm amb ×2 i que la carretera del mateix retall manté la seva amplada.
+
+A la mostra de Tamariu de 100 × 100 mm, l’amplada ×1 exposava un error numèric en unir les vores de dos contorns acabats de separar. El motor obté ara la cobertura conjunta a partir de les petjades prèvies al tall. Amb ×1, 25 fragments reben el paviment independent i les malles superen l’auditoria.

@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.22.12 — 2026-11-04
+
+- Els senders tenen menys amplada per defecte. El selector de Vies permet ajustar-la entre ×0,75 i ×2.
+- Els rius, rierols i llacs del Model complet tenen una capa blava superficial de 0,65 mm amb terreny sòlid a sota. El mar i l’oceà conserven el blau fins a la base.
+
 ## v0.22.11 — 2026-11-04
 
 - El paviment independent cobreix més trams de cada retall i arriba fins als talls de la peça amb la secció transversal plana. Cada tram s’encaixa amb el seu suport i una incidència local només afecta el tram implicat.

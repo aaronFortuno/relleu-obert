@@ -2,10 +2,11 @@ import {lonLatTile} from './elevation.js';
 import {polygonOps} from './polygon-ops.js';
 import {regionTileCount} from './region-limits.js';
 import {loadMet5} from './met5.js';
+import {isMarineWater} from './standing-water.js';
 function tilesAt(bbox,z){const a=lonLatTile(bbox[0],bbox[3],z),b=lonLatTile(bbox[2],bbox[1],z),out=[];for(let x=Math.floor(a[0]);x<=Math.floor(b[0]);x++)for(let y=Math.floor(a[1]);y<=Math.floor(b[1]);y++)out.push({z,x,y});return out;}
 export function oceanTilePredicate(features,bbox){
   const pc=polygonOps(1e-10),polygons=[];
-  for(const f of features)if(f.properties.sourceLayer==='water'&&f.properties.class==='ocean')polygons.push(...(f.geometry.type==='Polygon'?[f.geometry.coordinates]:f.geometry.type==='MultiPolygon'?f.geometry.coordinates:[]));
+  for(const f of features)if(f.properties.sourceLayer==='water'&&isMarineWater(f.properties))polygons.push(...(f.geometry.type==='Polygon'?[f.geometry.coordinates]:f.geometry.type==='MultiPolygon'?f.geometry.coordinates:[]));
   if(!polygons.length)return ()=>false;
   const ocean=pc.union(polygons),rectangle=(w,s,e,n)=>[[[[w,s],[e,s],[e,n],[w,n],[w,s]]]];
   return t=>{

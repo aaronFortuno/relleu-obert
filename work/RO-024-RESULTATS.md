@@ -121,3 +121,11 @@ node --max-old-space-size=512 scripts/audit-3mf.mjs --z=5 public/controls/ro-033
 ```
 
 Al cupó del Bages hi ha triangles de terreny, camins i sòl de bosc que toquen el pla a 5 mm. La consulta inclou les cares coplanàries i mostra les assignacions del fitxer. La comparació amb les trajectòries d’impressió es fa al laminador. El 3MF complet de Rajadell supera el límit de triangles d’aquesta eina acotada.
+
+## Capes baixes del Model complet a la v0.22.12
+
+Els llacs i cursos d’aigua s’imprimeixen com una capa de 0,65 mm. El terreny arriba des de la base fins a la cara inferior de l’aigua. Les dues malles comparteixen el mateix contacte al fons, incloent-hi els talls de la peça. El mar conserva el volum blau fins a la base.
+
+El control de `tests/standing-water.test.js` rellegeix un 3MF amb el mar, un llac, un riu i un rierol. A 0,2 mm només hi ha geometria de mar i de terreny. Les sis mostres del contacte d’aigua continental coincideixen amb el terreny fins a menys de 0,00001 mm. Queda pendent el contrast al laminador.
+
+El retall complet de Marganell amb els ajustos originals té la primera geometria d’aigua continental a 4,53 mm. Les set malles superen l’auditoria. La mostra costanera de Tamariu de 100 × 100 mm conserva tant el mar com l’aigua continental i totes les seves malles superen l’auditoria.

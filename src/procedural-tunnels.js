@@ -117,7 +117,7 @@ function requiredLowering(samples,minLength){
  * Items contain a closed Float32/Uint32 cutter plus path/section/source IDs.
  */
 export function generateProceduralTunnelVoids(features,elevationAt,options={}){
-  const {enabled=false,projection,verticalReference,exaggeration=1.5,ground,waterMask=[],minBaseMM=2.5,minOpeningMM=1.2,maxTunnels=24,surfaceRiseMM=0,railSurfaceRiseMM=surfaceRiseMM,surfaceAt,surfaceBreaks,portalRoute,sharedPavement}=options;
+  const {enabled=false,projection,verticalReference,exaggeration=1.5,ground,waterMask=[],minBaseMM=2.5,minOpeningMM=1.2,maxTunnels=24,surfaceRiseMM=0,railSurfaceRiseMM=surfaceRiseMM,surfaceAt,surfaceBreaks,portalRoute,sharedPavement,trailWidth}=options;
   const pavementThicknessMM=sharedPavement?.thicknessMM??.3,sectionProfile='estimated-parabolic-arch';
   const warnings=[],metadata={enabled:enabled===true,estimated:true,method:sharedPavement?'shared-surface-road-grade':'linear-dem-with-generated-surface-portal-ramps',section:sectionProfile,sectionWallHeightRatio:.55,sectionRoofSegments:16,pavementThicknessMM,minimumBaseMM:minBaseMM,minimumOpeningMM:minOpeningMM,count:0,omitted:0,omissions:[]};
   if(!enabled)return {items:[],warnings,metadata};
@@ -153,7 +153,7 @@ export function generateProceduralTunnelVoids(features,elevationAt,options={}){
     const xy=f.points.map(projection.project);
     if(!xy.every(p=>Array.isArray(p)&&p.length>=2&&p.every(Number.isFinite))){fail(id,'projecció invàlida.');continue;}
     const railway=isRailway(f.props),widthMetres=railway?railwayWidthMetres(f.props):roadWidthMetres(f.props);
-    const carriagewayWidthMM=railway?Math.max(.44,widthMetres*projection.scale):roadWidthMM(f.props,projection.scale);
+    const carriagewayWidthMM=railway?Math.max(.44,widthMetres*projection.scale):roadWidthMM(f.props,projection.scale,{trailWidth});
     const heightMetres=f.props.class==='path'?3:5;
     const widthMM=Math.max(minOpeningMM,carriagewayWidthMM),heightMM=Math.max(minOpeningMM,heightMetres*projection.scale*exaggeration);
     let footprints;try{footprints=sweptFootprints(xy,widthMM,projection);}catch(error){fail(id,error.message);continue;}

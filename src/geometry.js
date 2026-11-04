@@ -37,7 +37,7 @@ import {subtractVoids} from './solid-voids.js';
 import {planSurfaceRoad} from './surface-road.js';
 import {planRegionalSurfaceRoads} from './regional-surface-roads.js';
 import {removeCollapsedSurfaceComponents} from './surface-components.js';
-import {isFlowingWater,isStandingWater,shorelineLevel} from './standing-water.js';
+import {isFlowingWater,isMarineWater,isStandingWater,shorelineLevel} from './standing-water.js';
 export {sampleHeight} from './elevation.js';
 const pc=polygonOps();
 
@@ -145,6 +145,25 @@ function solidPatches(patches,height,bottom){
 function terrainSolid(polys,height,bottom,width,heightMM,res){
   return solidPatches(terrainPatches(polys,width,heightMM,res),height,bottom);
 }
+const INLAND_WATER_DEPTH_MM=.65;
+function appendInlandWater(patches,height,water,support){
+  const bedHeight=(x,y,z)=>z-INLAND_WATER_DEPTH_MM;
+  for(const polygon of patches){
+    const surface=new Surface(),bed=new Surface();
+    surface.polygon(polygon,height);
+    // Build the interface from the water triangles so both materials meet on
+    // the same planes, including at clipped stream banks and lake shorelines.
+    for(let i=0;i<surface.faces.length;i+=3){
+      const triangle=surface.faces.slice(i,i+3).map(index=>{
+        const [x,y,z]=surface.vertices.slice(index*3,index*3+3);
+        return [x,y,bedHeight(x,y,z)];
+      });
+      bed.tri(...triangle);
+    }
+    append(water,surface.solid(bedHeight));
+    append(support,bed.solid(()=>0));
+  }
+}
 export function levelBuildingSolid(polys,rise,ground,width,height,res,profile){
   const patches=[...terrainPatches(polys,width,height,res)];let referenceGround=-Infinity;
   // Piecewise-planar terrain can peak inside the footprint, not just at its
@@ -228,7 +247,7 @@ function prepareTerrain(data,options,progress,preview,measure){
     return sampleHeight(bridgeTiles,lon,lat);
   }:elevationAt;
   preview?.stage('terrain','Identificant els traçats dels ponts…');
-  const generated=generateProceduralBridgeItems(candidates,bridgeElevation,{scale,bbox:data.meta.bbox});warnings.push(...generated.warnings);
+  const generated=generateProceduralBridgeItems(candidates,bridgeElevation,{scale,bbox:data.meta.bbox,trailWidth:options.trailWidth});warnings.push(...generated.warnings);
   const deckItems=knownItems.slice(),deckFootprints=knownFootprints.slice();
   for(const item of generated.items){
     try{
@@ -242,14 +261,14 @@ function prepareTerrain(data,options,progress,preview,measure){
     if(layer==='water'&&(options.streams!==false||!isFlowingWater(p))){
       const entries=polys.map(polygon=>[polygon]);
       water.push(...entries);
-      if(p.class==='ocean')ocean.push(...entries);
+      if(isMarineWater(p))ocean.push(...entries);
       else if(isStandingWater(p))stillWater.push(...entries);
     }
     if((layer==='landcover'&&['wood','grass','scrub'].includes(p.class))||(layer==='landuse'&&['park','forest','grass','cemetery','recreation_ground'].includes(p.class)))green.push(...polys.map(p=>[p]));
     if(['wood','forest','scrub'].includes(p.class))woods.push(...polys.map(p=>[p]));
     if(layer==='transportation'&&!isInactiveRailway(p)&&f.geometry.type.includes('LineString')){
       const lines=f.geometry.type==='LineString'?[f.geometry.coordinates]:f.geometry.coordinates;
-      const railway=isRailway(p),r=railway?Math.max(.22,railwayWidthMetres(p)*scale/2):roadWidthMM(p,scale)/2;
+      const railway=isRailway(p),r=railway?Math.max(.22,railwayWidthMetres(p)*scale/2):roadWidthMM(p,scale,{trailWidth:options.trailWidth})/2;
       for(const line of lines){
         if(!validLine(line)){
           warnings.push(`Via ${f.id??featureIndex} omesa: traçat invàlid.`);
@@ -296,33 +315,34 @@ function prepareTerrain(data,options,progress,preview,measure){
   const verticalReference={originMeters,minimumSurfaceMM:5,seaLevelMM:hasOcean?5:null,method:hasOcean?'sea level at 5 mm; no bathymetry':'lowest generated-terrain sample at 5 mm'};
   for(let i=0;i<field.values.length;i++)field.values[i]=5+(field.values[i]-originMeters)*scale*exaggeration;
   const ground=field.sample;
+  const inland=subtract(waterPoly,oceanPoly),lakes=intersect(inland,mergeLayer(cropped(stillWater)));
+  const inlandWater={vertices:[],faces:[]},inlandSupport={vertices:[],faces:[]};
+  measure('terrain.inland-water',()=>{
+    const patches=polys=>terrainPatches(polys,width,height,resolution);
+    appendInlandWater(patches(subtract(inland,lakes)),(x,y)=>Math.max(3,ground(x,y)-.3),inlandWater,inlandSupport);
+    for(const polygon of lakes){
+      const level=Math.max(3,shorelineLevel(polygon,ground,width,height)-.3);
+      appendInlandWater(patches([polygon]),()=>level,inlandWater,inlandSupport);
+    }
+  });
   const terrain={size,exaggeration,resolution,proj,rect,warnings,elevationAt:data.terrainRaster?bridgeElevation:elevationAt,cropToElevationWindow:!!data.terrainRaster,deckItems,deckMask,transport,roadPieces,railPieces,maximumElevation,
-    roadOnlyPoly,roadPoly,forest,bare,railPoly,waterPoly,land,oceanPoly,green,cropped,ground,verticalReference,diagnostics:prepared.diagnostics,
+    roadOnlyPoly,roadPoly,forest,bare,railPoly,waterPoly,land,oceanPoly,inlandSupport:surfacePart(0,inlandSupport),green,cropped,ground,verticalReference,diagnostics:prepared.diagnostics,
     woodsMask:measure('terrain.woods',()=>merge(cropped(woods)),{inputs:woods.length})};
   terrain.surfaces=measure('terrain.surfaces',()=>terrainCover(forest,bare,terrain,progress));
   const sea=new Surface();
   for(const polygon of oceanPoly)sea.polygon(polygon,()=>5);
   terrain.surfaces[1]=surfacePart(1,sea.solid(()=>0));
-  const inland=subtract(waterPoly,oceanPoly),lakes=intersect(inland,mergeLayer(cropped(stillWater)));
-  const running=terrainSolid(subtract(inland,lakes),(x,y)=>Math.max(3,ground(x,y)-.3),()=>0,width,height,resolution);
-  const standing=new Surface();
-  for(const polygon of lakes){
-    const level=Math.max(3,shorelineLevel(polygon,ground,width,height)-.3);
-    standing.polygon(polygon,()=>level);
-  }
-  const inlandWater={vertices:[],faces:[]};
-  append(inlandWater,running);
-  append(inlandWater,standing.solid(()=>0));
   terrain.surfaces[7]=surfacePart(7,inlandWater);
   return terrain;
 }
 
 function terrainCover(forest,bare,terrain,progress){
-  const {ground,land,woodsMask,proj:{width,height},resolution}=terrain;
+  const {ground,land,inlandSupport,woodsMask,proj:{width,height},resolution}=terrain;
   const base={vertices:[],faces:[]};
   progress('Construint superfícies amb límits vectorials…');
   append(base,terrainSolid(land,(x,y)=>ground(x,y)-.65,()=>0,width,height,resolution));
   append(base,terrainSolid(bare,ground,(x,y)=>ground(x,y)-.65,width,height,resolution));
+  append(base,inlandSupport);
   const forestGround=intersect(forest,woodsMask),grassGround=subtract(forest,forestGround);
   const parts=CATEGORIES.map((_,index)=>surfacePart(index,{vertices:[],faces:[]}));
   parts[0]=surfacePart(0,base);
@@ -428,19 +448,21 @@ function assembleRegionalSurfaceRoads(terrain,rise,api,progress,{regions,metadat
   }
   if(!accepted.length)return null;
   const mask=merge(accepted.map(region=>region.mask));
-  const legacyRoadPoly=subtract(originalRoadPoly,merge([mask,...accepted.map(region=>region.replaces)]));
-  const legacyMask=merge([legacyRoadPoly,railPoly].filter(p=>p.length));
+  const replaced=merge(accepted.filter(region=>!region.partial).map(region=>region.replaces));
+  const retained=subtract(originalRoadPoly,replaced);
+  const legacyRoadPoly=subtract(retained,mask);
+  // Union from the original footprints before the pavement cut introduces
+  // coincident boundaries between the two road meshes.
+  const roadPoly=merge([retained,railPoly,mask].filter(p=>p.length));
   const land=subtract(terrain.land,mask);
-  const forest=subtract(intersect(merge(terrain.cropped(terrain.green)),land),legacyMask);
-  const bare=subtract(subtract(land,forest),legacyMask);
+  const uncovered=subtract(terrain.land,roadPoly),greenMask=merge(terrain.cropped(terrain.green));
+  const forest=intersect(uncovered,greenMask),bare=subtract(uncovered,greenMask);
   const parts=terrainCover(forest,bare,{...terrain,land},progress);
   for(const index of [1,7])parts[index]=terrain.surfaces[index];
   append(base,parts[0]);
   [parts[0]]=removeCollapsedSurfaceComponents([surfacePart(0,base)],{floatRoundoff:true}).parts;
   append(roads,roadSurface(3,legacyRoadPoly,rise,terrain));
   parts[3]=surfacePart(3,roads);
-  const roadPoly=merge([legacyMask,mask].filter(p=>p.length));
-
   metadata.groups=accepted.filter(region=>!region.partial).map(region=>region.info);
   metadata.partialGroups=accepted.filter(region=>region.partial).map(region=>region.info);
   metadata.stations=accepted.reduce((sum,region)=>sum+region.info.stations,0);
@@ -807,7 +829,7 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
     return fractions;
   };
   if(preview&&options.estimatedTunnels)progress('Calculant els traçats i portals dels túnels…');
-  const tunnelVoids=generateProceduralTunnelVoids(data.features,elevationAt,{enabled:options.estimatedTunnels===true,projection:proj,verticalReference,exaggeration,ground,surfaceRiseMM:roadRise,railSurfaceRiseMM:roadRise+railRise,waterMask:waterPoly,surfaceAt:exteriorSurface,surfaceBreaks:exteriorBreaks,sharedPavement:surfaceRoad?.sharedPavement,portalRoute:({point,outward,properties,sourceFeatureIds,maxLengthMM})=>{
+  const tunnelVoids=generateProceduralTunnelVoids(data.features,elevationAt,{enabled:options.estimatedTunnels===true,projection:proj,verticalReference,exaggeration,ground,surfaceRiseMM:roadRise,railSurfaceRiseMM:roadRise+railRise,waterMask:waterPoly,surfaceAt:exteriorSurface,surfaceBreaks:exteriorBreaks,sharedPavement:surfaceRoad?.sharedPavement,trailWidth:options.trailWidth,portalRoute:({point,outward,properties,sourceFeatureIds,maxLengthMM})=>{
     const own=new Set(sourceFeatureIds),lines=transport.filter(t=>t.brunnel!=='tunnel'&&!t.sourceFeatureIds?.some(id=>own.has(id)));
     const route=continuationRoute(point,outward,lines,transportIdentity(properties),maxLengthMM,{allowStructures:true});return route.segments.length?route:null;
   }});

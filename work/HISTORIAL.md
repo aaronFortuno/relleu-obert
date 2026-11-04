@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-04. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.22.12 — Senders i aigua continental
+
+Els senders tenen un mínim de 0,30 mm i una amplada ajustable que es desa a la galeria local. El 3MF de control confirma que a la cota de 0,2 mm hi ha terreny i mar. Rius, rierols i llacs tenen una capa de 0,65 mm sobre terreny sòlid. Pendent de revisió al laminador. [Control d’aigua](RO-024-RESULTATS.md#capes-baixes-del-model-complet-a-la-v02212) · [Amplada dels senders](RO-052-CONTINUITAT.md#amplada-dels-senders-a-la-v02212)
+
 ## v0.22.11 — Més cobertura del paviment independent
 
 L’encaix del paviment es resol per trams. El control en vessant verifica la secció plana al llarg del camí i a les vores, el suport, la divisió en peces i la recuperació després d’una fallada local. Queda pendent revisar el retall de Marganell al visor i al laminador. [Mesures](RO-051-PERFILS-VIARIS.md#més-cobertura-del-paviment-independent-a-la-v02211)
