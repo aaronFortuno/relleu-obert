@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.22.2 — 2026-11-04
+
+- Si falten cotes fora de la maqueta, les vies principals i els ferrocarrils poden recalcular el perfil amb les dades del retall. Es mantenen les comprovacions de pendent, creuaments i separació del terreny.
+
 ## v0.22.1 — 2026-11-04
 
 - Una via principal pot conservar el perfil suau sobre un túnel estimat quan el model ha obert la volta i hi ha separació sota tota la calçada al creuament.

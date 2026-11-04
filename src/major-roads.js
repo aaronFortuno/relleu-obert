@@ -237,7 +237,8 @@ export function reserveProfileEnds(item,projection,reserveFactor=1){
  * slope-limited upward majorant. It never excavates or reshapes DEM.
  * Item coordinates/axisXYZ are absolute geographic XYZ metres, ready for the
  * existing deckSurfaceSolid pipeline. Each section is level across its width.
- * Cropping happens later; a bbox only selects COMPLETE original axes.
+ * Prefer complete original axes. A windowed DEM or missing samples on the
+ * exterior can limit the calculation to the padded model window.
  * Only obstacle checks are restricted to the physical model ROI: optional
  * `roi` is an XY MultiPolygon, otherwise projection.width/height define the
  * model rectangle. Geographic bbox is never used as a rotated/physical ROI.
@@ -301,8 +302,9 @@ export function generateMajorRoadItems(features,elevationAt,options={}){
   }
   const pc=polygonOps(),items=[];let stationCount=0,considered=0;
   const axes=joinFragments(fragments,degree);
-  const candidates=options.cropToElevationWindow?axes.flatMap(f=>
-    clipAxis(f.points,projection,5*projection.scale).map(points=>({...f,points}))):axes;
+  const hasWindow=[projection.width,projection.height].every(v=>Number.isFinite(v)&&v>0);
+  const crop=f=>clipAxis(f.points,projection,5*projection.scale).map(points=>({...f,points,windowed:true}));
+  const candidates=options.cropToElevationWindow&&hasWindow?axes.flatMap(crop):axes;
   for(const f of candidates){
     if(obstacleOverflow||f.railway&&roadObstacleOverflow){fail(f.ids,'pressupost d’obstacles superat; no s’acrediten els creuaments');continue;}
     const sourceWidthMetres=f.sourceWidth,widthMetres=Math.max(sourceWidthMetres,minRoadWidthMM/projection.scale),half=widthMetres/2;
@@ -325,20 +327,34 @@ export function generateMajorRoadItems(features,elevationAt,options={}){
       if(crosses.some(v=>v>=0)){folded=true;break;}
     }
     if(folded){fail(f.ids,'amplada representada incompatible amb el radi de corba');continue;}
-    const sourceElevations=[],sourceFloors=[],sectionMinima=[],renderedElevations=[],renderedFloors=[];let invalid=false;
+    const sourceElevations=[],sourceFloors=[],sectionMinima=[],renderedElevations=[],renderedFloors=[];
+    let station=0;
     try{
-      for(let i=0;i<stations.length;i++){
+      for(;station<stations.length;station++){
+        const i=station;
         const heights=[elevationAt(...axisCoordinates[i]),...edgeCoordinates[i].map(p=>elevationAt(...p))];
-        if(!heights.every(z=>Number.isFinite(z)&&z>=-500&&z<=9000)){invalid=true;break;}
+        if(!heights.every(z=>Number.isFinite(z)&&z>=-500&&z<=9000))break;
         sourceElevations.push(heights[0]);sourceFloors.push(Math.max(...heights));sectionMinima.push(Math.min(...heights));
         if(renderedElevationAt){
           const represented=[renderedElevationAt(...axisCoordinates[i]),...edgeCoordinates[i].map(p=>renderedElevationAt(...p))];
-          if(!represented.every(z=>Number.isFinite(z)&&z>=-500&&z<=9000)){invalid=true;break;}
+          if(!represented.every(z=>Number.isFinite(z)&&z>=-500&&z<=9000))break;
           renderedElevations.push(represented[0]);renderedFloors.push(Math.max(...represented));
         }
       }
-    }catch{invalid=true;}
-    if(invalid){fail(f.ids,'DEM absent o cota no vàlida a l’eix o les vores');continue;}
+    }catch{/* The station with missing elevation is retained for the retry decision. */}
+    if(station<stations.length){
+      const [x,y]=xy[station];
+      if(hasWindow&&!f.windowed&&(x<0||y<0||x>projection.width||y>projection.height)){
+        const clipped=crop(f);
+        if(clipped.length){
+          // Keep the budget for actual clipped candidates, after the intact axes.
+          considered--;
+          candidates.push(...clipped);
+          continue;
+        }
+      }
+      fail(f.ids,'DEM absent o cota no vàlida a l’eix o les vores');continue;
+    }
     const maxGrade=f.railway ? .04 : isLink(f.props) ? .16 : .12;
     const originalConstraintFloors=sourceFloors.map((z,i)=>Math.max(z,renderedElevationAt?renderedFloors[i]:z));
     const constraintFloors=allowEndpointLift?limitedSlopeMajorant(stations,originalConstraintFloors,maxGrade):originalConstraintFloors.slice();

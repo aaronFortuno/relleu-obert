@@ -31,7 +31,7 @@ test('smooth mode includes primary ramps and explicitly designated motor roads w
   assert.deepEqual(items.map(item=>[item.sourceFeatureIds[0],item.roadClass]).sort(),[['motorroad','trunk'],['ramp','primary_link']]);
 });
 
-test('a windowed DEM keeps a trunk profile whose mapped axis extends beyond the crop',()=>{
+test('a trunk axis with missing exterior DEM retries with the same window as a windowed DEM',()=>{
   const axis=feature([[-900,50],[200,50],[1100,50]]);
   const proj={...projection(),width:60,height:15};
   const elevation=(lon)=>{
@@ -39,13 +39,22 @@ test('a windowed DEM keeps a trunk profile whose mapped axis extends beyond the 
     if(x< -10||x>610)throw Error('fora del ràster');
     return 100+.02*x;
   };
-  const settings={projection:proj,smoothProfiles:true};
-  assert.equal(generateMajorRoadItems([axis],elevation,settings).items.length,0);
-  const [profile]=generateMajorRoadItems([axis],elevation,{...settings,cropToElevationWindow:true}).items;
+  const settings={projection:proj,smoothProfiles:true,maxItems:1};
+  const retried=generateMajorRoadItems([axis],elevation,settings);
+  const windowed=generateMajorRoadItems([axis],elevation,{...settings,cropToElevationWindow:true});
+  const [profile]=retried.items;
   assert(profile);
+  assert.deepEqual(retried.items,windowed.items);
+  assert.equal(retried.metadata.omitted,0);
   assert(profile.axisXYZ[0][0]*M<0);
   assert(profile.axisXYZ.at(-1)[0]*M>600);
   assert(profile.maximumGrade<.021);
+  const [complete]=generateMajorRoadItems([axis],()=>100,settings).items;
+  assert.deepEqual(complete.axis,axis.geometry.coordinates);
+  const missingInside=lon=>lon*M>295&&lon*M<305?NaN:elevation(lon);
+  const rejected=generateMajorRoadItems([axis],missingInside,settings);
+  assert.equal(rejected.items.length,0);
+  assert.match(rejected.metadata.omissions[0].reason,/DEM absent/);
 });
 
 test('extra approach reserve stays on the mapped axis and keeps an interior platform',()=>{

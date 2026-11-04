@@ -220,3 +220,12 @@ separació mínima entre la volta i la cara inferior del paviment és de
 0,72 i 0,55 mm. Totes les categories de la malla superen l’auditoria.
 Els enllaços curts amb el paviment sobre el terreny encara hi adapten
 la secció transversal. Queda pendent el contrast visual i el laminat.
+## Millau sud a la v0.22.2
+
+El retall de `millau-sud.json` fa 2.179,6 × 2.179,6 m i està centrat a 44,02347469° N, 3,06385296° E. Peça de 150 mm, escala 1:14.531, exageració ×1,5, detall Equilibrat i sis tessel·les Mapterhorn. La v0.22.1 aplica 13 perfils i omet alguns eixos sencers quan la cartografia viària s’estén més enllà de la cobertura altimètrica.
+
+La v0.22.2 conserva el càlcul sobre l’eix complet si disposa de totes les cotes. Si la primera mostra que falla és fora de la peça, torna a provar l’eix dins del retall amb 5 m de marge. Si falten cotes interiors o la calçada no supera les comprovacions d’integració, el tram encara pot quedar sobre el relleu.
+
+- Retall complet de Millau sud, amb edificis i vegetació. De 13 a 17 perfils aplicats. Entre els quatre recuperats hi ha la calçada de l’A75 dels fragments 1512307892 i 42968112, amb un pendent longitudinal màxim estimat del 6,35%. Cinc seccions transversals mostrejades a la malla final tenen una diferència inferior a 0,001 mm. Les set capes exportades al 3MF superen l’auditoria de geometria.
+- Control del retall anterior, amb vies i aigua. Es conserven els dos perfils sobre el túnel verificat, amb zero omissions i auditoria correcta.
+- A Millau sud queden 14 omissions de candidats. Inclouen creuaments amb ponts sense cota verificada, túnels que no s’han pogut obrir i enllaços curts. Cal aïllar aquestes zones perquè una incidència local no retorni al relleu tota la resta de l’eix.

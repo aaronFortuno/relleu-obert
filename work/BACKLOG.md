@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-04 · v0.22.1**. Calçades de l’accés sud de Millau recuperades. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-04 · v0.22.2**. Perfils de vies recuperats quan falten cotes fora del retall. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -24,7 +24,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | [RO-053](#ro-053--flux-de-treball-per-etapes) | P1 | Progrés per capes i guies de Tamariu verificats | Millorar el contrast de les guies al bosc i estudiar el canvi de mida |
 | [RO-033](#ro-033--ponts-i-viaductes) | P1 | Millau i el cupó del Bages validats al visor. Montgròs conserva el pas al laminat del cupó | Comprovar llums i accessos en una placa completa |
 | [RO-034](#ro-034--túnels-imprimibles) | P1 | Túnel de Sant Salvador obert a les dues escales | Revisar el tram cobert de la maqueta a 1:20.000 al laminador |
-| [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | Dues calçades planes recuperades a l’accés sud de Millau | Contrastar les unions curtes al visor i al laminador |
+| [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | Quatre perfils recuperats a Millau sud, un a l’A75 | Conservar els trams aptes quan falla un creuament o un enllaç local |
 | [RO-052](#ro-052--continuïtat-i-amplada-del-traçat-viari) | P1 | Quatre enllaços a Millau a 1:20.000 | Mesurar cotes, pendents i amplades als enllaços de la C-37 |
 | [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió) | P1 | Quatre 3MF de Tamariu verificats al ZIP | Contrastar les vores adjacents i els materials al laminador |
 | [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts) | P1 | Fonts en estudi | Comparació de parts i petjades en segona zona |
@@ -150,7 +150,7 @@ Realç i material ferroviari diferenciats, comprovats localment. Pendent de cont
 
 ### RO-051 — Perfils de carreteres principals
 
-Les vies ràpides i el ferrocarril han de conservar una rasant contínua. Validar perfils, connexions i omissions a diverses escales. Registrar per separat les vies recuperades sobre el terreny després d’una fallada d’integració. [Perfils i control de la C-37](RO-051-PERFILS-VIARIS.md) · [Mesures](RO-051-RENDIMENT.md)
+Les vies ràpides i el ferrocarril han de conservar una rasant contínua. Validar perfils, connexions i omissions a diverses escales. Registrar per separat les vies que queden sobre el terreny després d’una fallada d’integració. El motor ja pot recuperar el perfil dins del retall quan la cota que falta és a fora. El següent control és conservar els trams aptes d’un mateix eix quan falla un creuament o un enllaç. [Perfils i control de la C-37](RO-051-PERFILS-VIARIS.md) · [Mesures](RO-051-RENDIMENT.md)
 
 ### RO-052 — Continuïtat i amplada del traçat viari
 
