@@ -55,8 +55,10 @@ test('a cutter without a footprint retains candidates even beside another masked
 });
 
 test('cleanup removes only exact collapsed closed components and preserves real positive and 0.001 mm layers',()=>{
-  const positive=part('positive'),collapsed=part('collapsed'),thin=box('roads',200,201,10,10.001),source=combine([positive,collapsed,thin]),expected=combine([positive,thin]);
-  const result=removeCollapsedSurfaceComponents([source]);assert.equal(result.count,1);assert.deepEqual({...result.byCategory},{roads:1});
+  const positive=part('positive'),collapsed=part('collapsed'),thin=box('roads',200,201,10,10.001);
+  const planar={...collapsed,vertices:new Float32Array([80,0,0,80,1,0,80,1,1,80,0,1])};
+  const source=combine([positive,collapsed,planar,thin]),expected=combine([positive,thin]);
+  const result=removeCollapsedSurfaceComponents([source]);assert.equal(result.count,2);assert.deepEqual({...result.byCategory},{roads:2});
   assert(result.parts[0].vertices.length===expected.vertices.length&&result.parts[0].vertices.every((v,i)=>v===expected.vertices[i]),'positive vertex buffers were changed');
   assert(result.parts[0].faces.length===expected.faces.length&&result.parts[0].faces.every((v,i)=>v===expected.faces[i]),'positive face buffers were changed');
   const open={...collapsed,faces:new Uint32Array([0,1,3])};assert.strictEqual(removeCollapsedSurfaceComponents([open]).parts[0],open,'an invalid open surface must not be silently removed');

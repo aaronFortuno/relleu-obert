@@ -48,20 +48,21 @@ function intersectsFootprint(part,triangles,footprint){
   return false;
 }
 
-// Boolean output may contain a closed tetrahedron whose distinct indices have
-// collapsed to at most three EXACT Float32 XYZ positions. It cannot enclose
-// volume. Remove only this proven case, never a small signed-volume threshold:
-// a positive sliver at large world coordinates must survive unchanged.
+// Boolean output may contain closed components collapsed to three or fewer
+// exact XYZ positions, or to a single axis-aligned plane. These enclose no
+// volume. Never discard a thin component using a signed-volume threshold.
 export function removeCollapsedSurfaceComponents(parts){
   let count=0;const byCategory=Object.create(null),cleaned=parts.map(part=>{
     const keep=[];let removed=0;
     for(const component of partComponents(part.faces)){
-      const positions=new Set();
+      const positions=new Set(),anchor=part.faces[component[0]*3]*3,flat=[true,true,true];
       for(const t of component){for(let k=0;k<3;k++){
-        const i=part.faces[t*3+k]*3;positions.add(`${part.vertices[i]},${part.vertices[i+1]},${part.vertices[i+2]}`);
-      }if(positions.size>3)break;}
+        const i=part.faces[t*3+k]*3;
+        if(positions.size<=3)positions.add(`${part.vertices[i]},${part.vertices[i+1]},${part.vertices[i+2]}`);
+        for(let j=0;j<3;j++)flat[j]&&=part.vertices[i+j]===part.vertices[anchor+j];
+      }if(positions.size>3&&!flat.some(Boolean))break;}
       let collapsed=false;
-      if(positions.size<=3){
+      if(positions.size<=3||flat.some(Boolean)){
         const faces=new Uint32Array(component.flatMap(t=>Array.from(part.faces.subarray(t*3,t*3+3)))),edges=rawEdges(faces);
         collapsed=!edges.boundary&&!edges.nonManifold&&!edges.orientationConflicts;
       }

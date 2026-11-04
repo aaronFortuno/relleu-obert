@@ -34,6 +34,7 @@ import {crossSectionFractions} from './transport-sections.js';
 import {fitMajorRoadItem,knownBridgeClearance,openedTunnelClearance} from './major-road-fit.js';
 import {carveTransportDecks} from './transport-carving.js';
 import {planSurfaceRoad} from './surface-road.js';
+import {removeCollapsedSurfaceComponents} from './surface-components.js';
 import {isFlowingWater,isStandingWater,shorelineLevel} from './standing-water.js';
 export {sampleHeight} from './elevation.js';
 const pc=polygonOps();
@@ -334,23 +335,29 @@ function roadSurface(index,polygons,rise,terrain){
 }
 
 function buildSurfaceRoadPilot(terrain,rise,api,progress){
-  const [road]=terrain.transport;
-  if(terrain.transport.length!==1||road.railway||['bridge','tunnel'].includes(road.brunnel)||terrain.deckItems.length)
-    throw Error('El cupó de paviment admet una sola carretera de superfície.');
-  const {mask,patches,top}=planSurfaceRoad(road,terrain,rise),pavement=new Surface(),fill=new Surface();
+  const roads=terrain.transport;
+  if(!roads.length||roads.length>2||roads.some(road=>road.railway||['bridge','tunnel'].includes(road.brunnel))||terrain.deckItems.length)
+    throw Error('El pilot de paviment admet un traçat de superfície o una cruïlla en T.');
+  const {mask,routes,junctionCount}=planSurfaceRoad(roads,terrain,rise);
   const thickness=.65+rise;
-  for(const polygon of patches){
-    pavement.polygon(polygon,top);
-    fill.polygon(polygon,(x,y)=>top(x,y)-thickness);
-  }
-  if(!pavement.faces.length)throw Error('El cupó no té una superfície de paviment imprimible.');
+  const corridorParts=routes.flatMap(({patches})=>{
+    const pavement=new Surface(),fill=new Surface();
+    for(const {polygon,top} of patches){
+      pavement.polygon(polygon,top);
+      fill.polygon(polygon,(x,y)=>top(x,y)-thickness);
+    }
+    return [surfacePart(0,fill.solid(()=>0)),surfacePart(3,pavement.solid((x,y,z)=>z-thickness))];
+  });
   const land=subtract(terrain.land,mask),forest=intersect(merge(terrain.cropped(terrain.green)),land);
   const parts=terrainCover(forest,subtract(land,forest),{...terrain,land},progress);
-  const [ground]=uniteMaterials({parts:[parts[0],surfacePart(0,fill.solid(()=>0))]},api).parts;
+  const united=uniteMaterials({parts:[parts[0],...corridorParts]},api);
+  const [ground,road]=removeCollapsedSurfaceComponents(united.parts).parts;
+  if(!road.faces.length)throw Error('El cupó no té una superfície de paviment imprimible.');
   for(const index of [1,7])parts[index]=terrain.surfaces[index];
   parts[0]=ground;
-  parts[3]=surfacePart(3,pavement.solid((x,y,z)=>z-thickness));
-  return {parts,mask,forest,metadata:{applied:true,featureId:road.sourceFeatureIds[0],widthMM:road.width,pavementThicknessMM:thickness}};
+  parts[3]=road;
+  const featureIds=roads.flatMap(route=>route.sourceFeatureIds);
+  return {parts,mask,forest,metadata:{applied:true,featureId:featureIds[0],featureIds,junctionCount,widthMM:roads[0].width,pavementThicknessMM:thickness}};
 }
 
 export function buildModel(data,options={},progress=()=>{},infrastructureApi=null,diagnostics=null,preview){

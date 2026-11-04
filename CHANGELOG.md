@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.22.4 — 2026-11-04
+
+- El pilot de paviment admet un traçat amb corbes i una cruïlla en T amb cota compartida. El control reproduïble exporta els dos cupons en 3MF.
+
 ## v0.22.3 — 2026-11-04
 
 - Primer cupó del nou paviment de superfície. La calçada pren la cota de l’eix i es manté plana transversalment. El terreny s’ajusta a sota amb excavació i reblert. El pilot es pot reproduir amb `node scripts/check-surface-road.mjs`.

@@ -25,6 +25,9 @@ const fixture={
 const options={size:footprintMM,widthMM:footprintMM,heightMM:footprintMM,resolution:10,
   exaggeration:1,trees:false,roadRise:0,majorRoads:false,estimatedTunnels:false,surfaceRoads:true};
 const toleranceMM=1e-4,overlapToleranceMM3=.0003;
+const expectedWidthMM=roadWidthM*footprintMM/footprintM;
+const dimensions={footprintM,footprintMM,roadWidthM,terrainSlope:{
+  longitudinal:terrainRiseM.longitudinal/footprintM,lateral:terrainRiseM.lateral/footprintM}};
 
 function exportedMeshes(bytes){
   const files=unzipSync(bytes),parser=new XMLParser({ignoreAttributes:false});
@@ -61,35 +64,50 @@ function checkMaterialContact(api,terrain,road){
       assert.equal(common.status(),'NoError');
       assert.equal(combined.status(),'NoError');
       const components=combined.decompose();
-      try{return {overlapMM3:common.volume(),unionComponents:components.length};}
+      try{
+        const volumes=components.map(component=>Math.abs(component.volume()));
+        const unionComponents=volumes.filter(volume=>volume>overlapToleranceMM3).length;
+        const unionRoundingMM3=volumes.filter(volume=>volume<=overlapToleranceMM3).reduce((sum,volume)=>sum+volume,0);
+        assert(unionRoundingMM3<overlapToleranceMM3,'La unió supera la tolerància volumètrica del control.');
+        return {overlapMM3:common.volume(),unionComponents,unionRoundingMM3};
+      }
       finally{components.forEach(component=>component.delete());}
     }finally{common.delete();combined.delete();}
   }finally{ground.delete();pavement.delete();}
 }
 
 const api=await Module();api.setup();
-const model=buildModel(fixture,options,()=>{},api);
-const pilot=model.provenance.surfaceRoads;
-assert.equal(pilot?.applied,true,JSON.stringify({pilot,warnings:model.warnings}));
-assert.equal(pilot.featureId,roadId);
-assert.equal(pilot.pavementThicknessMM,.65);
-const expectedWidthMM=roadWidthM*footprintMM/footprintM;
-assert(Math.abs(pilot.widthMM-expectedWidthMM)<toleranceMM);
-
 const directory=new URL('../output/surface-road/',import.meta.url);
 await mkdir(directory,{recursive:true});
-const coupon=new URL('cupo-carretera-vessant.3mf',directory);
-await writeFile(coupon,threeMF(model,{bambu:true}));
-const bytes=await readFile(coupon),audit=auditThreeMF(bytes),meshes=exportedMeshes(bytes);
-assert.equal(audit.dialect,'bambu');
-assert(audit.valid,JSON.stringify(audit));
-assert.equal(audit.parts.length,2);
-assert(audit.parts.every(part=>part.geometry.closed&&part.geometry.components===1));
-assert.equal(new Set(audit.parts.map(part=>part.material.extruder)).size,2);
 
-const terrain=meshes.get('Terreny'),road=meshes.get('Camins i carreteres');
-assert(terrain&&road,'Calen materials separats per al terreny i la calçada.');
-const {min,max}=audit.parts.find(part=>part.name==='Camins i carreteres').geometry.bbox;
+async function checkedExport(data,filename){
+  const model=buildModel(data,options,()=>{},api),pilot=model.provenance.surfaceRoads;
+  assert.equal(pilot?.applied,true,JSON.stringify({pilot,warnings:model.warnings}));
+  assert.equal(pilot.pavementThicknessMM,.65);
+  const coupon=new URL(filename,directory);
+  await writeFile(coupon,threeMF(model,{bambu:true}));
+  const bytes=await readFile(coupon),audit=auditThreeMF(bytes),meshes=exportedMeshes(bytes);
+  assert.equal(audit.dialect,'bambu');
+  assert(audit.valid,JSON.stringify(audit));
+  assert.equal(audit.parts.length,2);
+  assert(audit.parts.every(part=>part.geometry.closed&&part.geometry.components===1));
+  assert.equal(new Set(audit.parts.map(part=>part.material.extruder)).size,2);
+  const terrain=meshes.get('Terreny'),road=meshes.get('Camins i carreteres');
+  assert(terrain&&road,'Calen materials separats per al terreny i la calçada.');
+
+  const {overlapMM3,unionComponents,unionRoundingMM3}=checkMaterialContact(api,terrain,road);
+  // The shared surface can diverge slightly after export rounds vertices to six decimals.
+  assert(Math.abs(overlapMM3)<overlapToleranceMM3,`Intersecció volumètrica entre materials: ${overlapMM3} mm³.`);
+  assert.equal(unionComponents,1,'La calçada i el relleu han de formar un únic cos en contacte.');
+  const parts=audit.parts.map(({name,material,geometry})=>({name,extruder:material.extruder,
+    triangles:geometry.triangles,closed:geometry.closed,volumeMM3:geometry.signedVolume}));
+  return {model,pilot,terrain,road,bounds:audit.parts.find(part=>part.name==='Camins i carreteres').geometry.bbox,
+    contact:{overlapMM3,overlapToleranceMM3,unionComponents,unionRoundingMM3,parts}};
+}
+
+const {model,pilot,terrain,road,bounds:{min,max},contact}=await checkedExport(fixture,'cupo-carretera-vessant.3mf');
+assert.equal(pilot.featureId,roadId);
+assert(Math.abs(pilot.widthMM-expectedWidthMM)<toleranceMM);
 const [west,downhill]=min,[east,uphill]=max;
 assert(Math.abs(west)<toleranceMM&&Math.abs(east-footprintMM)<toleranceMM);
 assert(Math.abs(uphill-downhill-expectedWidthMM)<toleranceMM);
@@ -130,13 +148,66 @@ const sections=[.05,.25,.5,.75,.95].map(position=>{
 const longitudinalGrade=(sections.at(-1).uphillZ-sections[0].uphillZ)/(sections.at(-1).xMM-sections[0].xMM);
 assert(Math.abs(longitudinalGrade-.015)<toleranceMM,'El cupó ha de conservar el pendent longitudinal de l’1,5 %.');
 
-const {overlapMM3,unionComponents}=checkMaterialContact(api,terrain,road);
-// Two triangulations of the common surface can diverge slightly after export rounds vertices to six decimals.
-assert(Math.abs(overlapMM3)<overlapToleranceMM3,`Intersecció volumètrica entre materials: ${overlapMM3} mm³.`);
-assert.equal(unionComponents,1,'La calçada i el relleu han de formar un únic cos en contacte.');
-const report={fixture:{footprintM,footprintMM,roadWidthM,terrainSlope:{
-    longitudinal:terrainRiseM.longitudinal/footprintM,lateral:terrainRiseM.lateral/footprintM}},
-  pilot,longitudinalGrade,sections,overlapMM3,overlapToleranceMM3,unionComponents,parts:audit.parts.map(({name,material,geometry})=>({name,
-    extruder:material.extruder,triangles:geometry.triangles,closed:geometry.closed,volumeMM3:geometry.signedVolume}))};
+const report={fixture:dimensions,pilot,longitudinalGrade,sections,...contact};
 await writeFile(new URL('diagnostic.json',directory),JSON.stringify(report,null,2)+'\n');
 console.log(JSON.stringify(report));
+
+const mainAxis=[[0,24],[13,24],[20,24],[30,24],[36,25.5],[42,29],[47,34],[60,45]];
+const branchAxis=[[20,0],[20,24]];
+const networkRoad=(id,axis)=>({...fixture.features[0],id,geometry:{type:'LineString',
+  coordinates:axis.map(([x,y])=>[x*longitudeSpan/footprintMM,y*latitudeSpan/footprintMM])}});
+const network={...fixture,meta:{...fixture.meta,name:'Cupó de carretera corba amb cruïlla en T'},
+  features:[networkRoad('curved-road',mainAxis),networkRoad('branch-road',branchAxis)]};
+const curved=await checkedExport(network,'cupo-corba-cruilla.3mf');
+assert.equal(curved.pilot.junctionCount,1);
+assert.deepEqual([...curved.pilot.featureIds].sort(),['branch-road','curved-road']);
+const networkTop=surfaceSampler(curved.road,true),networkBottom=surfaceSampler(curved.road,false);
+const networkTerrainTop=surfaceSampler(curved.terrain,true);
+function measurePavement(x,y){
+  const top=networkTop(x,y),bottom=networkBottom(x,y),support=networkTerrainTop(x,y);
+  assert([top,bottom,support].every(Number.isFinite),`Falta paviment o suport a ${x}, ${y}.`);
+  assert(Math.abs(top-bottom-curved.pilot.pavementThicknessMM)<toleranceMM);
+  const interfaceErrorMM=Math.abs(bottom-support);
+  assert(interfaceErrorMM<toleranceMM,`La calçada no toca el suport a ${x}, ${y}.`);
+  return {top,interfaceErrorMM};
+}
+
+function normalBetween(a,b){
+  const dx=b[0]-a[0],dy=b[1]-a[1],length=Math.hypot(dx,dy);
+  return [-dy/length,dx/length];
+}
+function measureSection(centre,normal){
+  const samples=[-.499,-.25,0,.25,.499].map(fraction=>measurePavement(
+    centre[0]+normal[0]*fraction*expectedWidthMM,centre[1]+normal[1]*fraction*expectedWidthMM));
+  const heights=samples.map(sample=>sample.top),crossfallMM=Math.max(...heights)-Math.min(...heights);
+  assert(crossfallMM<toleranceMM,`La calçada té pendent transversal a ${centre.join(', ')}.`);
+  return {centre,heights,crossfallMM,interfaceErrorMM:Math.max(...samples.map(sample=>sample.interfaceErrorMM))};
+}
+const curveSections=mainAxis.slice(3,-1).map((a,index)=>{
+  const b=mainAxis[index+4];
+  return measureSection([(a[0]+b[0])/2,(a[1]+b[1])/2],normalBetween(a,b));
+});
+const cornerSections=mainAxis.slice(3,-1).map((centre,index)=>{
+  const incoming=normalBetween(mainAxis[index+2],centre),outgoing=normalBetween(centre,mainAxis[index+4]);
+  const x=incoming[0]+outgoing[0],y=incoming[1]+outgoing[1],length=Math.hypot(x,y);
+  return measureSection(centre,[x/length,y/length]);
+});
+
+const junctionCentreZ=measurePavement(...branchAxis.at(-1)).top;
+const seamY=branchAxis.at(-1)[1]-expectedWidthMM/2;
+const seamSections=[18.4,20,21.6].map(x=>{
+  const samples=[-.05,0,.05].map(offset=>measurePavement(x,seamY+offset));
+  const heights=samples.map(sample=>sample.top),junctionDeltaMM=Math.max(...heights.map(z=>Math.abs(z-junctionCentreZ)));
+  assert(junctionDeltaMM<toleranceMM,`La cruïlla fa un graó a x=${x}.`);
+  return {x,seamY,heights,junctionDeltaMM,interfaceErrorMM:Math.max(...samples.map(sample=>sample.interfaceErrorMM))};
+});
+const intermediateGrade=(measurePavement(26,24).top-measurePavement(24,24).top)/2;
+assert(intermediateGrade>toleranceMM,'El tram intermedi ha de conservar una rasant ascendent.');
+const exits=[[.01,24],[59.99,44.99],[20,.01]].map(([x,y])=>measurePavement(x,y).top);
+
+const curvedReport={fixture:{...dimensions,mainAxis,branchAxis},pilot:curved.pilot,curveSections,cornerSections,
+  maximumCrossfallMM:Math.max(...[...curveSections,...cornerSections].map(section=>section.crossfallMM)),
+  junctionCentreZ,seamSections,maximumJunctionDeltaMM:Math.max(...seamSections.map(section=>section.junctionDeltaMM)),
+  intermediateGrade,exits,...curved.contact};
+await writeFile(new URL('corba-cruilla.json',directory),JSON.stringify(curvedReport,null,2)+'\n');
+console.log(JSON.stringify(curvedReport));

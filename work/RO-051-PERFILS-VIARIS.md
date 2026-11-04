@@ -239,3 +239,11 @@ El control representa 200 × 200 m en una peça de 60 × 60 mm amb una calçada 
 El 3MF exporta dos materials amb malles tancades. La unió té un sol component i la intersecció mesurada de 0,000007 mm³ queda dins de la tolerància d’arrodoniment del control. Les mesures també comproven que el relleu immediatament exterior es conserva. El laminat està pendent. Bambu Studio per línia d’ordres es va tancar abans de generar el G-code.
 
 El pilot admet un sol tram recte de superfície. Es reprodueix amb `node scripts/check-surface-road.mjs`, que desa el 3MF i el diagnòstic a `output/surface-road/`. El següent control és mantenir la secció plana en corbes i resoldre les cotes comunes de les cruïlles abans de connectar-hi estructures elevades o soterrades.
+
+## Cupó de corba i cruïlla · v0.22.4
+
+El mateix vessant del 50% incorpora una calçada corba de 3,6 mm i una branca en T. Els girs del traçat tenen franges planes curtes i la cruïlla pren una única cota del node compartit. Entre les franges, la rasant segueix les cotes de l’eix. El terreny s’excava o s’omple fins a sota del paviment.
+
+Al 3MF, cinc punts per secció cobreixen pràcticament tota l’amplada en quatre trams de la corba i en quatre girs. El desnivell transversal màxim és de 0,000019 mm. Nou punts a banda i banda de la unió tenen la mateixa cota. Les dues malles són tancades i el volum d’intersecció mesurat és inferior a 0,00002 mm³. La unió de prova té un únic cos dins de la tolerància volumètrica de 0,0003 mm³.
+
+El control anterior de la recta també es conserva. `node scripts/check-surface-road.mjs` regenera tots dos 3MF. El pilot cobreix un únic traçat o una T amb node compartit i espai per aplanar les aproximacions. La validació al laminador queda a càrrec de l’usuari abans de continuar amb les estructures.
