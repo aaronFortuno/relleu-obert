@@ -52,7 +52,7 @@
 #piece-choice {width:min(560px,100%)}
 .piece-preview {margin:0 auto 12px;width:fit-content;max-width:100%}
 .piece-preview svg {display:block;height:clamp(160px,calc(100dvh - 355px),370px);max-width:100%;border-radius:5px;background:var(--paper)}
-#piece-choice:has(#custom-piece[open]) .piece-preview svg {height:clamp(140px,calc(100dvh - 440px),370px)}
+#piece-choice:has(#custom-piece[open]) .piece-preview svg {height:clamp(140px,calc(100dvh - 475px),370px)}
 .piece-preview figcaption {
   display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 12px;
   margin-top:6px;color:#65755d;font-size:var(--ui-control);text-align:left;
@@ -73,6 +73,7 @@
 #custom-piece-form {text-align:left}
 #custom-piece-form input {width:100%;border:1px solid var(--ui-control-border);border-radius:5px;padding:8px;background:var(--ui-control-bg);color:var(--ui-control-text);font-size:var(--ui-control)}
 #custom-piece-form .primary {margin-top:12px}
+#welcome .piece-size-note,#piece-resize-form .piece-size-note {margin:8px 0 0;font-size:var(--ui-label);line-height:1.5}
 .piece-resize-actions {display:flex;align-items:center;flex-wrap:wrap;gap:4px 12px}
 #piece-resize-open {min-height:28px;color:var(--green);text-decoration:underline}
 #piece-resize-dialog {width:min(420px,92vw)}
@@ -100,6 +101,7 @@
 .mode-segments input:checked+label::before{content:'✓';font-size:var(--ui-label)}
 .mode-segments input:focus-visible+label{outline:2px solid var(--green);outline-offset:-3px}
 .mode-segments input:disabled+label{cursor:wait;opacity:.6}
+#mode-landscape[disabled]+label{cursor:not-allowed}
 .project-actions{display:flex;align-items:center;gap:8px}
 .project-actions input{flex:1;min-width:0;padding:7px;border:1px solid var(--ui-control-border);border-radius:5px;background:var(--ui-control-bg);font-size:var(--ui-control)}
 .project-actions button{width:auto;white-space:nowrap}

@@ -11,8 +11,8 @@ function distanceToShore(x,y,rings){
   return Math.sqrt(nearest);
 }
 
-export function levelReliefLakes(lakes,project,heights,n,width,height){
-  const stepX=width/n,stepY=height/n,step=Math.max(stepX,stepY),stride=n+1;
+export function levelReliefLakes(lakes,project,heights,n,width,height,rows=n){
+  const stepX=width/n,stepY=height/rows,step=Math.max(stepX,stepY),stride=n+1;
   const weights=new Float32Array(heights.length).fill(-1),occupied=new Uint8Array(heights.length);
   const footprints=lakes.flatMap(({geometry})=>geometry.type==='Polygon'?[geometry.coordinates]:
     geometry.type==='MultiPolygon'?geometry.coordinates:[]).map(polygon=>{
@@ -24,14 +24,14 @@ export function levelReliefLakes(lakes,project,heights,n,width,height){
   for(const {rings,minX,maxX,minY,maxY} of footprints){
     if(maxX<0||maxY<0||minX>width||minY>height)continue;
     const left=Math.max(0,Math.floor(minX/stepX)),right=Math.min(n,Math.ceil(maxX/stepX));
-    const bottom=Math.max(0,Math.floor(minY/stepY)),top=Math.min(n,Math.ceil(maxY/stepY));
+    const bottom=Math.max(0,Math.floor(minY/stepY)),top=Math.min(rows,Math.ceil(maxY/stepY));
     const inside=polygonTester([rings]),wet=[],support=new Set();
     for(let y=bottom;y<=top;y++)for(let x=left;x<=right;x++){
       if(!inside([x*stepX,y*stepY]))continue;
       wet.push(y*stride+x);
       // Include all vertices incident to a water sample, regardless of which
       // diagonal is selected. This keeps the interpolated shore at lake level.
-      for(let sy=Math.max(0,y-1);sy<=Math.min(n,y+1);sy++)
+      for(let sy=Math.max(0,y-1);sy<=Math.min(rows,y+1);sy++)
         for(let sx=Math.max(0,x-1);sx<=Math.min(n,x+1);sx++)support.add(sy*stride+sx);
     }
     if(!wet.length||[...support].some(i=>occupied[i]))continue;

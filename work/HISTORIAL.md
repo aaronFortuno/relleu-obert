@@ -2,6 +2,12 @@
 
 Actualitzat: 2026-11-04. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.22.18 — Format panoràmic i relleu per peces
+
+Format de fins a 100 × 20 cm en Relleu pur, amb escales d’1:50.000 a 1:500.000. El pas de la malla s’ajusta a les proporcions i a les línies de tall. El terreny es previsualitza per fragments en maquetes dividides dels dos modes. Les proves del panorama de 100 × 20 cm amb dades simulades comproven quatre fragments de previsualització i les mateixes cotes als talls de l’exportació.
+
+Controls al navegador: panorama de 51 × 10 cm amb relleu real de 25,5 × 5 km a 1:50.000, en tres peces. Tamariu de 30 × 30 cm en Model complet mostra el terreny durant el càlcul de vies i acaba amb quatre peces. L’exemple de l’eix pirinenc prepara 450 × 90 km a 100 × 20 cm. Queda mesurar la generació completa d’aquest retall i validar-ne el laminat.
+
 ## v0.22.17 — Canvi de mida al mateix projecte
 
 La mida s’edita des de «La teva maqueta». El retall conserva el centre i el gir, s’amplia quan cal per adaptar les proporcions i respecta els límits d’escala. Els traços del pinzell es traslladen al retall nou. La maqueta anterior es pot descarregar mentre la mida nova està pendent de generar. Al navegador, la mostra de Tamariu de 15 × 15 cm ha passat a 18 × 18 cm amb el mateix retall i un traç de goma conservat. També s’han comprovat les mides rectangulars, el límit d’escala i la tornada a la mida generada. Pendent de validació d’ús.

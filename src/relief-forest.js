@@ -2,14 +2,14 @@ import {polygonTester} from './polygon-index.js';
 
 // Sample signed distance near the mapped outline. This lets the surface
 // contour cross a triangle at a fractional position instead of snapping it.
-export function sampleReliefForest(polygons,width,height,n){
+export function sampleReliefForest(polygons,width,height,n,rows=n){
   if(!polygons.length)return null;
-  const stride=n+1,dx=width/n,dy=height/n,pad=Math.hypot(dx,dy);
-  const weights=new Float32Array(stride*stride).fill(pad);
+  const stride=n+1,dx=width/n,dy=height/rows,pad=Math.hypot(dx,dy);
+  const weights=new Float32Array(stride*(rows+1)).fill(pad);
   for(const polygon of polygons)for(const ring of polygon)for(let i=1;i<ring.length;i++){
     const [ax,ay]=ring[i-1],[bx,by]=ring[i],vx=bx-ax,vy=by-ay,length=vx*vx+vy*vy;
     if(!length)continue;
-    const bottom=Math.max(0,Math.ceil((Math.min(ay,by)-pad)/dy)),top=Math.min(n,Math.floor((Math.max(ay,by)+pad)/dy));
+    const bottom=Math.max(0,Math.ceil((Math.min(ay,by)-pad)/dy)),top=Math.min(rows,Math.floor((Math.max(ay,by)+pad)/dy));
     for(let row=bottom;row<=top;row++){
       const y=row*dy;
       // Limit the candidate columns to the edge section near this row.
@@ -25,7 +25,7 @@ export function sampleReliefForest(polygons,width,height,n){
   }
   const contains=polygonTester(polygons);
   let cells=0;
-  for(let row=0;row<=n;row++)for(let col=0;col<=n;col++){
+  for(let row=0;row<=rows;row++)for(let col=0;col<=n;col++){
     const index=row*stride+col,distance=Math.max(.0001,weights[index]/pad);
     const forest=contains([col*dx,row*dy]);
     weights[index]=forest?distance:-distance;

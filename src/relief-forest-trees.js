@@ -25,8 +25,8 @@ export function reliefTreeChance(elevation){
 }
 
 function fieldSample(grid,field,x,y){
-  const {width,height,resolution:n,diagonals}=grid;
-  const gx=x/width*n,gy=y/height*n,ix=Math.min(n-1,Math.floor(gx)),iy=Math.min(n-1,Math.floor(gy));
+  const {width,height,resolution:n,rows=n,diagonals}=grid;
+  const gx=x/width*n,gy=y/height*rows,ix=Math.min(n-1,Math.floor(gx)),iy=Math.min(rows-1,Math.floor(gy));
   const u=gx-ix,v=gy-iy,stride=n+1,index=iy*stride+ix;
   const a=field[index],b=field[index+1],c=field[index+stride+1],d=field[index+stride];
   if(diagonals[iy*n+ix]){
@@ -70,8 +70,8 @@ export function reliefForestTrees(grid,containsForest,scale){
 }
 
 export function reliefTreePart(grid,{left,bottom,right,top}){
-  const {width,height,resolution:n,trees=[],crownTaper=0}=grid;
-  const x0=left*width/n,y0=bottom*height/n,x1=right*width/n,y1=top*height/n;
+  const {width,height,resolution:n,rows=n,trees=[],crownTaper=0}=grid;
+  const x0=left*width/n,y0=bottom*height/rows,x1=right*width/n,y1=top*height/rows;
   const visible=trees.filter(({x,y,radius})=>x-radius>=x0&&y-radius>=y0&&x+radius<=x1&&y+radius<=y1);
   if(!visible.length)return null;
   const blend=(a,b)=>a+(b-a)*crownTaper;

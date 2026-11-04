@@ -4,6 +4,7 @@ import {groupMaterials} from './materials.js';
 import {splitModel,tileArchive} from './mesh-tiles.js';
 import {splitPureRelief} from './pure-relief-mesh.js';
 import {MAX_PRINT_TILE_MM} from './selection.js';
+import {previewPieces} from './preview-pieces.js';
 import Module from 'manifold-3d';
 import wasmURL from 'manifold-3d/manifold.wasm?url';
 import {createProcessingTiming} from './processing-timing.js';
@@ -21,12 +22,23 @@ function buildObserver(timing,pureRelief){
     stage=next;lastMessage=message;lastUpdate=now;
     self.postMessage({type:'build-progress',stage,step:stages.indexOf(stage)+1,totalSteps:stages.length,completed,total,message});
   };
+  function sendPreview(stage,mode,categories,width,height,piece){
+    const transfer=piece?categories.flatMap(part=>[part.vertices.buffer,part.faces.buffer]):[];
+    self.postMessage({type:'build-preview',stage,mode,categories,width,height,piece},transfer);
+  }
   return {
     stage:report,
     progress:message=>report(stage,message),
-    parts:(stage,parts,{width,height},mode='replace')=>{
+    parts:(stage,parts,{width,height},mode='replace',piece)=>{
       const categories=parts.filter(part=>part.faces.length);
-      if(!pureRelief&&(categories.length||mode==='replace'))self.postMessage({type:'build-preview',stage,mode,categories,width,height});
+      if(piece){sendPreview(stage,mode,categories,width,height,piece);return;}
+      if(!pureRelief&&stage==='terrain'&&(width>MAX_PRINT_TILE_MM||height>MAX_PRINT_TILE_MM)){
+        let first=true;
+        for(const {parts,index,total} of previewPieces(categories,width,height)){
+          if(parts.length){sendPreview(stage,first?'replace':'append',parts,width,height,{index,total});first=false;}
+          report(stage,'Previsualització del relleu per peces',index,total);
+        }
+      }else if(!pureRelief&&(categories.length||mode==='replace'))sendPreview(stage,mode,categories,width,height);
     }
   };
 }

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {pieceDimensions,scaledBBox,validateScale,tilePlan,selectionPose,coveringSelectionBox} from '../src/selection.js';
+import {pieceDimensions,scaledBBox,validateScale,tilePlan,selectionPose,coveringSelectionBox,isPanoramicSize,PANORAMIC_SCALE_RANGE} from '../src/selection.js';
 import {makeProjection,buildModel} from '../src/geometry.js';
 import {threeMF} from '../src/export.js';
 import {unzipSync,strFromU8} from 'fflate';
@@ -18,16 +18,37 @@ test('changing aspect covers the selected territory around the same centre and r
     if(width===height)resized.bbox.forEach((value,i)=>close(value,original.bbox[i],1e-9));
   }
 });
-test('sizes use whole centimetres between 10 and 50 and split only above 25 cm',()=>{
+test('standard sizes use whole centimetres between 10 and 50 and split only above 25 cm',()=>{
   assert.deepEqual(pieceDimensions('10x10'),[100,100]);
   assert.deepEqual(pieceDimensions('50x41'),[500,410]);
-  for(const invalid of ['9x10','10x51','12.5x18','040x20','__proto__'])assert.equal(pieceDimensions(invalid),null);
+  for(const invalid of ['9x10','21x51','12.5x18','040x20','__proto__'])assert.equal(pieceDimensions(invalid),null);
   for(const [width,height,count] of [[250,250,1],[400,200,2],[400,450,4],[500,500,4]]){
     const {tiles}=tilePlan(width,height);
     assert.equal(tiles.length,count);
     assert(tiles.every(tile=>tile.width<=250&&tile.height<=250));
     assert.equal(tiles.reduce((area,tile)=>area+tile.width*tile.height,0),width*height);
   }
+});
+test('panoramic sizes accept either orientation and a short side of up to 20 cm',()=>{
+  for(const [preset,expected] of [['100x20',[1000,200]],['10x51',[100,510]],['20x100',[200,1000]]]){
+    const dimensions=pieceDimensions(preset);
+    assert.deepEqual(dimensions,expected);
+    assert.equal(isPanoramicSize(...dimensions),true);
+  }
+  for(const invalid of ['101x20','20x101','100x21','51x50','9x51','010x100'])assert.equal(pieceDimensions(invalid),null);
+  assert.equal(isPanoramicSize(...pieceDimensions('50x50')),false);
+  assert.deepEqual(tilePlan(1000,200).tiles.map(({width,height})=>[width,height]),Array(4).fill([250,200]));
+});
+
+test('panoramic scales span 1:50,000 to 1:500,000 without changing the normal validator',()=>{
+  for(const scale of [50000,450000,500000]){
+    assert.equal(validateScale(scale,PANORAMIC_SCALE_RANGE),scale);
+    const pose=selectionPose(scaledBBox([42.8,.75],1000,200,scale,PANORAMIC_SCALE_RANGE),15);
+    close(pose.widthM,scale);
+    close(pose.heightM,scale*.2);
+  }
+  for(const scale of [49999,500001])assert.throws(()=>validateScale(scale,PANORAMIC_SCALE_RANGE),/escala/);
+  assert.throws(()=>validateScale(450000),/escala/);
 });
 
 test('both geometry modes accept a 50 cm model side',()=>{
@@ -38,7 +59,7 @@ test('both geometry modes accept a 50 cm model side',()=>{
     const model=buildModel(data,options);
     assert.equal(model.width,500);
     assert.equal(model.height,400);
-    assert.throws(()=>buildModel(data,{...options,widthMM:510}),/rang admès|Relleu pur/);
+    assert.throws(()=>buildModel(data,{...options,widthMM:510}),/rang admès|format panoràmic/);
   }
 });
 test('fixed scales preserve horizontal scale, dimensions and coordinates at different latitudes',()=>{

@@ -5,12 +5,22 @@ import {reliefStreamPart} from './relief-streams.js';
 import {reliefTreePart} from './relief-forest-trees.js';
 
 export const PURE_RELIEF_RESOLUTIONS={24:240,36:384,56:540};
+const panoramicSteps={240:1.25,384:.9,540:.65};
+
+export function reliefGridSize(width,height,resolution,panoramic){
+  if(!panoramic)return {columns:resolution,rows:resolution};
+  const step=panoramicSteps[resolution]??1.25;
+  const {cols,rows}=tilePlan(width,height);
+  // Align the grid with the print seams while keeping the sampling step in mm.
+  const count=(length,pieces)=>pieces*Math.ceil(length/(step*pieces));
+  return {columns:count(width,cols),rows:count(height,rows)};
+}
 
 // The two possible diagonals interpolate different heights at the centre.
 // Choose the one closest to the actual elevation sample.
-export function reliefDiagonals(heights,n,midpoint){
-  const diagonals=new Uint8Array(n*n),stride=n+1;
-  for(let row=0;row<n;row++)for(let col=0;col<n;col++){
+export function reliefDiagonals(heights,n,midpoint,rows=n){
+  const diagonals=new Uint8Array(n*rows),stride=n+1;
+  for(let row=0;row<rows;row++)for(let col=0;col<n;col++){
     const i=row*stride+col,centre=midpoint(col,row);
     const rising=Math.abs((heights[i]+heights[i+stride+1])/2-centre);
     const falling=Math.abs((heights[i+1]+heights[i+stride])/2-centre);
@@ -23,7 +33,7 @@ const directions=[[0,-1],[1,0],[0,1],[-1,0]];
 const corners=[[0,0],[1,0],[1,1],[0,1]];
 
 function reliefBase(grid,bounds,layered){
-  const {resolution:n,heights,diagonals,width,height}=grid;
+  const {resolution:n,rows:ny=n,heights,diagonals,width,height}=grid;
   const {left,bottom,right,top}=bounds,cols=right-left,rows=top-bottom,stride=cols+1;
   const capacity=stride*(rows+1),edges=2*(cols+rows);
   const vertices=new Float32Array((capacity+edges+1)*3);
@@ -33,7 +43,7 @@ function reliefBase(grid,bounds,layered){
   const vertex=(x,y,z)=>{
     const i=nv++*3;
     vertices[i]=(x-left)*width/n;
-    vertices[i+1]=(y-bottom)*height/n;
+    vertices[i+1]=(y-bottom)*height/ny;
     vertices[i+2]=z;
     return i/3;
   };
@@ -77,7 +87,7 @@ function combine(a,b){
   return {vertices,faces};
 }
 
-export function reliefParts(grid,bounds={left:0,bottom:0,right:grid.resolution,top:grid.resolution}){
+export function reliefParts(grid,bounds={left:0,bottom:0,right:grid.resolution,top:grid.rows??grid.resolution}){
   const skins=grid.scores||grid.lakeWeights||grid.forestWeights?coverageSkins(grid,bounds):[],layered=skins.slice(1).some(Boolean);
   const base=reliefBase(grid,bounds,layered);
   const terrain=layered?combine(base,skins[0]):base;
@@ -90,15 +100,62 @@ export function reliefParts(grid,bounds={left:0,bottom:0,right:grid.resolution,t
   return parts;
 }
 
+function tileBounds(grid,plan,tile){
+  const cols=grid.resolution/plan.cols,rows=(grid.rows??grid.resolution)/plan.rows;
+  const left=(tile.col-1)*cols,bottom=(plan.rows-tile.row)*rows;
+  return {left,bottom,right:left+cols,top:bottom+rows};
+}
+
+function placeInAssembly(part,tile){
+  for(let i=0;i<part.vertices.length;i+=3){
+    part.vertices[i]+=tile.x0;
+    part.vertices[i+1]+=tile.y0;
+  }
+  return part;
+}
+
+export function previewReliefPieces(grid,emit){
+  const plan=tilePlan(grid.width,grid.height),total=plan.tiles.length;
+  if(total<2||grid.resolution%plan.cols||(grid.rows??grid.resolution)%plan.rows)return false;
+  for(const [i,tile] of plan.tiles.entries()){
+    const base=placeInAssembly(reliefBase(grid,tileBounds(grid,plan,tile),false),tile);
+    emit([{...RELIEF_MATERIALS[0],...base}],{index:i+1,total});
+  }
+  return true;
+}
+
+export function assemblePanoramicRelief(grid,progress){
+  const plan=tilePlan(grid.width,grid.height),partsByMaterial=new Map();
+  for(const [i,tile] of plan.tiles.entries()){
+    for(const part of reliefParts(grid,tileBounds(grid,plan,tile))){
+      if(!partsByMaterial.has(part.id))partsByMaterial.set(part.id,[]);
+      partsByMaterial.get(part.id).push(placeInAssembly(part,tile));
+    }
+    progress(i+1,plan.tiles.length);
+  }
+  return RELIEF_MATERIALS.filter(({id})=>partsByMaterial.has(id)).map(material=>{
+    const parts=partsByMaterial.get(material.id);
+    if(parts.length===1)return parts[0];
+    const vertices=new Float32Array(parts.reduce((sum,part)=>sum+part.vertices.length,0));
+    const faces=new Uint32Array(parts.reduce((sum,part)=>sum+part.faces.length,0));
+    let vertexOffset=0,faceOffset=0;
+    for(const part of parts){
+      vertices.set(part.vertices,vertexOffset);
+      for(const index of part.faces)faces[faceOffset++]=index+vertexOffset/3;
+      vertexOffset+=part.vertices.length;
+    }
+    return {...material,vertices,faces};
+  });
+}
+
 // All pieces reuse the same sampled heights and diagonals. Rebuild their
 // perimeter walls directly on grid lines instead of cutting large meshes.
 export function splitPureRelief(model,max,progress=()=>{}){
   const grid=model.reliefGrid,n=grid.resolution,plan=tilePlan(model.width,model.height,max);
-  if(n%plan.cols||n%plan.rows)return null;
+  if(n%plan.cols||(grid.rows??n)%plan.rows)return null;
   return plan.tiles.map((tile,i)=>{
     progress('Tancant la peça '+(i+1)+'/'+plan.tiles.length+'…');
-    const cols=n/plan.cols,rows=n/plan.rows,left=(tile.col-1)*cols,bottom=(plan.rows-tile.row)*rows;
-    const parts=reliefParts(grid,{left,bottom,right:left+cols,top:bottom+rows});
+    const parts=reliefParts(grid,tileBounds(grid,plan,tile));
     const provenance={...model.provenance,tile,
       assembly:{width:model.width,height:model.height,columns:plan.cols,rows:plan.rows},
       name:(model.provenance.name||'Maqueta')+' · '+tile.name};

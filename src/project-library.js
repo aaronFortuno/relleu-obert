@@ -1,5 +1,5 @@
 import {normalizeAssignments} from './materials.js';
-import {pieceDimensions} from './selection.js';
+import {pieceDimensions,isPanoramicSize,PANORAMIC_SCALE_RANGE} from './selection.js';
 import {TRAIL_WIDTH_MULTIPLIERS} from './transport-width.js';
 
 export const PROJECT_LIBRARY_KEY='relleu-obert.projects';
@@ -28,8 +28,12 @@ function validatedSettings(settings){
     throw invalid();
   const {sizePreset,pureRelief,pose,materials,options,strokes,placeName,exampleId}=settings;
   const {center,widthM,heightM,rotation}=pose,[width,height]=pieceDimensions(sizePreset);
+  const panoramic=isPanoramicSize(width,height);
+  const [minScale,maxScale]=panoramic?PANORAMIC_SCALE_RANGE:[0,100000];
+  const validSpan=(metres,mm)=>range(metres,Math.max(.001,mm*(minScale-1)/1000),mm*(maxScale+1)/1000);
+  if(panoramic&&!pureRelief)throw invalid();
   if(!Array.isArray(center)||center.length!==2||!range(center[0],-70,70)||!range(center[1],-180,180)||
-    !range(widthM,0.001,width*100.001)||!range(heightM,0.001,height*100.001)||!range(rotation,-180,180)||
+    !validSpan(widthM,width)||!validSpan(heightM,height)||!range(rotation,-180,180)||
     placeName!=null&&!text(placeName,300)||exampleId!=null&&!text(exampleId,100))throw invalid();
   const cleanedOptions={};
   for(const [key,valid] of Object.entries(optionRules)){

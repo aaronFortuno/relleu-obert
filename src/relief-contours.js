@@ -46,15 +46,15 @@ function grow(array,minimum){
 }
 
 function skinBuilder(bounds,grid){
-  const {left,bottom,right,top}=bounds,{resolution:n,width,height}=grid;
+  const {left,bottom,right,top}=bounds,{resolution:n,rows=n,width,height}=grid;
   const stride=right-left+1,integer=new Uint32Array(stride*(top-bottom+1));
   const intersections=new Map(),boundary=new Map(),edgeStride=2**24;
   let vertices=new Float32Array(1024),faces=new Uint32Array(1024),nv=0,nf=0;
   function vertex([x,y,z]){
-    const vx=Math.fround((x-left)*width/n),vy=Math.fround((y-bottom)*height/n);
+    const vx=Math.fround((x-left)*width/n),vy=Math.fround((y-bottom)*height/rows);
     const ix=Math.round(x),iy=Math.round(y);
     if(vx===Math.fround((ix-left)*width/n))x=ix;
-    if(vy===Math.fround((iy-bottom)*height/n))y=iy;
+    if(vy===Math.fround((iy-bottom)*height/rows))y=iy;
     const lattice=Number.isInteger(x)&&Number.isInteger(y);
     const key=lattice?(y-bottom)*stride+x-left:vx+','+vy;
     const found=lattice?integer[key]:intersections.get(key);

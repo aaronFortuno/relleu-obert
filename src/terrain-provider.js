@@ -62,20 +62,44 @@ function resizeElevation(tile,maximumSide){
   return {...tile,size:maximumSide,elev:values};
 }
 
-export async function loadTerrain(bbox,decode,fetcher=fetch,progress=()=>{},isOcean=()=>false,{zooms=[14,12],maxTiles=Infinity,maxSamples=Infinity}={}){
+export async function loadTerrain(bbox,decode,fetcher=fetch,progress=()=>{},isOcean=()=>false,{zooms=[14,12],maxTiles=Infinity,maxSamples=Infinity,concurrency=1}={}){
   const attempts=zooms.filter(z=>maxTiles===Infinity||regionTileCount(bbox,z)<=maxTiles).map(z=>({z,coordinates:tilesAt(bbox,z)}))
     .flatMap(({z,coordinates})=>providers.map(p=>({...p,z,coordinates})));
   const failures=[];
   for(const attempt of attempts){
     try{
       const maximumSide=Math.floor(Math.sqrt(maxSamples/attempt.coordinates.length));
-      const tiles=[];let oceanTiles=0;for(const t of attempt.coordinates){
-        progress(`Carregant relleu ${tiles.length+1}/${attempt.coordinates.length} · ${attempt.provider}…`);
-        const r=await fetcher(attempt.url(t),{signal:AbortSignal.timeout(15000)});if(!r.ok){if(r.status===404&&isOcean(t)){tiles.push({...t,size:512,elev:new Float32Array(512*512)});oceanTiles++;continue;}throw Error(`HTTP ${r.status}`);}
+      const loaded=[];
+      async function loadTile(t){
+        const r=await fetcher(attempt.url(t),{signal:AbortSignal.timeout(15000)});
+        if(!r.ok){
+          if(r.status===404&&await isOcean(t))return t;
+          throw Error(`HTTP ${r.status}`);
+        }
         const decoded=await decode(await r.blob(),t);
-        if(!decoded.elev.some(Number.isFinite)){if(isOcean(t)){tiles.push({...t,size:512,elev:new Float32Array(512*512)});oceanTiles++;continue;}throw Error('La font no conté altituds vàlides.');}
-        tiles.push(resizeElevation(decoded,maximumSide));
+        if(!decoded.elev.some(Number.isFinite)){
+          if(await isOcean(t))return t;
+          throw Error('La font no conté altituds vàlides.');
+        }
+        return resizeElevation(decoded,maximumSide);
       }
+      for(let i=0;i<attempt.coordinates.length;i+=concurrency){
+        const batch=attempt.coordinates.slice(i,i+concurrency);
+        const pending=batch.length>1?`${i+1}–${i+batch.length}`:i+1;
+        progress(`Carregant relleu ${pending}/${attempt.coordinates.length} · ${attempt.provider}…`);
+        // Wait for a failed batch to settle before falling back to another source.
+        for(const result of await Promise.allSettled(batch.map(loadTile))){
+          if(result.status==='rejected')throw result.reason;
+          loaded.push(result.value);
+        }
+      }
+      const seaSize=loaded.find(t=>t.elev)?.size??Math.min(maximumSide,512);
+      let oceanTiles=0;
+      const tiles=loaded.map(t=>{
+        if(t.elev)return t;
+        oceanTiles++;
+        return {...t,size:seaSize,elev:new Float32Array(seaSize**2)};
+      });
       return {tiles,metadata:{provider:attempt.provider,zoom:attempt.z,fallback:failures.length>0,oceanTiles,...(maxSamples<Infinity?{sampleSize:tiles[0]?.size}:{})},warnings:[...(failures.length?[`S’ha utilitzat ${attempt.provider}${attempt.z<14?' amb menys detall':''} perquè la font inicial de relleu no estava disponible per a aquesta àrea.`]:[]),...(oceanTiles?['Les zones íntegrament marines sense dades d’altitud es representen al nivell del mar; no s’hi representa la batimetria.']:[])]};
     }catch(e){failures.push(`${attempt.provider}: ${e.message}`);}
   }

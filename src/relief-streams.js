@@ -91,10 +91,10 @@ function extrudePatch(poly,heightAt,offset,result){
 }
 
 export function reliefStreamPart(grid,{left,bottom,right,top}){
-  const {resolution:n,width,height,heights,diagonals,lakeWeights,streamStrips}=grid;
+  const {resolution:n,rows=n,width,height,heights,diagonals,lakeWeights,streamStrips}=grid;
   if(!streamStrips?.length)return null;
-  const dy=height/n,stride=n+1;
-  const x=i=>i*width/n,y=i=>i*height/n,offset=[x(left),y(bottom)],result={vertices:[],faces:[]};
+  const dy=height/rows,stride=n+1;
+  const x=i=>i*width/n,y=i=>i*height/rows,offset=[x(left),y(bottom)],result={vertices:[],faces:[]};
   const nodes=(i,j)=>{
     const index=j*stride+i;
     return [x(i),y(j),heights[index],lakeWeights?.[index]??-1];
@@ -102,17 +102,17 @@ export function reliefStreamPart(grid,{left,bottom,right,top}){
   for(let i=left;i<right;i++){
     const strips=streamStrips[i];
     if(!strips.length)continue;
-    const rows=new Map();
+    const stripsByRow=new Map();
     for(const strip of strips){
       let min=Infinity,max=-Infinity;
       for(const [,py]of strip[0]){min=Math.min(min,py);max=Math.max(max,py);}
       const from=Math.max(bottom,Math.floor(min/dy)),to=Math.min(top,Math.ceil(max/dy));
       for(let j=from;j<to;j++){
-        if(!rows.has(j))rows.set(j,[]);
-        rows.get(j).push(strip);
+        if(!stripsByRow.has(j))stripsByRow.set(j,[]);
+        stripsByRow.get(j).push(strip);
       }
     }
-    for(const [j,candidates]of rows){
+    for(const [j,candidates]of stripsByRow){
       const a=nodes(i,j),b=nodes(i+1,j),c=nodes(i+1,j+1),d=nodes(i,j+1);
       for(const triangle of diagonals[j*n+i]?[[a,b,d],[b,c,d]]:[[a,b,c],[a,c,d]]){
         const dry=landTriangle(triangle);

@@ -71,3 +71,17 @@ test('missing tiles are flat only when the requested region is completely covere
   const pool={...ocean,properties:{sourceLayer:'water',class:'swimming_pool'}};
   await assert.rejects(loadTerrain(bbox,async()=>{},async()=>({ok:false,status:404}),()=>{},oceanTilePredicate([pool],bbox)),/cap de les dues fonts/);
 });
+
+test('a verified ocean tile shares the retained sample size of neighbouring land tiles',async()=>{
+  const bbox=[0,0,.01,.01];
+  const isOcean=async tile=>tile.y===127;
+  const result=await loadTerrain(bbox,async(_,tile)=>({...tile,size:4,elev:new Float32Array(16).fill(500)}),
+    async url=>url.endsWith('/127.webp')?new Response(null,{status:404}):new Response('tile'),
+    undefined,isOcean,{zooms:[8],maxSamples:8,concurrency:4});
+  assert.equal(result.metadata.oceanTiles,1);
+  assert.equal(result.metadata.sampleSize,2);
+  assert.equal(result.tiles.length,2);
+  assert(result.tiles.every(tile=>tile.size===2&&tile.elev.length===4));
+  assert(result.tiles.find(tile=>tile.y===127).elev.every(z=>z===0));
+  assert(result.tiles.find(tile=>tile.y===128).elev.every(z=>z===500));
+});

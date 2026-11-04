@@ -1,13 +1,23 @@
 export const SIZE_PRESETS={'10x10':[100,100],'15x15':[150,150],'18x18':[180,180],'20x20':[200,200],'20x15':[200,150],'30x30':[300,300],'40x40':[400,400]};
 export const MAX_MODEL_SIDE_MM=500;
 export const MAX_PRINT_TILE_MM=250;
+export const PANORAMIC_SCALE_RANGE=[50000,500000];
+
+export function isPanoramicSize(width,height){
+  return Math.max(width,height)>MAX_MODEL_SIDE_MM;
+}
+
+export function validPieceDimensions(width,height){
+  const long=Math.max(width,height),short=Math.min(width,height);
+  return Number.isFinite(long)&&short>=100&&(long<=MAX_MODEL_SIDE_MM||long<=1000&&short<=200);
+}
 
 export function pieceDimensions(key){
   if(typeof key!=='string')return null;
   if(Object.hasOwn(SIZE_PRESETS,key))return SIZE_PRESETS[key];
-  if(!/^\d{2}x\d{2}$/.test(key))return null;
+  if(!/^(?:[1-9]\d|100)x(?:[1-9]\d|100)$/.test(key))return null;
   const dimensions=key.split('x').map(value=>Number(value)*10);
-  return dimensions.every(value=>value>=100&&value<=MAX_MODEL_SIDE_MM)?dimensions:null;
+  return validPieceDimensions(...dimensions)?dimensions:null;
 }
 export function parseCoordinates(text){
   const m=text.trim().match(/^([+-]?\d{1,2}(?:\.\d+)?)\s*[,;]\s*([+-]?\d{1,3}(?:\.\d+)?)$/);if(!m)return null;
@@ -23,9 +33,10 @@ export function coveringSelectionBox(pose,widthMM,heightMM){
   const metresPerMillimetre=Math.max(pose.widthM/widthMM,pose.heightM/heightMM);
   return physicalBBox(pose.center,widthMM*metresPerMillimetre/1000,heightMM*metresPerMillimetre/1000);
 }
-export function validateScale(value){
+export function validateScale(value,[minimum,maximum]=[100,100000]){
   const scale=Number(value);
-  if(!Number.isFinite(scale)||scale<100||scale>100000)throw Error('L’escala ha de ser entre 1:100 i 1:100.000.');
+  if(!Number.isFinite(scale)||scale<minimum||scale>maximum)
+    throw Error(`L’escala ha de ser entre 1:${minimum.toLocaleString('ca')} i 1:${maximum.toLocaleString('ca')}.`);
   return scale;
 }
 export function parseScaleInput(text){
@@ -34,8 +45,8 @@ export function parseScaleInput(text){
   if(!/^\d+(?:[.,]\d+)?$/.test(value))throw Error('Escriu una escala com 1:1000 o tria «Segons el mapa».');
   return validateScale(Number(value.replace(',','.')));
 }
-export function scaledBBox(center,widthMM,heightMM,denominator){
-  const scale=validateScale(denominator),[lat,lon]=center;
+export function scaledBBox(center,widthMM,heightMM,denominator,range){
+  const scale=validateScale(denominator,range),[lat,lon]=center;
   if(![lat,lon,widthMM,heightMM].every(Number.isFinite)||Math.abs(lat)>70||widthMM<=0||heightMM<=0)throw Error('Centre o mida fora de l’àmbit admès.');
   return physicalBBox(center,widthMM*scale/1e6,heightMM*scale/1e6);
 }

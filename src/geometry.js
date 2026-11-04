@@ -1,6 +1,6 @@
 import {sampleCoverage} from './relief-contours.js';
 import {levelReliefLakes} from './relief-lakes.js';
-import {reliefDiagonals,reliefParts,PURE_RELIEF_RESOLUTIONS} from './pure-relief-mesh.js';
+import {reliefDiagonals,reliefParts,reliefGridSize,previewReliefPieces,assemblePanoramicRelief,PURE_RELIEF_RESOLUTIONS} from './pure-relief-mesh.js';
 import {reliefStreamStrips} from './relief-streams.js';
 import {sampleReliefForest} from './relief-forest.js';
 import {alpineCrownHeightFactor,reliefCrownTaper,reliefForestTrees,RELIEF_TREE_MIN_DIAMETER_MM,RELIEF_TREE_DIAMETER_METRES,RELIEF_TREE_THINNING} from './relief-forest-trees.js';
@@ -13,7 +13,7 @@ import {polygonTester} from './polygon-index.js';
 import {lineBuffer} from './roads.js';
 import {isRailway,isInactiveRailway,railwayOptions,railwayWidthMetres} from './railways.js';
 import {buildingOptions,buildingRise} from './building-options.js';
-import {MAX_MODEL_SIDE_MM,validateScale} from './selection.js';
+import {MAX_MODEL_SIDE_MM,validateScale,isPanoramicSize,validPieceDimensions,PANORAMIC_SCALE_RANGE} from './selection.js';
 import {localRasterSampler} from './local-raster.js';
 import {treeDimensions,TREE_CROWN_METRES,MIN_TREE_MM} from './tree-scale.js';
 import {treeSampler,fitTrees,MAX_TREES} from './vegetation-budget.js';
@@ -539,37 +539,52 @@ export function buildModel(data,options={},progress=()=>{},infrastructureApi=nul
 function buildPureRelief(data,options,progress,preview){
   const {size=160,exaggeration=1.5,resolution=56}=options;
   const {width,height,scale,project,unproject}=makeProjection(data.meta.bbox,size,options);
-  if(![width,height,exaggeration].every(Number.isFinite)||Math.min(width,height)<=0||Math.max(width,height)>MAX_MODEL_SIDE_MM||exaggeration<1||exaggeration>5||
-      !Number.isInteger(resolution)||resolution<2||resolution>PURE_RELIEF_RESOLUTIONS[56]||1000/scale<9999.9||1000/scale>100001)
-    throw Error('El mode Relleu pur admet escales d’1:10.000 a 1:100.000.');
+  const panoramic=isPanoramicSize(width,height);
+  const [minimum,maximum]=panoramic?PANORAMIC_SCALE_RANGE:[10000,100000];
+  if(![width,height,exaggeration].every(Number.isFinite)||Math.min(width,height)<=0||
+      (panoramic?!validPieceDimensions(width,height):Math.max(width,height)>MAX_MODEL_SIDE_MM)||exaggeration<1||exaggeration>5||
+      !Number.isInteger(resolution)||resolution<2||resolution>PURE_RELIEF_RESOLUTIONS[56]||1000/scale<minimum-.1||1000/scale>maximum+1)
+    throw Error(panoramic?'El format panoràmic admet escales d’1:50.000 a 1:500.000 i fins a 100 × 20 cm.':'El mode Relleu pur admet escales d’1:10.000 a 1:100.000.');
+  const {columns,rows}=reliefGridSize(width,height,resolution,panoramic),stride=columns+1;
   preview?.stage('terrain','Revisant les mostres d’altitud…');
   const prepared=data.terrainRaster?{diagnostics:{invalid:0,spikes:0,repaired:0,source:data.meta.terrain?.provider}}:prepareElevationTiles(data.dem);
   const sample=data.terrainRaster?localRasterSampler(data.terrainRaster):createElevationSampler(prepared.tiles);
   progress('Calculant el camp d’altures…');
-  const heightAt=(x,y)=>sample(...unproject([x*width/resolution,y*height/resolution]));
-  const heights=new Float64Array((resolution+1)**2);
+  const heightAt=(x,y)=>sample(...unproject([x*width/columns,y*height/rows]));
+  const heights=new Float64Array(stride*(rows+1));
   let originMeters=Infinity,maximumElevation=-Infinity;
-  for(let row=0;row<=resolution;row++)for(let col=0;col<=resolution;col++){
-    const z=heightAt(col,row);
-    heights[row*(resolution+1)+col]=z;
-    originMeters=Math.min(originMeters,z);
-    maximumElevation=Math.max(maximumElevation,z);
+  for(let row=0;row<=rows;row++){
+    for(let col=0;col<=columns;col++){
+      const z=heightAt(col,row);
+      heights[row*stride+col]=z;
+      originMeters=Math.min(originMeters,z);
+      maximumElevation=Math.max(maximumElevation,z);
+    }
+    if(row%32===31||row===rows)preview?.stage('terrain','Calculant el camp d’altures…',row+1,rows+1);
   }
-  const lakes=data.lakes?.length?levelReliefLakes(data.lakes,project,heights,resolution,width,height):null;
-  const diagonals=reliefDiagonals(heights,resolution,(col,row)=>heightAt(col+.5,row+.5));
+  const lakes=data.lakes?.length?levelReliefLakes(data.lakes,project,heights,columns,width,height,rows):null;
+  progress('Ajustant la malla al relleu…');
+  const diagonals=reliefDiagonals(heights,columns,(col,row)=>heightAt(col+.5,row+.5),rows);
   for(let i=0;i<heights.length;i++)heights[i]=5+(heights[i]-originMeters)*scale*exaggeration;
+  const reliefGrid={resolution:columns,rows,width,height,heights,diagonals,originMeters,exaggeration};
+  if(preview){
+    progress('Preparant la vista per peces…');
+    previewReliefPieces(reliefGrid,(parts,piece)=>{
+      preview.parts('terrain',parts,{width,height},piece.index===1?'replace':'append',piece);
+      preview.stage('terrain','Previsualització del relleu per peces',piece.index,piece.total);
+    });
+  }
   const cells=[0,0],coverage=data.coverage||[];
   const scores=coverage.length?new Float32Array(heights.length*3):null;
   progress('Traçant els contorns de sòl nu i neu o gel…');
   if(scores){
-    const stride=resolution+1;
-    for(let row=0;row<=resolution;row++)for(let col=0;col<=resolution;col++){
-      const [lon,lat]=unproject([col*width/resolution,row*height/resolution]);
+    for(let row=0;row<=rows;row++)for(let col=0;col<=columns;col++){
+      const [lon,lat]=unproject([col*width/columns,row*height/rows]);
       sampleCoverage(coverage,lon,lat,scores,(row*stride+col)*3);
     }
     const centre=new Float32Array(3);
-    for(let row=0;row<resolution;row++)for(let col=0;col<resolution;col++){
-      const [lon,lat]=unproject([(col+.5)*width/resolution,(row+.5)*height/resolution]);
+    for(let row=0;row<rows;row++)for(let col=0;col<columns;col++){
+      const [lon,lat]=unproject([(col+.5)*width/columns,(row+.5)*height/rows]);
       centre.fill(0);sampleCoverage(coverage,lon,lat,centre,0);
       if(centre[1]>centre[0]&&centre[1]>centre[2])cells[0]++;
       else if(centre[2]>centre[0])cells[1]++;
@@ -579,23 +594,25 @@ function buildPureRelief(data,options,progress,preview){
   if(streams&&(data.waterways?.length||data.waterAreas?.length))progress('Traçant els rius i rierols…');
   const paths=streams?waterwayPolygons(data.waterways||[],project,{width,height,scale,multiplier:options.streamWidth}):[];
   const waterAreas=streams?(data.waterAreas||[]).map(feature=>geoPolys(feature,project)):[];
-  const streamStrips=reliefStreamStrips([...paths,...waterAreas],width,height,resolution);
-  const forest=sampleReliefForest((data.forests||[]).flatMap(feature=>geoPolys(feature,project)),width,height,resolution);
+  const streamStrips=reliefStreamStrips([...paths,...waterAreas],width,height,columns);
+  const forest=sampleReliefForest((data.forests||[]).flatMap(feature=>geoPolys(feature,project)),width,height,columns,rows);
   const crownTaper=reliefCrownTaper(maximumElevation);
-  const reliefGrid={resolution,width,height,heights,diagonals,scores,lakeWeights:lakes?.count?lakes.weights:null,
-    forestWeights:forest?.cells?forest.weights:null,streamStrips,crownTaper,originMeters,exaggeration};
+  Object.assign(reliefGrid,{scores,lakeWeights:lakes?.count?lakes.weights:null,
+    forestWeights:forest?.cells?forest.weights:null,streamStrips,crownTaper});
   const trees=options.trees!==false;
   if(trees&&forest?.cells)reliefGrid.trees=reliefForestTrees(reliefGrid,forest.contains,scale);
   progress('Construint el sòlid del relleu…');
-  const categories=reliefParts(reliefGrid);
-  preview?.parts('terrain',categories,{width,height});
+  const categories=panoramic?assemblePanoramicRelief(reliefGrid,(completed,total)=>{
+    preview?.stage('terrain','Acabant el relleu i les capes de cada peça',completed,total);
+  }):reliefParts(reliefGrid);
   const verticalReference={originMeters,minimumSurfaceMM:5,seaLevelMM:null,method:'lowest generated-terrain sample at 5 mm'};
   const warnings=[...(data.meta.sourceWarnings||[])];
   const treeCount=reliefGrid.trees?.length??0;
   const omittedBelowThreshold=trees&&!!forest?.cells&&RELIEF_TREE_DIAMETER_METRES*scale<RELIEF_TREE_MIN_DIAMETER_MM;
   if(omittedBelowThreshold)warnings.push('A aquesta escala, els boscos es representen amb color. Les capçades quedarien per sota de 0,45 mm.');
   const provenance={...data.meta,options:{...options,pureRelief:true,trees},verticalExaggeration:exaggeration,verticalReference,
-    units:'millimeters',coverageCells:{bare:cells[0],snow:cells[1],total:resolution**2},lakeCount:lakes?.count??0,
+    units:'millimeters',reliefSampling:{columns,rows,stepMM:[width/columns,height/rows]},
+    coverageCells:{bare:cells[0],snow:cells[1],total:columns*rows},lakeCount:lakes?.count??0,
     streamCount:paths.length,flowingWaterAreaCount:waterAreas.length,forestSamples:forest?.cells??0,
     treeRepresentation:{crownDiameterMetres:RELIEF_TREE_DIAMETER_METRES,minimumDiameterMM:RELIEF_TREE_MIN_DIAMETER_MM,
       omittedBelowThreshold,maximumElevation,crownTaper,thinningMetres:RELIEF_TREE_THINNING}};

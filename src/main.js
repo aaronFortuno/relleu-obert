@@ -6,8 +6,8 @@ import {createPlaceMap,MAX_PROJECT_SCALE,PURE_SCALE_RANGE} from './place-map.js'
 import {PURE_RELIEF_RESOLUTIONS} from './pure-relief-mesh.js';
 import {smoothTerrainNormals} from './terrain-normals.js';
 import {CATEGORIES,PALETTES,defaultAssignments} from './materials.js';
-import {pieceDimensions,tilePlan,MAX_PRINT_TILE_MM,scaledBBox,physicalBBox} from './selection.js';
-import {initPiecePicker} from './piece-picker.js';
+import {pieceDimensions,tilePlan,MAX_PRINT_TILE_MM,scaledBBox,physicalBBox,selectionPose,isPanoramicSize,PANORAMIC_SCALE_RANGE} from './selection.js';
+import {initPiecePicker,bindPieceDimensions} from './piece-picker.js';
 import {readProjects,saveProject,deleteProject} from './project-library.js';
 import {cutGuideSegments} from './cut-guides.js';
 import {regionLimitMessage} from './region-limits.js';
@@ -52,9 +52,10 @@ $('#download-processing').onclick=()=>{
 };
 let presentationMode,demandRenderer;let contextLost=false,presentationReduced=false;
 let materialCount=4,assignments=defaultAssignments(4);
-let selectedSize=null,exampleSelection=null;
+let selectedSize=null,exampleSelection=null,regularPureRelief=false;
 let selectedPose,tooLargeRegion=false,pendingBuildingLayer=null,icgcAvailable=true,buildingSourceExplicit=false;
 const size=()=>pieceDimensions(selectedSize);
+const panoramicSelected=()=>!!selectedSize&&isPanoramicSize(...size());
 function pendingPieceSize(){
   if(!model)return false;
   const [width,height]=size();
@@ -77,7 +78,7 @@ let scaleStops=[...preferredScaleStops,MAX_PROJECT_SCALE];
 const sameBounds=(a,b)=>a&&b&&a.every((value,i)=>Math.abs(value-b[i])<1e-9);
 const placeMap=createPlaceMap($('#place-map'),{
   onChange(bbox,center,pose){
-    if(exampleSelection&&(pose.rotation!==0||!sameBounds(exampleSelection.bbox,bbox))){
+    if(exampleSelection&&(pose.rotation!==exampleSelection.rotation||!sameBounds(exampleSelection.bbox,bbox))){
       exampleSelection=null;
       $('#recommended-place').value='';
       placeName='Regió seleccionada';
@@ -98,7 +99,22 @@ const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamp
 scene.add(new THREE.HemisphereLight(0xffffff,0x798269,2.5));const light=new THREE.DirectionalLight(0xfff6df,3.3);light.position.set(-170,-160,400);light.castShadow=true;light.shadow.mapSize.set(2048,2048);Object.assign(light.shadow.camera,{left:-350,right:350,top:350,bottom:-350,far:1200});light.shadow.normalBias=.2;scene.add(light);
 const ground=new THREE.Mesh(new THREE.PlaneGeometry(2500,2500),new THREE.ShadowMaterial({opacity:.13}));ground.position.z=-.5;ground.receiveShadow=true;scene.add(ground);
 const group=new THREE.Group();scene.add(group);let seams,seamModel;
-function home(){const bounds=new THREE.Box3().setFromObject(group),sphere=bounds.isEmpty()?new THREE.Sphere(new THREE.Vector3(0,0,10),110):bounds.getBoundingSphere(new THREE.Sphere()),distance=sphere.radius/Math.sin(THREE.MathUtils.degToRad(camera.fov)/2)*1.15/Math.min(1,camera.aspect);camera.zoom=1;camera.updateProjectionMatrix();controls.target.copy(sphere.center);camera.position.copy(new THREE.Vector3(.75,-1,.85).normalize().multiplyScalar(distance).add(sphere.center));controls.update();}
+function home(){
+  const bounds=new THREE.Box3().setFromObject(group);
+  const preview=stagedBuild?.preview;
+  if(preview?.piece){
+    bounds.expandByPoint(new THREE.Vector3(-preview.width/2,-preview.height/2,0));
+    bounds.expandByPoint(new THREE.Vector3(preview.width/2,preview.height/2,0));
+  }
+  const sphere=bounds.isEmpty()?new THREE.Sphere(new THREE.Vector3(0,0,10),110):bounds.getBoundingSphere(new THREE.Sphere());
+  const distance=sphere.radius/Math.sin(THREE.MathUtils.degToRad(camera.fov)/2)*1.15/Math.min(1,camera.aspect);
+  controls.maxDistance=Math.max(2200,distance);
+  camera.zoom=1;
+  camera.updateProjectionMatrix();
+  controls.target.copy(sphere.center);
+  camera.position.copy(new THREE.Vector3(.75,-1,.85).normalize().multiplyScalar(distance).add(sphere.center));
+  controls.update();
+}
 new ResizeObserver(()=>{const w=view.clientWidth,h=view.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();invalidateView();}).observe(view);
 const renderWorkshop=()=>{controls.update();renderer.render(scene,camera);};
 home();
@@ -151,11 +167,11 @@ function showBuildProgress({stage,step,totalSteps,completed,total,message}){
   stagedBuild.label=label;
   if($('#work-label').textContent!==label)$('#work-label').textContent=label;
 }
-function showBuildPreview({categories,width,height,mode}){
+function showBuildPreview({categories,width,height,mode,piece}){
   if(!stagedBuild||!categories.length)return;
   const first=!stagedBuild.preview;
   if(first){
-    stagedBuild.camera={position:camera.position.clone(),target:controls.target.clone(),zoom:camera.zoom};
+    stagedBuild.camera={position:camera.position.clone(),target:controls.target.clone(),zoom:camera.zoom,maxDistance:controls.maxDistance};
     endVegetationEditing();
     $('#welcome').hidden=true;
     $('.preview-toolbar').hidden=false;
@@ -165,7 +181,7 @@ function showBuildPreview({categories,width,height,mode}){
   for(const part of categories)addModelMesh(part);
   group.position.set(-width/2,-height/2,0);
   if(seams)seams.visible=false;
-  stagedBuild.preview={width,height};
+  stagedBuild.preview={width,height,piece};
   const refit=first&&needsCameraFit(width,height,stagedBuild.bbox,stagedBuild.pose);
   if(refit)home();
   refreshPresentation(stagedBuild.preview,refit);
@@ -188,6 +204,7 @@ function restoreBuildPreview(){
   }
   camera.position.copy(saved.position);
   controls.target.copy(saved.target);
+  controls.maxDistance=saved.maxDistance;
   camera.zoom=saved.zoom;
   camera.updateProjectionMatrix();
   controls.update();
@@ -265,7 +282,8 @@ async function generate(autoTransport=false){
   job=autoTransport?'transport':'build';lock(true);pendingVegetation=false;pendingBuildingLayer=null;pendingFullRegion=null;pendingCadastralBuild=false;recoveryNotice='';
   pendingBrushFrame=null;
   const options=modelOptions(),requestedName=placeName;
-  const reload=dirty||!region||options.pureRelief!==isPure(model);
+  const panoramic=isPanoramicSize(options.widthMM,options.heightMM);
+  const reload=dirty||!region||options.pureRelief!==isPure(model)||panoramic!==isPanoramicSize(model?.width,model?.height);
   const defaultCenter=recommendedPlace(DEFAULT_PLACE).center;
   const atDefaultCenter=options.pureRelief&&selectedPose?.center.every((value,i)=>Math.abs(value-defaultCenter[i])<1e-5);
   const useSample=recommendedPlace(exampleSelection?.id)?.id||(atDefaultCenter?DEFAULT_PLACE:false);
@@ -292,7 +310,7 @@ async function generate(autoTransport=false){
       say(t('status.loadingTerrain'));
       const source=$('#building-source').value;
       pendingCadastralBuild=!options.pureRelief&&source==='catastre';
-      pendingFullRegion=await loadRegion({sample:useSample,bbox:selection,pureRelief:options.pureRelief,buildingSource:pendingCadastralBuild?'osm':source,buildingFallbacks:[lastValidBuildings?.source,defaultBuildingSource(selection),'osm'].filter(Boolean),onTiming:event=>processingRun?.sources.push(event)},say);
+      pendingFullRegion=await loadRegion({sample:useSample,bbox:selection,pureRelief:options.pureRelief,panoramic,buildingSource:pendingCadastralBuild?'osm':source,buildingFallbacks:[lastValidBuildings?.source,defaultBuildingSource(selection),'osm'].filter(Boolean),onTiming:event=>processingRun?.sources.push(event)},say);
       pendingFullRegion.meta.name=requestedName;recoveryNotice=pendingFullRegion.recovery?.notice||'';
     }
     if(incremental){job='buildings';lock(true);}
@@ -506,15 +524,34 @@ worker.onmessage=({data})=>{
 $('#search-form').onsubmit=async e=>{e.preventDefault();const text=$('#place-search').value.trim();if(!text)return;$('#search-results').replaceChildren();try{say(t('status.searching'));const results=await placeMap.search(text);if(results===null){say(t('status.regionChosen'));return;}for(const result of results){const b=document.createElement('button');b.type='button';b.textContent=result.label;b.onclick=()=>{placeMap.choose(result);$('#place-search').value=result.label;$('#search-results').replaceChildren();say(t('status.regionChosen'));};$('#search-results').appendChild(b);}say(results.length?t('status.chooseResult'):t('status.noResults'));}catch(error){say(error.message,true);}};
 const reliefPilot={id:'pirineus-relleu',name:'Pirineus · sector de l’Aneto',center:[42.635,.65]};
 const alpineLakes={id:'aneto-llacs',name:'Llacs glacials de l’Aneto',center:reliefPilot.center};
+const panoramicPilot={id:'pirineus-eix',name:'Pirineus · eix de la serralada',center:[42.8,.75]};
+const panoramicPilotAvailable=()=>panoramicSelected()&&Math.max(...size())>=900;
 for(const place of [...RECOMMENDED_PLACES,alpineLakes,reliefPilot])$('#recommended-place').add(new Option(place.name,place.id));
+const panoramicOption=new Option(panoramicPilot.name,panoramicPilot.id);
+panoramicOption.hidden=panoramicOption.disabled=true;
+$('#recommended-place').add(panoramicOption);
+function syncModelMode(){
+  const panoramic=panoramicSelected(),pure=panoramic||regularPureRelief;
+  $('#mode-relief').checked=pure;
+  $('#mode-landscape').checked=!pure;
+  $('#mode-landscape').disabled=panoramic;
+  $('#model-mode-note').textContent=panoramic?'Format panoràmic · només Relleu pur · 1:50.000–1:500.000.':
+    pure?'Relleu, aigua i cobertura del sòl · 1:10.000–1:100.000.':'Relleu, aigua, vies, edificis i vegetació.';
+  for(const step of ['vegetation','transport','buildings'])document.querySelector(`[data-step="${step}"]`).hidden=pure;
+  panoramicOption.hidden=panoramicOption.disabled=!panoramicPilotAvailable();
+  if(panoramicOption.disabled&&exampleSelection?.id===panoramicPilot.id){
+    exampleSelection=null;
+    $('#recommended-place').value='';
+  }
+}
 function applyPureRelief(){
+  if(!panoramicSelected())regularPureRelief=pureSelected();
+  syncModelMode();
   const pure=pureSelected();
   scheduler.cancel();
   clearTimeout(transportTimer);
   transportTimer=null;
   endVegetationEditing();
-  $('#model-mode-note').textContent=pure?'Relleu, aigua i cobertura del sòl · 1:10.000–1:100.000.':'Relleu, aigua, vies, edificis i vegetació.';
-  for(const step of ['vegetation','transport','buildings'])document.querySelector(`[data-step="${step}"]`).hidden=pure;
   if(!pure&&exampleSelection?.id===reliefPilot.id){
     exampleSelection=null;
     $('#recommended-place').value='';
@@ -528,17 +565,31 @@ $('#model-mode').onchange=applyPureRelief;
 for(const id of ['streams','stream-width'])$('#'+id).onchange=()=>requireBuild('Cursos d’aigua pendents de generar');
 $('#recommended-place').onchange=()=>{
   const id=$('#recommended-place').value;
-  const place=[reliefPilot,alpineLakes].find(example=>example.id===id)||recommendedPlace(id);
+  const place=[reliefPilot,alpineLakes,panoramicPilot].find(example=>example.id===id)||recommendedPlace(id);
   if(!place){exampleSelection=null;placeName='Regió seleccionada';return;}
   if(place===reliefPilot&&!pureSelected()){
     $('#mode-relief').checked=true;
     applyPureRelief();
   }
-  placeMap.setRotation(0);
-  const bbox=place===reliefPilot||place===alpineLakes
-    ?scaledBBox(place.center,...size(),place===reliefPilot?PURE_SCALE_RANGE[1]:MAX_PROJECT_SCALE)
-    :placeSelection(place.id,...size());
-  exampleSelection={id:place.id,bbox};
+  const dimensions=size();
+  let rotation=0;
+  let bbox;
+  if(place===panoramicPilot){
+    if(!panoramicPilotAvailable())return;
+    const [width,height]=dimensions;
+    rotation=width>height?15:105;
+    const denominator=450000000/Math.max(width,height);
+    bbox=scaledBBox(place.center,...dimensions,denominator,PANORAMIC_SCALE_RANGE);
+  }else if(panoramicSelected()){
+    const scale=place===reliefPilot?PURE_SCALE_RANGE[1]:PANORAMIC_SCALE_RANGE[0];
+    bbox=scaledBBox(place.center,...dimensions,scale,PANORAMIC_SCALE_RANGE);
+  }else{
+    bbox=place===reliefPilot||place===alpineLakes
+      ?scaledBBox(place.center,...dimensions,place===reliefPilot?PURE_SCALE_RANGE[1]:MAX_PROJECT_SCALE)
+      :placeSelection(place.id,...dimensions);
+  }
+  placeMap.setRotation(rotation);
+  exampleSelection={id:place.id,bbox:selectionPose(bbox,rotation).bbox,rotation};
   placeName=place.name;
   $('#recommended-place').value=place.id;
   $('#place-search').value='';
@@ -556,24 +607,27 @@ function selectPieceSize(preset){
   $('#new-project').hidden=false;
   $('#piece-resize-open').hidden=false;
   for(const toggle of document.querySelectorAll('.sidebar-left .section-toggle'))toggle.disabled=false;
-  placeMap.setSize(width,height);
+  syncModelMode();
+  placeMap.setSize(width,height,pureSelected());
   openStep('place',{focus:true});
   tiling();
 }
 initPiecePicker($('#piece-choice'),selectPieceSize);
 const resizeDialog=$('#piece-resize-dialog');
 const resizeWidth=$('#piece-resize-width'),resizeHeight=$('#piece-resize-height');
+const resizeDimensions=bindPieceDimensions($('#piece-resize-form'),resizeWidth,resizeHeight);
 $('#piece-resize-open').onclick=()=>{
   if(!selectedSize||busy||drawing||pendingVegetation)return;
   const [width,height]=size();
   resizeWidth.value=width/10;
   resizeHeight.value=height/10;
+  resizeDimensions.validate();
   resizeDialog.showModal();
 };
 $('#piece-resize-form').onsubmit=event=>{
   event.preventDefault();
   if(!selectedSize||busy||drawing||pendingVegetation)return;
-  const preset=`${resizeWidth.valueAsNumber}x${resizeHeight.valueAsNumber}`;
+  const preset=resizeDimensions.read();
   const dimensions=pieceDimensions(preset);
   if(!dimensions)return;
   resizeDialog.close();
@@ -583,7 +637,8 @@ $('#piece-resize-form').onsubmit=event=>{
   clearTimeout(transportTimer);
   transportTimer=null;
   selectedSize=preset;
-  const limited=placeMap.resizePiece(...dimensions);
+  syncModelMode();
+  const limited=placeMap.resizePiece(...dimensions,pureSelected());
   placeName=name;
   const options=modelOptions();
   brushHistory.resize(previous,options,strokes);
@@ -606,7 +661,9 @@ function scaleHint(){
   if(!selectedSize){lock(busy);return;}
   const [width,height]=size();
   const limit=selectedPose
-    ?Math.abs(selectedPose.center[0])>70?'Tria un centre entre 70° sud i 70° nord.':pureSelected()?'':regionLimitMessage(selectedPose,width,height)
+    ?Math.abs(selectedPose.center[0])>70?'Tria un centre entre 70° sud i 70° nord.':
+      panoramicSelected()&&selectedPose.bbox.some((value,index)=>Math.abs(value)>(index%2?70:180))?'Allunya el retall del meridià de 180° i dels paral·lels de 70°.':
+      pureSelected()?'':regionLimitMessage(selectedPose,width,height)
     :'';
   tooLargeRegion=!!limit;
   const info=$('#scale-info');
@@ -633,7 +690,9 @@ function scaleHint(){
 }
 const scaleInput=$('#model-scale');
 function showScaleStops(limit){
-  const ticks=$('#scale-ticks'),preferred=pureSelected()?[PURE_SCALE_RANGE[0],20000,30000,50000,75000]:preferredScaleStops;
+  const ticks=$('#scale-ticks');
+  const preferred=panoramicSelected()?[PANORAMIC_SCALE_RANGE[0],100000,200000,300000,400000,450000]:
+    pureSelected()?[PURE_SCALE_RANGE[0],20000,30000,50000,75000]:preferredScaleStops;
   const next=[...preferred.filter(stop=>stop<limit),limit];
   if(ticks.children.length&&next.join()===scaleStops.join())return;
   scaleStops=next;
@@ -859,15 +918,13 @@ function restoreProject(){
   const project=readProjects(localStorage).find(item=>item.id===id);
   if(!project)throw Error('El projecte ja no existeix a la galeria.');
   const {sizePreset,pose,pureRelief,materials,options,placeName:savedPlace,exampleId,strokes:savedStrokes}=project.settings;
+  regularPureRelief=pureRelief&&!isPanoramicSize(...pieceDimensions(sizePreset));
   selectPieceSize(sizePreset);
-  $('#mode-relief').checked=pureRelief;
-  $('#mode-landscape').checked=!pureRelief;
-  applyPureRelief();
   placeMap.setRotation(pose.rotation);
   placeMap.setRegion(physicalBBox(pose.center,pose.widthM/1000,pose.heightM/1000));
   placeName=savedPlace||project.name;
-  if(exampleId&&[...$('#recommended-place').options].some(option=>option.value===exampleId)){
-    exampleSelection={id:exampleId,bbox:selection};
+  if(exampleId&&[...$('#recommended-place').options].some(option=>option.value===exampleId&&!option.disabled)){
+    exampleSelection={id:exampleId,bbox:selection,rotation:pose.rotation};
     $('#recommended-place').value=exampleId;
   }
   for(const [key,controlId] of Object.entries(projectControls)){
@@ -902,7 +959,7 @@ $('#save-project').onsubmit=event=>{
     $('#project-feedback').textContent='Projecte desat en aquest navegador.';
   }catch(error){$('#project-feedback').textContent=error.message;}
 };
-$('#release-list').innerHTML=[['0.22.17','Canvi de mida al mateix projecte, conservant el territori i els ajustos.'],['0.22.16','Retalls a la mateixa escala amb ombrejat suau i una sola mida rectangular predefinida.'],['0.22.15','Previsualització de mides i talls sobre una taula i enllaç al changelog a la capçalera.'],['0.22.14','Un sol 3MF amb diverses plaques de Bambu i ZIP de peces opcional.'],['0.22.13','Filament per peça al 3MF de Bambu Studio.'],['0.22.12','Senders més estrets i aigua continental de superfície.'],['0.22.11','Més trams amb paviment independent i secció plana fins a la vora.'],['0.22.10','Paviment independent per defecte i trams recuperats entre cruïlles.'],['0.22.9','Primera prova de paviment nou en retalls reals.'],['0.22.8','Cupó de 120 × 120 mm amb vies sinuoses, cruïlla i pont.'],['0.22.7','Cupó de túnel amb dues boques i rasant compartida amb els accessos.'],['0.22.6','Cupó de pont amb dos enllaços sense graó i una via inferior.'],['0.22.5','Rasant contínua a la corba del cupó de paviment.'],['0.22.4','Cupó de paviment amb corba i cruïlla en T sense graó.'],['0.22.3','Cupó de paviment amb secció plana, excavació i reblert.'],['0.22.2','Perfils de vies recuperats quan falten cotes fora de la maqueta.'],['0.22.1','Perfils de calçada sobre túnels verificats i amplada estimada de les autopistes de sentit únic.'],['0.22.0','Versió de consolidació dels perfils viaris, ponts i túnels.'],['0.21.9','Signatura d’ortogra.fi al peu de pàgina.'],['0.21.8','Recuperació de ponts amb fragments solapats entre tessel·les.'],['0.21.7','Recuperació de túnels estimats amb poca coberta.'],['0.21.6','Transicions de vies amb més traçat disponible quan l’enllaç inicial falla.'],['0.21.5','Mides de 10 a 50 cm i guies discontínues de tall sobre el relleu.'],['0.21.4','Unió de paviment més robusta per a vies principals i ferrocarrils.'],['0.21.3','Perfils suaus amb MET5 acotats al retall i recuperació selectiva d’unions.'],['0.21.2','Corregida la càrrega de relleu amb el MET5.'],['0.21.1','MET5 de l’ICGC com a font preferent quan cobreix el retall.'],['0.21.0','Auditoria d’exportacions de control per altura i suavitzat intermedi de vies principals i ferrocarrils.'],['0.20.1','Rasants ferroviàries suavitzades segons l’escala i accessos amb canvis de pendent més progressius.'],['0.20.0','Galeria local per desar i recuperar els ajustos i traços d’una maqueta.'],['0.19.25','Capçades còniques més altes i prova conjunta dels Rasos de Peguera i la Gallina Pelada.'],['0.19.24','Capçades automàtiques d’alta muntanya al Model complet i densitat segons la cota a Relleu pur.'],['0.19.23','Capçades arrodonides en retalls baixos i progressivament còniques en retalls d’alta muntanya.'],['0.19.22','Boscos cartografiats i capçades a escala en Relleu pur.'],['0.19.21','Aigua cartografiada fora de l’Aneto en Relleu pur i controls d’orientació del mapa ajustats.'],['0.19.20','Selector segmentat de mode i rius i rierols amb amplada mínima configurable.'],['0.19.19','Modes Paisatge complet i Relleu pur a Territori, llacs plans i més detall al Paisatge complet.'],['0.19.18','Contorns de neu i roca interpolats, cobertura de l’Aneto més fina i més resolució amb detall Equilibrat i Alt.'],['0.19.17','Relleu pur amb una malla més fina, tessel·les d’elevació més detallades i talls de peces sobre una malla comuna.'],['0.19.16','Mode Relleu pur fins a 1:100.000, amb mostra de l’Aneto i cobertura de sòl nu i neu o gel. Perfils suaus activats per defecte.'],['0.19.15','Unions viàries més ràpides, amplades segons escala i transicions més suaus als accessos.'],['0.19.14','Informe JSON de temps de generació amb retall, ajustos i durada de cada fase.'],['0.19.13','Guies de tall sobre el relleu i descàrrega de la maqueta visible quan el mapa té canvis pendents.'],['0.19.12','Progrés per fases i previsualització de relleu, vies, edificis i vegetació mentre es genera la maqueta.'],['0.19.11','Un enllaç, túnel o edifici amb geometria defectuosa pot quedar omès amb un avís mentre es genera la resta de la maqueta.'],['0.19.10','Els taulers procedimentals recuperen la continuïtat entre tessel·les i les cotes dels estreps fora del retall.'],['0.19.9','Transicions entre perfils suaus i vies sobre el terreny. Segon retall ferroviari verificat.'],['0.19.8','Perfils experimentals de vies principals i ferrocarrils. Projecte nou sobre Territori i compàs al mapa.'],['0.19.7','Catastre per blocs, amb vista provisional i avisos dels elements amb dades contradictòries.'],['0.19.6','Mides proporcionals al centre, generació des de Territori i límit d’escala d’1:20.000.'],['0.19.5','Inici guiat, exemples a Territori i escala sincronitzada amb el mapa. El retall es gira des de la cantonada.'],['0.19.4','Els ajustos de vies reutilitzen el terreny i els edificis. Es conserven els traços del pinzell i la vista.'],['0.19.3','Ajustos de vies automàtics, descàrrega ancorada amb selector de format i ferrocarrils arran de carretera per defecte.'],['0.19.2','Sis passos amb accions al costat del títol. Els traços del pinzell es conserven en canviar de retall durant la sessió. Avís quan falta espai per enllaçar un pont al límit de la maqueta.'],['0.19.1','Corregits el graó de les boques girades i els plecs dels enllaços en revolts. Controls 3MF nous i proposta navegable de flux per etapes RO-053, pendent de revisió abans d’integrar-la.'],['0.19.0','Continuïtat i amplada de la calçada revisades als enllaços amb ponts i túnels. Marc exterior retirat del menú i ajornat per a un desenvolupament posterior.'],['0.18.2','Primera optimització de les vies principals: màscares de pilars calculades només quan calen i reutilitzades. El control de 3 km passa de 189,3 a 56,6 s amb els mateixos 14 perfils. Prototip encara desactivat; controls 3MF disponibles al repositori i cas de detall baix pendent.'],['0.18.1','Túnels activats per defecte, sostre parabòlic i paviment de camí. Envolupant de vies principals preparada com a prototip, pendent d’optimitzar abans d’activar-la.'],['0.18.0','Ferrocarrils amb material propi i realç de +0,5 o +1 mm sobre els camins. Millora dels portals de túnels estimats. Nova font OSM de cobertes i parts originals, amb formes paramètriques quan hi ha dades i preservació del mode limitat pla.'],['0.17.0','Pilars adaptats a l’escala, suports auxiliars i avisos de llums. Túnels estimats amb obertures reals, en una opció experimental desactivada per defecte. Exemples automàtics, marc negre i plaques ajornades.'],['0.16.0','Ponts procedimentals a partir de la cartografia i el relleu, amb pilars i connexions. Perfils estimats entre extrems, diferenciats de les dades específiques de Rajadell. El viaducte es conserva en moure, ampliar o girar el retall.'],['0.15.1','Rajadell es conserva en retalls ampliats o desplaçats: els detalls del pont es carreguen per ubicació, també fora del botó d’exemple. Memòria cau acotada i reintent de lectures fallides. Generalització procedimental en curs.'],['0.15.0','Pilars simplificats que eviten camins i edificis, i enllaços suaus del viaducte amb la carretera. Conjunt unit abans de mostrar-lo i exportar-lo. Realç opcional dels camins de 0,5 o 1 mm de maqueta. Suports i enllaços estimats, pendents de laminat.'],['0.14.0','Primer viaducte amb superfície 3D de l’ICGC a la mostra de Manresa, separada del terreny i conservada al 3MF. Gruix simplificat, sense pilars mesurats. Llibre d’estil per a contribucions i tasques delegades. Túnel pendent de dades suficients.'],['0.13.1','Base corregida: la cota més baixa del relleu queda a 5 mm. Es conserven el desnivell, l’exageració i una referència vertical comuna a totes les capes. A la costa, el mar també queda a 5 mm.'],['0.13.0','Catastre amb consultes per quadrants i recuperació de la font anterior en fallar. Sidebars homogenis, marc coherent amb la seva exportació i sense canvis de zoom. Viaducte de l’Eix Diagonal com a mostra inicial, Tamariu al catàleg. Fletxa del nord retirada i rosa ajornada.'],['0.12.0','Vista de presentació amb taula i llum, render a demanda i retorn al taller. Fonts remotes amb resum clar i fitxers propis dins d’opcions avançades. Proves de sòlids per preparar infraestructures; ponts i coves reals pendents.'],['0.11.0','Catastre buit vàlid, pinzell amb cobertura per gest i retorn a navegació, edificis automàtics i complements independents: marc, placa educativa i fletxa del nord. Cobertes reals en estudi.'],['0.10.0','Catastre amb espera i reintent fitats, errors entenedors i model conservat en fallar. Preparació del sistema d’idiomes, només amb català disponible. Propostes de marc imprimible, etiquetes, rosa dels vents i escena realista.'],['0.9.0','Pinzell aleatori, fonts d’edificis explícites i parts del Catastre. Edificis actualitzats sense reconstruir terreny, i primeres cobertes amb atributs de la font.'],['0.8.0','Vegetació repartida per tota la zona verda, pinzell amb prioritat al límit, densitat per traç i exportació sense selectors de broquet ni tipus de filament. Estudi de parts d’edificis, cobertes, ponts i túnels.'],['0.7.0','Sidebars reorganitzats, escala en un sol camp, orientació al mapa, arbres proporcionats a l’escala i límits de càrrega coherents. Historial de tasques validades separat.'],['0.6.0','Menús sempre visibles amb scroll intern, estadístiques al sidebar, V4V i favicon, transicions, marc visual, retall girat, opcions de filament/broquet i importació local GeoTIFF/GeoJSON.'],['0.5.0','Apartats replegables, controls dins del preview i selecció per escala horitzontal fixa. Diagnòstic dels blocs d’edificis de Tamariu.'],['0.4.2','Lectura numèrica directa del relleu WebP/PNG, sense canvas, i diagnòstics de les tessel·les per investigar els pics intermitents.'],['0.4.1','Cobertes horitzontals: el límit d’altura es mesura sobre el punt més alt del terreny dins de la petjada.'],['0.4.0','Camins amb unions arrodonides, edificis limitats a 5 m per defecte o sense volum, i pinzell amb indicador de treball i un càlcul per traç.'],['0.3.0','Mapa i cerca de llocs, layout d’escriptori estable, 1–8 materials, vegetació editable i exportació en peces.'],['0.2.0','Edificis ICGC, relleu corregit, capçades variades i exportació per a Bambu Studio.'],['0.1.0','Primera maqueta de Tamariu generada al navegador amb costa vectorial i exportació 3D.']].map(([v,text])=>`<article class="release-entry"><div><strong>v${v}</strong><time>${['0.22.14','0.22.13','0.22.12','0.22.11','0.22.10','0.22.9','0.22.8','0.22.7','0.22.6','0.22.5','0.22.4','0.22.3','0.22.2','0.22.1','0.22.0','0.21.9','0.21.8','0.21.7','0.21.6','0.21.5'].includes(v)?'04/11/2026':['0.21.4','0.21.3','0.21.2','0.21.1','0.21.0','0.20.1','0.20.0','0.19.25','0.19.24','0.19.23','0.19.22','0.19.21','0.19.20','0.19.19','0.19.18','0.19.17','0.19.16','0.19.15','0.19.14','0.19.13','0.19.12','0.19.11','0.19.10','0.19.9','0.19.8','0.19.7','0.19.6','0.19.5','0.19.4','0.19.3','0.19.2'].includes(v)?'03/11/2026':['0.19.1','0.19.0','0.18.2','0.18.1','0.18.0','0.17.0','0.16.0','0.15.1','0.15.0','0.14.0','0.13.1','0.13.0','0.12.0','0.11.0'].includes(v)?'02/11/2026':v==='0.1.0'?'31/10/2026':'01/11/2026'}</time></div><p>${text}</p></article>`).join('');
+$('#release-list').innerHTML=[['0.22.18','Format panoràmic en Relleu pur i previsualització del terreny per peces.'],['0.22.17','Canvi de mida al mateix projecte, conservant el territori i els ajustos.'],['0.22.16','Retalls a la mateixa escala amb ombrejat suau i una sola mida rectangular predefinida.'],['0.22.15','Previsualització de mides i talls sobre una taula i enllaç al changelog a la capçalera.'],['0.22.14','Un sol 3MF amb diverses plaques de Bambu i ZIP de peces opcional.'],['0.22.13','Filament per peça al 3MF de Bambu Studio.'],['0.22.12','Senders més estrets i aigua continental de superfície.'],['0.22.11','Més trams amb paviment independent i secció plana fins a la vora.'],['0.22.10','Paviment independent per defecte i trams recuperats entre cruïlles.'],['0.22.9','Primera prova de paviment nou en retalls reals.'],['0.22.8','Cupó de 120 × 120 mm amb vies sinuoses, cruïlla i pont.'],['0.22.7','Cupó de túnel amb dues boques i rasant compartida amb els accessos.'],['0.22.6','Cupó de pont amb dos enllaços sense graó i una via inferior.'],['0.22.5','Rasant contínua a la corba del cupó de paviment.'],['0.22.4','Cupó de paviment amb corba i cruïlla en T sense graó.'],['0.22.3','Cupó de paviment amb secció plana, excavació i reblert.'],['0.22.2','Perfils de vies recuperats quan falten cotes fora de la maqueta.'],['0.22.1','Perfils de calçada sobre túnels verificats i amplada estimada de les autopistes de sentit únic.'],['0.22.0','Versió de consolidació dels perfils viaris, ponts i túnels.'],['0.21.9','Signatura d’ortogra.fi al peu de pàgina.'],['0.21.8','Recuperació de ponts amb fragments solapats entre tessel·les.'],['0.21.7','Recuperació de túnels estimats amb poca coberta.'],['0.21.6','Transicions de vies amb més traçat disponible quan l’enllaç inicial falla.'],['0.21.5','Mides de 10 a 50 cm i guies discontínues de tall sobre el relleu.'],['0.21.4','Unió de paviment més robusta per a vies principals i ferrocarrils.'],['0.21.3','Perfils suaus amb MET5 acotats al retall i recuperació selectiva d’unions.'],['0.21.2','Corregida la càrrega de relleu amb el MET5.'],['0.21.1','MET5 de l’ICGC com a font preferent quan cobreix el retall.'],['0.21.0','Auditoria d’exportacions de control per altura i suavitzat intermedi de vies principals i ferrocarrils.'],['0.20.1','Rasants ferroviàries suavitzades segons l’escala i accessos amb canvis de pendent més progressius.'],['0.20.0','Galeria local per desar i recuperar els ajustos i traços d’una maqueta.'],['0.19.25','Capçades còniques més altes i prova conjunta dels Rasos de Peguera i la Gallina Pelada.'],['0.19.24','Capçades automàtiques d’alta muntanya al Model complet i densitat segons la cota a Relleu pur.'],['0.19.23','Capçades arrodonides en retalls baixos i progressivament còniques en retalls d’alta muntanya.'],['0.19.22','Boscos cartografiats i capçades a escala en Relleu pur.'],['0.19.21','Aigua cartografiada fora de l’Aneto en Relleu pur i controls d’orientació del mapa ajustats.'],['0.19.20','Selector segmentat de mode i rius i rierols amb amplada mínima configurable.'],['0.19.19','Modes Paisatge complet i Relleu pur a Territori, llacs plans i més detall al Paisatge complet.'],['0.19.18','Contorns de neu i roca interpolats, cobertura de l’Aneto més fina i més resolució amb detall Equilibrat i Alt.'],['0.19.17','Relleu pur amb una malla més fina, tessel·les d’elevació més detallades i talls de peces sobre una malla comuna.'],['0.19.16','Mode Relleu pur fins a 1:100.000, amb mostra de l’Aneto i cobertura de sòl nu i neu o gel. Perfils suaus activats per defecte.'],['0.19.15','Unions viàries més ràpides, amplades segons escala i transicions més suaus als accessos.'],['0.19.14','Informe JSON de temps de generació amb retall, ajustos i durada de cada fase.'],['0.19.13','Guies de tall sobre el relleu i descàrrega de la maqueta visible quan el mapa té canvis pendents.'],['0.19.12','Progrés per fases i previsualització de relleu, vies, edificis i vegetació mentre es genera la maqueta.'],['0.19.11','Un enllaç, túnel o edifici amb geometria defectuosa pot quedar omès amb un avís mentre es genera la resta de la maqueta.'],['0.19.10','Els taulers procedimentals recuperen la continuïtat entre tessel·les i les cotes dels estreps fora del retall.'],['0.19.9','Transicions entre perfils suaus i vies sobre el terreny. Segon retall ferroviari verificat.'],['0.19.8','Perfils experimentals de vies principals i ferrocarrils. Projecte nou sobre Territori i compàs al mapa.'],['0.19.7','Catastre per blocs, amb vista provisional i avisos dels elements amb dades contradictòries.'],['0.19.6','Mides proporcionals al centre, generació des de Territori i límit d’escala d’1:20.000.'],['0.19.5','Inici guiat, exemples a Territori i escala sincronitzada amb el mapa. El retall es gira des de la cantonada.'],['0.19.4','Els ajustos de vies reutilitzen el terreny i els edificis. Es conserven els traços del pinzell i la vista.'],['0.19.3','Ajustos de vies automàtics, descàrrega ancorada amb selector de format i ferrocarrils arran de carretera per defecte.'],['0.19.2','Sis passos amb accions al costat del títol. Els traços del pinzell es conserven en canviar de retall durant la sessió. Avís quan falta espai per enllaçar un pont al límit de la maqueta.'],['0.19.1','Corregits el graó de les boques girades i els plecs dels enllaços en revolts. Controls 3MF nous i proposta navegable de flux per etapes RO-053, pendent de revisió abans d’integrar-la.'],['0.19.0','Continuïtat i amplada de la calçada revisades als enllaços amb ponts i túnels. Marc exterior retirat del menú i ajornat per a un desenvolupament posterior.'],['0.18.2','Primera optimització de les vies principals: màscares de pilars calculades només quan calen i reutilitzades. El control de 3 km passa de 189,3 a 56,6 s amb els mateixos 14 perfils. Prototip encara desactivat; controls 3MF disponibles al repositori i cas de detall baix pendent.'],['0.18.1','Túnels activats per defecte, sostre parabòlic i paviment de camí. Envolupant de vies principals preparada com a prototip, pendent d’optimitzar abans d’activar-la.'],['0.18.0','Ferrocarrils amb material propi i realç de +0,5 o +1 mm sobre els camins. Millora dels portals de túnels estimats. Nova font OSM de cobertes i parts originals, amb formes paramètriques quan hi ha dades i preservació del mode limitat pla.'],['0.17.0','Pilars adaptats a l’escala, suports auxiliars i avisos de llums. Túnels estimats amb obertures reals, en una opció experimental desactivada per defecte. Exemples automàtics, marc negre i plaques ajornades.'],['0.16.0','Ponts procedimentals a partir de la cartografia i el relleu, amb pilars i connexions. Perfils estimats entre extrems, diferenciats de les dades específiques de Rajadell. El viaducte es conserva en moure, ampliar o girar el retall.'],['0.15.1','Rajadell es conserva en retalls ampliats o desplaçats: els detalls del pont es carreguen per ubicació, també fora del botó d’exemple. Memòria cau acotada i reintent de lectures fallides. Generalització procedimental en curs.'],['0.15.0','Pilars simplificats que eviten camins i edificis, i enllaços suaus del viaducte amb la carretera. Conjunt unit abans de mostrar-lo i exportar-lo. Realç opcional dels camins de 0,5 o 1 mm de maqueta. Suports i enllaços estimats, pendents de laminat.'],['0.14.0','Primer viaducte amb superfície 3D de l’ICGC a la mostra de Manresa, separada del terreny i conservada al 3MF. Gruix simplificat, sense pilars mesurats. Llibre d’estil per a contribucions i tasques delegades. Túnel pendent de dades suficients.'],['0.13.1','Base corregida: la cota més baixa del relleu queda a 5 mm. Es conserven el desnivell, l’exageració i una referència vertical comuna a totes les capes. A la costa, el mar també queda a 5 mm.'],['0.13.0','Catastre amb consultes per quadrants i recuperació de la font anterior en fallar. Sidebars homogenis, marc coherent amb la seva exportació i sense canvis de zoom. Viaducte de l’Eix Diagonal com a mostra inicial, Tamariu al catàleg. Fletxa del nord retirada i rosa ajornada.'],['0.12.0','Vista de presentació amb taula i llum, render a demanda i retorn al taller. Fonts remotes amb resum clar i fitxers propis dins d’opcions avançades. Proves de sòlids per preparar infraestructures; ponts i coves reals pendents.'],['0.11.0','Catastre buit vàlid, pinzell amb cobertura per gest i retorn a navegació, edificis automàtics i complements independents: marc, placa educativa i fletxa del nord. Cobertes reals en estudi.'],['0.10.0','Catastre amb espera i reintent fitats, errors entenedors i model conservat en fallar. Preparació del sistema d’idiomes, només amb català disponible. Propostes de marc imprimible, etiquetes, rosa dels vents i escena realista.'],['0.9.0','Pinzell aleatori, fonts d’edificis explícites i parts del Catastre. Edificis actualitzats sense reconstruir terreny, i primeres cobertes amb atributs de la font.'],['0.8.0','Vegetació repartida per tota la zona verda, pinzell amb prioritat al límit, densitat per traç i exportació sense selectors de broquet ni tipus de filament. Estudi de parts d’edificis, cobertes, ponts i túnels.'],['0.7.0','Sidebars reorganitzats, escala en un sol camp, orientació al mapa, arbres proporcionats a l’escala i límits de càrrega coherents. Historial de tasques validades separat.'],['0.6.0','Menús sempre visibles amb scroll intern, estadístiques al sidebar, V4V i favicon, transicions, marc visual, retall girat, opcions de filament/broquet i importació local GeoTIFF/GeoJSON.'],['0.5.0','Apartats replegables, controls dins del preview i selecció per escala horitzontal fixa. Diagnòstic dels blocs d’edificis de Tamariu.'],['0.4.2','Lectura numèrica directa del relleu WebP/PNG, sense canvas, i diagnòstics de les tessel·les per investigar els pics intermitents.'],['0.4.1','Cobertes horitzontals: el límit d’altura es mesura sobre el punt més alt del terreny dins de la petjada.'],['0.4.0','Camins amb unions arrodonides, edificis limitats a 5 m per defecte o sense volum, i pinzell amb indicador de treball i un càlcul per traç.'],['0.3.0','Mapa i cerca de llocs, layout d’escriptori estable, 1–8 materials, vegetació editable i exportació en peces.'],['0.2.0','Edificis ICGC, relleu corregit, capçades variades i exportació per a Bambu Studio.'],['0.1.0','Primera maqueta de Tamariu generada al navegador amb costa vectorial i exportació 3D.']].map(([v,text])=>`<article class="release-entry"><div><strong>v${v}</strong><time>${['0.22.14','0.22.13','0.22.12','0.22.11','0.22.10','0.22.9','0.22.8','0.22.7','0.22.6','0.22.5','0.22.4','0.22.3','0.22.2','0.22.1','0.22.0','0.21.9','0.21.8','0.21.7','0.21.6','0.21.5'].includes(v)?'04/11/2026':['0.21.4','0.21.3','0.21.2','0.21.1','0.21.0','0.20.1','0.20.0','0.19.25','0.19.24','0.19.23','0.19.22','0.19.21','0.19.20','0.19.19','0.19.18','0.19.17','0.19.16','0.19.15','0.19.14','0.19.13','0.19.12','0.19.11','0.19.10','0.19.9','0.19.8','0.19.7','0.19.6','0.19.5','0.19.4','0.19.3','0.19.2'].includes(v)?'03/11/2026':['0.19.1','0.19.0','0.18.2','0.18.1','0.18.0','0.17.0','0.16.0','0.15.1','0.15.0','0.14.0','0.13.1','0.13.0','0.12.0','0.11.0'].includes(v)?'02/11/2026':v==='0.1.0'?'31/10/2026':'01/11/2026'}</time></div><p>${text}</p></article>`).join('');
 $('#copy-lightning').onclick=async()=>{try{await navigator.clipboard.writeText('aptswim903@walletofsatoshi.com');$('#copy-status').textContent='Adreça copiada';}catch{$('#copy-status').textContent='Selecciona i copia l’adreça.';}};
 for(const toggle of document.querySelectorAll('.sidebar-left .section-toggle'))toggle.disabled=true;
 legend();tiling();buildingControls();scaleHint();

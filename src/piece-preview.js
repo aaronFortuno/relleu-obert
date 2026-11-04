@@ -114,7 +114,7 @@ export function createPiecePreview(canvas) {
     triangle(topA, topB, baseB);
     triangle(topA, baseB, baseA);
   }
-  return (width, height, plan) => {
+  return (width, height, plan, displayScale=1) => {
     clear();
     for (const tile of plan.tiles) {
       const cols = Math.ceil(tile.width / sampleSpacing), rows = Math.ceil(tile.height / sampleSpacing);
@@ -125,8 +125,9 @@ export function createPiecePreview(canvas) {
           const x = tile.x0 + tile.width * col / cols - width / 2;
           const y = tile.y0 + tile.height * row / rows - height / 2;
           const {z, color, water} = sample(x, y);
-          const top = project(x + shiftX, y + shiftY, z, color);
-          const base = row === rows || col === cols ? project(x + shiftX, y + shiftY, 0) : null;
+          const px=(x+shiftX)*displayScale,py=(y+shiftY)*displayScale;
+          const top = project(px, py, z*displayScale, color);
+          const base = row === rows || col === cols ? project(px, py, 0) : null;
           return {top, base, water};
         }));
       for (let row = 0; row < rows; row++) {

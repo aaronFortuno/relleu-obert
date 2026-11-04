@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.22.18 — 2026-11-04
+
+- Les mides panoràmiques admeten un costat de fins a 100 cm i l’altre de fins a 20 cm. Treballen en Relleu pur, d’1:50.000 a 1:500.000, amb una graella ajustada a les proporcions de la peça.
+- Les maquetes dividides mostren fragments de terreny a mesura que es preparen. El model final i les peces exportades comparteixen el mostreig i les cotes dels talls.
+
 ## v0.22.17 — 2026-11-04
 
 - «La teva maqueta» permet canviar les dimensions d’un projecte amb el territori ja triat. Conserva el centre, el gir i els ajustos, i reproporciona els traços del pinzell abans de generar la nova mida.

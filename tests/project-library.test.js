@@ -43,6 +43,17 @@ test('custom centimetre dimensions round-trip and define the valid stroke area',
     assert.throws(()=>saveProject(storage,{name:'Invàlida',settings:{...custom,sizePreset}}),/no és vàlida/);
 });
 
+test('panoramic projects preserve dimensions, mode and scales larger than the regular range',()=>{
+  const storage=memoryStorage();
+  const panoramic={...settings,sizePreset:'100x20',pureRelief:true,
+    pose:{...settings.pose,widthM:450000,heightM:90000},
+    options:{...settings.options,split:true},strokes:[]};
+  saveProject(storage,{name:'Serralada',settings:panoramic},firstDate);
+  assert.deepEqual(readProjects(storage)[0].settings,panoramic);
+  assert.throws(()=>saveProject(storage,{name:'Complet',settings:{...panoramic,pureRelief:false}}),/no és vàlida/);
+  assert.throws(()=>saveProject(storage,{name:'Escala insuficient',settings:{...panoramic,pose:{...panoramic.pose,widthM:49900}}}),/no és vàlida/);
+});
+
 test('older projects use the default trail width and a new choice persists',()=>{
   const storage=memoryStorage(),{trailWidth,...options}=settings.options;
   const old=saveProject(storage,{name:'Anterior',settings:{...settings,options}},firstDate);
