@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.22.17 — 2026-11-04
+
+- «La teva maqueta» permet canviar les dimensions d’un projecte amb el territori ja triat. Conserva el centre, el gir i els ajustos, i reproporciona els traços del pinzell abans de generar la nova mida.
+
 ## v0.22.16 — 2026-11-04
 
 - Les previsualitzacions inicials mostren retalls a la mateixa escala, amb ombrejat suau i més detall a les maquetes grans. El selector ofereix una sola mida rectangular predefinida, 20 × 15 cm.

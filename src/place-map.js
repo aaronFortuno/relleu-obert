@@ -1,6 +1,6 @@
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import {parseCoordinates,scaledBBox,physicalBBox,selectionPose} from './selection.js';
+import {parseCoordinates,scaledBBox,physicalBBox,selectionPose,coveringSelectionBox} from './selection.js';
 import {recommendedPlace,DEFAULT_PLACE,placeSelection} from './recommended-places.js';
 import {maxRegionScale,regionTileCount,MAX_REGION_TILES} from './region-limits.js';
 
@@ -31,6 +31,7 @@ export function createPlaceMap(container,{onChange,onName,width=150,height=150})
   north.addTo(map);
   L.DomEvent.disableClickPropagation(handle);
   let physical=[width,height],lastBBox,lastBase=placeSelection(DEFAULT_PLACE,width,height),pendingFit,rotation=0,lastRotation,restoring=false,retainedBase=null,gesture=null,locked=false,pureRelief=false;
+  let resizeReference=null;
   map.on('zoomstart',()=>{if(!restoring)retainedBase=null;});
   function frameSize(){const w=container.clientWidth,h=container.clientHeight,r=physical[0]/physical[1],a=rotation*Math.PI/180,c=Math.abs(Math.cos(a)),s=Math.abs(Math.sin(a)),fw=Math.min((w-46)/(c+s/r),(h-54)/(s+c/r));return [fw,fw/r];}
   function scaleBox(center,denominator){
@@ -88,7 +89,7 @@ export function createPlaceMap(container,{onChange,onName,width=150,height=150})
     handle.setAttribute('aria-valuetext',value+' graus');
     reset.disabled=locked||value===0;
   }
-  const changed=()=>{if(restoring||gesture)return;const {lat,lng}=map.getCenter();limitZoom([lat,lng]);const p=pose();drawRotation(rotation);if(p&&(!lastBBox||rotation!==lastRotation||p.bbox.some((v,i)=>Math.abs(v-lastBBox[i])>1e-12))){lastBBox=p.bbox;lastRotation=rotation;onChange(p.bbox,map.getCenter(),p);}};
+  const changed=()=>{if(restoring||gesture)return;const {lat,lng}=map.getCenter();limitZoom([lat,lng]);const p=pose();drawRotation(rotation);if(p&&(!lastBBox||rotation!==lastRotation||p.bbox.some((v,i)=>Math.abs(v-lastBBox[i])>1e-12))){lastBBox=p.bbox;lastRotation=rotation;resizeReference=null;onChange(p.bbox,map.getCenter(),p);}};
   map.on('moveend',()=>{
     if(restoring||!retainedBase)return;
     const {lat,lng}=map.getCenter(),old=selectionPose(retainedBase);
@@ -110,6 +111,18 @@ export function createPlaceMap(container,{onChange,onName,width=150,height=150})
     const previous=baseSelection();
     rotation=value;
     fit(previous);
+  }
+  function resizePiece(width,height){
+    const current=pose();
+    // Repeated size changes start from the same territory until the map is edited.
+    const reference=resizeReference??{pose:current,base:lastBase,width:physical[0],height:physical[1]};
+    physical=[width,height];
+    const sameAspect=width*reference.height===height*reference.width;
+    const requested=sameAspect?reference.base:coveringSelectionBox(reference.pose,width,height);
+    const bounded=limitBox(requested);
+    fit(bounded);
+    resizeReference=reference;
+    return bounded!==requested;
   }
   const normalAngle=value=>((Math.round(value)+180)%360+360)%360-180;
   const pointerAngle=event=>{
@@ -145,7 +158,7 @@ export function createPlaceMap(container,{onChange,onName,width=150,height=150})
   };
   reset.onclick=()=>setRotation(0);
   drawRotation(0);
-  return {map,getBBox:selection,getPose:pose,getScaleLimit,setRotation,setLocked(value){locked=value;handle.disabled=value;reset.disabled=value||rotation===0;},setPureRelief(value){const previous=baseSelection();pureRelief=value;fit(previous);},setScale(value){fit(scaledBBox(pose().center,...physical,value));},setSize(w,h){const previous=pose();physical=[w,h];fit(physicalBBox(previous.center,previous.heightM*w/h/1000,previous.heightM/1000));},setRegion:fit,async search(text){
+  return {map,getBBox:selection,getPose:pose,getScaleLimit,setRotation,resizePiece,setLocked(value){locked=value;handle.disabled=value;reset.disabled=value||rotation===0;},setPureRelief(value){const previous=baseSelection();pureRelief=value;fit(previous);},setScale(value){fit(scaledBBox(pose().center,...physical,value));},setSize(w,h){const previous=pose();physical=[w,h];fit(physicalBBox(previous.center,previous.heightM*w/h/1000,previous.heightM/1000));},setRegion:fit,async search(text){
     const coordinate=parseCoordinates(text);if(coordinate){map.setView([coordinate.lat,coordinate.lon],map.getZoom(),{animate:false});onName(text);return null;}
     const cacheKey='relleu-search:'+text.trim().toLowerCase();let cached;try{cached=JSON.parse(sessionStorage.getItem(cacheKey));}catch{}
     if(cached)return cached;

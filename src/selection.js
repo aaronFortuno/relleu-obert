@@ -19,6 +19,10 @@ export function tilePlan(width,height,max=MAX_PRINT_TILE_MM){
   return {cols,rows,tiles};
 }
 export function physicalBBox([lat,lon],widthKM,heightKM){const dy=heightKM/2/111.32,dx=widthKM/2/(111.32*Math.cos(lat*Math.PI/180));return [lon-dx,lat-dy,lon+dx,lat+dy];}
+export function coveringSelectionBox(pose,widthMM,heightMM){
+  const metresPerMillimetre=Math.max(pose.widthM/widthMM,pose.heightM/heightMM);
+  return physicalBBox(pose.center,widthMM*metresPerMillimetre/1000,heightMM*metresPerMillimetre/1000);
+}
 export function validateScale(value){
   const scale=Number(value);
   if(!Number.isFinite(scale)||scale<100||scale>100000)throw Error('L’escala ha de ser entre 1:100 i 1:100.000.');

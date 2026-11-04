@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-04. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.22.17 — Canvi de mida al mateix projecte
+
+La mida s’edita des de «La teva maqueta». El retall conserva el centre i el gir, s’amplia quan cal per adaptar les proporcions i respecta els límits d’escala. Els traços del pinzell es traslladen al retall nou. La maqueta anterior es pot descarregar mentre la mida nova està pendent de generar. Al navegador, la mostra de Tamariu de 15 × 15 cm ha passat a 18 × 18 cm amb el mateix retall i un traç de goma conservat. També s’han comprovat les mides rectangulars, el límit d’escala i la tornada a la mida generada. Pendent de validació d’ús.
+
 ## v0.22.16 — Acabat de les previsualitzacions
 
 La mostra il·lustrativa es retalla a escala constant i mostra més superfície i detall quan augmenta la mida. L’ombrejat és continu. Es manté el 20 × 15 cm com a únic rectangle predefinit. Control visual local del 20 × 15, el 30 × 30 i el 40 × 40. S’han recorregut les set mides amb el teclat i s’ha verificat el 15 × 20 personalitzat. Pendent de validació d’ús.

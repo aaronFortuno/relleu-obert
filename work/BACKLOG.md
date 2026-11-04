@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-04 · v0.22.16**. Retalls de previsualització a la mateixa escala. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-04 · v0.22.17**. Canvi de mida al mateix projecte. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -22,7 +22,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 
 | ID | Prioritat | Estat | Proper resultat comprovable |
 | ------------------------------------------------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| [RO-053](#ro-053--flux-de-treball-per-etapes) | P1 | Previsualització inicial refinada, amb una sola mida rectangular | Validar el selector en ús. Millorar el contrast de les guies al bosc i estudiar el canvi de mida |
+| [RO-053](#ro-053--flux-de-treball-per-etapes) | P1 | Canvi de mida al mateix projecte | Validar els canvis de mida en ús i millorar el contrast de les guies al bosc |
 | [RO-033](#ro-033--ponts-i-viaductes) | P1 | Millau i el cupó del Bages validats al visor. Montgròs conserva el pas al laminat del cupó | Comprovar llums i accessos en una placa completa |
 | [RO-034](#ro-034--túnels-imprimibles) | P1 | Dues boques i rasant compartida verificades al cupó 3MF | Validar el cupó i revisar el tram cobert de Sant Salvador al laminador |
 | [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | Encaix per tram i cobertura ampliada, també als talls de la peça | Validar Marganell i resoldre les unions complexes |
@@ -159,7 +159,7 @@ Els senders tenen un mínim de 0,30 mm i el selector de Vies en modifica l’amp
 
 ### RO-053 — Flux de treball per etapes
 
-El selector inicial compara les mides i els talls sobre una taula de 60 × 40 cm. Els retalls mostren el mateix paisatge a escala constant i s’ofereix un sol rectangle predefinit. El progrés per capes està validat en diversos llocs. A Tamariu 40 × 45 cm, les guies es veuen en zenital i perspectiva i coincideixen amb les cares de tall dels quatre 3MF. El traç es distingeix menys al bosc dens. Queden el contrast de les guies al bosc i el canvi de mida d’una maqueta existent. [Validació](HISTORIAL.md#v0215--mides-i-guies-de-tall) · [Flux](RO-053-UX.md) · [Mesures](RO-053-TEMPS.md)
+El selector inicial compara les mides i els talls sobre una taula de 60 × 40 cm. Els retalls mostren el mateix paisatge a escala constant i s’ofereix un sol rectangle predefinit. El progrés per capes està validat en diversos llocs. A Tamariu 40 × 45 cm, les guies es veuen en zenital i perspectiva i coincideixen amb les cares de tall dels quatre 3MF. El traç es distingeix menys al bosc dens. «La teva maqueta» permet preparar una mida nova conservant el centre, el gir i els ajustos. Queda validar el redimensionament en ús i millorar el contrast de les guies al bosc. [Validació](HISTORIAL.md#v0215--mides-i-guies-de-tall) · [Flux](RO-053-UX.md) · [Mesures](RO-053-TEMPS.md)
 
 ### RO-054 — Galeria local de projectes
 

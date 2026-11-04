@@ -73,6 +73,11 @@
 #custom-piece-form {text-align:left}
 #custom-piece-form input {width:100%;border:1px solid var(--ui-control-border);border-radius:5px;padding:8px;background:var(--ui-control-bg);color:var(--ui-control-text);font-size:var(--ui-control)}
 #custom-piece-form .primary {margin-top:12px}
+.piece-resize-actions {display:flex;align-items:center;flex-wrap:wrap;gap:4px 12px}
+#piece-resize-open {min-height:28px;color:var(--green);text-decoration:underline}
+#piece-resize-dialog {width:min(420px,92vw)}
+#piece-resize-form input {width:100%;border:1px solid var(--ui-control-border);border-radius:5px;padding:8px;background:var(--ui-control-bg);color:var(--ui-control-text);font:inherit}
+#piece-resize-form .primary {margin-top:12px}
 #recommended-place {margin-bottom:8px}
 .sidebar-left #new-project {flex:none;min-height:30px;margin:12px 0 8px;padding:6px 10px}
 .selection-frame {--selection-line:#37583e;border-color:var(--selection-line)}

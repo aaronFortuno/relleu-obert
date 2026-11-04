@@ -1,11 +1,23 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {pieceDimensions,scaledBBox,validateScale,tilePlan} from '../src/selection.js';
+import {pieceDimensions,scaledBBox,validateScale,tilePlan,selectionPose,coveringSelectionBox} from '../src/selection.js';
 import {makeProjection,buildModel} from '../src/geometry.js';
 import {threeMF} from '../src/export.js';
 import {unzipSync,strFromU8} from 'fflate';
 import {lonLatTile} from '../src/elevation.js';
 const close=(a,b,tolerance=1e-6)=>assert(Math.abs(a-b)<tolerance,`${a} != ${b}`);
+test('changing aspect covers the selected territory around the same centre and rotation',()=>{
+  const bbox=scaledBBox([41.918,3.2075],200,200,7500);
+  const original=selectionPose(bbox,35);
+  for(const [width,height] of [[400,400],[200,150],[150,200]]){
+    const resized=selectionPose(coveringSelectionBox(original,width,height),original.rotation);
+    close(resized.center[0],original.center[0]);close(resized.center[1],original.center[1]);
+    close(resized.widthM/width,resized.heightM/height);
+    close(Math.min(resized.widthM,resized.heightM),1500);
+    for(let i=0;i<4;i++)assert(i<2?resized.bbox[i]<=original.bbox[i]+1e-9:resized.bbox[i]>=original.bbox[i]-1e-9);
+    if(width===height)resized.bbox.forEach((value,i)=>close(value,original.bbox[i],1e-9));
+  }
+});
 test('sizes use whole centimetres between 10 and 50 and split only above 25 cm',()=>{
   assert.deepEqual(pieceDimensions('10x10'),[100,100]);
   assert.deepEqual(pieceDimensions('50x41'),[500,410]);
