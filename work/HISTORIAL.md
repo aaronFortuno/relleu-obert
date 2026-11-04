@@ -2,6 +2,14 @@
 
 Actualitzat: 2026-11-04. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.22.22 — Tamariu, gir automàtic i cota marina del MET5
+
+Tamariu torna a ser el punt de partida i Rajadell surt del selector d’exemples. El visor gira a 3°/s amb una elevació que oscil·la entre 20° i 40°. Després d’una interacció, espera 3,5 s i reprèn el moviment en sentit contrari amb una acceleració de 2 s. La roda manté el moviment i el botó permet pausar-lo. La vista zenital atura el gir i el visor respecta la preferència de moviment reduït.
+
+Revisió local a 1280 × 720 i 1100 × 680. S’han comprovat la pausa amb clic o teclat, la represa després de deixar anar, el zoom amb roda i la vista zenital fixa.
+
+El lector MET5 converteix el codi marí a 0 m. Amb dades reals de Tamariu, els dos modes situen el mar a 5 mm i el representen fins a la cara inferior. La comprovació de malla ha validat els tres fragments amb mar en el model de 30 × 30 cm i quatre peces de Relleu pur. Pendent de laminat.
+
 ## 2026-11-04 — Proposta de catàleg per als dos modes
 
 RO-046 documenta 28 enquadraments amb coordenades i mides reproduïbles al selector actual. Comprovats els límits de mida, escala i càrrega, i l’encaix del contorn de Tenerife al panorama girat. La tria del primer lot i la generació de mostres continuen pendents. [Catàleg](RO-046-CATALEG.md)

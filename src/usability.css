@@ -40,7 +40,7 @@
 .download-control #export-formats {flex:0 0 32px;width:32px;padding:0;border-radius:0 5px 5px 0}
 #export-options {position:absolute;bottom:calc(100% + 4px);right:0;z-index:5;width:100%;padding:4px;background:var(--paper);border:1px solid var(--line);border-radius:5px}
 #export-options button {display:block;width:100%;border:0;border-radius:4px;background:transparent;padding:8px;text-align:left;font-size:var(--ui-control)}
-#export-options button[aria-pressed=true], #export-options button:hover {background:#eef3e7}
+#export-options button[aria-pressed=true], #export-options button:hover, .viewer-tools #preview-orbit[aria-pressed=true] {background:#eef3e7}
 
 #welcome {position:absolute;inset:0;z-index:2;display:grid;align-content:center;justify-items:center;text-align:center;padding:24px;pointer-events:none}
 #welcome h2 {font-size:17px;color:var(--green)}

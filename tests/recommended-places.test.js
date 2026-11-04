@@ -1,9 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {RECOMMENDED_PLACES,placeSelection} from '../src/recommended-places.js';
+import {DEFAULT_PLACE,RECOMMENDED_PLACES,recommendedPlace,placeSelection} from '../src/recommended-places.js';
 import {SIZE_PRESETS} from '../src/selection.js';
 import {tileList} from '../src/sources.js';
+test('Tamariu is the starting location and the archived Rajadell sample remains loadable',()=>{
+  assert.equal(DEFAULT_PLACE,'tamariu');
+  assert(!RECOMMENDED_PLACES.some(place=>place.id==='eix-diagonal'));
+  assert.equal(recommendedPlace('eix-diagonal').file,'eix-diagonal.json');
+});
 test('all recommended rectangular selections keep geographic aspect and stay inside their included tile coverage',async()=>{
  for(const place of RECOMMENDED_PLACES){
   const meta=JSON.parse(await readFile(new URL('../public/data/'+place.file,import.meta.url),'utf8'));

@@ -3,6 +3,7 @@ const cellSize=5;
 const maxSide=1200;
 const maxBytes=32*1024*1024;
 const provider='ICGC MET5';
+const marineCode=-8888; // MET-5 specification §5 marks covered sea separately from NoData.
 
 function parseGrid(text,bounds){
   const lines=text.trim().split(/\r?\n/);
@@ -23,7 +24,7 @@ function parseGrid(text,bounds){
       const z=Number(columns[col]);
       if(!Number.isFinite(z)||z===header.nodata_value||z< -12000||z>9000)
         throw Error('El MET5 no cobreix tot el retall.');
-      values[row*width+col]=z;
+      values[row*width+col]=z===marineCode?0:z;
     }
   }
   return {width,height,values,epsg:25831,pixelIsArea:true,affine:[cellSize,0,west,0,-cellSize,north]};

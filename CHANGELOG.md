@@ -1,5 +1,11 @@
 # Canvis
 
+## v0.22.22 — 2026-11-04
+
+- El mapa s’obre a Tamariu. Es retira l’accés ràpid al viaducte de Rajadell.
+- El visor gira lentament després de generar una maqueta. S’atura mentre hi interactues i es reprèn en sentit contrari. El botó «Gir automàtic» permet deixar la vista quieta.
+- El MET5 interpreta correctament el codi marí i evita bases desproporcionades als retalls de costa. El mar cartografiat conserva el material fins a la base.
+
 ## v0.22.21 — 2026-11-04
 
 - «Colors i materials» permet triar d’un a sis filaments en Relleu pur i assignar-ne un a cada capa. La tria s’aplica al visor, a les descàrregues i als projectes desats.

@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-04 · v0.22.21**. Filaments configurables en Relleu pur. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-04 · v0.22.22**. Tamariu, gir del visor i cota marina del MET5. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -22,7 +22,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 
 | ID | Prioritat | Estat | Proper resultat comprovable |
 | ------------------------------------------------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| [RO-053](#ro-053--flux-de-treball-per-etapes) | P1 | Canvi de mida al mateix projecte | Validar els canvis de mida en ús i millorar el contrast de les guies al bosc |
+| [RO-053](#ro-053--flux-de-treball-per-etapes) | P1 | Canvi de mida al mateix projecte i gir automàtic del visor | Validar els canvis de mida i el gir en ús, i millorar el contrast de les guies al bosc |
 | [RO-033](#ro-033--ponts-i-viaductes) | P1 | Millau i el cupó del Bages validats al visor. Montgròs conserva el pas al laminat del cupó | Comprovar llums i accessos en una placa completa |
 | [RO-034](#ro-034--túnels-imprimibles) | P1 | Dues boques i rasant compartida verificades al cupó 3MF | Validar el cupó i revisar el tram cobert de Sant Salvador al laminador |
 | [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | Encaix per tram i cobertura ampliada, també als talls de la peça | Validar Marganell i resoldre les unions complexes |
@@ -31,7 +31,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts) | P1 | Fonts en estudi | Comparació de parts i petjades en segona zona |
 | [RO-032](#ro-032--cobertes-i-volums-singulars) | P1 | Nucli verificat; servei remot pendent de validar | Consulta real reeixida i dades de coberta de Tamariu |
 | [RO-023](#ro-023--relleu-local-i-fonts-vectorials-de-més-precisió) | P2 | MET5 integrat i auditat al Pedraforca | Contrast visual i refinament de malla |
-| [RO-055](#ro-055--mode-de-relleu-pur) | P2 | Mars i selecció d’un a sis filaments | Laminar un panorama amb filaments agrupats i comprovar dos talls adjacents |
+| [RO-055](#ro-055--mode-de-relleu-pur) | P2 | Mars fins a la base, cota marina del MET5 corregida i tria d’un a sis filaments | Laminar Tamariu i un panorama amb filaments agrupats, i comprovar dos talls adjacents |
 | [RO-054](#ro-054--galeria-local-de-projectes) | P2 | Integrat a v0.20.0 | Validar la recuperació en l’ús habitual |
 
 ## Validació i retocs acotats
@@ -175,4 +175,4 @@ En una prova de 100 × 20 cm, l’usuari observa un temps aproximat de 20 s i de
 
 Relleu pur permet triar entre un i sis filaments. Cada capa es pot assignar a un filament i el 3MF de Bambu amb diverses plaques fa servir la mateixa assignació per al projecte sencer. Queda validar un panorama amb menys de sis filaments al laminador.
 
-Incidència observada a Tamariu en Relleu pur, 30 × 30 cm a 1:10.000. La base apareix massa alta i el diagnòstic situa l’origen vertical a −8.888 m. Cal revisar com es filtren les mostres sense elevació abans de calcular la cota de base.
+La base anormalment alta de Tamariu (30 × 30 cm a 1:10.000) venia del codi marí −8888 del MET5. El lector el converteix a 0 m i conserva el recurs a una font alternativa quan falta cobertura. Al retall real, els dos modes situen la superfície marina a 5 mm. En Relleu pur, els tres fragments marins són sòlids tancats fins a la cara inferior. Pendent de validar els talls i el material al laminador. [Especificació del MET5, §5](https://icgc-web-pro.s3.eu-central-1.amazonaws.com/produccio/s3fs-public/met5v10esp_02ca_54782.pdf#page=8)

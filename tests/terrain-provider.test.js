@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {loadTerrain,loadPreferredTerrain,loadBridgeTerrain,oceanTilePredicate} from '../src/terrain-provider.js';
 import {localRasterSampler} from '../src/local-raster.js';
 import {physicalBBox,selectionPose} from '../src/selection.js';
+import {buildModel} from '../src/geometry.js';
 
 test('the preferred source uses a complete MET5 raster and falls back on a coverage gap',async()=>{
   const center=[42.237,1.704],bbox=physicalBBox(center,.02,.02),urls=[];
@@ -25,6 +26,36 @@ test('the preferred source uses a complete MET5 raster and falls back on a cover
   urls.length=0;
   await loadPreferredTerrain(physicalBBox([44,3],.02,.02),decode,fetcher(false));
   assert(urls.every(url=>url.includes('mapterhorn')));
+});
+
+test('the MET5 marine code preserves coastal elevations and sea solids down to the base',async()=>{
+  const bbox=physicalBBox([41.918,3.2075],1,1),[w,s,e,n]=bbox;
+  const terrain=await loadPreferredTerrain(bbox,()=>assert.fail('MET5 should cover the coast'),async url=>{
+    const [west,south,east,north]=new URL(url).searchParams.get('BBOX').split(',').map(Number);
+    const width=(east-west)/5,height=(north-south)/5;
+    const row=Array.from({length:width},(_,col)=>col<width/2?120:-8888).join(' ');
+    return new Response([`NCOLS ${width}`,`NROWS ${height}`,`XLLCORNER ${west}`,`YLLCORNER ${south}`,
+      'CELLSIZE 5','NODATA_VALUE -9999',...Array(height).fill(row)].join('\n'));
+  });
+  const sample=localRasterSampler(terrain.raster);
+  assert.ok(Math.abs(sample(w,(s+n)/2)-120)<1e-8);
+  assert.equal(sample(e,(s+n)/2),0);
+  // The vector shore and the raster shoreline need not be perfectly aligned.
+  const shore=w+.6*(e-w);
+  const sea={type:'Feature',properties:{sourceLayer:'water',class:'ocean'},
+    geometry:{type:'Polygon',coordinates:[[[shore,s],[e,s],[e,n],[shore,n],[shore,s]]]}};
+  const data={meta:{bbox,terrain:terrain.metadata},terrainRaster:terrain.raster,features:[sea],oceans:[sea]};
+  for(const pureRelief of [false,true]){
+    const model=buildModel(data,{size:100,selectionPose:selectionPose(bbox),resolution:12,trees:false,pureRelief});
+    const reference=model.provenance.verticalReference;
+    assert.equal(reference.originMeters,0);
+    assert.equal(reference.seaLevelMM,5);
+    const water=model.categories.find(part=>part.id==='water');
+    assert.ok(water.faces.length>0);
+    assert.deepEqual([...new Set(water.vertices.filter((_,i)=>i%3===2))].sort(),[0,5]);
+    const land=model.categories.find(part=>part.id==='terrain');
+    assert.equal(Math.max(...land.vertices.filter((_,i)=>i%3===2)),23);
+  }
 });
 
 test('a wide rotated relief crop selects the highest zoom within the request budget',async()=>{
