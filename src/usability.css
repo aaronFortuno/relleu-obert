@@ -94,12 +94,14 @@
 #custom-piece-form {text-align:left}
 #custom-piece-form input {width:100%;border:1px solid var(--ui-control-border);border-radius:5px;padding:8px;background:var(--ui-control-bg);color:var(--ui-control-text);font-size:var(--ui-control)}
 #custom-piece-form .primary {margin-top:12px}
-#welcome .piece-size-note,#piece-resize-form .piece-size-note {margin:8px 0 0;font-size:var(--ui-label);line-height:1.5}
-.piece-resize-actions {display:flex;align-items:center;flex-wrap:wrap;gap:4px 12px}
-#piece-resize-open {min-height:28px;color:var(--green);text-decoration:underline}
-#piece-resize-dialog {width:min(420px,92vw)}
-#piece-resize-form input {width:100%;border:1px solid var(--ui-control-border);border-radius:5px;padding:8px;background:var(--ui-control-bg);color:var(--ui-control-text);font:inherit}
-#piece-resize-form .primary {margin-top:12px}
+#welcome .piece-size-note {margin:8px 0 0;font-size:var(--ui-label);line-height:1.5}
+#piece-resize-form {margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+#piece-resize-fields {min-inline-size:0;margin:0;padding:0;border:0}
+#piece-resize-fields label {margin-top:2px}
+.piece-resize-actions {display:flex;align-items:center;gap:8px;margin-top:6px}
+.piece-resize-actions .hint {margin:0}
+.piece-resize-actions .secondary {width:auto;flex:none;margin:0;padding:6px 8px;white-space:nowrap}
+#piece-resize-pending {margin:4px 0 0}
 #recommended-place {margin-bottom:8px}
 .sidebar-left #new-project {flex:none;min-height:30px;margin:12px 0 8px;padding:6px 10px}
 .selection-frame {--selection-line:#37583e;border-color:var(--selection-line)}

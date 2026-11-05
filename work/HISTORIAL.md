@@ -2,6 +2,12 @@
 
 Actualitzat: 2026-11-05. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.22.37 — Mida editable a la vista
+
+RO-053 situa l’amplada, la fondària i els límits al començament de «La teva maqueta». El botó «Aplica la mida» s’activa quan canvien els valors i torna a Territori per preparar la generació. El model visible continua disponible fins a generar el nou.
+
+Comprovat el canvi de 10 × 10 a 15 × 15 cm amb teclat, la conservació del retall i l’exageració, i el missatge de validació per a 60 × 25 cm. Revisat el formulari a 1280 × 720, 1100 × 680 i 320 × 568, amb el canvi aplicat també al mòbil. Han passat 24 proves locals i la compilació estàtica.
+
 ## v0.22.36 — Resum del lloc a les maquetes del catàleg
 
 RO-046 mostra el nom, el mode, el tipus i la descripció de la fitxa a «La teva maqueta», per sobre de les mètriques. El resum correspon a la maqueta visible i es recupera quan es torna a generar un projecte desat del catàleg.

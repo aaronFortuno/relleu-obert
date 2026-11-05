@@ -141,6 +141,19 @@
     <section class="info-panel is-open">
       <h2><button type="button" class="section-toggle" aria-expanded="true" aria-controls="info-model">La teva maqueta <i aria-hidden="true">−</i></button></h2>
       <div class="config-content" id="info-model">
+        <form id="piece-resize-form" aria-label="Mida de la maqueta" hidden>
+          <fieldset id="piece-resize-fields">
+            <div class="two-fields">
+              <div><label for="piece-resize-width">Amplada <span class="unit">cm</span></label><input id="piece-resize-width" type="number" min="10" max="100" step="1" aria-describedby="resize-size-note" required></div>
+              <div><label for="piece-resize-height">Fondària <span class="unit">cm</span></label><input id="piece-resize-height" type="number" min="10" max="100" step="1" aria-describedby="resize-size-note" required></div>
+            </div>
+            <div class="piece-resize-actions">
+              <p id="resize-size-note" class="hint">10–50 cm per costat. En panoràmic, fins a 100 × 20 cm.</p>
+              <button id="piece-resize-apply" type="submit" class="secondary" disabled>Aplica la mida</button>
+            </div>
+          </fieldset>
+          <p id="piece-resize-pending" class="hint" role="status" hidden></p>
+        </form>
         <section id="catalog-place-summary" aria-labelledby="catalog-place-title" hidden>
           <h3 id="catalog-place-title"></h3>
           <p id="catalog-place-kind"></p>
@@ -148,10 +161,6 @@
         </section>
         <div id="metrics" class="metrics"><div><strong>—</strong><span>Mida final · mm</span></div><div><strong>—</strong><span>Escala</span></div></div>
         <div id="tiling-summary" class="subtle-note">Mida pendent de triar</div>
-        <div class="piece-resize-actions">
-          <button id="piece-resize-open" type="button" class="quiet-button" aria-haspopup="dialog" hidden>Canvia la mida</button>
-          <span id="piece-resize-pending" class="hint" hidden></span>
-        </div>
       </div>
     </section>
     <section class="info-panel">
@@ -191,21 +200,8 @@
       <path d="m27 9 7-6" stroke="var(--umbrella-accent)" stroke-width="4.5"/>
     </svg><span>ortogra<span class="umbrella-dot">.</span>fi</span>
   </a></p>
-  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions">v0.22.36</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V"><span class="desktop-copy">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
+  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions">v0.22.37</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V"><span class="desktop-copy">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
 </footer>
-
-<dialog id="piece-resize-dialog" aria-labelledby="piece-resize-title">
-  <div class="dialog-heading"><h2 id="piece-resize-title">Canvia la mida de la maqueta</h2><button data-close aria-label="Tanca">×</button></div>
-  <form id="piece-resize-form" class="dialog-content">
-    <p>Es mantenen el centre, l’orientació i els ajustos. El retall pot variar segons les proporcions i els límits d’escala.</p>
-    <div class="two-fields">
-      <div><label for="piece-resize-width">Amplada <span class="unit">cm</span></label><input id="piece-resize-width" type="number" min="10" max="100" step="1" aria-describedby="resize-size-note" required autofocus></div>
-      <div><label for="piece-resize-height">Fondària <span class="unit">cm</span></label><input id="piece-resize-height" type="number" min="10" max="100" step="1" aria-describedby="resize-size-note" required></div>
-    </div>
-    <p id="resize-size-note" class="hint piece-size-note">Si un costat supera els 50 cm, l’altre pot fer fins a 20 cm. Aquest format fa servir Relleu pur.</p>
-    <button type="submit" class="primary">Aplica la mida</button>
-  </form>
-</dialog>
 
 <dialog id="projects-dialog" aria-labelledby="projects-title">
   <div class="dialog-heading"><h2 id="projects-title">Projectes desats</h2><button data-close aria-label="Tanca">×</button></div>

@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.22.37 — 2026-11-05
+
+- L’amplada i la fondària es poden editar directament a «La teva maqueta», amb una nota breu sobre els límits de mida.
+
 ## v0.22.36 — 2026-11-05
 
 - Les maquetes del catàleg mostren el nom, el tipus i la descripció de la fitxa al panell dret, a «La teva maqueta».

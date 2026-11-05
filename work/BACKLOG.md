@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-05 · v0.22.36**. Resum del lloc a les maquetes del catàleg. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-05 · v0.22.37**. Camps de mida visibles a «La teva maqueta». [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -158,6 +158,8 @@ Les vies ràpides i el ferrocarril han de conservar una rasant contínua. Valida
 Els senders tenen un mínim de 0,30 mm i el selector de Vies en modifica l’amplada. Comprovar-ne la visibilitat al laminador. Revisar les unions i amplades de carretera, pont i túnel a dues escales. Separar l’amplada de calçada del contorn estructural i l’obertura imprimible. [Controls i reproducció](RO-052-CONTINUITAT.md)
 
 ### RO-053 — Flux de treball per etapes
+
+L’amplada i la fondària es poden editar al principi de «La teva maqueta», dins d’«Exporta» al mòbil. El formulari indica els límits i manté el flux d’aplicar i generar la nova mida.
 
 El taller mòbil integra els passos en panells inferiors que deixen el visor a la vista. S’hi pot generar i ajustar la maqueta, seleccionar el nombre de materials i exportar amb els formats habituals. Queda pendent comprovar els gestos i el teclat en dispositius reals. [Flux mòbil](RO-053-UX.md#taller-mòbil)
 
