@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.23.0 — 2026-11-05
+
+- Consolidació del taller d’escriptori i mòbil, la galeria de maquetes i el canvi de mida dins del projecte.
+- Relleu pur en retalls amplis, exportació 3MF amb diverses plaques i els ajustos de ponts curts sobre canals de la sèrie 0.22.
+
 ## v0.22.43 — 2026-11-05
 
 - Els ponts curts cartografiats poden ajustar la cota del tauler per deixar una obertura sota el pont i conservar el contacte amb totes dues ribes.

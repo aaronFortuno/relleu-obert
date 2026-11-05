@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-05. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.23.0 — Consolidació
+
+Versió de referència per mesurar el temps de generació i el flux fins a l’exportació. Reuneix el taller, la galeria, els retalls amplis de Relleu pur i el 3MF amb diverses plaques. Tamariu i Amsterdam queden en validació d’usuari. El primer bloc següent són els temps de generació. Els desnivells negatius, les baumes i les coves es mantenen a RO-035.
+
 ## v0.22.43 — Ponts curts sobre canals
 
 RO-033 ajusta la cota dels taulers curts que poden deixar pas sobre l’aigua i recolzar a totes dues ribes. En retalls densos es prioritzen els creuaments i es reparteixen pel retall. L’enllaç cerca vies dins la distància que pot recórrer i mostra el progrés per pont.
