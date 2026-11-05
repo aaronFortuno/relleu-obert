@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-05 · v0.22.34**. Taller mòbil amb visor i panells inferiors. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-05 · v0.22.35**. Ajustos en directe de Relleu pur. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -31,7 +31,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts) | P1 | Fonts en estudi | Comparació de parts i petjades en segona zona |
 | [RO-032](#ro-032--cobertes-i-volums-singulars) | P1 | Consulta opcional d’OSM amb retorn a petjades planes si és buida | Verificar una font de cobertes 3D consultable de l’ICGC |
 | [RO-023](#ro-023--relleu-local-i-fonts-vectorials-de-més-precisió) | P2 | MET5 integrat i auditat al Pedraforca | Contrast visual i refinament de malla |
-| [RO-055](#ro-055--mode-de-relleu-pur) | P2 | Textura regulable en Relleu pur i franges de tessel·la corregides | Laminar Tamariu i un panorama amb textura i comprovar dos talls adjacents |
+| [RO-055](#ro-055--mode-de-relleu-pur) | P2 | Exageració, rius i textura ajustables sobre el retall carregat | Laminar Tamariu i un panorama amb textura i comprovar dos talls adjacents |
 | [RO-054](#ro-054--galeria-local-de-projectes) | P2 | Integrat a v0.20.0 | Validar la recuperació en l’ús habitual |
 
 ## Validació i retocs acotats
@@ -168,6 +168,8 @@ El selector inicial compara les mides i els talls sobre una taula de 60 × 40 cm
 Validar la recuperació d’un projecte girat amb traços i materials als dos modes. La galeria local desa els ajustos per regenerar la maqueta. Conservar la malla exacta queda per a una fase posterior.
 
 ### RO-055 — Mode de relleu pur
+
+L’exageració vertical, els rius i la textura de vegetació s’apliquen automàticament sobre la maqueta carregada i mantenen la càmera. El canvi de detall, de mida o de retall es confirma amb «Genera el model».
 
 «Vegetació simulada» activa una textura contínua i editable sobre el bosc. A 1:10.000 l’alçada màxima per defecte és de 0,8 mm, regulable entre 0,2 i 2 mm, i la irregularitat inicial és del 45 %. L’altura varia amb l’escala i se suavitza als límits del bosc. Les vores internes de les tessel·les queden dissoltes, comprovat amb el retall de linies-vegetacio.json. Queda pendent comprovar el laminat i una impressió de prova.
 

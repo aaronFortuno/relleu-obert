@@ -31,8 +31,9 @@ export function reliefDiagonals(heights,n,midpoint,rows=n){
 const directions=[[0,-1],[1,0],[0,1],[-1,0]];
 const corners=[[0,0],[1,0],[1,1],[0,1]];
 const reliefTreeCategory={...RELIEF_MATERIALS[4],id:'trees',name:'Vegetació simulada'};
+const wholeGrid=grid=>({left:0,bottom:0,right:grid.resolution,top:grid.rows??grid.resolution});
 
-export function reliefTreesPart(grid,bounds={left:0,bottom:0,right:grid.resolution,top:grid.rows??grid.resolution}){
+export function reliefTreesPart(grid,bounds=wholeGrid(grid)){
   const mesh=vegetationSkin(grid,bounds);
   return mesh&&{...reliefTreeCategory,...mesh};
 }
@@ -102,7 +103,7 @@ function hasMarineNodes(grid,bounds){
   return false;
 }
 
-export function reliefParts(grid,bounds={left:0,bottom:0,right:grid.resolution,top:grid.rows??grid.resolution}){
+export function reliefParts(grid,bounds=wholeGrid(grid)){
   const coastal=hasMarineNodes(grid,bounds);
   const skins=coastal||grid.scores||grid.lakeWeights||grid.forestWeights?coverageSkins(grid,bounds,coastal):[];
   const layered=skins.slice(1,5).some(Boolean);
@@ -134,6 +135,34 @@ function placeInAssembly(part,tile){
   return part;
 }
 
+function joinParts(parts){
+  if(parts.length<2)return parts[0];
+  const vertices=new Float32Array(parts.reduce((sum,part)=>sum+part.vertices.length,0));
+  const faces=new Uint32Array(parts.reduce((sum,part)=>sum+part.faces.length,0));
+  let vertexOffset=0,faceOffset=0;
+  for(const part of parts){
+    vertices.set(part.vertices,vertexOffset);
+    for(const index of part.faces)faces[faceOffset++]=index+vertexOffset/3;
+    vertexOffset+=part.vertices.length;
+  }
+  return {vertices,faces};
+}
+
+export function reliefInlandWater(grid,lakes,panoramic){
+  if(!grid.streamStrips?.length)return lakes;
+  let stream;
+  if(panoramic){
+    const plan=tilePlan(grid.width,grid.height),parts=[];
+    for(const tile of plan.tiles){
+      const part=reliefStreamPart(grid,tileBounds(grid,plan,tile));
+      if(part)parts.push(placeInAssembly(part,tile));
+    }
+    stream=joinParts(parts);
+  }else stream=reliefStreamPart(grid,wholeGrid(grid));
+  if(!stream)return lakes;
+  return {...RELIEF_MATERIALS[3],...(lakes?combine(lakes,stream):stream)};
+}
+
 export function previewReliefPieces(grid,emit){
   const plan=tilePlan(grid.width,grid.height),total=plan.tiles.length;
   if(total<2||grid.resolution%plan.cols||(grid.rows??grid.resolution)%plan.rows)return false;
@@ -154,19 +183,8 @@ export function assemblePanoramicRelief(grid,progress){
     }
     progress(i+1,plan.tiles.length);
   }
-  return [...RELIEF_MATERIALS,reliefTreeCategory].filter(({id})=>partsByMaterial.has(id)).map(material=>{
-    const parts=partsByMaterial.get(material.id);
-    if(parts.length===1)return parts[0];
-    const vertices=new Float32Array(parts.reduce((sum,part)=>sum+part.vertices.length,0));
-    const faces=new Uint32Array(parts.reduce((sum,part)=>sum+part.faces.length,0));
-    let vertexOffset=0,faceOffset=0;
-    for(const part of parts){
-      vertices.set(part.vertices,vertexOffset);
-      for(const index of part.faces)faces[faceOffset++]=index+vertexOffset/3;
-      vertexOffset+=part.vertices.length;
-    }
-    return {...material,vertices,faces};
-  });
+  return [...RELIEF_MATERIALS,reliefTreeCategory].filter(({id})=>partsByMaterial.has(id))
+    .map(material=>({...material,...joinParts(partsByMaterial.get(material.id))}));
 }
 
 // All pieces reuse the same sampled heights and diagonals. Rebuild their

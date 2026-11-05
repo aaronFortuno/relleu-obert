@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.22.35 — 2026-11-05
+
+- Relleu pur aplica l’exageració vertical, la visibilitat i l’amplada dels rius i els ajustos de vegetació sobre el retall carregat. El visor conserva la càmera i l’exportació recull els ajustos aplicats.
+
 ## v0.22.34 — 2026-11-05
 
 - Taller per a mòbil amb selector de mides i exemples tàctils. «Ajustos» i «Exporta» obren panells inferiors i deixen el visor a la vista mentre es genera o s’edita la maqueta.

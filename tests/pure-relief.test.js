@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {buildModel} from '../src/geometry.js';
+import {buildModel,updatePureRelief,updateVegetation} from '../src/geometry.js';
 import {loadRegion,mergeStandingWaterFragments} from '../src/sources.js';
 import {auditPart} from '../src/solid-audit.js';
 import {physicalBBox} from '../src/selection.js';
@@ -180,4 +180,50 @@ test('mapped forest stays green and its continuous texture scales proportionally
   assert(overviewTexture.areaMM2>0&&localTexture.areaMM2>overviewTexture.areaMM2);
   assert.equal(localTexture.heightRangeMM[1],overviewTexture.heightRangeMM[1]*4);
   for(const part of local.parts)assert.deepEqual(auditPart(part).errors,[]);
+});
+
+test('live pure-relief changes retain sampled terrain, strokes and printable water layers',()=>{
+  const [w,s,e,n]=bbox,at=(x,y)=>[w+(e-w)*x,s+(n-s)*y];
+  const rectangle=(x0,y0,x1,y1)=>({geometry:{type:'Polygon',coordinates:[[
+    at(x0,y0),at(x1,y0),at(x1,y1),at(x0,y1),at(x0,y0)
+  ]]}});
+  const region={meta:{bbox},dem,oceans:[rectangle(0,0,.18,1)],lakes:[rectangle(.35,.22,.61,.43)],
+    forests:[rectangle(.23,.46,.89,.91)],waterways:[{properties:{class:'stream'},
+      geometry:{type:'LineString',coordinates:[at(.22,.67),at(.94,.67)]}}]};
+  const settings={...options,size:400,resolution:24,streams:false};
+  const stroke={mode:'erase',x:270,y:330,radius:14,density:.5};
+  const initial=buildModel(region,settings);
+  const painted=updateVegetation(initial,{strokes:[stroke],vegetationHeight:1.4});
+  const flowing=updatePureRelief(painted,{streams:true,streamWidth:2});
+  const raised=updatePureRelief(flowing,{exaggeration:2.5});
+  const rebuilt=buildModel(region,{...settings,streams:true,streamWidth:2,exaggeration:2.5,strokes:[stroke],vegetationHeight:1.4});
+  for(const id of ['terrain','forest','water'])assert.equal(flowing.categories.find(part=>part.id===id),painted.categories.find(part=>part.id===id));
+  assert.equal(flowing.reliefGrid.heights,painted.reliefGrid.heights);
+  for(const key of ['diagonals','lakeWeights','oceanWeights','forestWeights','streamStrips','vegetationTexture'])
+    assert.equal(raised.reliefGrid[key],flowing.reliefGrid[key],key);
+  assert.equal(raised.provenance.verticalReference.minimumSurfaceMM,5);
+  assert.equal(raised.provenance.verticalReference.seaLevelMM,5);
+  assert.equal(raised.provenance.lakeCount,1);
+  assert.equal(raised.provenance.streamCount,1);
+  assert.equal(raised.provenance.verticalExaggeration,2.5);
+  assert.deepEqual(raised.provenance.options.strokes,[stroke]);
+  assert.deepEqual(raised.categories.map(part=>part.id),rebuilt.categories.map(part=>part.id));
+  const bytes=array=>Buffer.from(array.buffer,array.byteOffset,array.byteLength);
+  for(const [index,part] of raised.categories.entries()){
+    const expected=rebuilt.categories[index];
+    for(const key of ['vertices','faces'])assert.equal(Buffer.compare(bytes(part[key]),bytes(expected[key])),0,part.id+' '+key);
+  }
+  const noStreams=updatePureRelief(raised,{streams:false});
+  assert.equal(noStreams.provenance.streamCount,0);
+  assert.equal(noStreams.categories.find(part=>part.id==='inland-water'),raised.reliefVegetationContext.lakePart);
+  assert.equal(noStreams.categories.find(part=>part.id==='trees'),raised.categories.find(part=>part.id==='trees'));
+  assert.equal(auditPart(noStreams.categories.find(part=>part.id==='water')).bbox.min[2],0);
+  const pieces=splitPureRelief(raised,200);
+  assert.equal(pieces.length,4);
+  for(const piece of pieces)for(const part of piece.parts)assert.deepEqual(auditPart(part).errors,[]);
+  const shorter=updateVegetation(raised,{vegetationHeight:.6});
+  assert.equal(shorter.reliefGrid.heights,raised.reliefGrid.heights);
+  assert.equal(shorter.provenance.options.vegetationHeight,.6);
+  assert.throws(()=>updatePureRelief(shorter,{exaggeration:0}),/fora del rang/);
+  assert.equal(shorter.provenance.verticalExaggeration,2.5);
 });

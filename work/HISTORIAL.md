@@ -2,6 +2,14 @@
 
 Actualitzat: 2026-11-05. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.22.35 — Ajustos en directe de Relleu pur
+
+RO-055 aplica l’exageració sobre les cotes preparades i actualitza la visibilitat i l’amplada dels cursos d’aigua sense tornar a carregar el retall. Els rius reutilitzen les malles de terra i mar. Es conserven la càmera, els traços de vegetació i la base de 5 mm. El detall, la mida i el retall es continuen confirmant amb «Genera el model».
+
+Superades 44 proves locals, inclosa la comparació de vèrtexs i cares amb una generació equivalent i la verificació de les quatre peces tancades.
+
+Compilació estàtica verificada. A Tamariu, Relleu pur de 15 × 15 cm i detall ràpid, comprovat el canvi d’exageració de ×1,75 a ×3, l’activació i desactivació dels rius, l’amplada i el control de vegetació. El worker compilat també exporta els ajustos resultants al 3MF amb la xarxa desactivada en la prova. El diàleg de mida es troba sota «La teva maqueta», dins d’«Exporta» al mòbil, i manté el retall en canviar entre dos formats quadrats.
+
 ## v0.22.34 — Taller mòbil
 
 RO-053 adapta el selector inicial i el taller amb una barra inferior de Visor, Ajustos i Exporta. La cerca i el mapa encapçalen Territori, amb l’acció de generar fixa. El visor continua visible mentre els panells estan oberts. En horitzontal es comparteix l’amplada amb el panell. L’exportació mòbil conserva el nombre de materials, els formats i el canvi de mida. [Flux mòbil](RO-053-UX.md#taller-mòbil)

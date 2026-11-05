@@ -1,4 +1,4 @@
-import {buildModel,updateVegetation,updateBuildings,updateTransport,previewBuildingLayer} from './geometry.js';
+import {buildModel,updatePureRelief,updateVegetation,updateBuildings,updateTransport,previewBuildingLayer} from './geometry.js';
 import {bambuPlateProject,threeMF,stlZip} from './export.js';
 import {groupMaterials,groupReliefMaterials} from './materials.js';
 import {splitModel,tileArchive} from './mesh-tiles.js';
@@ -11,6 +11,15 @@ import {createProcessingTiming} from './processing-timing.js';
 let current,api;
 const progress=message=>self.postMessage({type:'progress',message});
 const BUILD_STAGES=['terrain','transport','buildings','vegetation'];
+function postChangedModel(next,flags={}){
+  const changedCategories=new Set();
+  for(const part of current.categories)if(!next.categories.includes(part))changedCategories.add(part.id);
+  for(const part of next.categories)if(!current.categories.includes(part))changedCategories.add(part.id);
+  current=next;
+  const categories=current.categories.filter(part=>changedCategories.has(part.id));
+  self.postMessage({type:'model',model:{...current,parts:undefined,reliefGrid:undefined,categories},
+    changedCategories:[...changedCategories],...flags});
+}
 function buildObserver(timing,pureRelief){
   const stages=pureRelief?['terrain']:BUILD_STAGES;
   let stage='terrain',lastMessage,lastUpdate=-Infinity;
@@ -61,6 +70,9 @@ try{
     if(observer&&!data.options.pureRelief&&!api&&(data.options.surfaceRoads||data.options.estimatedTunnels||data.options.majorRoads||data.region.infrastructure?.items?.length||data.region.features?.some(f=>f.properties?.sourceLayer==='transportation'&&f.properties.brunnel==='bridge'))){timing.mark('initialization','Preparant el motor de geometria…');progress('Preparant el motor de geometria…');api=await Module({locateFile:()=>wasmURL});api.setup();}
     current=observer?buildModel(data.region,data.options,observer.progress,api,timing.detail,observer):updateVegetation(current,data.options,progress);self.postMessage({type:'model',model:{...current,parts:undefined,reliefGrid:undefined,categories:data.type==='vegetation'?current.categories.filter(p=>p.id==='trees'):current.categories},vegetation:data.type==='vegetation',timing:timing?.finish()});
   }
+  if(data.type==='relief'){
+    postChangedModel(updatePureRelief(current,data.options,progress),{relief:true});
+  }
   if(data.type==='buildings'){
     const report=message=>{timing?.mark('buildings',message);progress(message);};
     current=updateBuildings(current,data.layer,data.options,report);
@@ -71,12 +83,7 @@ try{
       progress('Preparant les infraestructures…');
       api=await Module({locateFile:()=>wasmURL});api.setup();
     }
-    const next=updateTransport(current,data.options,progress,api);
-    const changedCategories=new Set();
-    for(const part of current.categories)if(!next.categories.includes(part))changedCategories.add(part.id);
-    for(const part of next.categories)if(!current.categories.includes(part))changedCategories.add(part.id);
-    current=next;
-    self.postMessage({type:'model',model:{...current,parts:undefined,categories:current.categories.filter(p=>changedCategories.has(p.id))},changedCategories:[...changedCategories]});
+    postChangedModel(updateTransport(current,data.options,progress,api));
   }
   if(data.type==='accessory'){
     if(!current)throw Error('Genera primer el model.');
