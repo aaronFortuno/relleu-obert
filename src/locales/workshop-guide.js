@@ -75,10 +75,10 @@ export default {
   ],
   'guide.savedTitle': ["On es desen els projectes?", "¿Dónde se guardan los proyectos?", "Onde se gardan os proxectos?", "Non gordetzen dira proiektuak?", "Where are projects saved?"],
   'guide.saved': [
-    "Desa els ajustos a «Projectes desats», dins la galeria. Es guarden en aquest navegador. Quan tornis a obrir el projecte, genera la maqueta amb els ajustos recuperats.",
-    "Guarda los ajustes en «Proyectos guardados», dentro de la galería. Se guardan en este navegador. Cuando vuelvas a abrir el proyecto, genera la maqueta con los ajustes recuperados.",
-    "Garda os axustes en «Proxectos gardados», dentro da galería. Gárdanse neste navegador. Cando volvas abrir o proxecto, xera a maqueta cos axustes recuperados.",
-    "Gorde ezarpenak galeriako «Gordetako proiektuak» atalean. Nabigatzaile honetan gordetzen dira. Proiektua berriro irekitzean, sortu maketa berreskuratutako ezarpenekin.",
-    "Save your settings under “Saved projects” in the gallery. They are stored in this browser. Reopen the project to restore the settings, then generate the model again.",
+    "Desa els ajustos a «Projectes desats», dins la galeria. Allà pots descarregar una còpia del catàleg en JSON i importar-la en un altre navegador. Quan tornis a obrir el projecte, genera la maqueta amb els ajustos recuperats.",
+    "Guarda los ajustes en «Proyectos guardados», dentro de la galería. Allí puedes descargar una copia del catálogo en JSON e importarla en otro navegador. Cuando vuelvas a abrir el proyecto, genera la maqueta con los ajustes recuperados.",
+    "Garda os axustes en «Proxectos gardados», dentro da galería. Alí podes descargar unha copia do catálogo en JSON e importala noutro navegador. Cando volvas abrir o proxecto, xera a maqueta cos axustes recuperados.",
+    "Gorde ezarpenak galeriako «Gordetako proiektuak» atalean. Handik katalogoaren JSON kopia deskargatu eta beste nabigatzaile batean inporta dezakezu. Proiektua berriro irekitzean, sortu maketa berreskuratutako ezarpenekin.",
+    "Save your settings under “Saved projects” in the gallery. There you can download a JSON copy of the catalog and import it in another browser. Reopen the project to restore the settings, then generate the model again.",
   ],
 };

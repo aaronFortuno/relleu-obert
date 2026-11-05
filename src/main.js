@@ -10,7 +10,7 @@ import {pieceDimensions,tilePlan,MAX_PRINT_TILE_MM,scaledBBox,physicalBBox,selec
 import {initPiecePicker,bindPieceDimensions} from './piece-picker.js';
 import {CURATED_EXAMPLES,localizeExample} from './curated-examples.js';
 import {initExampleCarousel,initExampleGallery} from './example-carousel.js';
-import {readProjects,saveProject,deleteProject} from './project-library.js';
+import {readProjects,saveProject,deleteProject,exportProjectLibrary,importProjectLibrary} from './project-library.js';
 import {cutGuideSegments} from './cut-guides.js';
 import {regionLimitMessage} from './region-limits.js';
 import {initDialogs} from './dialogs.js';
@@ -98,14 +98,17 @@ function finishProcessing(error){
   processingRun=null;
   $('#download-processing').disabled=false;
 }
+function downloadFile(blob,filename){
+  const url=URL.createObjectURL(blob),link=document.createElement('a');
+  link.href=url;
+  link.download=filename;
+  link.click();
+  setTimeout(()=>URL.revokeObjectURL(url),5000);
+}
 $('#download-processing').onclick=()=>{
   if(!lastProcessingReport)return;
   const blob=new Blob([JSON.stringify(lastProcessingReport,null,2)+'\n'],{type:'application/json'});
-  const url=URL.createObjectURL(blob),link=document.createElement('a');
-  link.href=url;
-  link.download='relleu-obert-temps-'+lastProcessingReport.startedAt.replaceAll(':','-')+'.json';
-  link.click();
-  setTimeout(()=>URL.revokeObjectURL(url),5000);
+  downloadFile(blob,'relleu-obert-temps-'+lastProcessingReport.startedAt.replaceAll(':','-')+'.json');
 };
 let presentationMode,demandRenderer;let contextLost=false,presentationReduced=false;
 let landscapeMaterials={count:4,assignments:defaultAssignments(4)};
@@ -1253,7 +1256,10 @@ function renderProjectGallery(preserveConfirm=false){
   const confirmations=new Set(preserveConfirm?[...list.querySelectorAll('[data-confirm="true"]')].map(button=>button.dataset.projectId):[]);
   list.replaceChildren();
   $('#save-project').hidden=!selectedSize||tooLargeRegion||busy||drawing||pendingVegetation;
-  for(const project of readProjects(localStorage)){
+  $('#project-backup').disabled=true;
+  const projects=readProjects(localStorage);
+  $('#project-backup').disabled=projects.length===0;
+  for(const project of projects){
     const row=document.createElement('div'),name=document.createElement('strong');
     row.className='project-row';
     name.textContent=project.name;
@@ -1358,6 +1364,38 @@ initExampleGallery(projectDialog,CURATED_EXAMPLES,example=>{
   showWorkshopPanel('preview',{focus:true});
 });
 $('#gallery-credits').append($('#example-carousel .example-credits').cloneNode(true));
+const projectImportFile=$('#project-import-file'),projectImport=$('#project-import');
+const maxProjectBackupBytes=16*1024*1024;
+$('#project-backup').onclick=()=>{
+  try{
+    const json=exportProjectLibrary(localStorage);
+    downloadFile(new Blob([json],{type:'application/json'}),'relleu-obert-projectes.json');
+    feedback('project-feedback',statusMessage('project.downloaded'));
+  }catch(error){feedback('project-feedback',error.message);}
+};
+projectImport.onclick=()=>projectImportFile.click();
+projectImportFile.onchange=async()=>{
+  const file=projectImportFile.files[0];
+  projectImportFile.value='';
+  if(!file||projectImport.disabled)return;
+  if(file.size>maxProjectBackupBytes){
+    feedback('project-feedback',statusMessage('project.importTooLarge'));
+    return;
+  }
+  projectImport.disabled=true;
+  try{
+    const json=await file.text().catch(()=>null);
+    if(json===null){
+      feedback('project-feedback',statusMessage('project.importReadError'));
+      return;
+    }
+    const {added,skipped}=importProjectLibrary(localStorage,json);
+    renderProjectGallery();
+    feedback('project-feedback',statusMessage('project.imported',()=>({added:formatNumber(added),skipped:formatNumber(skipped)})));
+  }catch(error){
+    feedback('project-feedback',error instanceof SyntaxError?statusMessage('project.importInvalid'):error.message);
+  }finally{projectImport.disabled=false;}
+};
 $('#save-project').onsubmit=event=>{
   event.preventDefault();
   if(!selectedSize||tooLargeRegion||busy||drawing||pendingVegetation)return;
@@ -1374,6 +1412,7 @@ $('#release-list').insertAdjacentHTML('afterbegin',`<article class="release-entr
 $('#release-list').insertAdjacentHTML('afterbegin',`<article class="release-entry"><div><strong>v0.23.4</strong><time datetime="2026-11-05">05/11/2026</time></div><p data-i18n="history.galleryGrid">${t('history.galleryGrid')}</p></article>`);
 $('#release-list').insertAdjacentHTML('afterbegin',`<article class="release-entry"><div><strong>v0.23.5</strong><time datetime="2026-11-05">05/11/2026</time></div><p data-i18n="guide.release">${t('guide.release')}</p></article>`);
 $('#release-list').insertAdjacentHTML('afterbegin',`<article class="release-entry"><div><strong>v0.23.6</strong><time datetime="2026-11-05">05/11/2026</time></div><p data-i18n="history.tenerifeFrame">${t('history.tenerifeFrame')}</p></article>`);
+$('#release-list').insertAdjacentHTML('afterbegin',`<article class="release-entry"><div><strong>v0.23.7</strong><time datetime="2026-11-05">05/11/2026</time></div><p data-i18n="history.0.23.7">${t('history.0.23.7')}</p></article>`);
 $('#copy-lightning').onclick=async()=>{try{await navigator.clipboard.writeText('aptswim903@walletofsatoshi.com');feedback('copy-status',statusMessage('copy.done'));}catch{feedback('copy-status',statusMessage('copy.manual'));}};
 for(const toggle of document.querySelectorAll('.sidebar-left .section-toggle'))toggle.disabled=true;
 function refreshWorkshopLanguage(){

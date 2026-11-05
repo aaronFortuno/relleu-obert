@@ -150,6 +150,11 @@ export default {
   'runtime.project.notFound': ["El projecte ja no existeix a la galeria.","El proyecto ya no está en la galería.","O proxecto xa non está na galería.","Proiektua ez dago jada galerian.","The project is no longer in the gallery."],
   'runtime.project.wait': ["Espera que acabi l’actualització de la maqueta.","Espera a que termine la actualización de la maqueta.","Agarda a que remate a actualización da maqueta.","Itxaron maketa eguneratzen amaitu arte.","Wait for the model to finish updating."],
   'runtime.project.saved': ["Projecte desat en aquest navegador.","Proyecto guardado en este navegador.","Proxecto gardado neste navegador.","Proiektua arakatzaile honetan gorde da.","Project saved in this browser."],
+  'runtime.project.downloaded': ["Còpia del catàleg preparada.","Copia del catálogo preparada.","Copia do catálogo preparada.","Katalogoaren kopia prest dago.","Catalog backup ready."],
+  'runtime.project.imported': ["Projectes afegits ({added}) · Ja presents ({skipped})","Proyectos añadidos ({added}) · Ya presentes ({skipped})","Proxectos engadidos ({added}) · Xa presentes ({skipped})","Gehitutako proiektuak ({added}) · Lehendik zeudenak ({skipped})","Projects added ({added}) · Already present ({skipped})"],
+  'runtime.project.importInvalid': ["Aquest fitxer no és una còpia compatible de Relleu Obert.","Este archivo no es una copia compatible de Relleu Obert.","Este ficheiro non é unha copia compatible de Relleu Obert.","Fitxategi hau ez da Relleu Obert-ekin bateragarria den kopia bat.","This file is not a compatible Relleu Obert backup."],
+  'runtime.project.importTooLarge': ["El fitxer és massa gran per importar-lo.","El archivo es demasiado grande para importarlo.","O ficheiro é demasiado grande para importalo.","Fitxategia handiegia da inportatzeko.","This file is too large to import."],
+  'runtime.project.importReadError': ["No s’ha pogut llegir el fitxer.","No se ha podido leer el archivo.","Non se puido ler o ficheiro.","Ezin izan da fitxategia irakurri.","The file could not be read."],
   'runtime.copy.done': ["Adreça copiada","Dirección copiada","Enderezo copiado","Helbidea kopiatu da","Address copied"],
   'runtime.copy.manual': ["Selecciona i copia l’adreça.","Selecciona y copia la dirección.","Selecciona e copia o enderezo.","Hautatu eta kopiatu helbidea.","Select and copy the address."],
 };

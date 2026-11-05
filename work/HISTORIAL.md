@@ -2,6 +2,12 @@
 
 Actualitzat: 2026-11-05. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.23.7 — Còpia del catàleg local
+
+RO-054 afegeix la descàrrega i la importació de la còpia JSON a «Projectes desats». Es validen tots els ajustos abans de desar res. Els projectes locals es conserven i el diàleg mostra quants s’han afegit i quants ja hi eren.
+
+S’ha comprovat al navegador la descàrrega, el rebuig d’un fitxer aliè, la reimportació sense duplicats i la reobertura d’una plantilla recuperada. Revisat a 1280 × 720, 1100 × 680 i 320 × 568. Han passat 35 proves locals i la compilació estàtica.
+
 ## v0.23.6 — Tenerife en dues peces
 
 RO-046 aplica el retall de l’usuari a la fitxa de Tenerife. La maqueta fa 40 × 20 cm a 1:300.000, amb un gir de −25° i dues peces de 20 × 20 cm. El nou render conserva el contorn de l’illa i mostra un sol tall. [Enquadrament i captura](RO-046-CATALEG.md#tenerife-en-dues-peces)

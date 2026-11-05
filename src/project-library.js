@@ -69,22 +69,25 @@ function validatedSettings(settings){
     ...(placeName!=null?{placeName}:{}),...(exampleId!=null?{exampleId}:{})};
 }
 
+function validatedProjects(data){
+  if(!object(data)||data.version!==VERSION||!Array.isArray(data.projects))throw Error();
+  const ids=new Set();
+  return data.projects.map(project=>{
+    if(!object(project)||!text(project.id,100)||ids.has(project.id)||!text(project.name,100)||
+      !timestamp(project.createdAt)||!timestamp(project.updatedAt))throw Error();
+    const {id,name,createdAt,updatedAt,settings}=project;
+    ids.add(id);
+    return {id,name,createdAt,updatedAt,settings:validatedSettings(settings)};
+  });
+}
+
 export function readProjects(storage){
   let raw;
   try{raw=storage.getItem(PROJECT_LIBRARY_KEY);}
   catch{throw Error('No es pot accedir a la galeria local en aquest navegador.');}
   if(raw===null)return [];
   try{
-    const data=JSON.parse(raw);
-    if(!object(data)||data.version!==VERSION||!Array.isArray(data.projects))throw Error();
-    const ids=new Set();
-    return data.projects.map(project=>{
-      if(!object(project)||!text(project.id,100)||ids.has(project.id)||!text(project.name,100)||
-        !timestamp(project.createdAt)||!timestamp(project.updatedAt))throw Error();
-      const {id,name,createdAt,updatedAt,settings}=project;
-      ids.add(id);
-      return {id,name,createdAt,updatedAt,settings:validatedSettings(settings)};
-    });
+    return validatedProjects(JSON.parse(raw));
   }catch{
     throw Error('La galeria local conté dades que aquesta versió no pot llegir.');
   }
@@ -96,6 +99,26 @@ function writeProjects(storage,projects){
     if(error?.name==='QuotaExceededError')throw Error('No hi ha prou espai al navegador per desar el projecte.');
     throw Error('No s’ha pogut actualitzar la galeria local.');
   }
+}
+
+export function exportProjectLibrary(storage){
+  return JSON.stringify({format:PROJECT_LIBRARY_KEY,version:VERSION,projects:readProjects(storage)})+'\n';
+}
+
+export function importProjectLibrary(storage,json){
+  let incoming;
+  try{
+    const backup=JSON.parse(json);
+    if(backup?.format!==PROJECT_LIBRARY_KEY)throw Error();
+    incoming=validatedProjects(backup);
+  }catch{
+    throw new SyntaxError('Còpia del catàleg incompatible.');
+  }
+  const projects=readProjects(storage);
+  const ids=new Set(projects.map(project=>project.id));
+  const added=incoming.filter(project=>!ids.has(project.id));
+  if(added.length)writeProjects(storage,[...projects,...added]);
+  return {added:added.length,skipped:incoming.length-added.length};
 }
 
 export function saveProject(storage,{id,name,settings},now=new Date()){

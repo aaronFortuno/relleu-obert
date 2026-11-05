@@ -1,5 +1,6 @@
 // Each row follows the order ca, es, gl, eu, en.
 export default {
+  'history.0.23.7': ["Còpia JSON del catàleg de projectes desats i recuperació en un altre navegador.","Copia JSON del catálogo de proyectos guardados y recuperación en otro navegador.","Copia JSON do catálogo de proxectos gardados e recuperación noutro navegador.","Gordetako proiektuen katalogoaren JSON kopia eta beste nabigatzaile batean berreskuratzeko aukera.","JSON backup of saved projects for restoring them in another browser."],
   'history.tenerifeFrame': ["Nou retall de Tenerife en dues peces de 20 × 20 cm.","Nuevo encuadre de Tenerife en dos piezas de 20 × 20 cm.","Novo recorte de Tenerife en dúas pezas de 20 × 20 cm.","Tenerifeko ebakidura berria, 20 × 20 cm-ko bi piezatan.","New Tenerife framing in two 20 × 20 cm pieces."],
   'history.galleryGrid': ["Galeria amb graella de fitxes, filtres i dos exemples nous de l’Aneto.","Galería con cuadrícula de fichas, filtros y dos ejemplos nuevos del Aneto.","Galería con grella de fichas, filtros e dous exemplos novos do Aneto.","Galeria txartel-saretarekin, iragazkiekin eta Anetoko bi adibide berrirekin.","Gallery with a card grid, filters and two new Aneto examples."],
   'app.tagline': ['Geografia que pots tocar.', 'Geografía que puedes tocar.', 'Xeografía que podes tocar.', 'Ukitu dezakezun geografia.', 'Geography you can touch.'],

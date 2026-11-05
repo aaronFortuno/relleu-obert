@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.23.7 — 2026-11-05
+
+- «Projectes desats» permet descarregar una còpia JSON del catàleg i importar-la en un altre navegador. La importació conserva els projectes locals i evita duplicats.
+
 ## v0.23.6 — 2026-11-05
 
 - Tenerife adopta el nou retall de 40 × 20 cm, amb dues peces de 20 × 20 cm i una miniatura actualitzada.

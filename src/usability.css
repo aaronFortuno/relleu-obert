@@ -186,6 +186,8 @@
 .project-actions{display:flex;align-items:center;gap:8px}
 .project-actions input{flex:1;min-width:0;padding:7px;border:1px solid var(--ui-control-border);border-radius:5px;background:var(--ui-control-bg);font-size:var(--ui-control)}
 .project-actions button{width:auto;white-space:nowrap}
+.project-transfer{flex-wrap:wrap;margin-top:12px}
+.project-transfer button{max-width:100%;white-space:normal}
 .project-row{display:flex;align-items:center;gap:8px;padding:10px 0;border-top:1px solid var(--line)}
 .project-row strong{flex:1;min-width:0;overflow-wrap:anywhere;font-size:var(--ui-title)}
 .project-row button{flex:none;width:auto}

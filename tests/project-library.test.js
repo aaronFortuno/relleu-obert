@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {PROJECT_LIBRARY_KEY,deleteProject,readProjects,saveProject} from '../src/project-library.js';
+import {PROJECT_LIBRARY_KEY,deleteProject,exportProjectLibrary,importProjectLibrary,readProjects,saveProject} from '../src/project-library.js';
 import {defaultAssignments} from '../src/materials.js';
 
 const settings={
@@ -122,4 +122,46 @@ test('disabled storage and quota failures report a useful error without a succes
   assert.throws(()=>saveProject(full,{name:'Segon',settings}),/prou espai/);
   assert.deepEqual(readProjects(storage),[existing]);
   assert.throws(()=>readProjects({getItem(){throw Error('disabled');}}),/No es pot accedir/);
+});
+
+test('a catalog backup restores project identity, settings, and brush strokes on another browser',()=>{
+  const source=memoryStorage(),destination=memoryStorage();
+  const complete=saveProject(source,{name:'Vessant girat',settings},firstDate);
+  const relief=saveProject(source,{name:'Relleu amb materials',settings:{...settings,pureRelief:true,
+    reliefMaterials:{count:3,assignments:[0,0,2,1,2,1]}}},secondDate);
+  const backup=exportProjectLibrary(source);
+  assert.deepEqual(importProjectLibrary(destination,backup),{added:2,skipped:0});
+  assert.deepEqual(readProjects(destination),[relief,complete]);
+  assert.equal(exportProjectLibrary(destination),backup);
+});
+
+test('restoring merges into the catalog, keeps the local version, and can be retried',()=>{
+  const source=memoryStorage(),destination=memoryStorage();
+  const shared=saveProject(source,{name:'Original',settings},firstDate);
+  importProjectLibrary(destination,exportProjectLibrary(source));
+  const local=saveProject(destination,{id:shared.id,name:'Versió local',settings},secondDate);
+  const other=saveProject(source,{name:local.name,settings},secondDate);
+  const backup=exportProjectLibrary(source);
+  assert.deepEqual(importProjectLibrary(destination,backup),{added:1,skipped:1});
+  assert.deepEqual(readProjects(destination),[local,other]);
+  assert.deepEqual(importProjectLibrary(destination,backup),{added:0,skipped:2});
+  assert.deepEqual(readProjects(destination),[local,other]);
+});
+
+test('incompatible, corrupt, or oversized-for-storage backups do not partially replace a catalog',()=>{
+  const source=memoryStorage(),destination=memoryStorage();
+  const local=saveProject(destination,{name:'Local',settings},firstDate);
+  saveProject(source,{name:'Primer',settings},firstDate);
+  saveProject(source,{name:'Segon',settings},secondDate);
+  const backup=exportProjectLibrary(source),data=JSON.parse(backup);
+  const [first,second]=data.projects;
+  for(const invalid of ['{',JSON.stringify({...data,format:'diagnostics'}),JSON.stringify({...data,version:2}),
+    JSON.stringify({...data,projects:[first,first]}),
+    JSON.stringify({...data,projects:[first,{...second,settings:{...settings,strokes:[null]}}]})]){
+    assert.throws(()=>importProjectLibrary(destination,invalid),SyntaxError);
+    assert.deepEqual(readProjects(destination),[local]);
+  }
+  const full={...destination,setItem(){throw new DOMException('quota','QuotaExceededError');}};
+  assert.throws(()=>importProjectLibrary(full,backup),/prou espai/);
+  assert.deepEqual(readProjects(destination),[local]);
 });
