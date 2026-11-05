@@ -14,6 +14,9 @@
   .app-header .brand {gap:4px;font-size:20px;white-space:nowrap}
   .app-header .brand svg {width:25px;height:25px}
   .app-header .header-button {min-height:44px;padding:0 6px}
+  .app-header #projects-open,.app-header #language-open {padding:0 6px}
+  .language-list {max-height:calc(100dvh - 60px - env(safe-area-inset-top) - env(safe-area-inset-bottom))}
+  .language-list button {min-height:44px}
   .app-header .tagline,.app-footer>span,.desktop-copy {display:none}
   .mobile-copy {display:inline}
   .app-footer {
@@ -136,6 +139,11 @@
   .about-intro {flex-wrap:wrap;gap:12px}
   .about-bottom {grid-template-columns:1fr}
   .lightning-address code {overflow-wrap:anywhere}
+}
+
+@media(max-width:360px) {
+  .gallery-label {display:none}
+  .gallery-label-short {display:inline}
 }
 
 @media(max-width:900px) and (min-height:541px) {

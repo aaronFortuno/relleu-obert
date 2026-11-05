@@ -106,9 +106,9 @@ export function translateDom(root = typeof document !== 'undefined' ? document :
 
 function renderLanguageList() {
   if (typeof document === 'undefined') return;
-  const dialog = document.getElementById('language-dialog');
-  if (!dialog) return;
-  for (const button of dialog.querySelectorAll('[data-locale]')) {
+  const control = document.getElementById('language-control');
+  if (!control) return;
+  for (const button of control.querySelectorAll('[data-locale]')) {
     const code = button.dataset.locale;
     const available = catalogs.has(code);
     const selected = available && code === current;
@@ -132,11 +132,28 @@ export function initI18n() {
   if (typeof stored === 'string' && catalogs.has(stored)) current = stored;
   applyLocale();
   if (typeof document === 'undefined') return current;
-  const dialog = document.getElementById('language-dialog');
-  if (dialog) for (const button of dialog.querySelectorAll('[data-locale]')) {
+  const control = document.getElementById('language-control');
+  if (!control) return current;
+  const trigger = control.querySelector('summary');
+  function closeLanguageList() {
+    trigger.focus();
+    control.open = false;
+  }
+  for (const button of control.querySelectorAll('[data-locale]')) {
     button.addEventListener('click', () => {
-      if (setLocale(button.dataset.locale)) dialog.close();
+      if (setLocale(button.dataset.locale)) closeLanguageList();
     });
   }
+  control.addEventListener('keydown', event => {
+    if (event.key !== 'Escape' || !control.open) return;
+    event.preventDefault();
+    closeLanguageList();
+  });
+  control.addEventListener('focusout', event => {
+    if (event.relatedTarget && !control.contains(event.relatedTarget)) control.open = false;
+  });
+  document.addEventListener('pointerdown', event => {
+    if (control.open && !control.contains(event.target)) control.open = false;
+  });
   return current;
 }

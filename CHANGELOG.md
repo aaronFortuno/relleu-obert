@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.23.2 — 2026-11-05
+
+- «Galeria de maquetes» guanya una vora com la dels controls del visor.
+- El selector d’idioma s’obre sota la icona de la cantonada dreta de la capçalera.
+
 ## v0.23.1 — 2026-11-05
 
 - Les petjades d’edificis s’uneixen per grups i es conserva el retall exacte a les ribes. A les cel·les completament seques es reutilitza la petjada ja retallada als límits de la maqueta.

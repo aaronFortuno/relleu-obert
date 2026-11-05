@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-05 · v0.23.1**. Optimització de la capa d’edificis. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-05 · v0.23.2**. Accés a la galeria i selector d’idioma a la capçalera. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -50,7 +50,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | -------------------------------------------------------- | --------- | ------------------ | -------------------------------------------------------------- |
 | [RO-035](#ro-035--cavitats-i-relleus-amb-voladissos) | P3 | Dades 3D pendents | Coves, baumes i arcs naturals; un MDT no en descriu l’interior |
 | [RO-012](#ro-012--presentació-realista-del-model-imprès) | P3 | Objectiu redefinit | Imatge estàtica fotorealista del model amb entorn escolar |
-| [RO-019](#ro-019--internacionalització) | P3 | Setup fet | Migració/traduccions quan s’estabilitzi el flux |
+| [RO-019](#ro-019--internacionalització) | P3 | Selector desplegable a la capçalera | Migració dels textos i integració de les traduccions |
 | [RO-011](#ro-011--comptador-dexportacions-i-umami) | P3 | Per estudiar | Definir recompte i font real abans de publicar una xifra |
 
 ## Ajornats
@@ -96,7 +96,7 @@ Rosa incrustada ajornada i opció retirada del menú. [Implementació del comple
 
 ### RO-019 — Internacionalització
 
-Infraestructura preparada amb català. Migrar els textos i incorporar traduccions quan s’estabilitzi el flux. [Configuració](RO-019-SETUP.md)
+El selector d’idioma de la capçalera s’obre sota la icona de la dreta. El català està disponible i el menú identifica els idiomes pendents de catàleg. [Configuració](RO-019-SETUP.md)
 
 ### RO-023 — Relleu local i fonts vectorials de més precisió
 
@@ -142,7 +142,7 @@ Validar a l’escriptori la coherència dels controls i el desplaçament intern 
 
 ### RO-046 — Catàleg de llocs recomanats
 
-El carrusel incorpora els 29 retalls del [catàleg](RO-046-CATALEG.md), amb 17 fitxes de Relleu pur i 12 de Model complet. L’ordre es barreja en cada càrrega i reparteix els modes al llarg del bucle. A la pantalla inicial, la taula, les columnes del selector i el carrusel s’ajusten a l’espai real del panell. Al taller, «Galeria» i «Veure exemples» obren un diàleg amb carrusel, cerca i projectes desats. «La teva maqueta» mostra el resum de la fitxa mentre el visor mostra el model corresponent. Queda revisar l’enquadrament, la llegibilitat i els temps de generació en ús, i comprovar el gruix de la base a les fitxes costaneres.
+El carrusel incorpora els 29 retalls del [catàleg](RO-046-CATALEG.md), amb 17 fitxes de Relleu pur i 12 de Model complet. L’ordre es barreja en cada càrrega i reparteix els modes al llarg del bucle. A la pantalla inicial, la taula, les columnes del selector i el carrusel s’ajusten a l’espai real del panell. «Galeria de maquetes» a la capçalera i «Veure exemples» a Territori obren un diàleg amb carrusel, cerca i projectes desats. «La teva maqueta» mostra el resum de la fitxa mentre el visor mostra el model corresponent. Queda revisar l’enquadrament, la llegibilitat i els temps de generació en ús, i comprovar el gruix de la base a les fitxes costaneres.
 
 ### RO-047 — Precàrrega opcional de fonts alternatives
 

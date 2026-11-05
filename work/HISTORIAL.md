@@ -2,6 +2,12 @@
 
 Actualitzat: 2026-11-05. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.23.2 — Capçalera del taller
+
+RO-046 i RO-054 donen més presència a l’accés «Galeria de maquetes» amb una vora com la dels controls del visor. RO-019 posa el selector d’idioma a l’extrem dret en un desplegable amb icona Lucide. A 360 px o menys, el botó de la galeria mostra el text curt.
+
+Revisada la capçalera a 1280 × 720, 1100 × 680, 390 × 844, 320 × 568 i 667 × 280. Comprovats l’accés a la galeria, el focus amb teclat, el tancament amb Escape i el clic fora del desplegable. Han passat 29 proves locals i la compilació estàtica.
+
 ## v0.23.1 — Temps de la capa d’edificis
 
 RO-053 reutilitza les petjades retallades quan són en sec i uneix les màscares d’edificis per grups. Els edificis de ribera mantenen el retall exacte. L’informe de generació mesura la unió per separat.
