@@ -2,6 +2,12 @@
 
 Actualitzat: 2026-11-05. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.23.6 — Tenerife en dues peces
+
+RO-046 aplica el retall de l’usuari a la fitxa de Tenerife. La maqueta fa 40 × 20 cm a 1:300.000, amb un gir de −25° i dues peces de 20 × 20 cm. El nou render conserva el contorn de l’illa i mostra un sol tall. [Enquadrament i captura](RO-046-CATALEG.md#tenerife-en-dues-peces)
+
+El motor reprodueix els quatre vèrtexs i els 916.184 triangles de l’informe de l’usuari amb Mapterhorn. La fitxa i el filtre de mida s’han comprovat al navegador a 1280 × 720. Han passat 32 proves locals. La compilació de producció queda pendent del marge de 2,5 GiB de memòria lliure.
+
 ## v0.23.5 — Guia del taller
 
 RO-053 adapta «Com funciona» a l’ús del taller. La guia té tres passos, un accés a la galeria i cinc preguntes desplegables sobre modes, impressió, fonts, progrés i projectes desats. Els textos són disponibles en cinc idiomes. Galeria, ajuda i idioma comparteixen estil de capçalera. El text d’ajuda deixa pas a la icona al mòbil.

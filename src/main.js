@@ -1373,6 +1373,7 @@ $('#release-list').innerHTML=[['0.23.2','Botó de Galeria de maquetes amb vora i
 $('#release-list').insertAdjacentHTML('afterbegin',`<article class="release-entry"><div><strong>v0.23.3</strong><time datetime="2026-11-05">05/11/2026</time></div><p data-i18n="history.translationRelease">${t('history.translationRelease')}</p></article>`);
 $('#release-list').insertAdjacentHTML('afterbegin',`<article class="release-entry"><div><strong>v0.23.4</strong><time datetime="2026-11-05">05/11/2026</time></div><p data-i18n="history.galleryGrid">${t('history.galleryGrid')}</p></article>`);
 $('#release-list').insertAdjacentHTML('afterbegin',`<article class="release-entry"><div><strong>v0.23.5</strong><time datetime="2026-11-05">05/11/2026</time></div><p data-i18n="guide.release">${t('guide.release')}</p></article>`);
+$('#release-list').insertAdjacentHTML('afterbegin',`<article class="release-entry"><div><strong>v0.23.6</strong><time datetime="2026-11-05">05/11/2026</time></div><p data-i18n="history.tenerifeFrame">${t('history.tenerifeFrame')}</p></article>`);
 $('#copy-lightning').onclick=async()=>{try{await navigator.clipboard.writeText('aptswim903@walletofsatoshi.com');feedback('copy-status',statusMessage('copy.done'));}catch{feedback('copy-status',statusMessage('copy.manual'));}};
 for(const toggle of document.querySelectorAll('.sidebar-left .section-toggle'))toggle.disabled=true;
 function refreshWorkshopLanguage(){

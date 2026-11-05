@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-05 · v0.23.5**. Guia del taller i capçalera. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-05 · v0.23.6**. Retall de Tenerife en dues peces. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 

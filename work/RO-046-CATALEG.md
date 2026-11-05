@@ -31,7 +31,7 @@ Les tres imatges WebP de 720 × 450 píxels ocupen 168 kB en total. Les captures
 
 El lot final incorpora els onze retalls de Relleu pur i els vuit de Model complet que faltaven. Amb la incorporació de la badia de Tamariu, el carrusel reparteix 17 fitxes de Relleu pur i 12 de Model complet al llarg del bucle. Els 29 retalls de les taules es poden generar des de la fitxa, amb la mida, el centre, el gir i l’escala documentats.
 
-La captura panoràmica de Tenerife mostra les tres peces. A Granada, el visor conserva les vies ordinàries i els edificis quan falla la integració dels perfils suaus. A Amsterdam, la unió dels carrers es recupera amb un ajust de precisió projectada i es conserva el retall. Els models urbans grans poden trigar diversos minuts en l’equip de prova.
+La primera captura de Tenerife mostrava tres peces. A Granada, el visor conserva les vies ordinàries i els edificis quan falla la integració dels perfils suaus. A Amsterdam, la unió dels carrers es recupera amb un ajust de precisió projectada i es conserva el retall. Els models urbans grans poden trigar diversos minuts en l’equip de prova.
 
 Les dinou captures del lot final són WebP de 720 × 450 píxels i ocupen 729 kB en total. La cartografia i els edificis d’aquest lot provenen d’OpenStreetMap via OpenFreeMap. [Imatges](../public/examples/) · [OpenStreetMap](https://www.openstreetmap.org/copyright)
 
@@ -54,15 +54,19 @@ Els dos retalls de l’Aneto comparen el conjunt del massís amb el detall dels 
 
 Les dues captures WebP de 720 × 450 píxels provenen del visor. Fan servir elevacions de Mapterhorn, roca i neu derivades d’ESA WorldCover 2021 v200 (CC BY 4.0), i aigua i bosc d’OpenStreetMap via OpenFreeMap. [Mapterhorn](https://mapterhorn.com/attribution/) · [ESA WorldCover](https://doi.org/10.5281/zenodo.7254221) · [OpenStreetMap](https://www.openstreetmap.org/copyright)
 
+## Tenerife en dues peces
+
+El nou retall reprodueix l’enquadrament de `tenerife.json` aportat per l’usuari. El model de Relleu pur abasta 120 × 60 km amb detall equilibrat i exageració vertical ×1,5. La miniatura WebP mostra la guia de tall entre les dues peces de 20 × 20 cm. [Miniatura de Tenerife](../public/examples/tenerife.webp)
+
 ## Com reproduir els retalls
 
 1. Tria el mode i introdueix la **mida de la maqueta** en l’ordre amplada × alçada. Fes servir la mida personalitzada quan calgui.
 2. Enganxa a la cerca de Territori el **centre del retall** en graus decimals WGS84, amb punt decimal i coma entre latitud i longitud. Els enllaços «Mapa» situen aquest punt.
-3. Mou el selector d’**escala horitzontal** fins al valor indicat. Les fletxes permeten avançar un salt d’escala cada vegada. Orienta el nord a dalt (gir de 0°), amb un gir de +10° al Cap de Creus i de −25° al panorama de Tenerife. L’**extensió** és la mida real del retall, calculada a partir de la mida de la maqueta i l’escala.
+3. Mou el selector d’**escala horitzontal** fins al valor indicat. Les fletxes permeten avançar un salt d’escala cada vegada. Orienta el nord a dalt (gir de 0°), amb un gir de +10° al Cap de Creus i de −25° a Tenerife. L’**extensió** és la mida real del retall, calculada a partir de la mida de la maqueta i l’escala.
 
-El centre de cada fila és el punt mig de l’enquadrament proposat. Pot caure a l’aigua o fora del topònim. La mida i el gir formen part de l’enquadrament. Si es canvia la proporció de la peça, cal mantenir dins del retall els elements citats a la fitxa. El panorama de Tenerife té un format específic.
+El centre de cada fila és el punt mig de l’enquadrament proposat. Pot caure a l’aigua o fora del topònim. La mida i el gir formen part de l’enquadrament. Si es canvia la proporció de la peça, cal mantenir dins del retall els elements citats a la fitxa.
 
-A la versió 0.22.21, el **Model complet** admet fins a 1:20.000, amb un límit addicional per superfície de càrrega. El **Relleu pur** admet 1:10.000–1:100.000 en formats de fins a 50 cm de costat, i 1:50.000–1:500.000 en el format panoràmic de 51–100 × 10–20 cm. Per comparar les mostres de Relleu pur, la lectura de la forma es farà amb el terreny i l’aigua. La cobertura del sòl i el bosc que ofereix el mode són secundaris per a aquesta tria. [Regles de selecció](../src/selection.js) · [Límits d’escala](../src/place-map.js) · [Seguiment del mode](RO-055-RELLEU-PUR.md)
+El **Model complet** admet fins a 1:20.000, amb un límit addicional per superfície de càrrega. El **Relleu pur** admet 1:10.000–1:500.000 en formats de fins a 50 cm de costat, i 1:50.000–1:500.000 en el format panoràmic de 51–100 × 10–20 cm. El terreny i l’aigua permeten comparar les formes de les mostres de Relleu pur. [Regles de selecció](../src/selection.js) · [Límits d’escala](../src/place-map.js) · [Seguiment del mode](RO-055-RELLEU-PUR.md)
 
 ## Relleu pur
 
@@ -81,7 +85,7 @@ A la versió 0.22.21, el **Model complet** admet fins a 1:20.000, amb un límit 
 
 | Què representa | Lloc | Centre del retall | Extensió real | Maqueta i escala | Què s’hi hauria de llegir |
 | --- | --- | --- | --- | --- | --- |
-| Illa volcànica | Tenerife (Canàries) | `28.3670,-16.3080` [Mapa](https://www.openstreetmap.org/?mlat=28.3670&mlon=-16.3080#map=8/28.3670/-16.3080) | 153 × 60 km | 51 × 20 cm · 1:300.000 · −25° | El contorn de l’illa sencera, del Teno a Anaga i a la punta de la Rasca, amb el Teide al centre del relleu insular. [Cartografia del Cabildo de Tenerife](https://datos.canarias.es/catalogos/general/dataset/limites-municipales-de-tenerife/resource/91c4573e-d737-4c20-9827-758727d08e3a) |
+| Illa volcànica | Tenerife (Canàries) | `28.29697700,-16.47832495` [Mapa](https://www.openstreetmap.org/?mlat=28.29697700&mlon=-16.47832495#map=8/28.29697700/-16.47832495) | 120 × 60 km | 40 × 20 cm · 1:300.000 · −25° | El contorn de l’illa sencera, del Teno a Anaga i a la punta de la Rasca, amb el Teide al centre del relleu insular. Dues peces de 20 × 20 cm. [Cartografia del Cabildo de Tenerife](https://datos.canarias.es/catalogos/general/dataset/limites-municipales-de-tenerife/resource/91c4573e-d737-4c20-9827-758727d08e3a) |
 | Con volcànic i caldera | Teide i Las Cañadas (Tenerife) | `28.2600,-16.6150` [Mapa](https://www.openstreetmap.org/?mlat=28.2600&mlon=-16.6150#map=10/28.2600/-16.6150) | 24 × 20 km | 24 × 20 cm · 1:100.000 | Retall de detall de l’illa per llegir la vora de la caldera i els cons del Teide i Pico Viejo. [IGN](https://www.ign.es/web/catalogo-cartoteca/resources/pdfcards/card031570.pdf) |
 | Vall glacial | Ordesa i Mont Perdut (Aragó) | `42.6300,0.0250` [Mapa](https://www.openstreetmap.org/?mlat=42.6300&mlon=0.0250#map=10/42.6300/0.0250) | 24 × 20 km | 24 × 20 cm · 1:100.000 | La vall d’Ordesa i les seves parets fins al massís del Mont Perdut. Interessant per comparar la secció amb la d’un canó fluvial. [MITECO](https://www.miteco.gob.es/en/parques-nacionales-oapn/red-parques-nacionales/parques-nacionales/ordesa/valores-naturales/geologia.html) |
 | Massís d’alta muntanya | Pirineus · sector de l’Aneto (Aragó) | `42.6350,0.6500` | 24 × 20 km | 24 × 20 cm · 1:100.000 | El massís de la Maladeta, amb el cim de l’Aneto i les valls que l’envolten. |
@@ -146,9 +150,9 @@ A la versió 0.22.21, el **Model complet** admet fins a 1:20.000, amb un límit 
 
 ## Validació abans d’incorporar-los al selector
 
-Els retalls tenen mida, escala i centre definits. La comprovació local cobreix els límits geomètrics i de càrrega de l’aplicació. A Tenerife també s’ha contrastat el retall girat amb els límits municipals del Cabildo. L’illa queda sencera i les illes veïnes queden fora del retall. La generació de les mostres queda per després de triar el lot inicial. [Límits municipals de Tenerife](https://datos.canarias.es/catalogos/general/dataset/limites-municipales-de-tenerife/resource/91c4573e-d737-4c20-9827-758727d08e3a) · [Contorns insulars de l’ISTAC](https://datos.canarias.es/catalogos/general/dataset/islas-canarias-delimitaciones-territoriales-para-fines-estadisticos2)
+Els retalls tenen mida, escala i centre definits. La comprovació local cobreix els límits geomètrics i de càrrega de l’aplicació. La primera proposta de Tenerife es va contrastar amb els límits municipals del Cabildo i els contorns insulars de l’ISTAC. [Límits municipals de Tenerife](https://datos.canarias.es/catalogos/general/dataset/limites-municipales-de-tenerife/resource/91c4573e-d737-4c20-9827-758727d08e3a) · [Contorns insulars de l’ISTAC](https://datos.canarias.es/catalogos/general/dataset/islas-canarias-delimitaciones-territoriales-para-fines-estadisticos2)
 
 - **Costa i aigües poc profundes.** Comprova el contorn marí, les llacunes i els passos estrets del delta. Revisa la cota de base en mostres de costa, arran de la incidència registrada a Tamariu. A les maquetes el mar és una superfície plana. [Incidència i tractament del mar](BACKLOG.md#ro-055--mode-de-relleu-pur)
 - **Formes de muntanya.** Revisa la silueta amb exageració vertical ×1 abans d’ajustar-la. Les agulles, els cràters petits i els penya-segats depenen de la resolució del terreny.
 - **Trama urbana.** Contrasta les petjades, vies i ponts amb el mapa. La primera mostra s’ha de poder llegir a partir del conjunt urbà. Les alçades i cobertes singulars demanen comprovar els atributs disponibles. [Fonts del projecte](../SOURCES.md)
-- **Peces i captures.** El delta i el panorama de Tenerife es divideixen en quatre i tres peces, respectivament, amb el límit actual de 25 cm per costat. Quan es generin les mostres, convé desar una vista zenital i una d’obliqua amb la mida, l’escala i l’exageració emprades. [Pla de tall](../src/selection.js)
+- **Peces i captures.** El delta de l’Ebre es divideix en quatre peces i Tenerife en dues, amb el límit de 25 cm per costat. [Pla de tall](../src/selection.js)
