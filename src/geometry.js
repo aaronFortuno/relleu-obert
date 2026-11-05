@@ -113,13 +113,8 @@ export class Surface {
     return {vertices:new Float32Array(this.vertices),faces:new Uint32Array(this.faces)};
   }
 }
-function* terrainPatches(polys,width,heightMM,res){
-  if(!polys.length)return;
-  let minX=width,minY=heightMM,maxX=0,maxY=0;for(const poly of polys)for(const [x,y]of poly[0]){minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);}
-  const i0=Math.max(0,Math.floor(minX/width*res)),i1=Math.min(res-1,Math.floor(maxX/width*res)),j0=Math.max(0,Math.floor(minY/heightMM*res)),j1=Math.min(res-1,Math.floor(maxY/heightMM*res)),columns=[];
-  const contains=polygonTester(polys),boundary=new Uint8Array(res*res);
-  // Only cells crossed by a polygon boundary need clipping. Include both
-  // sides of grid-aligned edges and the boundaries of holes.
+function boundaryCells(polys,width,heightMM,res,i0=0,i1=res-1,j0=0,j1=res-1){
+  const boundary=new Uint8Array(res*res);
   const gridX=x=>x*res/width,gridY=y=>y*res/heightMM;
   for(const polygon of polys)for(const ring of polygon)for(let k=1;k<ring.length;k++){
     const a=ring[k-1],b=ring[k],left=Math.min(gridX(a[0]),gridX(b[0])),right=Math.max(gridX(a[0]),gridX(b[0]));
@@ -127,10 +122,21 @@ function* terrainPatches(polys,width,heightMM,res){
     for(let j=Math.max(j0,Math.floor(bottom-1e-7));j<=Math.min(j1,Math.floor(top+1e-7));j++)
       for(let i=Math.max(i0,Math.floor(left-1e-7));i<=Math.min(i1,Math.floor(right+1e-7));i++)boundary[j*res+i]=1;
   }
+  return boundary;
+}
+function* terrainPatches(polys,width,heightMM,res){
+  if(!polys.length)return;
+  let minX=width,minY=heightMM,maxX=0,maxY=0;for(const poly of polys)for(const [x,y]of poly[0]){minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);}
+  const i0=Math.max(0,Math.floor(minX/width*res)),i1=Math.min(res-1,Math.floor(maxX/width*res)),j0=Math.max(0,Math.floor(minY/heightMM*res)),j1=Math.min(res-1,Math.floor(maxY/heightMM*res)),columns=[];
+  // Only cells crossed by a polygon boundary need clipping. Include both
+  // sides of grid-aligned edges and the boundaries of holes.
+  const boundary=boundaryCells(polys,width,heightMM,res,i0,i1,j0,j1);
+  let contains;
   for(let j=j0;j<=j1;j++)for(let i=i0;i<=i1;i++){
     const x=i*width/res,y=j*heightMM/res,x1=(i+1)*width/res,y1=(j+1)*heightMM/res;
     const tris=[[[x,y],[x1,y],[x1,y1],[x,y]],[[x,y],[x1,y1],[x,y1],[x,y]]];
     if(!boundary[j*res+i]){
+      contains??=polygonTester(polys);
       if(contains([(x+x1)/2,(y+y1)/2]))for(const tri of tris)yield [tri];
       continue;
     }
@@ -139,6 +145,27 @@ function* terrainPatches(polys,width,heightMM,res){
     if(!candidates.length)continue;
     for(const tri of tris)yield* intersect(candidates,[[tri]]);
   }
+}
+function dryFootprints(water,width,height,res){
+  if(!water.length)return ()=>true;
+  const wet=boundaryCells(water,width,height,res),contains=polygonTester(water);
+  // With no boundary in a cell, its centre classifies the whole cell.
+  // Mark uncertain cells wet so waterfront buildings keep the exact clip.
+  for(let j=0;j<res;j++)for(let i=0;i<res;i++){
+    const k=j*res+i;
+    if(!wet[k]&&contains([(i+.5)*width/res,(j+.5)*height/res]))wet[k]=1;
+  }
+  return polygons=>polygons.every(([outer])=>{
+    let west=width,east=0,south=height,north=0;
+    for(const [x,y] of outer){
+      west=Math.min(west,x);east=Math.max(east,x);
+      south=Math.min(south,y);north=Math.max(north,y);
+    }
+    const left=Math.max(0,Math.floor(west*res/width-1e-7)),right=Math.min(res-1,Math.floor(east*res/width+1e-7));
+    const bottom=Math.max(0,Math.floor(south*res/height-1e-7)),top=Math.min(res-1,Math.floor(north*res/height+1e-7));
+    for(let j=bottom;j<=top;j++)for(let i=left;i<=right;i++)if(wet[j*res+i])return false;
+    return true;
+  });
 }
 function solidPatches(patches,height,bottom){
   const result={vertices:[],faces:[]};for(const poly of patches){const patch=new Surface();patch.polygon(poly,height);append(result,patch.solid(bottom));}
@@ -1114,13 +1141,14 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
   return model;
 }
 
-function prepareBuildingGeometry(ctx,config,progress,preview){
+function prepareBuildingGeometry(ctx,config,progress,preview,measure=(_phase,run)=>run()){
   const {buildingMode,maxBuildingHeight}=config;
-  const {width,height,ground,scale,rect,land,options}=ctx,res=options.resolution;
+  const {width,height,ground,scale,rect,land,waterPoly,options}=ctx,res=options.resolution;
   const mesh={vertices:[],faces:[]},warnings=[],prepared=[],seen=new Set(),volumes=[];
   let buildingCount=0,approximate=0,limited=0,shapedRoofs=0,fallbackRoofs=0,omitted=0,duplicates=0;
   progress('Actualitzant la capa d’edificis…');
   const features=ctx.buildingFeatures.filter(f=>f?.properties?.sourceLayer==='building'&&!f.properties.hide_3d);
+  const isDry=buildingMode==='none'||!features.length?null:dryFootprints(waterPoly,width,height,res);
   let batch={vertices:[],faces:[]},lastPreview=performance.now();
   for(const [index,f] of features.entries()){
     if(preview&&(index===0||index%32===0)){
@@ -1144,7 +1172,7 @@ function prepareBuildingGeometry(ctx,config,progress,preview){
       for(const poly of polygons){
         const inside=intersect([poly],rect);
         if(buildingMode==='none'){footprints.push(...inside);continue;}
-        const polys=intersect(inside,land).filter(p=>Math.abs(area(p[0]))>=.04);if(!polys.length)continue;
+        const polys=(isDry(inside)?inside:intersect(inside,land)).filter(p=>Math.abs(area(p[0]))>=.04);if(!polys.length)continue;
         const rise=buildingRise(valid?h:6,scale,config);
         const profile=buildingMode==='source'?roofProfile(p,poly[0],scale,valid?h:6,options.selectionPose?.rotation||0):null;
         const solid=buildingMode==='flat'?terrainSolid(polys,(x,y)=>ground(x,y)+rise,(x,y)=>ground(x,y)-.3,width,height,res):levelBuildingSolid(polys,rise,ground,width,height,res,profile);
@@ -1160,16 +1188,19 @@ function prepareBuildingGeometry(ctx,config,progress,preview){
   if(preview&&batch.faces.length)preview.parts('buildings',[surfacePart(2,batch)],ctx,'append');
   preview?.stage('buildings','Integrant els edificis…',features.length,features.length);
   let mask,accepted=prepared;
-  try{mask=merge(prepared.flatMap(b=>b.footprints.map(poly=>[poly])));}
-  catch{
-    mask=[];accepted=[];
-    for(const building of prepared){
-      try{
-        mask=merge([mask,...building.footprints.map(poly=>[poly])].filter(p=>p.length));
-        accepted.push(building);
-      }catch{omitted++;}
+  const footprints=prepared.flatMap(b=>b.footprints.map(poly=>[poly]));
+  measure('buildings.mask',()=>{
+    try{mask=mergeLayer(footprints);}
+    catch{
+      mask=[];accepted=[];
+      for(const building of prepared){
+        try{
+          mask=merge([mask,...building.footprints.map(poly=>[poly])].filter(p=>p.length));
+          accepted.push(building);
+        }catch{omitted++;}
+      }
     }
-  }
+  },{footprints:footprints.length});
   for(const {p,id,h,valid,fragments}of accepted){
     for(const {solid,profile,count}of fragments){
       if(profile?.parts)shapedRoofs++;if(profile?.fallback)fallbackRoofs++;
@@ -1205,7 +1236,7 @@ export function updateBuildings(previous,layer={},changes={},progress=()=>{},pre
   const cached=old.buildingGeometry;
   preview?.stage('buildings','Calculant els edificis…');
   const buildings=cached&&cached.features===ctx.buildingFeatures&&cached.mode===buildingMode&&cached.height===maxBuildingHeight
-    ?cached:prepareBuildingGeometry(ctx,config,progress,preview);
+    ?cached:prepareBuildingGeometry(ctx,config,progress,preview,measure);
   ctx.buildingGeometry=buildings;
   ctx.base=ctx.staticBase.slice();
   ctx.base[2]=buildings.part;

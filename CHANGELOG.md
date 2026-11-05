@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.23.1 — 2026-11-05
+
+- Les petjades d’edificis s’uneixen per grups i es conserva el retall exacte a les ribes. A les cel·les completament seques es reutilitza la petjada ja retallada als límits de la maqueta.
+- L’informe de generació desglossa el temps de la unió de petjades.
+
 ## v0.23.0 — 2026-11-05
 
 - Consolidació del taller d’escriptori i mòbil, la galeria de maquetes i el canvi de mida dins del projecte.

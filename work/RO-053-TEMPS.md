@@ -44,6 +44,17 @@ tessel·les de la mostra local i el de Millau (3 km) consulta les fonts
 remotes. Aquestes dues càrregues de dades es mesuren en condicions
 diferents.
 
+## Capa d’edificis a la v0.23.1
+
+Control seqüencial amb la v0.23.0 i la v0.23.1. Cada procés genera el mateix relleu amb el mateix DEM i aigua i mesura a part la incorporació de la capa d’edificis. El càlcul de vies, ponts i vegetació queda fora del control. No s’inclou el temps de la xarxa. Tots dos retalls són a 1:10.000 i amb exageració ×1,5.
+
+| Retall | Fragments | Capa d’edificis abans | Capa d’edificis després | Integració i acabat abans → després |
+| --- | ---: | ---: | ---: | ---: |
+| Amsterdam, 1,4 × 1,4 km · 52,3695 N, 4,8915 E · detall 64 | 6.425 | 40,5–63,5 s | 30,1 s | 15,5–16,2 → 1,7 s |
+| Tamariu, 1,8 × 1,8 km · mostra ICGC · detall 36 | 631 | 3,5 s | 0,86 s | 0,20 → 0,05 s |
+
+Els hashes dels vèrtexs, les cares i les metadades són idèntics entre revisions per a cada retall. La superfície de la màscara coincideix i les 22.801 mostres de cada retall donen la mateixa cobertura. La variació entre les dues execucions d’Amsterdam afecta sobretot la preparació de petjades. Les xifres descriuen la capa d’edificis. Queda pendent repetir la maqueta sencera a 25 × 25 cm i mesurar la integració viària.
+
 ## Primera mesura
 
 | Retall | Temps total | Primer relleu | Pic de memòria del procés |

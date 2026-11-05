@@ -2,6 +2,12 @@
 
 Actualitzat: 2026-11-05. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.23.1 — Temps de la capa d’edificis
+
+RO-053 reutilitza les petjades retallades quan són en sec i uneix les màscares d’edificis per grups. Els edificis de ribera mantenen el retall exacte. L’informe de generació mesura la unió per separat.
+
+Al retall de control d’Amsterdam, la capa d’edificis passa de 40,5–63,5 s a 30,1 s. A Tamariu passa de 3,5 a 0,86 s. Els buffers de malla, les metadades i la superfície mostrejada coincideixen als dos controls. Han passat 35 proves i la compilació estàtica. [Condicions i mesures](RO-053-TEMPS.md#capa-dedificis-a-la-v0231)
+
 ## v0.23.0 — Consolidació
 
 Versió de referència per mesurar el temps de generació i el flux fins a l’exportació. Reuneix el taller, la galeria, els retalls amplis de Relleu pur i el 3MF amb diverses plaques. Tamariu i Amsterdam queden en validació d’usuari. El primer bloc següent són els temps de generació. Els desnivells negatius, les baumes i les coves es mantenen a RO-035.
