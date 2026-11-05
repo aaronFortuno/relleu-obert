@@ -2,6 +2,12 @@
 
 Actualitzat: 2026-11-05. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.23.5 — Guia del taller
+
+RO-053 adapta «Com funciona» a l’ús del taller. La guia té tres passos, un accés a la galeria i cinc preguntes desplegables sobre modes, impressió, fonts, progrés i projectes desats. Els textos són disponibles en cinc idiomes. Galeria, ajuda i idioma comparteixen estil de capçalera. El text d’ajuda deixa pas a la icona al mòbil.
+
+Revisat a 1280 × 720, 1100 × 680, 390 × 844 i 320 × 568. S’han comprovat la navegació amb teclat, el retorn del focus i la guia en anglès. Han passat 32 proves locals.
+
 ## v0.23.4 — Galeria amb graella i filtres
 
 RO-046 i RO-054 amplien el diàleg i mantenen la cerca, els filtres i el selector de secció a la vista mentre es desplacen les fitxes. Cada fitxa mostra la captura estàtica, la descripció, el tipus de paisatge, el mode, la mida i l’escala. El sector de l’Aneto i els llacs glacials tenen retalls fixos i captures del visor. Les dreceres d’«Altres retalls» surten de la galeria. [Dades del catàleg](RO-046-CATALEG.md#graella-de-la-galeria-i-fitxes-de-laneto)

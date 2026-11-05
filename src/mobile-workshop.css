@@ -14,7 +14,6 @@
   .app-header .brand {gap:4px;font-size:20px;white-space:nowrap}
   .app-header .brand svg {width:25px;height:25px}
   .app-header .header-button {min-height:44px;padding:0 6px}
-  .app-header #projects-open,.app-header #language-open {padding:0 6px}
   .language-list {max-height:calc(100dvh - 60px - env(safe-area-inset-top) - env(safe-area-inset-bottom))}
   .language-list button {min-height:44px}
   .app-header .tagline,.app-footer>span,.desktop-copy {display:none}
@@ -136,6 +135,7 @@
   .dialog-content {padding:12px 16px max(18px,env(safe-area-inset-bottom))}
   .dialog-content input:not([type=range]):not([type=checkbox]) {font-size:16px}
   .dialog-content :is(button,.primary,.secondary) {min-height:44px}
+  .help-questions summary {min-height:44px;padding-block:12px}
   .about-intro {flex-wrap:wrap;gap:12px}
   .about-bottom {grid-template-columns:1fr}
   .lightning-address code {overflow-wrap:anywhere}

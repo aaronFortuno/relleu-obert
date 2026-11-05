@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-05 · v0.23.4**. Galeria amb graella, filtres i dues fitxes de l’Aneto. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-05 · v0.23.5**. Guia del taller i capçalera. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -23,7 +23,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 
 | ID | Prioritat | Estat | Proper resultat comprovable |
 | ------------------------------------------------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| [RO-053](#ro-053--flux-de-treball-per-etapes) | P1 | Taller mòbil i canvi de mida al mateix projecte | Validar el taller en telèfons reals i millorar el contrast de les guies al bosc |
+| [RO-053](#ro-053--flux-de-treball-per-etapes) | P1 | Taller mòbil, canvi de mida i guia de primera maqueta | Validar el taller en telèfons reals, la utilitat de la guia i el contrast de les guies de tall al bosc |
 | [RO-033](#ro-033--ponts-i-viaductes) | P1 | Montgròs validat al cupó. Obertures mesurades a Amsterdam i Empuriabrava | Laminar els ponts curts i comprovar les llums en una placa completa |
 | [RO-034](#ro-034--túnels-imprimibles) | P1 | Dues boques i rasant compartida verificades al cupó 3MF | Validar el cupó i revisar el tram cobert de Sant Salvador al laminador |
 | [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | Encaix per tram i cobertura ampliada, també als talls de la peça | Validar Marganell i resoldre les unions complexes |

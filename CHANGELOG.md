@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.23.5 — 2026-11-05
+
+- Galeria, ajuda i idioma comparteixen l’estil de la capçalera. Galeria i «Com funciona» incorporen icones.
+- «Com funciona» inclou una guia de primera maqueta, un accés a la galeria i cinc preguntes desplegables en els cinc idiomes.
+
 ## v0.23.4 — 2026-11-05
 
 - Galeria més ampla amb graella adaptable, fitxes amb descripció i desplaçament intern. El selector d’exemples i projectes desats comparteix espai amb la cerca.

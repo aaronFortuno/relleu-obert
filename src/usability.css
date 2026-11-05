@@ -1,20 +1,19 @@
 .app-footer .version-button{font-size:var(--ui-note);color:#8b9581}.app-footer a{display:inline-flex;align-items:center;gap:5px}.repo-icon{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.5;flex:none}.sidebar-right #material-count{margin:0 0 14px}.sidebar-right #material-count+*{margin-top:10px}.sidebar-right .hint.top-hint{display:none}#about-dialog{width:min(850px,92vw)}.about-bottom{display:grid;grid-template-columns:.95fr 1.05fr;gap:25px;border-top:1px solid var(--line);margin-top:20px;padding-top:20px}.about-bottom .author-note{gap:12px;border:0;margin:0;padding:0;align-items:start}.about-bottom .author-note img{width:64px;height:64px}.about-bottom .author-note p{font-size:var(--ui-control);line-height:1.6}.about-bottom .author-note a{font-size:var(--ui-control)}.about-bottom .about-sources{border:0;margin:0;padding:0}.about-sources h3{font-size:13px;margin:0}.about-sources p,.about-sources a{font-size:var(--ui-control);line-height:1.65}.about-bottom .about-sources p{margin:7px 0}.about-intro p{font-size:var(--ui-title);line-height:1.6}.about-intro .hint{font-size:var(--ui-label)}@media(max-width:1100px){.about-bottom{gap:18px}}
-#projects-open {
-  flex:none;padding:7px 10px;border:1px solid var(--ui-control-border);border-radius:5px;
-  background:var(--ui-control-bg);color:var(--ui-control-text);font-weight:600;white-space:nowrap;
+.header-action {
+  display:inline-flex;flex:none;align-items:center;justify-content:center;gap:6px;
+  min-width:44px;min-height:32px;padding:0 8px;border:1px solid transparent;
+  border-radius:5px;color:var(--ui-control-text);white-space:nowrap;
 }
+.header-action>svg {display:block;flex:none;width:16px;height:16px}
+.header-action:hover,.language-control[open]>#language-open {background:#eef3e7}
+#projects-open {border-color:var(--ui-control-border);background:var(--ui-control-bg);font-weight:600}
 #projects-open:hover {border-color:var(--green)}
 .gallery-label-short {display:none}
 
 .language-control {position:relative;flex:none}
-#language-open {
-  display:flex;align-items:center;justify-content:center;gap:4px;min-width:44px;padding:7px 6px;
-  border-radius:5px;color:var(--ui-control-text);list-style:none;cursor:pointer;
-}
+#language-open {gap:4px;list-style:none;cursor:pointer}
 #language-open::-webkit-details-marker {display:none}
-#language-open svg {display:block;width:16px;height:16px}
 #language-open .language-chevron {width:10px;height:10px}
-#language-open:hover,.language-control[open]>#language-open {background:#eef3e7}
 .language-control[open] .language-chevron {rotate:180deg}
 .language-list {
   position:absolute;inset:calc(100% + 4px) 0 auto auto;
@@ -32,6 +31,24 @@
 .language-list button.current,.language-list button:not(:disabled):hover {background:#eef3e7}
 .language-list button:focus-visible {outline-offset:0}
 .language-list button:disabled {opacity:.65;cursor:not-allowed}
+
+#help-dialog {scrollbar-width:thin;scrollbar-color:#cbd5c2 transparent}
+.help-guide h3 {margin:0;color:var(--green);font-size:inherit;font-weight:650}
+.help-guide .guide-intro {margin:0 0 12px}
+.help-guide .help-steps {margin:4px 0 8px;padding-inline-start:22px}
+.help-guide .help-steps li {margin:0;padding:5px 0}
+.help-guide .help-steps li::marker {color:var(--green);font-weight:600}
+.help-guide .help-steps p {margin:2px 0 0}
+@media(min-width:901px) {
+  .help-guide .help-steps p {display:inline;margin:0;margin-inline-start:6px}
+}
+#help-gallery {width:auto;margin:0}
+.help-questions {margin-top:16px}
+.help-questions h3 {margin-bottom:4px}
+.help-questions details {border-top:1px solid var(--line)}
+.help-questions details:last-child {border-bottom:1px solid var(--line)}
+.help-questions summary {padding:8px 0;color:var(--green);font-weight:600;line-height:1.4;cursor:pointer}
+.help-questions p {margin:0 0 10px}
 
 .accessory-fields{padding:12px 0;display:grid;gap:7px}.accessory-fields label{margin-top:5px}.accessory-fields output{display:block}.accessory-fields .secondary{margin-top:6px}.accessory-fields input[type=color]{height:32px;width:100%;padding:3px}.label-preview{white-space:pre-wrap;font:12px/1.6 monospace;background:#f1f3e9;padding:8px;border-radius:5px;overflow-wrap:anywhere}.accessory-fields .error{color:#9b3c29}
 
