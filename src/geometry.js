@@ -561,26 +561,30 @@ function buildPureRelief(data,options,progress,preview){
   const oceanWeights=ocean?.cells?ocean.weights:null;
   progress('Calculant el camp d’altures…');
   const gridPoint=(x,y)=>[x*width/columns,y*height/rows];
-  const heightAt=(x,y)=>sample(...unproject(gridPoint(x,y)));
+  const heightAt=point=>{
+    const z=sample(...unproject(point));
+    return oceanWeights?Math.max(0,z):z;
+  };
   const metres=new Float64Array(stride*(rows+1));
-  let originMeters=Infinity;
   for(let row=0;row<=rows;row++){
     for(let col=0;col<=columns;col++){
       const index=row*stride+col;
-      const z=oceanWeights?.[index]>0?0:heightAt(col,row);
-      metres[index]=z;
-      originMeters=Math.min(originMeters,z);
+      metres[index]=oceanWeights?.[index]>0?0:heightAt(gridPoint(col,row));
     }
     if(row%32===31||row===rows)preview?.stage('terrain','Calculant el camp d’altures…',row+1,rows+1);
   }
   const lakes=data.lakes?.length?levelReliefLakes(data.lakes,project,metres,columns,width,height,rows):null;
-  if(oceanWeights&&lakes?.count)for(let i=0;i<metres.length;i++){
-    if(oceanWeights[i]>0)metres[i]=0;
+  let originMeters=0;
+  if(oceanWeights){
+    if(lakes?.count)for(let i=0;i<metres.length;i++)if(oceanWeights[i]>0)metres[i]=0;
+  }else{
+    originMeters=Infinity;
+    for(const z of metres)originMeters=Math.min(originMeters,z);
   }
   progress('Ajustant la malla al relleu…');
   const diagonals=reliefDiagonals(metres,columns,(col,row)=>{
     const point=gridPoint(col+.5,row+.5);
-    return oceanWeights&&ocean.contains(point)?0:sample(...unproject(point));
+    return oceanWeights&&ocean.contains(point)?0:heightAt(point);
   },rows);
   const reliefGrid=scaleReliefGrid({resolution:columns,rows,width,height,diagonals,originMeters,oceanWeights},metres,scale,exaggeration);
   if(preview){
@@ -621,7 +625,7 @@ function buildPureRelief(data,options,progress,preview){
   Object.assign(reliefGrid,{scores,lakeWeights:lakes?.count?lakes.weights:null,
     forestWeights:forest?.cells?forest.weights:null,streamStrips:water.streamStrips});
   const verticalReference={originMeters,minimumSurfaceMM:5,seaLevelMM:reliefGrid.seaLevelMM,
-    method:oceanWeights?'lowest generated-terrain sample at 5 mm; mapped sea at zero metres; no bathymetry':'lowest generated-terrain sample at 5 mm'};
+    method:oceanWeights?'sea level at 5 mm; no bathymetry':'lowest generated-terrain sample at 5 mm'};
   const provenance={...data.meta,options:{...options,pureRelief:true,exaggeration,streams,streamWidth,trees:options.trees!==false},verticalExaggeration:exaggeration,verticalReference,
     units:'millimeters',reliefSampling:{columns,rows,stepMM:[width/columns,height/rows]},
     coverageCells:{bare:cells[0],snow:cells[1],total:columns*rows},lakeCount:lakes?.count??0,
@@ -633,7 +637,7 @@ function buildPureRelief(data,options,progress,preview){
 function scaleReliefGrid(grid,metres,scale,exaggeration){
   const {originMeters,oceanWeights}=grid;
   const heights=metres.map(z=>5+(z-originMeters)*scale*exaggeration);
-  const seaLevelMM=oceanWeights?5-originMeters*scale*exaggeration:null;
+  const seaLevelMM=oceanWeights?5:null;
   return {...grid,heights,seaLevelMM,exaggeration};
 }
 

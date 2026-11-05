@@ -2,6 +2,12 @@
 
 Actualitzat: 2026-11-05. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.22.41 — Referència de base de Relleu pur
+
+RO-046 i RO-055. Els retalls amb mar cartografiat fixen la cota 0 a 5 mm de la base i limiten les mostres negatives a la cota marina. El sòlid blau conserva el gruix en variar l’exageració. A l’interior, la cota inferior es calcula després d’anivellar els llacs i admet elevacions negatives.
+
+Amb el mateix retall de 24 × 24 cm a 1:50.000, detall alt i exageració ×1,5, Table Mountain passa de 53,5 a 5 mm fins al mar i de 85,9 a 37,4 mm d’alçada màxima del terreny. Santorini passa de 6,1 a 5 mm al nivell del mar. Geirangerfjord i les Bardenas Reales conserven els 5 mm. La miniatura de Table Mountain s’ha refet amb el model corregit al visor. Han passat 58 proves locals, incloses la cota del mar amb exageració en directe, el mínim interior després d’anivellar un llac i l’exportació 3MF.
+
 ## v0.22.40 — Pantalla inicial adaptable
 
 RO-046 adapta l’alçada de la taula i de les miniatures a l’espai central. Els controls passen sota la taula quan el panell fa 452 px o menys. El carrusel passa a una fitxa sencera quan el rail fa 380 px o menys. En finestres baixes i prou amples, la graella del selector aprofita una tercera columna.

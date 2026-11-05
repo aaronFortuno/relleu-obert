@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-05 · v0.22.40**. Pantalla inicial adaptable a l’espai del panell. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-05 · v0.22.41**. Referència de base corregida a Relleu pur. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -139,7 +139,7 @@ Validar a l’escriptori la coherència dels controls i el desplaçament intern 
 
 ### RO-046 — Catàleg de llocs recomanats
 
-El carrusel incorpora els 28 retalls del [catàleg](RO-046-CATALEG.md), amb 17 fitxes de Relleu pur i 11 de Model complet. L’ordre es barreja en cada càrrega i reparteix els modes al llarg del bucle. A la pantalla inicial, la taula, les columnes del selector i el carrusel s’ajusten a l’espai real del panell. «La teva maqueta» mostra el resum de la fitxa mentre el visor mostra el model corresponent. Queda revisar l’enquadrament, la llegibilitat i els temps de generació en ús.
+El carrusel incorpora els 28 retalls del [catàleg](RO-046-CATALEG.md), amb 17 fitxes de Relleu pur i 11 de Model complet. L’ordre es barreja en cada càrrega i reparteix els modes al llarg del bucle. A la pantalla inicial, la taula, les columnes del selector i el carrusel s’ajusten a l’espai real del panell. «La teva maqueta» mostra el resum de la fitxa mentre el visor mostra el model corresponent. Queda revisar l’enquadrament, la llegibilitat i els temps de generació en ús, i comprovar el gruix de la base a les fitxes costaneres.
 
 ### RO-047 — Precàrrega opcional de fonts alternatives
 
@@ -172,6 +172,8 @@ Validar la recuperació d’un projecte girat amb traços i materials als dos mo
 ### RO-055 — Mode de relleu pur
 
 Les peces normals abasten d’1:10.000 a 1:500.000. Els retalls amplis fan servir el pressupost de dades del panoràmic segons l’extensió geogràfica. [Mesures i fonts](RO-055-RELLEU-PUR.md)
+
+El mar cartografiat queda a 5 mm de la base, també en canviar l’exageració. A l’interior es pren el mínim un cop anivellats els llacs.
 
 L’exageració vertical, els rius i la textura de vegetació s’apliquen automàticament sobre la maqueta carregada i mantenen la càmera. El canvi de detall, de mida o de retall es confirma amb «Genera el model».
 

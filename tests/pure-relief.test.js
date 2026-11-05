@@ -15,6 +15,17 @@ const bbox=physicalBBox([0,0],10,10);
 const dem=[{z:0,x:0,y:0,size:2,elev:new Float32Array([100,200,500,650])}];
 const options={size:100,pureRelief:true,resolution:12};
 
+function rasterFixture(rows){
+  const [w,s,e,n]=bbox,width=rows[0].length,height=rows.length;
+  return {epsg:4326,width,height,values:Float32Array.from(rows.flat()),
+    affine:[(e-w)/(width-1),0,w,0,(n-s)/(height-1),s]};
+}
+
+function mappedRectangle(x0,y0,x1,y1){
+  const [w,s,e,n]=bbox,at=(x,y)=>[w+(e-w)*x,s+(n-s)*y];
+  return {geometry:{type:'Polygon',coordinates:[[at(x0,y0),at(x1,y0),at(x1,y1),at(x0,y1),at(x0,y0)]]}};
+}
+
 test('nearly coincident stream buffers merge at the Montserrat confluence',()=>{
   const bounds=[200,120];
   const west=[[-17.48582,11.88459],[-14.69937,16.1192],[-10.3768,20.44303],[-5.28617,20.85396],
@@ -35,6 +46,38 @@ test('pure relief builds solid coverage colours from mapped classes, independent
   assert.deepEqual(groupMaterials(model).parts.map(p=>p.color),model.categories.map(p=>p.color));
   const neutral=buildModel({meta:{bbox},dem},options);
   assert.deepEqual(neutral.categories.map(p=>p.id),['terrain']);
+});
+
+test('mapped sea remains 5 mm deep despite bathymetry beyond its footprint',()=>{
+  const row=[-2500,-2500,-2500,60,120];
+  const terrainRaster=rasterFixture([row,row,row]);
+  const model=buildModel({meta:{bbox},terrainRaster,oceans:[mappedRectangle(0,0,.22,1)]},options);
+  const raised=updatePureRelief(model,{exaggeration:3});
+  for(const relief of [model,raised]){
+    const {originMeters,seaLevelMM}=relief.provenance.verticalReference;
+    assert.equal(originMeters,0);
+    assert.equal(seaLevelMM,5);
+    assert.equal(Math.min(...relief.reliefGrid.heights),5);
+    const water=auditPart(relief.parts.find(part=>part.id==='water'));
+    assert.deepEqual(water.errors,[]);
+    assert.equal(water.bbox.min[2],0);
+    assert.equal(water.bbox.max[2],5);
+  }
+  assert(Math.abs(Math.max(...model.reliefVegetationContext.metres)-120)<1e-8);
+  assert(Math.max(...raised.reliefGrid.heights)>Math.max(...model.reliefGrid.heights));
+});
+
+test('an inland base uses the lowest remaining elevation after a lake is levelled',()=>{
+  const flat=[100,100,100,100,100];
+  const terrainRaster=rasterFixture([[-120,100,100,100,100],flat,[100,100,-400,100,100],flat,flat]);
+  const data={meta:{bbox},terrainRaster},settings={...options,resolution:16};
+  const unlevelled=buildModel(data,settings);
+  const model=buildModel({...data,lakes:[mappedRectangle(.22,.22,.78,.78)]},settings);
+  assert.equal(unlevelled.provenance.verticalReference.originMeters,-400);
+  assert.equal(model.provenance.lakeCount,1);
+  assert.equal(model.provenance.verticalReference.originMeters,-120);
+  assert.equal(model.provenance.verticalReference.seaLevelMM,null);
+  assert.equal(Math.min(...model.reliefGrid.heights),5);
 });
 
 test('pure relief survives missing remote hydrography without loading full model layers',async()=>{

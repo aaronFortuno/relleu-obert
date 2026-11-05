@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.22.41 — 2026-11-05
+
+- Relleu pur fixa el nivell del mar a 5 mm de la base als retalls amb mar cartografiat. Als retalls interiors, situa a 5 mm el punt més baix un cop anivellats els llacs.
+
 ## v0.22.40 — 2026-11-05
 
 - La pantalla inicial ajusta la taula, la graella de mides i les miniatures a l’espai del panell. En panells estrets, els controls passen sota la taula i el carrusel mostra una fitxa sencera.
