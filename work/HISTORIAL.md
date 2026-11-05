@@ -2,6 +2,12 @@
 
 Actualitzat: 2026-11-05. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.22.36 — Resum del lloc a les maquetes del catàleg
+
+RO-046 mostra el nom, el mode, el tipus i la descripció de la fitxa a «La teva maqueta», per sobre de les mètriques. El resum correspon a la maqueta visible i es recupera quan es torna a generar un projecte desat del catàleg.
+
+Comprovat amb les Bardenas i Girona. Revisat a 1280 × 720 i 1100 × 680, i al panell «Exporta» a 390 × 844. S’han verificat un ajust d’exageració, la substitució per un retall ordinari de Tamariu i la regeneració d’un projecte desat. Superades 33 proves locals i la compilació estàtica. Pendent de validació d’ús.
+
 ## v0.22.35 — Ajustos en directe de Relleu pur
 
 RO-055 aplica l’exageració sobre les cotes preparades i actualitza la visibilitat i l’amplada dels cursos d’aigua sense tornar a carregar el retall. Els rius reutilitzen les malles de terra i mar. Es conserven la càmera, els traços de vegetació i la base de 5 mm. El detall, la mida i el retall es continuen confirmant amb «Genera el model».

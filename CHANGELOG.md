@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.22.36 — 2026-11-05
+
+- Les maquetes del catàleg mostren el nom, el tipus i la descripció de la fitxa al panell dret, a «La teva maqueta».
+
 ## v0.22.35 — 2026-11-05
 
 - Relleu pur aplica l’exageració vertical, la visibilitat i l’amplada dels rius i els ajustos de vegetació sobre el retall carregat. El visor conserva la càmera i l’exportació recull els ajustos aplicats.

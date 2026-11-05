@@ -35,6 +35,8 @@ La captura panoràmica de Tenerife mostra les tres peces. A Granada, el visor co
 
 Les dinou captures del lot final són WebP de 720 × 450 píxels i ocupen 729 kB en total. La cartografia i els edificis d’aquest lot provenen d’OpenStreetMap via OpenFreeMap. [Imatges](../public/examples/) · [OpenStreetMap](https://www.openstreetmap.org/copyright)
 
+En obrir una maqueta del catàleg, «La teva maqueta» mostra el nom del lloc, el mode, el tipus i la mateixa descripció de la fitxa. El resum correspon al retall que es veu al visor. Es recupera en tornar a generar un projecte desat del catàleg.
+
 | Proveïdor d’elevacions registrat | Captures del lot final |
 | --- | --- |
 | Mapterhorn | Tenerife, Teide i Las Cañadas, Ordesa, illes Cíes, Bardenas, Geirangerfjord, Tre Cime, mont Fuji, Gran Canó del Colorado, Granada, Bilbao, Ronda, Amsterdam, Lisboa i Chicago |

@@ -46,6 +46,13 @@
 .sidebar-right .info-panel h2 {flex:none}
 .sidebar-right .info-panel .section-toggle {height:36px}
 .sidebar-right .info-panel .section-toggle:focus-visible {outline-offset:0}
+#catalog-place-summary {
+  margin-bottom:12px;padding:0 0 8px;border-top:0;border-bottom:1px solid var(--line);
+  color:var(--ui-control-text);line-height:1.5;overflow-wrap:anywhere;
+}
+#catalog-place-title {margin:0 0 4px;color:var(--green);font-size:var(--ui-title);font-weight:650}
+#catalog-place-kind {margin:0 0 4px;font-size:var(--ui-label);font-weight:600}
+#catalog-place-description {margin:0;font-size:var(--ui-control)}
 .sidebar-right .download-panel {flex:none;margin-top:auto;padding:12px 0 14px}
 .download-panel .section-heading {margin-bottom:8px}
 .download-control {position:relative;display:flex;gap:2px}
