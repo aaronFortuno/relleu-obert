@@ -54,6 +54,17 @@ classes existents. `output` de formulari no ha de flotar a la dreta.
 - Els canvis d’aparença o d’una capa conserven càmera/zoom. Restablir és una
   acció explícita; una regió o mida noves poden requerir enquadrament.
 
+### Taller mòbil
+
+Fins a 900 px, el selector inicial ocupa la zona principal i pot fer scroll.
+Un cop triada la mida, «Visor», «Ajustos» i «Exporta» comparteixen una barra
+inferior. Els panells només ocupen una part de l’altura quan hi ha maqueta.
+En horitzontal, el panell apareix al costat del visor si hi ha amplada.
+Els controls de Territori prioritzen cerca i mapa, amb l’acció de generar
+visible. Els diàlegs apareixen des de baix i els controls de la barra fan
+44 px d’altura. Els camps de text i número fan servir 16 px per evitar
+el zoom en obrir el teclat. L’escriptori conserva els dos sidebars.
+
 ## Controls i llenguatge
 
 - Català breu i directe. Etiqueta autodescriptiva, unitat adjacent i valor

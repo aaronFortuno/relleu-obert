@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.22.34 — 2026-11-05
+
+- Taller per a mòbil amb selector de mides i exemples tàctils. «Ajustos» i «Exporta» obren panells inferiors i deixen el visor a la vista mentre es genera o s’edita la maqueta.
+- L’exportació mòbil permet triar el nombre de materials, el format i la mida de la maqueta. L’assignació de filaments per capa i les dades detallades són disponibles a l’escriptori.
+
 ## v0.22.33 — 2026-11-05
 
 - El carrusel incorpora els 19 retalls restants del catàleg. Cada fitxa mostra una captura estàtica i genera la maqueta del mode corresponent en clicar-la.

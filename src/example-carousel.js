@@ -105,6 +105,8 @@ export function initExampleCarousel(container, examples, onSelect) {
   workspace.append(overlay);
 
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  const manualPlayback = matchMedia('(max-width: 900px), (hover: none) and (pointer: coarse)');
+  const isStill = () => reducedMotion.matches || manualPlayback.matches;
   const motion = createCarouselMotion();
   let cycle = 0, visible = false, frame = 0, previousTime = 0;
   let arrowDirection = 0, cardsHovered = false;
@@ -127,12 +129,12 @@ export function initExampleCarousel(container, examples, onSelect) {
   }
 
   function updatePlayback() {
-    if (cycle && visible && !document.hidden && !reducedMotion.matches) {
+    if (cycle && visible && !document.hidden && !isStill()) {
       if (!frame) frame = requestAnimationFrame(tick);
     } else {
       cancelAnimationFrame(frame);
       frame = previousTime = 0;
-      if (reducedMotion.matches) motion.seek(motion.position);
+      if (isStill()) motion.seek(motion.position);
     }
   }
 
@@ -248,7 +250,7 @@ export function initExampleCarousel(container, examples, onSelect) {
     arrow.addEventListener('pointerenter', event => { if (event.pointerType === 'mouse') arrowDirection = direction; });
     arrow.addEventListener('pointerleave', () => { arrowDirection = 0; });
     arrow.addEventListener('click', () => {
-      motion.advance(direction, reducedMotion.matches);
+      motion.advance(direction, isStill());
       render();
     });
   }
@@ -260,7 +262,7 @@ export function initExampleCarousel(container, examples, onSelect) {
       if (dismissedId !== keyboardCard.dataset.example) dismissedId = null;
       if (cycle) {
         const destination = keyboardCard.offsetLeft - first.offsetLeft;
-        motion.moveTo(destination + Math.round((motion.position - destination) / cycle) * cycle, reducedMotion.matches);
+        motion.moveTo(destination + Math.round((motion.position - destination) / cycle) * cycle, isStill());
         render();
       }
     }
@@ -283,6 +285,7 @@ export function initExampleCarousel(container, examples, onSelect) {
     previewAnimation?.cancel();
     updatePlayback();
   });
+  manualPlayback.addEventListener('change', updatePlayback);
   document.addEventListener('visibilitychange', updatePlayback);
   new IntersectionObserver(([entry]) => {
     visible = entry.isIntersecting;

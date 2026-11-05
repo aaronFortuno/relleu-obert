@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="ca">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Dissenya maquetes de llocs reals al navegador i prepara-les per imprimir en 3D."><link rel="icon" type="image/svg+xml" href="./assets/favicon.svg"><title>Relleu Obert — Geografia que pots tocar</title></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content"><meta name="description" content="Dissenya maquetes de llocs reals al navegador i prepara-les per imprimir en 3D."><link rel="icon" type="image/svg+xml" href="./assets/favicon.svg"><title>Relleu Obert — Geografia que pots tocar</title></head>
 <body>
 <header class="app-header">
   <a class="brand" href="./" aria-label="Relleu Obert"><svg viewBox="0 0 38 32" aria-hidden="true"><path d="M3 27 18 3l17 24H3Z"/><path d="m8 23 10-15 11 15H8Zm5-4 5-7 5 7H13Z"/></svg><span>relleu<span class="brand-light">obert</span></span></a>
@@ -8,15 +8,16 @@
   <span class="header-spacer" aria-hidden="true"></span>
   <button id="projects-open" type="button" class="header-button" data-open="projects-dialog">Projectes</button>
   <button id="language-open" class="header-button" data-open="language-dialog" data-i18n="header.language">Idioma</button>
-  <button id="help-open" class="header-button" data-i18n="header.help">Com funciona</button>
+  <button id="help-open" class="header-button"><span class="desktop-copy" data-i18n="header.help">Com funciona</span><span class="mobile-copy">Ajuda</span></button>
 </header>
 <main class="app-layout">
-  <aside class="sidebar sidebar-left" aria-label="Configuració del model">
+  <aside id="workshop-settings" class="sidebar sidebar-left" aria-label="Configuració del model">
     <h1 class="sr-only">Prepara una maqueta</h1>
     <button id="new-project" type="button" class="secondary" hidden>Projecte nou</button>
     <section class="config-section" data-step="place">
       <div class="step-header"><h2 class="config-heading"><button type="button" class="section-toggle" id="step-place" aria-expanded="false" aria-controls="panel-place"><span aria-hidden="true">01</span><span data-i18n="section.place">Territori</span><i aria-hidden="true">+</i></button></h2><button type="button" class="secondary step-action" data-step-action="place" hidden>Genera el model</button></div>
       <div id="panel-place" class="config-content" role="region" aria-labelledby="step-place" hidden>
+        <div id="place-mode-options">
         <fieldset id="model-mode" class="mode-switch" aria-describedby="model-mode-note">
           <legend>Mode de maqueta</legend>
           <div class="mode-segments">
@@ -26,6 +27,7 @@
         </fieldset>
         <p id="model-mode-note" class="hint">Relleu, aigua, vies, edificis i vegetació.</p>
         <label for="recommended-place">Llocs d’exemple</label><select id="recommended-place"><option value="">Tria un exemple…</option></select>
+        </div>
         <form id="search-form" class="search-form"><label class="sr-only" for="place-search">Adreça o coordenades</label><div class="search-field"><input id="place-search" placeholder="Adreça o latitud, longitud" autocomplete="off"><button type="submit" aria-label="Cerca el lloc">⌕</button></div><div id="search-results" class="search-results" aria-live="polite"></div></form>
         <div id="place-map" aria-label="Mapa per seleccionar la regió"></div>
         <div class="map-caption"><span id="selection-info"></span></div>
@@ -81,7 +83,7 @@
   <section class="workspace" aria-label="Model tridimensional">
     <div id="viewport" aria-label="Previsualització tridimensional del model">
       <div id="brush-cursor" hidden></div>
-      <div class="preview-toolbar" hidden><div class="viewer-tools"><button id="reset" title="Restablir la vista">↺ Restablir</button><button id="top">Vista zenital ↑</button><button id="presentation-toggle" type="button" aria-pressed="false" data-i18n="preview.presentation" disabled>Presentació</button><details class="viewer-help"><summary aria-label="Ajuda dels controls del model">?</summary><p id="viewer-hint">Arrossega per girar · Roda per apropar · Botó dret per desplaçar</p></details></div>
+      <div class="preview-toolbar" hidden><div class="viewer-tools"><button id="reset" title="Restablir la vista">↺ Restablir</button><button id="top" aria-label="Vista zenital ↑"><span class="desktop-copy">Vista zenital ↑</span><span class="mobile-copy">Zenital ↑</span></button><button id="presentation-toggle" type="button" aria-pressed="false" data-i18n="preview.presentation" disabled>Presentació</button><details class="viewer-help"><summary aria-label="Ajuda dels controls del model">?</summary><p id="viewer-hint"><span class="desktop-copy">Arrossega per girar · Roda per apropar · Botó dret per desplaçar</span><span class="mobile-copy">Un dit per girar. Amb dos dits pots fer zoom i desplaçar la maqueta.</span></p></details></div>
         <div class="preview-options">
           <div class="viewer-tools"><button id="preview-orbit" type="button" role="switch" aria-checked="false" disabled>Gir automàtic <span aria-hidden="true">Desactivat</span></button></div>
           <span id="model-badge" role="status" aria-live="polite" hidden></span>
@@ -91,7 +93,7 @@
       <div id="work-indicator" role="status" aria-live="polite" hidden><span class="work-spinner" aria-hidden="true"></span><span id="work-label">Preparant el model…</span></div>
       <div id="welcome">
         <h2 id="welcome-title">Tria la mida de la maqueta</h2>
-        <p id="welcome-instruction">Passa per una mida per veure quant espai ocupa.</p>
+        <p id="welcome-instruction"><span class="desktop-copy">Passa per una mida per veure quant espai ocupa.</span><span class="mobile-copy">Tria una mida o obre un exemple per començar.</span></p>
         <div id="piece-choice">
           <div class="piece-setup">
             <figure class="piece-preview">
@@ -135,7 +137,7 @@
       <div id="status" role="status" aria-live="polite"></div>
     </div>
   </section>
-  <aside class="sidebar sidebar-right" aria-label="Informació i exportació">
+  <aside id="workshop-export" class="sidebar sidebar-right" aria-label="Informació i exportació">
     <section class="info-panel is-open">
       <h2><button type="button" class="section-toggle" aria-expanded="true" aria-controls="info-model">La teva maqueta <i aria-hidden="true">−</i></button></h2>
       <div class="config-content" id="info-model">
@@ -170,6 +172,11 @@
       <p id="export-hint" class="hint">Obre el 3MF com a projecte i comprova els filaments i el laminat.</p>
     </section>
   </aside>
+  <nav id="mobile-workshop" aria-label="Taller de maquetes" hidden>
+    <button type="button" data-mobile-panel="preview" aria-pressed="true" aria-controls="viewport"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"/><circle cx="12" cy="12" r="2.5"/></svg>Visor</button>
+    <button type="button" data-mobile-panel="settings" aria-expanded="false" aria-controls="workshop-settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h3m4 0h9M4 12h9m4 0h3M4 17h3m4 0h9"/><circle cx="9" cy="7" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="9" cy="17" r="2"/></svg>Ajustos</button>
+    <button type="button" data-mobile-panel="export" aria-expanded="false" aria-controls="workshop-export" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m-4-4 4 4 4-4M4 16v4h16v-4"/></svg>Exporta</button>
+  </nav>
 </main>
 <footer class="app-footer">
   <span data-i18n="footer.tagline">Un tros del món, a les teves mans.</span>
@@ -179,7 +186,7 @@
       <path d="m27 9 7-6" stroke="var(--umbrella-accent)" stroke-width="4.5"/>
     </svg><span>ortogra<span class="umbrella-dot">.</span>fi</span>
   </a></p>
-  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions">v0.22.33</button><button data-open="about-dialog" class="v4v-button">♡ Sobre el projecte · V4V</button></div>
+  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions">v0.22.34</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V"><span class="desktop-copy">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
 </footer>
 
 <dialog id="piece-resize-dialog" aria-labelledby="piece-resize-title">

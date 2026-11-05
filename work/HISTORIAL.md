@@ -2,6 +2,12 @@
 
 Actualitzat: 2026-11-05. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.22.34 — Taller mòbil
+
+RO-053 adapta el selector inicial i el taller amb una barra inferior de Visor, Ajustos i Exporta. La cerca i el mapa encapçalen Territori, amb l’acció de generar fixa. El visor continua visible mentre els panells estan oberts. En horitzontal es comparteix l’amplada amb el panell. L’exportació mòbil conserva el nombre de materials, els formats i el canvi de mida. [Flux mòbil](RO-053-UX.md#taller-mòbil)
+
+Revisat al navegador a 320 × 568, 390 × 844 i 740 × 390. Comprovats el carrusel, la mida personalitzada, la generació de Tamariu, els canvis de vegetació sobre la mateixa malla, el retorn a navegació, els diàlegs i la descàrrega d’un 3MF amb dos materials. Verificats els dos sidebars a 1.280 × 720 i 1.100 × 680. Superades 35 proves locals i la construcció estàtica. Pendent de validar en dispositius reals.
+
 ## v0.22.33 — Catàleg complet al carrusel
 
 RO-046 incorpora les 19 fitxes que faltaven. Les 28 fitxes intercalen Relleu pur i Model complet i generen el retall en clicar-lo. Les captures són WebP del visor. Tenerife conserva el panorama de tres peces. [Retalls i fonts](RO-046-CATALEG.md#catàleg-complet-al-carrusel)

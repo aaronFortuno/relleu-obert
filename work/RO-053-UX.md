@@ -1,5 +1,21 @@
 # RO-053 — Proposta de flux per etapes
 
+## Taller mòbil
+
+A v0.22.34, fins a 900 px, l’inici presenta les mides, la taula orientativa,
+el formulari personalitzat i les fitxes d’exemple amb fletxes. Triar una
+mida obre Territori amb la cerca i el mapa primer. El botó de generar
+queda fix dins d’Ajustos. En iniciar el primer càlcul s’obre el visor i,
+si la generació falla, es tornen a mostrar els ajustos.
+
+La barra inferior dona accés a Visor, Ajustos i Exporta. En horitzontal, el
+panell es posa al costat del visor quan hi ha espai. Les opcions són
+els mateixos controls del taller d’escriptori. Al mòbil, l’exportació
+mostra la mida, l’escala, el nombre de materials i els formats. Els
+detalls del diagnòstic, l’assignació per capa i la vista de presentació
+queden al taller d’escriptori. Queda pendent validar els gestos,
+el teclat i l’exportació en dispositius reals.
+
 **2026-11-03 · v0.19.4.** Els ajustos de vies ja tenen un càlcul propi sobre
 el terreny preparat. La base original, el camp d'altures i els edificis
 es reutilitzen. Els túnels es tornen a excavar sobre la base original.
