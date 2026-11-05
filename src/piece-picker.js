@@ -1,20 +1,22 @@
 import {isPanoramicSize, pieceDimensions, SIZE_PRESETS, tilePlan} from './selection.js';
 import {createPiecePreview,layoutPiecePreview} from './piece-preview.js';
+import {formatNumber, onLocaleChange, t} from './i18n.js';
 
 const svgNS = 'http://www.w3.org/2000/svg';
-const formatCentimetres = value => (value / 10).toLocaleString('ca', {maximumFractionDigits: 2});
+const formatCentimetres = value => formatNumber(value / 10, {maximumFractionDigits: 2});
 const formatSize = (width, height) => `${formatCentimetres(width)} × ${formatCentimetres(height)}`;
 
 export function bindPieceDimensions(form, width, height){
   const read = () => `${width.valueAsNumber}x${height.valueAsNumber}`;
   function validate(){
     const w=width.valueAsNumber*10,h=height.valueAsNumber*10;
-    const message='Quan un costat supera els 50 cm, l’altre ha de fer 20 cm com a màxim.';
     const invalid=isPanoramicSize(w,h)&&Math.min(w,h)>200;
+    const message=invalid?t('example.size.limit'):'';
     width.setCustomValidity(invalid&&w<h?message:'');
     height.setCustomValidity(invalid&&h<=w?message:'');
   }
   form.addEventListener('input',validate);
+  onLocaleChange(validate);
   return {read,validate};
 }
 
@@ -46,6 +48,7 @@ export function initPiecePicker(container, select) {
   const customHeight = container.querySelector('#custom-height');
   const customDimensions = bindPieceDimensions(form, customWidth, customHeight);
   let activeButton, activePreset;
+  let updateCaption = () => {};
 
   function preview(preset, button) {
     const dimensions = pieceDimensions(preset);
@@ -57,9 +60,15 @@ export function initPiecePicker(container, select) {
       const {width: tileWidth, height: tileHeight} = plan.tiles[0];
       const layout=layoutPiecePreview(width,height,plan);
       drawPreview(width, height, layout);
-      const arrangement=layout.twoRows?'dues files':layout.rotated?'peces girades':'vista orientativa';
-      note.textContent=`Taula 60 × 40 cm · ${arrangement}`;
-      caption.value = `${formatSize(width, height)} cm · ${count === 1 ? '1 peça' : `${count} peces de ${formatSize(tileWidth, tileHeight)} cm`}`;
+      updateCaption = () => {
+        const arrangement=t(layout.twoRows?'example.size.twoRows':layout.rotated?'example.size.rotated':'example.size.preview');
+        const pieces=t(count===1?'example.size.single':'example.size.pieces',{
+          count:formatNumber(count),size:formatSize(tileWidth,tileHeight),
+        });
+        note.textContent=t('example.size.table',{arrangement});
+        caption.value=`${formatSize(width,height)} cm · ${pieces}`;
+      };
+      updateCaption();
       activePreset = preset;
     }
     activeButton?.classList.remove('is-previewed');
@@ -67,20 +76,33 @@ export function initPiecePicker(container, select) {
     activeButton = button;
   }
 
+  const presetLabels=[];
   for (const [preset, [width, height]] of Object.entries(SIZE_PRESETS)) {
     const button = document.createElement('button');
     const plan = tilePlan(width, height);
-    const label = formatSize(width, height);
+    const label = document.createTextNode('');
+    const updateLabel=()=>{
+      const size=formatSize(width,height);
+      const count=plan.tiles.length;
+      const pieces=count>1?', '+t('example.size.count',{count:formatNumber(count)}):'';
+      button.setAttribute('aria-label',`${size} cm${pieces}`);
+      label.data=size;
+    };
+    presetLabels.push(updateLabel);
     button.type = 'button';
     button.className = 'secondary piece-size';
-    button.setAttribute('aria-label', `${label} cm${plan.tiles.length > 1 ? `, ${plan.tiles.length} peces` : ''}`);
     button.append(planIcon(width, height, plan), label);
+    updateLabel();
     button.addEventListener('pointerenter', () => preview(preset, button));
     button.addEventListener('focus', () => preview(preset, button));
     button.addEventListener('click', () => select(preset));
     buttons.append(button);
     if (preset === '20x20') preview(preset, button);
   }
+  onLocaleChange(()=>{
+    for(const update of presetLabels)update();
+    updateCaption();
+  });
 
   const customPreset = customDimensions.read;
   custom.addEventListener('toggle', () => { if (custom.open) preview(customPreset()); });

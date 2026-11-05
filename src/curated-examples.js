@@ -1,3 +1,5 @@
+import {t} from './i18n.js';
+
 const imageBase = `${import.meta.env?.BASE_URL || './'}examples/`;
 
 export const CURATED_EXAMPLES = [
@@ -362,3 +364,12 @@ export const CURATED_EXAMPLES = [
     image: `${imageBase}cusco-placa-armes.webp`,
   },
 ];
+
+export function localizeExample(example) {
+  const key = `example.${example.id}`;
+  return {
+    title: t(`${key}.title`) || example.title,
+    category: t(`${key}.category`) || example.category,
+    description: t(`${key}.description`) || example.description,
+  };
+}

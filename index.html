@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="ca">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content"><meta name="description" content="Dissenya maquetes de llocs reals al navegador i prepara-les per imprimir en 3D."><link rel="icon" type="image/svg+xml" href="./assets/favicon.svg"><title>Relleu Obert — Geografia que pots tocar</title></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content"><meta name="description" content="Dissenya maquetes de llocs reals al navegador i prepara-les per imprimir en 3D." data-i18n-content="ui.app.description"><link rel="icon" type="image/svg+xml" href="./assets/favicon.svg"><title data-i18n="ui.app.title">Relleu Obert — Geografia que pots tocar</title></head>
 <body>
 <header class="app-header">
   <a class="brand" href="./" aria-label="Relleu Obert"><svg viewBox="0 0 38 32" aria-hidden="true"><path d="M3 27 18 3l17 24H3Z"/><path d="m8 23 10-15 11 15H8Zm5-4 5-7 5 7H13Z"/></svg><span>relleu<span class="brand-light">obert</span></span></a>
   <span class="tagline" data-i18n="app.tagline">Geografia que pots tocar.</span>
   <span class="header-spacer" aria-hidden="true"></span>
   <button id="projects-open" type="button" class="header-button" aria-haspopup="dialog" aria-controls="projects-dialog"><span class="gallery-label" data-i18n="header.gallery">Galeria de maquetes</span><span class="gallery-label-short" data-i18n="header.galleryShort">Galeria</span></button>
-  <button id="help-open" class="header-button"><span class="desktop-copy" data-i18n="header.help">Com funciona</span><span class="mobile-copy">Ajuda</span></button>
+  <button id="help-open" class="header-button"><span class="desktop-copy" data-i18n="header.help">Com funciona</span><span class="mobile-copy" data-i18n="ui.header.helpShort">Ajuda</span></button>
   <details class="language-control" id="language-control">
     <summary id="language-open" class="header-button" aria-label="Idioma" data-i18n-aria="header.language" title="Idioma" data-i18n-title="header.language">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>
@@ -15,7 +15,7 @@
     </summary>
     <div class="language-list" role="group" aria-label="Idiomes" data-i18n-aria="language.list">
       <button type="button" data-locale="ca" class="current" aria-pressed="true"><strong lang="ca">Català</strong><span class="language-state">Idioma actual</span></button>
-      <button type="button" data-locale="es" disabled><strong lang="es">Castellà</strong><span class="language-state">Pendent de catàleg</span></button>
+      <button type="button" data-locale="es" disabled><strong lang="es">Castellano</strong><span class="language-state">Pendent de catàleg</span></button>
       <button type="button" data-locale="gl" disabled><strong lang="gl">Galego</strong><span class="language-state">Pendent de catàleg</span></button>
       <button type="button" data-locale="eu" disabled><strong lang="eu">Euskara</strong><span class="language-state">Pendent de catàleg</span></button>
       <button type="button" data-locale="en" disabled><strong lang="en">English</strong><span class="language-state">Pendent de catàleg</span></button>
@@ -23,89 +23,89 @@
   </details>
 </header>
 <main class="app-layout">
-  <aside id="workshop-settings" class="sidebar sidebar-left" aria-label="Configuració del model">
-    <h1 class="sr-only">Prepara una maqueta</h1>
-    <button id="new-project" type="button" class="secondary" hidden>Projecte nou</button>
+  <aside id="workshop-settings" class="sidebar sidebar-left" aria-label="Configuració del model" data-i18n-aria="ui.settings.title">
+    <h1 class="sr-only" data-i18n="ui.settings.heading">Prepara una maqueta</h1>
+    <button id="new-project" type="button" class="secondary" hidden data-i18n="ui.action.new">Projecte nou</button>
     <section class="config-section" data-step="place">
-      <div class="step-header"><h2 class="config-heading"><button type="button" class="section-toggle" id="step-place" aria-expanded="false" aria-controls="panel-place"><span aria-hidden="true">01</span><span data-i18n="section.place">Territori</span><i aria-hidden="true">+</i></button></h2><button type="button" class="secondary step-action" data-step-action="place" hidden>Genera el model</button></div>
+      <div class="step-header"><h2 class="config-heading"><button type="button" class="section-toggle" id="step-place" aria-expanded="false" aria-controls="panel-place"><span aria-hidden="true">01</span><span data-i18n="section.place">Territori</span><i aria-hidden="true">+</i></button></h2><button type="button" class="secondary step-action" data-step-action="place" hidden data-i18n="ui.action.generate">Genera el model</button></div>
       <div id="panel-place" class="config-content" role="region" aria-labelledby="step-place" hidden>
-        <button id="examples-open" type="button" class="secondary" aria-haspopup="dialog" aria-controls="projects-dialog">Veure exemples</button>
+        <button id="examples-open" type="button" class="secondary" aria-haspopup="dialog" aria-controls="projects-dialog" data-i18n="ui.action.examples">Veure exemples</button>
         <div id="place-mode-options">
         <fieldset id="model-mode" class="mode-switch" aria-describedby="model-mode-note">
-          <legend>Mode de maqueta</legend>
+          <legend data-i18n="ui.mode.label">Mode de maqueta</legend>
           <div class="mode-segments">
-            <input class="sr-only" type="radio" name="model-mode" id="mode-landscape" value="landscape" checked><label for="mode-landscape">Model complet</label>
-            <input class="sr-only" type="radio" name="model-mode" id="mode-relief" value="relief"><label for="mode-relief">Relleu pur</label>
+            <input class="sr-only" type="radio" name="model-mode" id="mode-landscape" value="landscape" checked><label for="mode-landscape" data-i18n="ui.mode.complete">Model complet</label>
+            <input class="sr-only" type="radio" name="model-mode" id="mode-relief" value="relief"><label for="mode-relief" data-i18n="ui.mode.relief">Relleu pur</label>
           </div>
         </fieldset>
-        <p id="model-mode-note" class="hint">Relleu, aigua, vies, edificis i vegetació.</p>
+        <p id="model-mode-note" class="hint" data-i18n="ui.mode.completeHint">Relleu, aigua, vies, edificis i vegetació.</p>
         </div>
-        <form id="search-form" class="search-form"><label class="sr-only" for="place-search">Adreça o coordenades</label><div class="search-field"><input id="place-search" placeholder="Adreça o latitud, longitud" autocomplete="off"><button type="submit" aria-label="Cerca el lloc">⌕</button></div><div id="search-results" class="search-results" aria-live="polite"></div></form>
-        <div id="place-map" aria-label="Mapa per seleccionar la regió"></div>
+        <form id="search-form" class="search-form"><label class="sr-only" for="place-search" data-i18n="ui.place.searchLabel">Adreça o coordenades</label><div class="search-field"><input id="place-search" placeholder="Adreça o latitud, longitud" autocomplete="off" data-i18n-placeholder="ui.place.searchPlaceholder"><button type="submit" aria-label="Cerca el lloc" data-i18n-aria="ui.place.search">⌕</button></div><div id="search-results" class="search-results" aria-live="polite"></div></form>
+        <div id="place-map" aria-label="Mapa per seleccionar la regió" data-i18n-aria="ui.place.map"></div>
         <div class="map-caption"><span id="selection-info"></span></div>
-        <label for="model-scale">Escala <output id="scale-value" for="model-scale">—</output></label>
+        <label for="model-scale" data-i18n-text="ui.place.scale">Escala <output id="scale-value" for="model-scale">—</output></label>
         <input id="model-scale" type="range" min="0" max="5" step="any" aria-describedby="scale-info">
         <div id="scale-ticks" aria-hidden="true"></div>
         <p id="scale-info" class="hint" role="status" hidden></p>
-        <label for="exag">Exageració vertical <output id="exag-value">×1,5</output></label><input id="exag" type="range" min="1" max="3" step=".25" value="1.5">
-        <label for="detail">Detall</label><select id="detail"><option value="24">Ràpid</option><option value="36" selected>Equilibrat</option><option value="56">Alt</option></select>
-        <label class="check-row"><input id="streams" type="checkbox" checked><span>Rius i rierols</span></label>
-        <label for="stream-width">Amplada mínima dels cursos d’aigua</label>
-        <select id="stream-width"><option value="1">×1 · 0,45 mm</option><option value="1.5">×1,5 · 0,68 mm</option><option value="2">×2 · 0,90 mm</option><option value="3">×3 · 1,35 mm</option></select>
+        <label for="exag" data-i18n-text="ui.place.exaggeration">Exageració vertical <output id="exag-value">×1,5</output></label><input id="exag" type="range" min="1" max="3" step=".25" value="1.5">
+        <label for="detail" data-i18n="ui.place.detail">Detall</label><select id="detail"><option value="24" data-i18n="ui.place.detailFast">Ràpid</option><option value="36" selected data-i18n="ui.place.detailBalanced">Equilibrat</option><option value="56" data-i18n="ui.place.detailHigh">Alt</option></select>
+        <label class="check-row"><input id="streams" type="checkbox" checked><span data-i18n="ui.place.streams">Rius i rierols</span></label>
+        <label for="stream-width" data-i18n="ui.place.streamWidth">Amplada mínima dels cursos d’aigua</label>
+        <select id="stream-width"><option value="1" data-i18n="ui.place.streamWidth1">×1 · 0,45 mm</option><option value="1.5" data-i18n="ui.place.streamWidth15">×1,5 · 0,68 mm</option><option value="2" data-i18n="ui.place.streamWidth2">×2 · 0,90 mm</option><option value="3" data-i18n="ui.place.streamWidth3">×3 · 1,35 mm</option></select>
       </div>
     </section>
     <section class="config-section" data-step="vegetation">
-      <div class="step-header"><h2 class="config-heading"><button type="button" class="section-toggle" id="step-vegetation" aria-expanded="false" aria-controls="panel-vegetation"><span aria-hidden="true">02</span><span data-i18n="section.vegetation">Vegetació</span><i aria-hidden="true">+</i></button></h2><button type="button" class="secondary step-action" data-step-action="vegetation" hidden>Vies →</button></div>
-      <div id="panel-vegetation" class="config-content" role="region" aria-labelledby="step-vegetation" hidden><label class="check-row"><input id="trees" type="checkbox" checked><span id="vegetation-label">Afegir arbres amb volum</span></label>
-      <label for="tree-type">Forma dels arbres</label><select id="tree-type"><option value="mixed">Automàtica · segons el relleu</option><option value="round">Arrodonida</option><option value="tall">Allargada</option></select>
+      <div class="step-header"><h2 class="config-heading"><button type="button" class="section-toggle" id="step-vegetation" aria-expanded="false" aria-controls="panel-vegetation"><span aria-hidden="true">02</span><span data-i18n="section.vegetation">Vegetació</span><i aria-hidden="true">+</i></button></h2><button type="button" class="secondary step-action" data-step-action="vegetation" hidden data-i18n="ui.action.transportNext">Vies →</button></div>
+      <div id="panel-vegetation" class="config-content" role="region" aria-labelledby="step-vegetation" hidden><label class="check-row"><input id="trees" type="checkbox" checked><span id="vegetation-label" data-i18n="ui.vegetation.trees">Afegir arbres amb volum</span></label>
+      <label for="tree-type" data-i18n="ui.vegetation.treeShape">Forma dels arbres</label><select id="tree-type"><option value="mixed" data-i18n="ui.vegetation.treeAuto">Automàtica · segons el relleu</option><option value="round" data-i18n="ui.vegetation.treeRound">Arrodonida</option><option value="tall" data-i18n="ui.vegetation.treeTall">Allargada</option></select>
       <p id="vegetation-budget-note" class="hint" role="status" hidden></p><p id="tree-scale-note" class="hint" role="status" hidden></p>
       <div id="relief-texture-settings" hidden>
-        <label for="vegetation-height">Alçada màxima a 1:10.000 <output id="vegetation-height-value" for="vegetation-height">0,8 mm</output></label>
+        <label for="vegetation-height" data-i18n-text="ui.vegetation.maxHeight">Alçada màxima a 1:10.000 <output id="vegetation-height-value" for="vegetation-height">0,8 mm</output></label>
         <input id="vegetation-height" type="range" min="0.2" max="2" step="0.1" value="0.8">
-        <label for="vegetation-noise">Irregularitat <output id="vegetation-noise-value" for="vegetation-noise">45%</output></label>
+        <label for="vegetation-noise" data-i18n-text="ui.vegetation.roughness">Irregularitat <output id="vegetation-noise-value" for="vegetation-noise">45%</output></label>
         <input id="vegetation-noise" type="range" min="0" max="100" step="1" value="45">
       </div>
-      <div class="brush-tools" role="group" aria-label="Edició de vegetació"><button data-brush="navigate" class="selected" aria-pressed="true">↖ Navega</button><button data-brush="add" aria-pressed="false">＋ Pinzell</button><button data-brush="erase" aria-pressed="false">− Goma</button></div>
-      <label for="density"><span id="brush-density-label">Densitat del pinzell</span> <output id="density-value">×0,5</output></label><input id="density" type="range" min=".25" max="2" step=".25" value=".5">
-      <label for="brush-radius">Radi del pinzell <output id="brush-value">5 mm</output></label><input id="brush-radius" type="range" min="2" max="12" value="5" step="1">
-      <div class="edit-actions"><button id="undo-brush" class="quiet-button" disabled>↶ Desfés</button><button id="clear-brush" class="quiet-button" disabled>Restableix els arbres</button></div>
-      <p id="vegetation-brush-note" class="hint">Pinta sobre el terreny. En aixecar el pinzell s’aplica tot el traç. La densitat afecta només els traços nous.</p>
+      <div class="brush-tools" role="group" aria-label="Edició de vegetació" data-i18n-aria="ui.vegetation.edit"><button data-brush="navigate" class="selected" aria-pressed="true" data-i18n="ui.vegetation.navigate">↖ Navega</button><button data-brush="add" aria-pressed="false" data-i18n="ui.vegetation.brush">＋ Pinzell</button><button data-brush="erase" aria-pressed="false" data-i18n="ui.vegetation.erase">− Goma</button></div>
+      <label for="density"><span id="brush-density-label" data-i18n="ui.vegetation.brushDensity">Densitat del pinzell</span> <output id="density-value">×0,5</output></label><input id="density" type="range" min=".25" max="2" step=".25" value=".5">
+      <label for="brush-radius" data-i18n-text="ui.vegetation.brushRadius">Radi del pinzell <output id="brush-value">5 mm</output></label><input id="brush-radius" type="range" min="2" max="12" value="5" step="1">
+      <div class="edit-actions"><button id="undo-brush" class="quiet-button" disabled data-i18n="ui.action.undo">↶ Desfés</button><button id="clear-brush" class="quiet-button" disabled data-i18n="ui.vegetation.resetTrees">Restableix els arbres</button></div>
+      <p id="vegetation-brush-note" class="hint" data-i18n="ui.vegetation.brushNote">Pinta sobre el terreny. En aixecar el pinzell s’aplica tot el traç. La densitat afecta només els traços nous.</p>
       </div>
     </section>
     <section class="config-section" data-step="transport">
-      <div class="step-header"><h2 class="config-heading"><button type="button" class="section-toggle" id="step-transport" aria-expanded="false" aria-controls="panel-transport"><span aria-hidden="true">03</span><span data-i18n="section.transport">Vies</span><i aria-hidden="true">+</i></button></h2><button type="button" class="secondary step-action" data-step-action="transport" hidden>Edificis →</button></div>
-      <div id="panel-transport" class="config-content" role="region" aria-labelledby="step-transport" hidden><label for="road-rise">Relleu dels camins <span class="unit">mm de maqueta</span></label><select id="road-rise"><option value="0">Arran de terreny</option><option value="0.5">Realç de 0,5 mm</option><option value="1">Realç d’1 mm</option></select>
-      <label for="rail-rise">Relleu de ferrocarrils <span class="unit">sobre els camins</span></label><select id="rail-rise"><option value="0" selected>Igual que els camins</option><option value="0.5">+0,5 mm</option><option value="1">+1 mm</option></select>
-      <label for="trail-width">Amplada dels senders</label><select id="trail-width"><option value="0.75">×0,75 · mín. 0,23 mm</option><option value="1" selected>×1 · mín. 0,30 mm</option><option value="1.5">×1,5 · mín. 0,45 mm</option><option value="2">×2 · mín. 0,60 mm</option></select>
-      <label class="check-row"><input id="estimated-tunnels" type="checkbox" checked aria-describedby="tunnel-note"><span>Túnels estimats · experimental</span></label><p id="tunnel-note" class="hint">Perfil arquejat i paviment de camí. Revisa els portals i el laminat.</p>
-      <label class="check-row"><input id="major-profiles" type="checkbox" checked aria-describedby="major-profiles-note"><span>Perfils suaus de vies principals i ferrocarrils · experimental</span></label>
-      <p id="major-profiles-note" class="hint">Suavitza els canvis de pendent. Pot allargar el càlcul.</p>
-      <p class="hint">Els ajustos s’apliquen automàticament a la maqueta generada.</p>
+      <div class="step-header"><h2 class="config-heading"><button type="button" class="section-toggle" id="step-transport" aria-expanded="false" aria-controls="panel-transport"><span aria-hidden="true">03</span><span data-i18n="section.transport">Vies</span><i aria-hidden="true">+</i></button></h2><button type="button" class="secondary step-action" data-step-action="transport" hidden data-i18n="ui.action.buildingsNext">Edificis →</button></div>
+      <div id="panel-transport" class="config-content" role="region" aria-labelledby="step-transport" hidden><label for="road-rise" data-i18n-text="ui.transport.roadRise">Relleu dels camins <span class="unit" data-i18n="ui.transport.modelMM">mm de maqueta</span></label><select id="road-rise"><option value="0" data-i18n="ui.transport.flush">Arran de terreny</option><option value="0.5" data-i18n="ui.transport.raiseHalf">Realç de 0,5 mm</option><option value="1" data-i18n="ui.transport.raiseOne">Realç d’1 mm</option></select>
+      <label for="rail-rise" data-i18n-text="ui.transport.railRise">Relleu de ferrocarrils <span class="unit" data-i18n="ui.transport.aboveRoads">sobre els camins</span></label><select id="rail-rise"><option value="0" selected data-i18n="ui.transport.sameAsRoads">Igual que els camins</option><option value="0.5" data-i18n="ui.transport.railHalf">+0,5 mm</option><option value="1">+1 mm</option></select>
+      <label for="trail-width" data-i18n="ui.transport.trailWidth">Amplada dels senders</label><select id="trail-width"><option value="0.75" data-i18n="ui.transport.trailWidth075">×0,75 · mín. 0,23 mm</option><option value="1" selected data-i18n="ui.transport.trailWidth1">×1 · mín. 0,30 mm</option><option value="1.5" data-i18n="ui.transport.trailWidth15">×1,5 · mín. 0,45 mm</option><option value="2" data-i18n="ui.transport.trailWidth2">×2 · mín. 0,60 mm</option></select>
+      <label class="check-row"><input id="estimated-tunnels" type="checkbox" checked aria-describedby="tunnel-note"><span data-i18n="ui.transport.tunnels">Túnels estimats · experimental</span></label><p id="tunnel-note" class="hint" data-i18n="ui.transport.tunnelNote">Perfil arquejat i paviment de camí. Revisa els portals i el laminat.</p>
+      <label class="check-row"><input id="major-profiles" type="checkbox" checked aria-describedby="major-profiles-note"><span data-i18n="ui.transport.smooth">Perfils suaus de vies principals i ferrocarrils · experimental</span></label>
+      <p id="major-profiles-note" class="hint" data-i18n="ui.transport.smoothNote">Suavitza els canvis de pendent. Pot allargar el càlcul.</p>
+      <p class="hint" data-i18n="ui.transport.autoNote">Els ajustos s’apliquen automàticament a la maqueta generada.</p>
       </div>
     </section>
     <section class="config-section" data-step="buildings">
-      <div class="step-header"><h2 class="config-heading"><button type="button" class="section-toggle" id="step-buildings" aria-expanded="false" aria-controls="panel-buildings"><span aria-hidden="true">04</span><span data-i18n="section.buildings">Edificis</span><i aria-hidden="true">+</i></button></h2><button type="button" class="secondary step-action" data-step-action="buildings" hidden>Aplica</button></div>
-      <div id="panel-buildings" class="config-content" role="region" aria-labelledby="step-buildings" hidden><div class="source-summary"><p><strong>Edificis</strong> <span id="building-source-name">ICGC (font remota)</span></p></div><label for="building-source">Edificis</label><select id="building-source"><option value="osm">OpenStreetMap</option><option value="osm3d">OpenStreetMap · cobertes i parts</option><option value="icgc" selected>ICGC</option><option value="catastre">Catastre · parts (Espanya)</option></select>
-      <p id="building-source-hint" class="hint"></p><label for="building-mode">Representació dels edificis</label><select id="building-mode"><option value="limited">Altura limitada</option><option value="source">Altura i coberta de les dades</option><option value="flat">Petjades sense volum</option><option value="none">Sense edificis</option></select>
-      <label for="building-height">Altura màxima <span class="unit">metres reals</span></label><input id="building-height" type="number" min="1" max="1200" step="1" value="5" inputmode="decimal">
-      <p id="building-mode-hint" class="hint">Coberta horitzontal, com a màxim 5 m sobre el punt més alt de la petjada. Al costat baix es veurà més façana. Prem «Generar el model» per aplicar els canvis.</p>
+      <div class="step-header"><h2 class="config-heading"><button type="button" class="section-toggle" id="step-buildings" aria-expanded="false" aria-controls="panel-buildings"><span aria-hidden="true">04</span><span data-i18n="section.buildings">Edificis</span><i aria-hidden="true">+</i></button></h2><button type="button" class="secondary step-action" data-step-action="buildings" hidden data-i18n="ui.action.apply">Aplica</button></div>
+      <div id="panel-buildings" class="config-content" role="region" aria-labelledby="step-buildings" hidden><div class="source-summary"><p><strong data-i18n="section.buildings">Edificis</strong> <span id="building-source-name" data-i18n="ui.buildings.remoteICGC">ICGC (font remota)</span></p></div><label for="building-source" data-i18n="section.buildings">Edificis</label><select id="building-source"><option value="osm">OpenStreetMap</option><option value="osm3d" data-i18n="ui.buildings.osm3d">OpenStreetMap · cobertes i parts</option><option value="icgc" selected>ICGC</option><option value="catastre" data-i18n="ui.buildings.cadastre">Catastre · parts (Espanya)</option></select>
+      <p id="building-source-hint" class="hint"></p><label for="building-mode" data-i18n="ui.buildings.representation">Representació dels edificis</label><select id="building-mode"><option value="limited" data-i18n="ui.buildings.heightLimited">Altura limitada</option><option value="source" data-i18n="ui.buildings.heightFromData">Altura i coberta de les dades</option><option value="flat" data-i18n="ui.buildings.flat">Petjades sense volum</option><option value="none" data-i18n="ui.buildings.none">Sense edificis</option></select>
+      <label for="building-height" data-i18n-text="ui.buildings.maxHeight">Altura màxima <span class="unit" data-i18n="ui.buildings.realMetres">metres reals</span></label><input id="building-height" type="number" min="1" max="1200" step="1" value="5" inputmode="decimal">
+      <p id="building-mode-hint" class="hint" data-i18n="ui.buildings.defaultHeightHint">Coberta horitzontal, com a màxim 5 m sobre el punt més alt de la petjada. Al costat baix es veurà més façana. Prem «Generar el model» per aplicar els canvis.</p>
       </div>
     </section>
   </aside>
-  <section class="workspace" aria-label="Model tridimensional">
-    <div id="viewport" aria-label="Previsualització tridimensional del model">
+  <section class="workspace" aria-label="Model tridimensional" data-i18n-aria="ui.preview.title">
+    <div id="viewport" aria-label="Previsualització tridimensional del model" data-i18n-aria="ui.preview.viewport">
       <div id="brush-cursor" hidden></div>
-      <div class="preview-toolbar" hidden><div class="viewer-tools"><button id="reset" title="Restablir la vista">↺ Restablir</button><button id="top" aria-label="Vista zenital ↑"><span class="desktop-copy">Vista zenital ↑</span><span class="mobile-copy">Zenital ↑</span></button><button id="presentation-toggle" type="button" aria-pressed="false" data-i18n="preview.presentation" disabled>Presentació</button><details class="viewer-help"><summary aria-label="Ajuda dels controls del model">?</summary><p id="viewer-hint"><span class="desktop-copy">Arrossega per girar · Roda per apropar · Botó dret per desplaçar</span><span class="mobile-copy">Un dit per girar. Amb dos dits pots fer zoom i desplaçar la maqueta.</span></p></details></div>
+      <div class="preview-toolbar" hidden><div class="viewer-tools"><button id="reset" title="Restablir la vista" data-i18n-title="ui.preview.resetTitle" data-i18n="ui.preview.reset">↺ Restablir</button><button id="top" aria-label="Vista zenital ↑" data-i18n-aria="ui.preview.topView"><span class="desktop-copy" data-i18n="ui.preview.topView">Vista zenital ↑</span><span class="mobile-copy" data-i18n="ui.preview.topShort">Zenital ↑</span></button><button id="presentation-toggle" type="button" aria-pressed="false" data-i18n="preview.presentation" disabled>Presentació</button><details class="viewer-help"><summary aria-label="Ajuda dels controls del model" data-i18n-aria="ui.preview.help">?</summary><p id="viewer-hint"><span class="desktop-copy" data-i18n="ui.preview.controls">Arrossega per girar · Roda per apropar · Botó dret per desplaçar</span><span class="mobile-copy" data-i18n="ui.preview.controlsMobile">Un dit per girar. Amb dos dits pots fer zoom i desplaçar la maqueta.</span></p></details></div>
         <div class="preview-options">
-          <div class="viewer-tools"><button id="preview-orbit" type="button" role="switch" aria-checked="false" disabled>Gir automàtic <span aria-hidden="true">Desactivat</span></button></div>
+          <div class="viewer-tools"><button id="preview-orbit" type="button" role="switch" aria-checked="false" disabled data-i18n-text="ui.preview.orbit">Gir automàtic <span aria-hidden="true" data-i18n="ui.preview.off">Desactivat</span></button></div>
           <span id="model-badge" role="status" aria-live="polite" hidden></span>
         </div>
       </div>
       <span id="presentation-note" class="presentation-note" hidden data-i18n="preview.presentationNote">Escena il·lustrativa · els acabats de la impressió poden variar.</span>
-      <div id="work-indicator" role="status" aria-live="polite" hidden><span class="work-spinner" aria-hidden="true"></span><span id="work-label">Preparant el model…</span></div>
+      <div id="work-indicator" role="status" aria-live="polite" hidden><span class="work-spinner" aria-hidden="true"></span><span id="work-label" data-i18n="ui.preview.preparing">Preparant el model…</span></div>
       <div id="welcome">
-        <h2 id="welcome-title">Tria la mida de la maqueta</h2>
-        <p id="welcome-instruction"><span class="desktop-copy">Passa per una mida per veure quant espai ocupa.</span><span class="mobile-copy">Tria una mida o obre un exemple per començar.</span></p>
+        <h2 id="welcome-title" data-i18n="ui.welcome.chooseSize">Tria la mida de la maqueta</h2>
+        <p id="welcome-instruction"><span class="desktop-copy" data-i18n="ui.welcome.hoverSize">Passa per una mida per veure quant espai ocupa.</span><span class="mobile-copy" data-i18n="ui.welcome.startMobile">Tria una mida o obre un exemple per començar.</span></p>
         <div id="piece-choice">
           <div class="piece-setup">
             <figure class="piece-preview">
@@ -117,51 +117,51 @@
               </svg>
               <figcaption>
                 <output id="piece-preview-size" aria-live="off"></output>
-                <span id="piece-preview-note">Taula 60 × 40 cm · vista orientativa</span>
+                <span id="piece-preview-note" data-i18n="ui.welcome.table">Taula 60 × 40 cm · vista orientativa</span>
               </figcaption>
             </figure>
             <div class="piece-setup-controls">
               <div id="piece-sizes" role="group" aria-labelledby="welcome-title"></div>
               <details id="custom-piece">
-                <summary>Mides personalitzades</summary>
+                <summary data-i18n="ui.welcome.customSize">Mides personalitzades</summary>
                 <form id="custom-piece-form">
                   <div class="two-fields">
-                    <div><label for="custom-width">Amplada <span class="unit">cm</span></label><input id="custom-width" type="number" min="10" max="100" step="1" value="20" aria-describedby="custom-size-note" required></div>
-                    <div><label for="custom-height">Fondària <span class="unit">cm</span></label><input id="custom-height" type="number" min="10" max="100" step="1" value="20" aria-describedby="custom-size-note" required></div>
+                    <div><label for="custom-width" data-i18n-text="ui.size.width">Amplada <span class="unit">cm</span></label><input id="custom-width" type="number" min="10" max="100" step="1" value="20" aria-describedby="custom-size-note" required></div>
+                    <div><label for="custom-height" data-i18n-text="ui.size.depth">Fondària <span class="unit">cm</span></label><input id="custom-height" type="number" min="10" max="100" step="1" value="20" aria-describedby="custom-size-note" required></div>
                   </div>
-                  <p id="custom-size-note" class="hint piece-size-note">Si un costat supera els 50 cm, l’altre pot fer fins a 20 cm. Aquest format fa servir Relleu pur.</p>
-                  <button type="submit" class="primary">Continua</button>
+                  <p id="custom-size-note" class="hint piece-size-note" data-i18n="ui.size.customNote">Si un costat supera els 50 cm, l’altre pot fer fins a 20 cm. Aquest format fa servir Relleu pur.</p>
+                  <button type="submit" class="primary" data-i18n="ui.action.continue">Continua</button>
                 </form>
               </details>
             </div>
           </div>
           <section id="example-carousel" aria-labelledby="example-carousel-title" hidden>
-            <h3 id="example-carousel-title" class="example-carousel-heading">Exemples de maquetes</h3>
+            <h3 id="example-carousel-title" class="example-carousel-heading" data-i18n="ui.examples.title">Exemples de maquetes</h3>
             <div class="example-carousel-rail">
-              <button type="button" class="quiet-button example-carousel-arrow" data-example-step="-1" aria-label="Exemple anterior" aria-controls="example-cards"><span aria-hidden="true">‹</span></button>
+              <button type="button" class="quiet-button example-carousel-arrow" data-example-step="-1" aria-label="Exemple anterior" aria-controls="example-cards" data-i18n-aria="ui.examples.previous"><span aria-hidden="true">‹</span></button>
               <div id="example-cards" class="example-cards"><div class="example-track"></div></div>
-              <button type="button" class="quiet-button example-carousel-arrow" data-example-step="1" aria-label="Exemple següent" aria-controls="example-cards"><span aria-hidden="true">›</span></button>
+              <button type="button" class="quiet-button example-carousel-arrow" data-example-step="1" aria-label="Exemple següent" aria-controls="example-cards" data-i18n-aria="ui.examples.next"><span aria-hidden="true">›</span></button>
             </div>
-            <small class="example-credits">Dades © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> · © <a href="https://mapterhorn.com/attribution/" target="_blank" rel="noopener">Mapterhorn</a> · <a href="https://github.com/tilezen/joerd/blob/master/docs/attribution.md" target="_blank" rel="noopener">Mapzen</a> · © <a href="https://www.icgc.cat/ca/Geoinformacio-i-mapes/Dades-i-productes/Elevacions/Elevacions-territorial/Models-delevacions" target="_blank" rel="noopener">ICGC</a></small>
+            <small class="example-credits"><span data-i18n="ui.examples.credits">Dades ©</span> <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> · © <a href="https://mapterhorn.com/attribution/" target="_blank" rel="noopener">Mapterhorn</a> · <a href="https://github.com/tilezen/joerd/blob/master/docs/attribution.md" target="_blank" rel="noopener">Mapzen</a> · © <a href="https://www.icgc.cat/ca/Geoinformacio-i-mapes/Dades-i-productes/Elevacions/Elevacions-territorial/Models-delevacions" target="_blank" rel="noopener">ICGC</a></small>
           </section>
         </div>
       </div>
       <div id="status" role="status" aria-live="polite"></div>
     </div>
   </section>
-  <aside id="workshop-export" class="sidebar sidebar-right" aria-label="Informació i exportació">
+  <aside id="workshop-export" class="sidebar sidebar-right" aria-label="Informació i exportació" data-i18n-aria="ui.output.panel">
     <section class="info-panel is-open">
-      <h2><button type="button" class="section-toggle" aria-expanded="true" aria-controls="info-model">La teva maqueta <i aria-hidden="true">−</i></button></h2>
+      <h2><button type="button" class="section-toggle" aria-expanded="true" aria-controls="info-model" data-i18n-text="ui.output.model">La teva maqueta <i aria-hidden="true">−</i></button></h2>
       <div class="config-content" id="info-model">
-        <form id="piece-resize-form" aria-label="Mida de la maqueta" hidden>
+        <form id="piece-resize-form" aria-label="Mida de la maqueta" hidden data-i18n-aria="ui.output.modelSize">
           <fieldset id="piece-resize-fields">
             <div class="two-fields">
-              <div><label for="piece-resize-width">Amplada <span class="unit">cm</span></label><input id="piece-resize-width" type="number" min="10" max="100" step="1" aria-describedby="resize-size-note" required></div>
-              <div><label for="piece-resize-height">Fondària <span class="unit">cm</span></label><input id="piece-resize-height" type="number" min="10" max="100" step="1" aria-describedby="resize-size-note" required></div>
+              <div><label for="piece-resize-width" data-i18n-text="ui.size.width">Amplada <span class="unit">cm</span></label><input id="piece-resize-width" type="number" min="10" max="100" step="1" aria-describedby="resize-size-note" required></div>
+              <div><label for="piece-resize-height" data-i18n-text="ui.size.depth">Fondària <span class="unit">cm</span></label><input id="piece-resize-height" type="number" min="10" max="100" step="1" aria-describedby="resize-size-note" required></div>
             </div>
             <div class="piece-resize-actions">
-              <p id="resize-size-note" class="hint">10–50 cm per costat. En panoràmic, fins a 100 × 20 cm.</p>
-              <button id="piece-resize-apply" type="submit" class="secondary" disabled>Aplica la mida</button>
+              <p id="resize-size-note" class="hint" data-i18n="ui.size.resizeNote">10–50 cm per costat. En panoràmic, fins a 100 × 20 cm.</p>
+              <button id="piece-resize-apply" type="submit" class="secondary" disabled data-i18n="ui.action.resize">Aplica la mida</button>
             </div>
           </fieldset>
           <p id="piece-resize-pending" class="hint" role="status" hidden></p>
@@ -171,37 +171,37 @@
           <p id="catalog-place-kind"></p>
           <p id="catalog-place-description"></p>
         </section>
-        <div id="metrics" class="metrics"><div><strong>—</strong><span>Mida final · mm</span></div><div><strong>—</strong><span>Escala</span></div></div>
-        <div id="tiling-summary" class="subtle-note">Mida pendent de triar</div>
+        <div id="metrics" class="metrics"><div><strong>—</strong><span data-i18n="ui.output.finalSize">Mida final · mm</span></div><div><strong>—</strong><span data-i18n="ui.place.scale">Escala</span></div></div>
+        <div id="tiling-summary" class="subtle-note" data-i18n="ui.output.sizePending">Mida pendent de triar</div>
       </div>
     </section>
     <section class="info-panel">
-      <h2><button type="button" class="section-toggle" aria-expanded="false" aria-controls="info-materials">Colors i materials <i aria-hidden="true">+</i></button></h2>
-      <div class="config-content" id="info-materials" hidden><label id="material-count-label" for="material-count">Colors / materials</label><select id="material-count"><option value="1">1 material · impressió monocroma</option><option value="2">2 materials</option><option value="4" selected>4 materials</option><option value="8">8 materials</option></select><div id="material-legend" class="material-legend"></div></div>
+      <h2><button type="button" class="section-toggle" aria-expanded="false" aria-controls="info-materials" data-i18n-text="ui.materials.title">Colors i materials <i aria-hidden="true">+</i></button></h2>
+      <div class="config-content" id="info-materials" hidden><label id="material-count-label" for="material-count" data-i18n="ui.materials.count">Colors / materials</label><select id="material-count"><option value="1" data-i18n="ui.materials.one">1 material · impressió monocroma</option><option value="2" data-i18n="ui.materials.two">2 materials</option><option value="4" selected data-i18n="ui.materials.four">4 materials</option><option value="8" data-i18n="ui.materials.eight">8 materials</option></select><div id="material-legend" class="material-legend"></div></div>
     </section>
     <section class="info-panel">
-      <h2><button type="button" class="section-toggle" aria-expanded="false" aria-controls="info-data">Dades i limitacions <i aria-hidden="true">+</i></button></h2>
-      <div class="config-content data-notes" id="info-data" hidden><p class="hint">Relleu: <span id="terrain-source-name">Mapterhorn / Mapzen</span></p><p id="building-info" class="hint"></p><button id="download-processing" class="quiet-button" type="button" disabled>Descarrega els temps de generació ↓</button><p class="hint">El JSON de la darrera generació inclou coordenades, ajustos i temps.</p><div id="warnings"></div><p class="hint">Els arbres són procedimentals. Revisa les malles i el laminat abans d’imprimir.</p></div>
+      <h2><button type="button" class="section-toggle" aria-expanded="false" aria-controls="info-data" data-i18n-text="ui.data.title">Dades i limitacions <i aria-hidden="true">+</i></button></h2>
+      <div class="config-content data-notes" id="info-data" hidden><p class="hint" data-i18n-text="ui.data.relief">Relleu: <span id="terrain-source-name">Mapterhorn / Mapzen</span></p><p id="building-info" class="hint"></p><button id="download-processing" class="quiet-button" type="button" disabled data-i18n="ui.data.downloadTiming">Descarrega els temps de generació ↓</button><p class="hint" data-i18n="ui.data.timingNote">El JSON de la darrera generació inclou coordenades, ajustos i temps.</p><div id="warnings"></div><p class="hint" data-i18n="ui.data.treesNote">Els arbres són procedimentals. Revisa les malles i el laminat abans d’imprimir.</p></div>
     </section>
     <section class="download-panel">
-      <div class="section-heading"><h2>Descarrega el model</h2></div>
+      <div class="section-heading"><h2 data-i18n="ui.export.title">Descarrega el model</h2></div>
       <div class="download-control">
-        <button type="button" id="export-model" class="primary" disabled>3MF per a Bambu Studio ↓</button>
-        <button type="button" id="export-formats" class="primary" aria-label="Formats de descàrrega" aria-expanded="false" aria-controls="export-options" disabled>▾</button>
+        <button type="button" id="export-model" class="primary" disabled data-i18n="ui.export.bambuDownload">3MF per a Bambu Studio ↓</button>
+        <button type="button" id="export-formats" class="primary" aria-label="Formats de descàrrega" aria-expanded="false" aria-controls="export-options" disabled data-i18n-aria="ui.export.formats">▾</button>
         <div id="export-options" hidden>
-          <button type="button" data-format="bambu" aria-pressed="true">3MF per a Bambu Studio</button>
-          <button type="button" data-format="bambu-zip" aria-pressed="false" hidden>3MF Bambu · peces en ZIP</button>
-          <button type="button" data-format="3mf" aria-pressed="false">3MF estàndard</button>
-          <button type="button" data-format="stl" aria-pressed="false">STL per material</button>
+          <button type="button" data-format="bambu" aria-pressed="true" data-i18n="ui.export.bambu">3MF per a Bambu Studio</button>
+          <button type="button" data-format="bambu-zip" aria-pressed="false" hidden data-i18n="ui.export.bambuZip">3MF Bambu · peces en ZIP</button>
+          <button type="button" data-format="3mf" aria-pressed="false" data-i18n="ui.export.standard">3MF estàndard</button>
+          <button type="button" data-format="stl" aria-pressed="false" data-i18n="ui.export.stl">STL per material</button>
         </div>
       </div>
-      <p id="export-hint" class="hint">Obre el 3MF com a projecte i comprova els filaments i el laminat.</p>
+      <p id="export-hint" class="hint" data-i18n="ui.export.bambuHint">Obre el 3MF com a projecte i comprova els filaments i el laminat.</p>
     </section>
   </aside>
-  <nav id="mobile-workshop" aria-label="Taller de maquetes" hidden>
-    <button type="button" data-mobile-panel="preview" aria-pressed="true" aria-controls="viewport"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"/><circle cx="12" cy="12" r="2.5"/></svg>Visor</button>
-    <button type="button" data-mobile-panel="settings" aria-expanded="false" aria-controls="workshop-settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h3m4 0h9M4 12h9m4 0h3M4 17h3m4 0h9"/><circle cx="9" cy="7" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="9" cy="17" r="2"/></svg>Ajustos</button>
-    <button type="button" data-mobile-panel="export" aria-expanded="false" aria-controls="workshop-export" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m-4-4 4 4 4-4M4 16v4h16v-4"/></svg>Exporta</button>
+  <nav id="mobile-workshop" aria-label="Taller de maquetes" hidden data-i18n-aria="ui.mobile.workshop">
+    <button type="button" data-mobile-panel="preview" aria-pressed="true" aria-controls="viewport" data-i18n-text="ui.mobile.preview"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"/><circle cx="12" cy="12" r="2.5"/></svg>Visor</button>
+    <button type="button" data-mobile-panel="settings" aria-expanded="false" aria-controls="workshop-settings" data-i18n-text="ui.mobile.settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h3m4 0h9M4 12h9m4 0h3M4 17h3m4 0h9"/><circle cx="9" cy="7" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="9" cy="17" r="2"/></svg>Ajustos</button>
+    <button type="button" data-mobile-panel="export" aria-expanded="false" aria-controls="workshop-export" disabled data-i18n-text="ui.mobile.export"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m-4-4 4 4 4-4M4 16v4h16v-4"/></svg>Exporta</button>
   </nav>
 </main>
 <footer class="app-footer">
@@ -212,39 +212,39 @@
       <path d="m27 9 7-6" stroke="var(--umbrella-accent)" stroke-width="4.5"/>
     </svg><span>ortogra<span class="umbrella-dot">.</span>fi</span>
   </a></p>
-  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions">v0.23.2</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V"><span class="desktop-copy">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
+  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer" data-i18n-text="ui.footer.openSource"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions">v0.23.3</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V" data-i18n-aria="ui.footer.about"><span class="desktop-copy" data-i18n="ui.footer.aboutDesktop">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
 </footer>
 
 <dialog id="projects-dialog" aria-labelledby="projects-title">
-  <div class="dialog-heading"><h2 id="projects-title">Galeria de maquetes</h2><button data-close aria-label="Tanca" autofocus>×</button></div>
+  <div class="dialog-heading"><h2 id="projects-title" data-i18n="ui.gallery.title">Galeria de maquetes</h2><button data-close aria-label="Tanca" autofocus data-i18n-aria="dialog.close">×</button></div>
   <div class="dialog-content">
-    <div class="gallery-sections" role="group" aria-label="Seccions de la galeria">
-      <button type="button" class="secondary" aria-controls="gallery-examples" aria-pressed="true">Exemples</button>
-      <button type="button" class="secondary" aria-controls="gallery-saved" aria-pressed="false">Projectes desats</button>
+    <div class="gallery-sections" role="group" aria-label="Seccions de la galeria" data-i18n-aria="ui.gallery.sections">
+      <button type="button" class="secondary" aria-controls="gallery-examples" aria-pressed="true" data-i18n="ui.gallery.examples">Exemples</button>
+      <button type="button" class="secondary" aria-controls="gallery-saved" aria-pressed="false" data-i18n="ui.gallery.saved">Projectes desats</button>
     </div>
-    <section id="gallery-examples" aria-label="Exemples de maquetes">
-      <div class="search-field"><label class="sr-only" for="gallery-search">Cerca un exemple</label><input id="gallery-search" type="search" placeholder="Cerca un lloc o tipus de paisatge" autocomplete="off"></div>
+    <section id="gallery-examples" aria-label="Exemples de maquetes" data-i18n-aria="ui.examples.title">
+      <div class="search-field"><label class="sr-only" for="gallery-search" data-i18n="ui.gallery.search">Cerca un exemple</label><input id="gallery-search" type="search" placeholder="Cerca un lloc o tipus de paisatge" autocomplete="off" data-i18n-placeholder="ui.gallery.searchPlaceholder"></div>
       <p class="hint gallery-results" role="status"></p>
       <div class="example-carousel-rail gallery-carousel">
-        <button type="button" class="quiet-button example-carousel-arrow" data-example-step="-1" aria-label="Exemple anterior" aria-controls="gallery-cards"><span aria-hidden="true">‹</span></button>
+        <button type="button" class="quiet-button example-carousel-arrow" data-example-step="-1" aria-label="Exemple anterior" aria-controls="gallery-cards" data-i18n-aria="ui.examples.previous"><span aria-hidden="true">‹</span></button>
         <div id="gallery-cards" class="example-cards"><div class="example-track"></div></div>
-        <button type="button" class="quiet-button example-carousel-arrow" data-example-step="1" aria-label="Exemple següent" aria-controls="gallery-cards"><span aria-hidden="true">›</span></button>
+        <button type="button" class="quiet-button example-carousel-arrow" data-example-step="1" aria-label="Exemple següent" aria-controls="gallery-cards" data-i18n-aria="ui.examples.next"><span aria-hidden="true">›</span></button>
       </div>
       <p id="gallery-feedback" class="hint" role="status"></p>
       <details id="gallery-presets" hidden>
-        <summary>Altres retalls</summary>
+        <summary data-i18n="ui.gallery.otherAreas">Altres retalls</summary>
         <div>
-          <button type="button" class="secondary" data-gallery-preset="aneto-llacs">Llacs glacials de l’Aneto</button>
-          <button type="button" class="secondary" data-gallery-preset="pirineus-relleu">Pirineus · sector de l’Aneto</button>
-          <button type="button" class="secondary" data-gallery-preset="pirineus-eix" hidden>Pirineus · eix de la serralada</button>
+          <button type="button" class="secondary" data-gallery-preset="aneto-llacs" data-i18n="ui.gallery.anetoLakes">Llacs glacials de l’Aneto</button>
+          <button type="button" class="secondary" data-gallery-preset="pirineus-relleu" data-i18n="ui.gallery.anetoArea">Pirineus · sector de l’Aneto</button>
+          <button type="button" class="secondary" data-gallery-preset="pirineus-eix" hidden data-i18n="ui.gallery.pyreneesAxis">Pirineus · eix de la serralada</button>
         </div>
       </details>
     </section>
-    <section id="gallery-saved" aria-label="Projectes desats" hidden>
-      <p>Els ajustos es desen en aquest navegador. En obrir un projecte, podràs tornar a generar la maqueta.</p>
+    <section id="gallery-saved" aria-label="Projectes desats" hidden data-i18n-aria="ui.gallery.saved">
+      <p data-i18n="ui.gallery.savedHint">Els ajustos es desen en aquest navegador. En obrir un projecte, podràs tornar a generar la maqueta.</p>
       <form id="save-project" hidden>
-        <label for="project-name">Nom del projecte actual</label>
-        <div class="project-actions"><input id="project-name" maxlength="100" required><button class="primary" type="submit">Desa els ajustos</button></div>
+        <label for="project-name" data-i18n="ui.gallery.projectName">Nom del projecte actual</label>
+        <div class="project-actions"><input id="project-name" maxlength="100" required><button class="primary" type="submit" data-i18n="ui.action.saveSettings">Desa els ajustos</button></div>
       </form>
       <p id="project-feedback" class="hint" role="status"></p>
       <div id="project-list"></div>
@@ -253,15 +253,18 @@
 </dialog>
 <dialog id="changelog-dialog" aria-labelledby="changelog-title">
   <header class="dialog-heading">
-    <h2 id="changelog-title">Historial de versions</h2>
-    <a class="dialog-link" href="https://github.com/aaronFortuno/relleu-obert/blob/main/CHANGELOG.md" target="_blank" rel="noreferrer">Changelog complet ↗</a>
-    <button data-close aria-label="Tanca" autofocus>×</button>
+    <h2 id="changelog-title" data-i18n="ui.releases.title">Historial de versions</h2>
+    <a class="dialog-link" href="https://github.com/aaronFortuno/relleu-obert/blob/main/CHANGELOG.md" target="_blank" rel="noreferrer" data-i18n="ui.releases.changelog">Changelog complet ↗</a>
+    <button data-close aria-label="Tanca" autofocus data-i18n-aria="dialog.close">×</button>
   </header>
-  <div class="dialog-content" id="release-list"></div>
+  <div class="dialog-content">
+    <p class="hint" data-i18n="history.originalNotice">Les notes de versions anteriors són en català.</p>
+    <div id="release-list"></div>
+  </div>
 </dialog>
-<dialog id="help-dialog" aria-labelledby="help-title"><div class="dialog-heading"><h2 id="help-title">Geografia que pots tocar.</h2><button data-close aria-label="Tanca">×</button></div><div class="dialog-content"><p>Relleu Obert transforma dades de llocs reals en maquetes per explorar el paisatge i imprimir-lo en 3D.</p><ol class="help-steps"><li><strong>Mida i territori.</strong> Tria la mida al centre, situa el retall al mapa i prem «Genera el model» a Territori.</li><li><strong>Vegetació, vies i edificis.</strong> Afina cada apartat. Torna a qualsevol pas des del seu títol. Els canvis a les vies s’apliquen sobre el terreny preparat.</li><li><strong>Descarrega.</strong> Tria 3MF o STL, assigna els filaments i revisa el laminat abans d’imprimir.</li></ol><p class="hint">La cerca d’adreces i la cartografia consulten fonts obertes. La geometria i els fitxers es calculen al navegador. La vegetació és simulada.</p><p class="hint"><strong>Cobertes dels edificis.</strong> El detall depèn de les dades obertes que publica cada font. Quan la font proporciona prou informació sobre la forma i tries l’altura de les dades, es representa la coberta. Si aquesta informació falta, l’edifici conserva una coberta plana.</p></div></dialog>
+<dialog id="help-dialog" aria-labelledby="help-title"><div class="dialog-heading"><h2 id="help-title" data-i18n="app.tagline">Geografia que pots tocar.</h2><button data-close aria-label="Tanca" data-i18n-aria="dialog.close">×</button></div><div class="dialog-content"><p data-i18n="ui.help.intro">Relleu Obert transforma dades de llocs reals en maquetes per explorar el paisatge i imprimir-lo en 3D.</p><ol class="help-steps"><li data-i18n-text="ui.help.size"><strong data-i18n="ui.help.sizeHeading">Mida i territori.</strong> Tria la mida al centre, situa el retall al mapa i prem «Genera el model» a Territori.</li><li data-i18n-text="ui.help.layers"><strong data-i18n="ui.help.layersHeading">Vegetació, vies i edificis.</strong> Afina cada apartat. Torna a qualsevol pas des del seu títol. Els canvis a les vies s’apliquen sobre el terreny preparat.</li><li data-i18n-text="ui.help.download"><strong data-i18n="ui.help.downloadHeading">Descarrega.</strong> Tria 3MF o STL, assigna els filaments i revisa el laminat abans d’imprimir.</li></ol><p class="hint" data-i18n="ui.help.openData">La cerca d’adreces i la cartografia consulten fonts obertes. La geometria i els fitxers es calculen al navegador. La vegetació és simulada.</p><p class="hint" data-i18n-text="ui.help.roofs"><strong data-i18n="ui.help.roofsHeading">Cobertes dels edificis.</strong> El detall depèn de les dades obertes que publica cada font. Quan la font proporciona prou informació sobre la forma i tries l’altura de les dades, es representa la coberta. Si aquesta informació falta, l’edifici conserva una coberta plana.</p></div></dialog>
 
 
-<dialog id="about-dialog" aria-labelledby="about-title"><div class="dialog-heading"><h2 id="about-title">Un petit espai per aprendre</h2><button data-close aria-label="Tanca">×</button></div><div class="dialog-content"><div class="about-intro"><a class="lightning-qr" href="lightning:LNURL1DP68GURN8GHJ7AMPD3KX2AR0VEEKZAR0WD5XJTNRDAKJ7TNHV4KXCTTTDEHHWM30D3H82UNVWQHKZUR5WDMKJMFEXQESLJTDDS" aria-label="Obre la cartera Lightning"><img src="./assets/lightning.svg" width="128" height="128" alt="Codi QR per fer una aportació voluntària amb Lightning"></a><div><p>Relleu Obert neix de les ganes de portar la geografia a les mans: preparar maquetes de llocs reals per explorar el relleu, el paisatge i el territori a l’aula.</p><p>El projecte és gratuït i segueix la filosofia Value for Value: si et resulta útil i vols donar-hi suport, pots fer un microdonatiu voluntari per Lightning. Recomanar-lo també ajuda.</p><span class="small-label">LIGHTNING NETWORK</span><div class="lightning-address"><code>aptswim903@walletofsatoshi.com</code><button id="copy-lightning" aria-label="Copia l’adreça Lightning">Copia</button></div><p id="copy-status" class="hint" role="status"></p></div></div><div class="about-bottom"><div class="author-note"><img src="./assets/aaron-fortuno.png" width="64" height="64" alt="Aarón Fortuño"><div><h3>Sobre l’autor · Aarón Fortuño</h3><p>Soc docent i creo aplicacions educatives i altres projectes de codi obert. Si tens curiositat, els trobaràs al meu portfoli.</p><a href="https://aaronfortuno.github.io/portfolio/" target="_blank" rel="noreferrer">Explora el meu portfoli ↗</a></div></div><section class="about-sources"><h3>Fonts i projectes oberts</h3><p>Mapes: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a>, <a href="https://openfreemap.org/" target="_blank" rel="noreferrer">OpenFreeMap</a> i OpenMapTiles.<br>Edificis: <a href="https://www.icgc.cat/" target="_blank" rel="noreferrer">ICGC</a> · CC BY 4.0.</p><p>Relleu: <a href="https://mapterhorn.com/attribution/" target="_blank" rel="noreferrer">Mapterhorn</a> i <a href="https://registry.opendata.aws/terrain-tiles/" target="_blank" rel="noreferrer">Mapzen</a>. Cerca: <a href="https://photon.komoot.io/" target="_blank" rel="noreferrer">Photon</a>.</p><p>Motor: Three.js, Leaflet, Manifold i altres biblioteques obertes.</p><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/SOURCES.md" target="_blank" rel="noreferrer">Fonts i llicències completes ↗</a></section></div></div></dialog>
+<dialog id="about-dialog" aria-labelledby="about-title"><div class="dialog-heading"><h2 id="about-title" data-i18n="ui.about.title">Un petit espai per aprendre</h2><button data-close aria-label="Tanca" data-i18n-aria="dialog.close">×</button></div><div class="dialog-content"><div class="about-intro"><a class="lightning-qr" href="lightning:LNURL1DP68GURN8GHJ7AMPD3KX2AR0VEEKZAR0WD5XJTNRDAKJ7TNHV4KXCTTTDEHHWM30D3H82UNVWQHKZUR5WDMKJMFEXQESLJTDDS" aria-label="Obre la cartera Lightning" data-i18n-aria="ui.about.openWallet"><img src="./assets/lightning.svg" width="128" height="128" alt="Codi QR per fer una aportació voluntària amb Lightning" data-i18n-alt="ui.about.qrAlt"></a><div><p data-i18n="ui.about.intro">Relleu Obert neix de les ganes de portar la geografia a les mans: preparar maquetes de llocs reals per explorar el relleu, el paisatge i el territori a l’aula.</p><p data-i18n="ui.about.value">El projecte és gratuït i segueix la filosofia Value for Value: si et resulta útil i vols donar-hi suport, pots fer un microdonatiu voluntari per Lightning. Recomanar-lo també ajuda.</p><span class="small-label">LIGHTNING NETWORK</span><div class="lightning-address"><code>aptswim903@walletofsatoshi.com</code><button id="copy-lightning" aria-label="Copia l’adreça Lightning" data-i18n-aria="ui.about.copyAddress" data-i18n="ui.action.copy">Copia</button></div><p id="copy-status" class="hint" role="status"></p></div></div><div class="about-bottom"><div class="author-note"><img src="./assets/aaron-fortuno.png" width="64" height="64" alt="Aarón Fortuño"><div><h3 data-i18n="ui.about.author">Sobre l’autor · Aarón Fortuño</h3><p data-i18n="ui.about.bio">Soc docent i creo aplicacions educatives i altres projectes de codi obert. Si tens curiositat, els trobaràs al meu portfoli.</p><a href="https://aaronfortuno.github.io/portfolio/" target="_blank" rel="noreferrer" data-i18n="ui.about.portfolio">Explora el meu portfoli ↗</a></div></div><section class="about-sources"><h3 data-i18n="ui.about.sources">Fonts i projectes oberts</h3><p><span data-i18n="ui.about.maps">Mapes:</span> <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a>, <a href="https://openfreemap.org/" target="_blank" rel="noreferrer">OpenFreeMap</a> <span data-i18n="ui.about.andOpenMapTiles">i OpenMapTiles.</span><br><span data-i18n="ui.about.buildings">Edificis:</span> <a href="https://www.icgc.cat/" target="_blank" rel="noreferrer">ICGC</a> · CC BY 4.0.</p><p><span data-i18n="ui.data.relief">Relleu:</span> <a href="https://mapterhorn.com/attribution/" target="_blank" rel="noreferrer">Mapterhorn</a> <span data-i18n="ui.about.and">i</span> <a href="https://registry.opendata.aws/terrain-tiles/" target="_blank" rel="noreferrer">Mapzen</a><span data-i18n="ui.about.search">. Cerca:</span> <a href="https://photon.komoot.io/" target="_blank" rel="noreferrer">Photon</a>.</p><p data-i18n="ui.about.engine">Motor: Three.js, Leaflet, Manifold i altres biblioteques obertes.</p><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/SOURCES.md" target="_blank" rel="noreferrer" data-i18n="ui.about.licenses">Fonts i llicències completes ↗</a></section></div></div></dialog>
 <script type="module" src="./src/main.js"></script>
 </body></html>

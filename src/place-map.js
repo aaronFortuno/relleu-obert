@@ -3,6 +3,7 @@ import 'leaflet/dist/leaflet.css';
 import {parseCoordinates,scaledBBox,physicalBBox,selectionPose,coveringSelectionBox,isPanoramicSize,PURE_SCALE_RANGE,PANORAMIC_SCALE_RANGE} from './selection.js';
 import {recommendedPlace,DEFAULT_PLACE,placeSelection} from './recommended-places.js';
 import {maxRegionScale,regionTileCount,MAX_REGION_TILES} from './region-limits.js';
+import {formatNumber,onLocaleChange,t} from './i18n.js';
 
 export const MAX_PROJECT_SCALE=20000;
 
@@ -12,14 +13,12 @@ export function createPlaceMap(container,{onChange,onName,width=150,height=150})
   const frame=document.createElement('div');frame.className='selection-frame';container.appendChild(frame);
   const handle=document.createElement('button');
   handle.type='button';handle.className='map-rotation-handle';
-  handle.setAttribute('role','slider');handle.setAttribute('aria-label','Gira el retall');
+  handle.setAttribute('role','slider');
   handle.setAttribute('aria-valuemin','-180');handle.setAttribute('aria-valuemax','180');
-  handle.title='Arrossega per girar · fletxes per ajustar';
   frame.append(handle);
   const reset=document.createElement('button');
   reset.type='button';reset.className='map-rotation-reset';
   reset.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="M16.24 7.76l-2.12 6.36-6.36 2.12 2.12-6.36 6.36-2.12z"/></svg>';
-  reset.setAttribute('aria-label','Restableix l’orientació');reset.title='Restableix l’orientació';
   const north=L.control({position:'topleft'});
   north.onAdd=()=>{
     const bar=L.DomUtil.create('div','leaflet-bar map-north-control');
@@ -31,6 +30,26 @@ export function createPlaceMap(container,{onChange,onName,width=150,height=150})
   L.DomEvent.disableClickPropagation(handle);
   let physical=[width,height],lastBBox,lastBase=placeSelection(DEFAULT_PLACE,width,height),pendingFit,rotation=0,lastRotation,restoring=false,retainedBase=null,gesture=null,locked=false,pureRelief=false;
   let resizeReference=null;
+  const zoom=map.zoomControl.getContainer();
+  function updateRotationLabel(value){
+    handle.setAttribute('aria-valuetext',t(Math.abs(value)===1?'example.map.degree':'example.map.degrees',{value:formatNumber(value)}));
+  }
+  function updateMapLabels(){
+    handle.setAttribute('aria-label',t('example.map.rotation'));
+    handle.title=t('example.map.rotationHelp');
+    for(const [element,key] of [
+      [reset,'example.map.reset'],
+      [zoom.querySelector('.leaflet-control-zoom-in'),'example.map.zoomIn'],
+      [zoom.querySelector('.leaflet-control-zoom-out'),'example.map.zoomOut'],
+    ]){
+      const label=t(key);
+      element.setAttribute('aria-label',label);
+      element.title=label;
+    }
+    updateRotationLabel(gesture?.value??rotation);
+  }
+  onLocaleChange(updateMapLabels);
+  updateMapLabels();
   map.on('zoomstart',()=>{if(!restoring)retainedBase=null;});
   function frameSize(){const w=container.clientWidth,h=container.clientHeight,r=physical[0]/physical[1],a=rotation*Math.PI/180,c=Math.abs(Math.cos(a)),s=Math.abs(Math.sin(a)),fw=Math.min((w-46)/(c+s/r),(h-54)/(s+c/r));return [fw,fw/r];}
   function scaleBox(center,denominator){
@@ -94,7 +113,7 @@ export function createPlaceMap(container,{onChange,onName,width=150,height=150})
   function drawRotation(value){
     frame.style.transform=`translate(-50%,-50%) rotate(${value}deg)`;
     handle.setAttribute('aria-valuenow',String(value));
-    handle.setAttribute('aria-valuetext',value+' graus');
+    updateRotationLabel(value);
     reset.disabled=locked||value===0;
   }
   const changed=()=>{if(restoring||gesture)return;const {lat,lng}=map.getCenter();limitZoom([lat,lng]);const p=pose();drawRotation(rotation);if(p&&(!lastBBox||rotation!==lastRotation||p.bbox.some((v,i)=>Math.abs(v-lastBBox[i])>1e-12))){lastBBox=p.bbox;lastRotation=rotation;resizeReference=null;onChange(p.bbox,map.getCenter(),p);}};
@@ -178,7 +197,9 @@ export function createPlaceMap(container,{onChange,onName,width=150,height=150})
     const cacheKey='relleu-search:'+text.trim().toLowerCase();let cached;try{cached=JSON.parse(sessionStorage.getItem(cacheKey));}catch{}
     if(cached)return cached;
     const url=new URL('https://photon.komoot.io/api/');url.searchParams.set('q',text);url.searchParams.set('limit','5');const c=map.getCenter();url.searchParams.set('lat',c.lat);url.searchParams.set('lon',c.lng);
-    const response=await fetch(url,{signal:AbortSignal.timeout(12000)});if(!response.ok)throw Error('El cercador no està disponible. Pots introduir coordenades o moure el mapa.');
+    let response;
+    try{response=await fetch(url,{signal:AbortSignal.timeout(12000)});}catch{throw Error(t('example.map.searchUnavailable'));}
+    if(!response.ok)throw Error(t('example.map.searchUnavailable'));
     const data=await response.json(),results=data.features.map(f=>({lat:f.geometry.coordinates[1],lon:f.geometry.coordinates[0],label:[f.properties.name,[f.properties.street,f.properties.housenumber].filter(Boolean).join(' '),f.properties.city||f.properties.county,f.properties.postcode,f.properties.country].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join(', ')}));
     try{sessionStorage.setItem(cacheKey,JSON.stringify(results));}catch{}return results;
   },choose(result){map.setView([result.lat,result.lon],15,{animate:false});onName(result.label);}};

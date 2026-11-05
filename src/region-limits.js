@@ -10,8 +10,8 @@ export function maxRegionScale(center,widthMM,heightMM,rotation=0){
   for(let i=0;i<28;i++){const mid=(low+high)/2,b=selectionPose(scaledBBox(center,widthMM,heightMM,mid),rotation).bbox;if(regionTileCount(b)<=MAX_REGION_TILES)low=mid;else high=mid;}
   return Math.floor(low/100)*100;
 }
-export function regionLimitMessage(pose,widthMM,heightMM){
+const defaultLimitMessage=max=>`L’àrea seleccionada supera la capacitat actual de càrrega.${max?` Per a aquesta mida i orientació, tria aproximadament 1:${max.toLocaleString('ca')} o una escala més detallada.`:''} També pots reduir la mida de la peça o apropar el mapa.`;
+export function regionLimitMessage(pose,widthMM,heightMM,formatMessage=defaultLimitMessage){
   if(regionTileCount(pose.bbox)<=MAX_REGION_TILES)return '';
-  const max=maxRegionScale(pose.center,widthMM,heightMM,pose.rotation);
-  return `L’àrea seleccionada supera la capacitat actual de càrrega.${max?` Per a aquesta mida i orientació, tria aproximadament 1:${max.toLocaleString('ca')} o una escala més detallada.`:''} També pots reduir la mida de la peça o apropar el mapa.`;
+  return formatMessage(maxRegionScale(pose.center,widthMM,heightMM,pose.rotation));
 }

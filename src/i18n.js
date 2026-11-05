@@ -1,6 +1,7 @@
 // Núcli d'internacionalització. Veure work/RO-019-SETUP.md per a la guia de migració
 // i les instruccions per registrar nous catàlegs.
-import ca from './locales/ca.js';
+import {translateDiagnostic} from './engine-i18n.js';
+import {WORKSHOP_LOCALES,workshopCatalog} from './locales/workshop-catalogs.js';
 
 export const DEFAULT_LOCALE = 'ca';
 const STORAGE_KEY = 'relleu-obert-locale';
@@ -9,9 +10,10 @@ const STORAGE_KEY = 'relleu-obert-locale';
 // Intl.getCanonicalLocales. Els catàlegs només entren per import estàtic +
 // registerLocale(); mai no es carreguen URL arbitràries ni codi remot.
 const catalogs = new Map();
+const localeListeners = new Set();
 const KNOWN_LOCALES = [
   { code: 'ca', name: 'Català' },
-  { code: 'es', name: 'Castellà' },
+  { code: 'es', name: 'Castellano' },
   { code: 'gl', name: 'Galego' },
   { code: 'eu', name: 'Euskara' },
   { code: 'en', name: 'English' },
@@ -35,7 +37,7 @@ export function registerLocale(code, catalog) {
   catalogs.set(canonical, Object.freeze(Object.assign(Object.create(null), catalog)));
 }
 
-registerLocale(DEFAULT_LOCALE, ca);
+WORKSHOP_LOCALES.forEach((code,column) => registerLocale(code, workshopCatalog(column)));
 
 export function availableLocales() {
   const known = KNOWN_LOCALES.map(l => ({ ...l, available: catalogs.has(l.code) }));
@@ -74,6 +76,15 @@ export function formatNumber(value, options) {
   return new Intl.NumberFormat(current, options).format(value);
 }
 
+export function translateEngineMessage(message) {
+  return translateDiagnostic(message, WORKSHOP_LOCALES.indexOf(current), formatNumber);
+}
+
+export function onLocaleChange(callback) {
+  localeListeners.add(callback);
+  return () => localeListeners.delete(callback);
+}
+
 export function plural(count, forms) {
   const rule = new Intl.PluralRules(current).select(count);
   const form = forms[rule] ?? forms.other ?? '';
@@ -99,9 +110,14 @@ export function setLocale(code) {
 export function translateDom(root = typeof document !== 'undefined' ? document : null) {
   if (!root) return;
   for (const el of root.querySelectorAll('[data-i18n]')) el.textContent = t(el.dataset.i18n);
-  for (const el of root.querySelectorAll('[data-i18n-aria]')) el.setAttribute('aria-label', t(el.dataset.i18nAria));
-  for (const el of root.querySelectorAll('[data-i18n-title]')) el.setAttribute('title', t(el.dataset.i18nTitle));
-  for (const el of root.querySelectorAll('[data-i18n-placeholder]')) el.setAttribute('placeholder', t(el.dataset.i18nPlaceholder));
+  for (const el of root.querySelectorAll('[data-i18n-text]')) {
+    const node = [...el.childNodes].find(child => child.nodeType === 3 && child.nodeValue.trim());
+    if (node) node.nodeValue = node.nodeValue.replace(/\S[\s\S]*\S|\S/, () => t(el.dataset.i18nText));
+  }
+  for (const [suffix, attribute] of [['aria','aria-label'],['title','title'],['placeholder','placeholder'],['alt','alt'],['content','content']]) {
+    const marker = 'data-i18n-' + suffix;
+    for (const el of root.querySelectorAll(`[${marker}]`)) el.setAttribute(attribute, t(el.getAttribute(marker)));
+  }
 }
 
 function renderLanguageList() {
@@ -121,10 +137,12 @@ function renderLanguageList() {
 }
 
 export function applyLocale() {
-  if (typeof document === 'undefined') return;
-  document.documentElement.lang = current;
-  translateDom();
-  renderLanguageList();
+  if (typeof document !== 'undefined') {
+    document.documentElement.lang = current;
+    translateDom();
+    renderLanguageList();
+  }
+  for (const listener of localeListeners) listener(current);
 }
 
 export function initI18n() {

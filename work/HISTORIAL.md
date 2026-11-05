@@ -2,6 +2,12 @@
 
 Actualitzat: 2026-11-05. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.23.3 — Taller en cinc idiomes
+
+RO-019 activa català, castellà, gallec, basc i anglès al selector de capçalera. El canvi actualitza la interfície, les fitxes, les etiquetes accessibles i els missatges habituals de generació. La preferència es desa en aquest navegador. Les notes històriques i l’informe tècnic conserven els textos originals. [Configuració i cobertura](RO-019-SETUP.md)
+
+Al navegador s’han comprovat els quatre idiomes nous, la persistència en recarregar, el canvi durant la generació de Tamariu i la conservació de l’exageració i del gir amb el model obert. Revisat de 320 a 1280 px. Han passat 49 proves locals i la compilació estàtica.
+
 ## v0.23.2 — Capçalera del taller
 
 RO-046 i RO-054 donen més presència a l’accés «Galeria de maquetes» amb una vora com la dels controls del visor. RO-019 posa el selector d’idioma a l’extrem dret en un desplegable amb icona Lucide. A 360 px o menys, el botó de la galeria mostra el text curt.

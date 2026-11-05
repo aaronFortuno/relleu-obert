@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.23.3 — 2026-11-05
+
+- Interfície en català, castellà, gallec, basc i anglès, amb els cinc idiomes disponibles al desplegable de capçalera.
+- El canvi d’idioma actualitza el taller, el catàleg, els controls i els missatges habituals de generació sense recarregar la maqueta. La preferència es desa al navegador.
+
 ## v0.23.2 — 2026-11-05
 
 - «Galeria de maquetes» guanya una vora com la dels controls del visor.

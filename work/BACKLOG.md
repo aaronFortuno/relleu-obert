@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-05 · v0.23.2**. Accés a la galeria i selector d’idioma a la capçalera. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-05 · v0.23.3**. Interfície disponible en cinc idiomes. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -43,6 +43,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | [RO-046](#ro-046--catàleg-de-llocs-recomanats) | P2 | 29 retalls amb captures, cerca al taller i generació directa | Revisar la llegibilitat i els temps de generació en ús |
 | [RO-044](#ro-044--catastre-per-seccions-i-recuperació-de-configuracions) | P1 | Vista progressiva validada a Tamariu | Buit/mixt, subdivisions i recuperació després d’error |
 | [RO-045](#ro-045--coherència-visual-dels-sidebars) | P2 | Implementat; pendent d’usuari | Coherència de controls i scroll a escriptori |
+| [RO-019](#ro-019--internacionalització) | P2 | Cinc idiomes disponibles | Revisió lingüística i dels diagnòstics tècnics poc freqüents |
 
 ## Després del nucli imprimible
 
@@ -50,7 +51,6 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | -------------------------------------------------------- | --------- | ------------------ | -------------------------------------------------------------- |
 | [RO-035](#ro-035--cavitats-i-relleus-amb-voladissos) | P3 | Dades 3D pendents | Coves, baumes i arcs naturals; un MDT no en descriu l’interior |
 | [RO-012](#ro-012--presentació-realista-del-model-imprès) | P3 | Objectiu redefinit | Imatge estàtica fotorealista del model amb entorn escolar |
-| [RO-019](#ro-019--internacionalització) | P3 | Selector desplegable a la capçalera | Migració dels textos i integració de les traduccions |
 | [RO-011](#ro-011--comptador-dexportacions-i-umami) | P3 | Per estudiar | Definir recompte i font real abans de publicar una xifra |
 
 ## Ajornats
@@ -96,7 +96,7 @@ Rosa incrustada ajornada i opció retirada del menú. [Implementació del comple
 
 ### RO-019 — Internacionalització
 
-El selector d’idioma de la capçalera s’obre sota la icona de la dreta. El català està disponible i el menú identifica els idiomes pendents de catàleg. [Configuració](RO-019-SETUP.md)
+Català, castellà, gallec, basc i anglès disponibles al desplegable. S’han localitzat els textos del taller, les fitxes, l’ajuda i el progrés habitual. Queda la revisió lingüística i dels diagnòstics tècnics de les fonts. [Configuració](RO-019-SETUP.md)
 
 ### RO-023 — Relleu local i fonts vectorials de més precisió
 

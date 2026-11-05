@@ -1,4 +1,6 @@
 import {createCarouselMotion} from './carousel-motion.js';
+import {localizeExample} from './curated-examples.js';
+import {formatNumber, onLocaleChange, t} from './i18n.js';
 
 const baseSpeed = 12;
 const arrowSpeed = 85;
@@ -56,15 +58,18 @@ function createCard({expanded = false, showMode = false} = {}) {
   button.append(picture, caption);
 
   return {button, populate(example) {
-    const mode = example.pureRelief === false ? 'Model complet' : 'Relleu pur';
-    const details = `${mode} · 1:${example.scale.toLocaleString('ca')}`;
+    const label = localizeExample(example);
+    const mode = t(example.pureRelief === false ? 'example.modeComplete' : 'example.modeRelief');
+    const details = `${mode} · 1:${formatNumber(example.scale)}`;
+    const width = formatNumber(example.width / 10);
+    const height = formatNumber(example.height / 10);
     button.dataset.example = example.id;
-    button.setAttribute('aria-description', `${details}. ${example.description}`);
-    image.src = example.image;
-    title.textContent = example.title;
-    metadata.textContent = `${example.category} · ${example.width / 10} × ${example.height / 10} cm`;
+    button.setAttribute('aria-description', `${details}. ${label.description}`);
+    if (image.getAttribute('src') !== example.image) image.src = example.image;
+    title.textContent = label.title;
+    metadata.textContent = `${label.category} · ${width} × ${height} cm`;
     scale.textContent = details;
-    if (expanded) description.textContent = example.description;
+    if (expanded) description.textContent = label.description;
   }};
 }
 
@@ -75,13 +80,17 @@ export function initExampleGallery(container, examples, onSelect) {
   const cards = rail.querySelector('.example-cards');
   const track = cards.querySelector('.example-track');
   const [previous, next] = rail.querySelectorAll('[data-example-step]');
-  const normalize = text => text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLocaleLowerCase('ca');
+  const normalize = text => text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+  const searchText = example => {
+    const label = localizeExample(example);
+    return normalize([example.title, example.category, label.title, label.category].join(' '));
+  };
   const entries = examples.map(example => {
     const card = createCard({showMode:true});
     card.populate(example);
     card.button.onclick = () => onSelect(example);
     track.append(card.button);
-    return {button:card.button, text:normalize(example.title+' '+example.category)};
+    return {example, card, button:card.button, text:searchText(example)};
   });
 
   function syncArrows() {
@@ -98,19 +107,27 @@ export function initExampleGallery(container, examples, onSelect) {
   cards.addEventListener('scroll', syncArrows, {passive:true});
   new ResizeObserver(syncArrows).observe(cards);
 
-  function filter() {
+  function filter(resetScroll = true) {
     const words = normalize(search.value).trim().split(/\s+/);
     let count = 0;
     for (const {button, text} of entries) {
       button.hidden = !words.every(word => text.includes(word));
       if (!button.hidden) count++;
     }
-    results.textContent = count === 0 ? 'No s’ha trobat cap exemple.' : count === 1 ? '1 exemple' : count+' exemples';
+    const key = count === 0 ? 'example.gallery.none' : count === 1 ? 'example.gallery.one' : 'example.gallery.many';
+    results.textContent = t(key, {count:formatNumber(count)});
     rail.hidden = count === 0;
-    cards.scrollLeft = 0;
+    if (resetScroll) cards.scrollLeft = 0;
     syncArrows();
   }
-  search.addEventListener('input', filter);
+  search.addEventListener('input', () => filter());
+  onLocaleChange(() => {
+    for (const entry of entries) {
+      entry.card.populate(entry.example);
+      entry.text = searchText(entry.example);
+    }
+    filter(false);
+  });
   filter();
 }
 
@@ -121,21 +138,23 @@ export function initExampleCarousel(container, examples, onSelect) {
   const track = cards.querySelector('.example-track');
   const arrows = [...container.querySelectorAll('[data-example-step]')];
   const byId = new Map(examples.map(example => [example.id, example]));
-  for (const example of orderExamples(examples)) {
+  function appendCard(example, copy = false) {
     const card = createCard();
     card.populate(example);
+    if (copy) {
+      card.button.tabIndex = -1;
+      card.button.setAttribute('aria-hidden', 'true');
+    }
     track.append(card.button);
+    return {card, example};
   }
+  const ordered = orderExamples(examples);
+  const entries = ordered.map(example => appendCard(example));
   const first = track.firstElementChild;
   const looping = examples.length > 1;
   if (looping) {
     // The copies keep the seam filled when moving in either direction.
-    for (const card of [...track.children]) {
-      const copy = card.cloneNode(true);
-      copy.tabIndex = -1;
-      copy.setAttribute('aria-hidden', 'true');
-      track.append(copy);
-    }
+    for (const example of ordered) entries.push(appendCard(example, true));
   }
   const firstCopy = track.children[examples.length];
   for (const arrow of arrows) arrow.hidden = !looping;
@@ -156,6 +175,11 @@ export function initExampleCarousel(container, examples, onSelect) {
   let cycle = 0, visible = false, frame = 0, previousTime = 0;
   let arrowDirection = 0, cardsHovered = false;
   let activeCard, pointerCard, keyboardCard, dismissedId, closeTimer, previewAnimation;
+
+  onLocaleChange(() => {
+    for (const {card, example} of entries) card.populate(example);
+    if (activeCard) preview.populate(byId.get(activeCard.dataset.example));
+  });
 
   function render() {
     if (!cycle) return;

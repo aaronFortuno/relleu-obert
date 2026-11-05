@@ -1,17 +1,22 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
 import {
   DEFAULT_LOCALE,
   availableLocales,
   formatNumber,
   getLocale,
   initI18n,
+  onLocaleChange,
   plural,
   registerLocale,
   setLocale,
   t,
   translateDom,
+  translateEngineMessage,
 } from '../src/i18n.js';
+import {WORKSHOP_LOCALES,workshopRows} from '../src/locales/workshop-catalogs.js';
+import engineRows from '../src/locales/workshop-engine.js';
 
 test('cerca de clau: retorna el text català del catàleg base', () => {
   assert.equal(t('app.tagline'), 'Geografia que pots tocar.');
@@ -45,17 +50,17 @@ test('clau absent de tots els catàlegs: mai no s’exposa la clau a l’usuari'
 
 test('idiomes no suportats: setLocale retorna fals i conserva l’idioma actiu', () => {
   const previous = getLocale();
-  assert.equal(setLocale('es'), false);
-  assert.equal(setLocale('en'), false);
+  assert.equal(setLocale('de'), false);
+  assert.equal(setLocale('fr'), false);
   assert.equal(setLocale(''), false);
   assert.equal(getLocale(), previous);
 });
 
-test('registre d’idiomes: només el català disponible, la resta llistats com a pendents', () => {
+test('els cinc idiomes del taller estan disponibles', () => {
   const locales = availableLocales();
   assert.deepEqual(
     locales.map(l => [l.code, l.available]),
-    [['ca', true], ['es', false], ['gl', false], ['eu', false], ['en', false], ['zz', true]],
+    [['ca', true], ['es', true], ['gl', true], ['eu', true], ['en', true], ['zz', true]],
   );
 });
 
@@ -130,7 +135,7 @@ test('regressió: codis heretats o maliciosos no són idiomes vàlids', () => {
 });
 
 test('regressió: un codi desat maliciós o no suportat cau a l’idioma per defecte', () => {
-  for (const saved of ['__proto__', 'constructor', 'toString', 'es', '']) {
+  for (const saved of ['__proto__', 'constructor', 'toString', 'de', '']) {
     const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
     Object.defineProperty(globalThis, 'localStorage', {
       configurable: true,
@@ -194,6 +199,50 @@ test('regressió: valors amb aspecte HTML queden literals via textContent', () =
     translateDom(root);
     assert.equal(el.textContent, '<b>negreta</b>');
     assert.equal(el.innerHTML, 'sense toc-ar');
+  } finally {
+    setLocale(previous);
+  }
+});
+
+test('els catàlegs cobreixen el marcatge i conserven els paràmetres en els cinc idiomes', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const keys = [...html.matchAll(/\bdata-i18n(?:-[a-z]+)?="([^"]+)"/g)].map(match => match[1]);
+  for (const key of keys) assert(Object.hasOwn(workshopRows,key), key);
+  const fields = text => [...new Set(text.match(/\{[a-zA-Z]\w*\}/g) ?? [])].sort();
+  for (const [key,row] of [...Object.entries(workshopRows),...engineRows.map(row=>[row[0],row])]) {
+    assert.equal(row.length, WORKSHOP_LOCALES.length, key);
+    assert(row.every(text => typeof text === 'string' && text.trim()), key);
+    for (const text of row) assert.deepEqual(fields(text), fields(row[0]), key);
+  }
+});
+
+test('un canvi d’idioma notifica les vistes actives i tradueix missatges amb dades', () => {
+  const previous = getLocale(), notified = [], stop = onLocaleChange(code => notified.push(code));
+  try {
+    setLocale('en');
+    assert.equal(translateEngineMessage('Carregant relleu 3/9 · Mapterhorn…'), 'Loading terrain 3/9 · Mapterhorn…');
+    setLocale('eu');
+    assert.equal(translateEngineMessage('Calculant els edificis…'), 'Eraikinak kalkulatzen…');
+    stop();
+    setLocale('gl');
+    assert.deepEqual(notified, ['en', 'eu']);
+    assert.equal(translateEngineMessage('External provider message'), 'External provider message');
+  } finally {
+    stop();
+    setLocale(previous);
+  }
+});
+
+test('un text mixt conserva els elements fills i els espais', () => {
+  const previous = getLocale();
+  try {
+    setLocale('en');
+    const text = {nodeType:3,nodeValue:'  Idioma '};
+    const svg = {nodeType:1};
+    const el = {childNodes:[svg,text],dataset:{i18nText:'header.language'}};
+    translateDom({querySelectorAll:selector=>selector==='[data-i18n-text]'?[el]:[]});
+    assert.equal(text.nodeValue, '  Language ');
+    assert.equal(el.childNodes[0], svg);
   } finally {
     setLocale(previous);
   }
