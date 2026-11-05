@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.22.42 — 2026-11-05
+
+- «Galeria» a la capçalera i «Veure exemples» a Territori obren el carrusel amb cerca i els projectes desats. En triar una fitxa es genera la maqueta.
+- La badia de Tamariu s’incorpora al catàleg com a exemple de badia petita en Model complet.
+
 ## v0.22.41 — 2026-11-05
 
 - Relleu pur fixa el nivell del mar a 5 mm de la base als retalls amb mar cartografiat. Als retalls interiors, situa a 5 mm el punt més baix un cop anivellats els llacs.

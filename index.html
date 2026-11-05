@@ -6,7 +6,7 @@
   <a class="brand" href="./" aria-label="Relleu Obert"><svg viewBox="0 0 38 32" aria-hidden="true"><path d="M3 27 18 3l17 24H3Z"/><path d="m8 23 10-15 11 15H8Zm5-4 5-7 5 7H13Z"/></svg><span>relleu<span class="brand-light">obert</span></span></a>
   <span class="tagline" data-i18n="app.tagline">Geografia que pots tocar.</span>
   <span class="header-spacer" aria-hidden="true"></span>
-  <button id="projects-open" type="button" class="header-button" data-open="projects-dialog">Projectes</button>
+  <button id="projects-open" type="button" class="header-button" aria-haspopup="dialog" aria-controls="projects-dialog">Galeria</button>
   <button id="language-open" class="header-button" data-open="language-dialog" data-i18n="header.language">Idioma</button>
   <button id="help-open" class="header-button"><span class="desktop-copy" data-i18n="header.help">Com funciona</span><span class="mobile-copy">Ajuda</span></button>
 </header>
@@ -17,6 +17,7 @@
     <section class="config-section" data-step="place">
       <div class="step-header"><h2 class="config-heading"><button type="button" class="section-toggle" id="step-place" aria-expanded="false" aria-controls="panel-place"><span aria-hidden="true">01</span><span data-i18n="section.place">Territori</span><i aria-hidden="true">+</i></button></h2><button type="button" class="secondary step-action" data-step-action="place" hidden>Genera el model</button></div>
       <div id="panel-place" class="config-content" role="region" aria-labelledby="step-place" hidden>
+        <button id="examples-open" type="button" class="secondary" aria-haspopup="dialog" aria-controls="projects-dialog">Veure exemples</button>
         <div id="place-mode-options">
         <fieldset id="model-mode" class="mode-switch" aria-describedby="model-mode-note">
           <legend>Mode de maqueta</legend>
@@ -26,7 +27,6 @@
           </div>
         </fieldset>
         <p id="model-mode-note" class="hint">Relleu, aigua, vies, edificis i vegetació.</p>
-        <label for="recommended-place">Llocs d’exemple</label><select id="recommended-place"><option value="">Tria un exemple…</option></select>
         </div>
         <form id="search-form" class="search-form"><label class="sr-only" for="place-search">Adreça o coordenades</label><div class="search-field"><input id="place-search" placeholder="Adreça o latitud, longitud" autocomplete="off"><button type="submit" aria-label="Cerca el lloc">⌕</button></div><div id="search-results" class="search-results" aria-live="polite"></div></form>
         <div id="place-map" aria-label="Mapa per seleccionar la regió"></div>
@@ -200,19 +200,43 @@
       <path d="m27 9 7-6" stroke="var(--umbrella-accent)" stroke-width="4.5"/>
     </svg><span>ortogra<span class="umbrella-dot">.</span>fi</span>
   </a></p>
-  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions">v0.22.41</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V"><span class="desktop-copy">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
+  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions">v0.22.42</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V"><span class="desktop-copy">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
 </footer>
 
 <dialog id="projects-dialog" aria-labelledby="projects-title">
-  <div class="dialog-heading"><h2 id="projects-title">Projectes desats</h2><button data-close aria-label="Tanca">×</button></div>
+  <div class="dialog-heading"><h2 id="projects-title">Galeria de maquetes</h2><button data-close aria-label="Tanca" autofocus>×</button></div>
   <div class="dialog-content">
-    <p>Els ajustos es desen en aquest navegador. En obrir un projecte, podràs tornar a generar la maqueta.</p>
-    <form id="save-project" hidden>
-      <label for="project-name">Nom del projecte actual</label>
-      <div class="project-actions"><input id="project-name" maxlength="100" required><button class="primary" type="submit">Desa els ajustos</button></div>
-    </form>
-    <p id="project-feedback" class="hint" role="status"></p>
-    <div id="project-list"></div>
+    <div class="gallery-sections" role="group" aria-label="Seccions de la galeria">
+      <button type="button" class="secondary" aria-controls="gallery-examples" aria-pressed="true">Exemples</button>
+      <button type="button" class="secondary" aria-controls="gallery-saved" aria-pressed="false">Projectes desats</button>
+    </div>
+    <section id="gallery-examples" aria-label="Exemples de maquetes">
+      <div class="search-field"><label class="sr-only" for="gallery-search">Cerca un exemple</label><input id="gallery-search" type="search" placeholder="Cerca un lloc o tipus de paisatge" autocomplete="off"></div>
+      <p class="hint gallery-results" role="status"></p>
+      <div class="example-carousel-rail gallery-carousel">
+        <button type="button" class="quiet-button example-carousel-arrow" data-example-step="-1" aria-label="Exemple anterior" aria-controls="gallery-cards"><span aria-hidden="true">‹</span></button>
+        <div id="gallery-cards" class="example-cards"><div class="example-track"></div></div>
+        <button type="button" class="quiet-button example-carousel-arrow" data-example-step="1" aria-label="Exemple següent" aria-controls="gallery-cards"><span aria-hidden="true">›</span></button>
+      </div>
+      <p id="gallery-feedback" class="hint" role="status"></p>
+      <details id="gallery-presets" hidden>
+        <summary>Altres retalls</summary>
+        <div>
+          <button type="button" class="secondary" data-gallery-preset="aneto-llacs">Llacs glacials de l’Aneto</button>
+          <button type="button" class="secondary" data-gallery-preset="pirineus-relleu">Pirineus · sector de l’Aneto</button>
+          <button type="button" class="secondary" data-gallery-preset="pirineus-eix" hidden>Pirineus · eix de la serralada</button>
+        </div>
+      </details>
+    </section>
+    <section id="gallery-saved" aria-label="Projectes desats" hidden>
+      <p>Els ajustos es desen en aquest navegador. En obrir un projecte, podràs tornar a generar la maqueta.</p>
+      <form id="save-project" hidden>
+        <label for="project-name">Nom del projecte actual</label>
+        <div class="project-actions"><input id="project-name" maxlength="100" required><button class="primary" type="submit">Desa els ajustos</button></div>
+      </form>
+      <p id="project-feedback" class="hint" role="status"></p>
+      <div id="project-list"></div>
+    </section>
   </div>
 </dialog>
 <dialog id="changelog-dialog" aria-labelledby="changelog-title">

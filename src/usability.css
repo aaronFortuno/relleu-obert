@@ -32,7 +32,6 @@
 .accessory-fields output{float:none;font-size:var(--ui-note);font-weight:400;line-height:1.6}
 .accessory-fields input[type=color]{width:100%;height:28px;padding:2px;border:1px solid var(--ui-control-border);border-radius:5px;background:var(--ui-control-bg)}
 .label-preview{font-family:inherit;font-size:var(--ui-label);line-height:1.7;background:#eef3e7;color:#65755d;padding:8px}
-#recommended-place{margin-top:9px;font-size:var(--ui-label)}
 .step-header{display:flex;flex:none;align-items:center;gap:12px}
 .step-header .config-heading{flex:1;min-width:0}
 .step-header .section-toggle{height:36px}
@@ -112,7 +111,7 @@
 .piece-resize-actions .hint {margin:0}
 .piece-resize-actions .secondary {width:auto;flex:none;margin:0;padding:6px 8px;white-space:nowrap}
 #piece-resize-pending {margin:4px 0 0}
-#recommended-place {margin-bottom:8px}
+#examples-open {margin:0 0 8px}
 .sidebar-left #new-project {flex:none;min-height:30px;margin:12px 0 8px;padding:6px 10px}
 .selection-frame {--selection-line:#37583e;border-color:var(--selection-line)}
 .map-rotation-handle {position:absolute;top:-9px;right:-9px;width:16px;height:16px;padding:0;border:2px solid var(--selection-line);border-radius:50%;background:transparent;pointer-events:auto;touch-action:none;cursor:grab}

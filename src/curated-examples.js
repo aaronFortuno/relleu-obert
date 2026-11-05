@@ -2,6 +2,19 @@ const imageBase = `${import.meta.env?.BASE_URL || './'}examples/`;
 
 export const CURATED_EXAMPLES = [
   {
+    id: 'tamariu',
+    title: 'Badia de Tamariu',
+    category: 'Badia petita',
+    description: 'La platja i les cases de Tamariu, entre pinedes i penya-segats de la Costa Brava.',
+    center: [41.918, 3.2075],
+    width: 180,
+    height: 180,
+    scale: 10000,
+    rotation: 0,
+    pureRelief: false,
+    image: `${imageBase}tamariu.webp`,
+  },
+  {
     id: 'roses',
     title: 'Badia de Roses',
     category: 'Badia',

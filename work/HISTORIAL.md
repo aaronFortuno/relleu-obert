@@ -2,6 +2,12 @@
 
 Actualitzat: 2026-11-05. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.22.42 — Galeria al taller
+
+RO-046 i RO-054 reuneixen el carrusel d’exemples i els projectes desats. La galeria s’obre des de la capçalera o des de Territori. El carrusel del diàleg avança manualment i es pot cercar per nom o tipus de paisatge. «Badia de Tamariu» és la primera fitxa, amb una miniatura del visor de la peça de 18 × 18 cm en Model complet.
+
+Revisats 1280 × 720, 1100 × 680, 390 × 844 i 320 × 568. El retall addicional dels llacs de l’Aneto obre Territori per confirmar la generació. S’han comprovat la cerca amb un resultat i sense coincidències, el retorn del focus amb Escape, el desament i la recuperació d’un projecte, i la càrrega de les Bardenas en Relleu pur des de la maqueta de Tamariu. Han passat 32 proves i la compilació estàtica.
+
 ## v0.22.41 — Referència de base de Relleu pur
 
 RO-046 i RO-055. Els retalls amb mar cartografiat fixen la cota 0 a 5 mm de la base i limiten les mostres negatives a la cota marina. El sòlid blau conserva el gruix en variar l’exageració. A l’interior, la cota inferior es calcula després d’anivellar els llacs i admet elevacions negatives.

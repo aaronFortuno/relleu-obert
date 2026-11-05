@@ -29,7 +29,7 @@ function orderExamples(examples) {
   return ordered.slice(offset).concat(ordered.slice(0, offset));
 }
 
-function createCard(expanded = false) {
+function createCard({expanded = false, showMode = false} = {}) {
   const button = document.createElement('button');
   button.type = 'button';
   button.className = expanded ? 'secondary example-preview-card' : 'secondary example-card';
@@ -51,7 +51,8 @@ function createCard(expanded = false) {
   caption.append(title, metadata);
   const scale = document.createElement('span');
   const description = document.createElement('span');
-  if (expanded) caption.append(scale, description);
+  if (expanded || showMode) caption.append(scale);
+  if (expanded) caption.append(description);
   button.append(picture, caption);
 
   return {button, populate(example) {
@@ -62,11 +63,55 @@ function createCard(expanded = false) {
     image.src = example.image;
     title.textContent = example.title;
     metadata.textContent = `${example.category} · ${example.width / 10} × ${example.height / 10} cm`;
-    if (expanded) {
-      scale.textContent = details;
-      description.textContent = example.description;
-    }
+    scale.textContent = details;
+    if (expanded) description.textContent = example.description;
   }};
+}
+
+export function initExampleGallery(container, examples, onSelect) {
+  const search = container.querySelector('input[type="search"]');
+  const results = container.querySelector('.gallery-results');
+  const rail = container.querySelector('.gallery-carousel');
+  const cards = rail.querySelector('.example-cards');
+  const track = cards.querySelector('.example-track');
+  const [previous, next] = rail.querySelectorAll('[data-example-step]');
+  const normalize = text => text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLocaleLowerCase('ca');
+  const entries = examples.map(example => {
+    const card = createCard({showMode:true});
+    card.populate(example);
+    card.button.onclick = () => onSelect(example);
+    track.append(card.button);
+    return {button:card.button, text:normalize(example.title+' '+example.category)};
+  });
+
+  function syncArrows() {
+    previous.disabled = cards.scrollLeft < 1;
+    next.disabled = cards.scrollWidth - cards.clientWidth - cards.scrollLeft < 1;
+  }
+
+  for (const arrow of [previous, next]) arrow.onclick = () => {
+    const card = entries.find(({button}) => !button.hidden)?.button;
+    if (!card) return;
+    const step = card.getBoundingClientRect().width + parseFloat(getComputedStyle(track).columnGap);
+    cards.scrollBy({left:step * Number(arrow.dataset.exampleStep)});
+  };
+  cards.addEventListener('scroll', syncArrows, {passive:true});
+  new ResizeObserver(syncArrows).observe(cards);
+
+  function filter() {
+    const words = normalize(search.value).trim().split(/\s+/);
+    let count = 0;
+    for (const {button, text} of entries) {
+      button.hidden = !words.every(word => text.includes(word));
+      if (!button.hidden) count++;
+    }
+    results.textContent = count === 0 ? 'No s’ha trobat cap exemple.' : count === 1 ? '1 exemple' : count+' exemples';
+    rail.hidden = count === 0;
+    cards.scrollLeft = 0;
+    syncArrows();
+  }
+  search.addEventListener('input', filter);
+  filter();
 }
 
 export function initExampleCarousel(container, examples, onSelect) {
@@ -99,7 +144,7 @@ export function initExampleCarousel(container, examples, onSelect) {
   const overlay = document.createElement('div');
   overlay.className = 'example-preview';
   overlay.setAttribute('aria-hidden', 'true');
-  const preview = createCard(true);
+  const preview = createCard({expanded:true});
   preview.button.tabIndex = -1;
   overlay.append(preview.button);
   workspace.append(overlay);

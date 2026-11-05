@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-05 · v0.22.41**. Referència de base corregida a Relleu pur. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-05 · v0.22.42**. Galeria accessible des del taller. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -39,7 +39,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | ID | Prioritat | Estat | Què falta |
 | ------------------------------------------------------------------------ | --------- | ------------------------------------ | --------------------------------------------------------------- |
 | [RO-050](#ro-050--ferrocarrils-diferenciats) | P2 | Implementat i comprovat localment | Usuari: realç ferroviari i assignació de material; laminat |
-| [RO-046](#ro-046--catàleg-de-llocs-recomanats) | P2 | 28 retalls amb captures, generació directa i resum al panell dret | Revisar la llegibilitat i els temps de generació en ús |
+| [RO-046](#ro-046--catàleg-de-llocs-recomanats) | P2 | 29 retalls amb captures, cerca al taller i generació directa | Revisar la llegibilitat i els temps de generació en ús |
 | [RO-044](#ro-044--catastre-per-seccions-i-recuperació-de-configuracions) | P1 | Vista progressiva validada a Tamariu | Buit/mixt, subdivisions i recuperació després d’error |
 | [RO-045](#ro-045--coherència-visual-dels-sidebars) | P2 | Implementat; pendent d’usuari | Coherència de controls i scroll a escriptori |
 
@@ -139,7 +139,7 @@ Validar a l’escriptori la coherència dels controls i el desplaçament intern 
 
 ### RO-046 — Catàleg de llocs recomanats
 
-El carrusel incorpora els 28 retalls del [catàleg](RO-046-CATALEG.md), amb 17 fitxes de Relleu pur i 11 de Model complet. L’ordre es barreja en cada càrrega i reparteix els modes al llarg del bucle. A la pantalla inicial, la taula, les columnes del selector i el carrusel s’ajusten a l’espai real del panell. «La teva maqueta» mostra el resum de la fitxa mentre el visor mostra el model corresponent. Queda revisar l’enquadrament, la llegibilitat i els temps de generació en ús, i comprovar el gruix de la base a les fitxes costaneres.
+El carrusel incorpora els 29 retalls del [catàleg](RO-046-CATALEG.md), amb 17 fitxes de Relleu pur i 12 de Model complet. L’ordre es barreja en cada càrrega i reparteix els modes al llarg del bucle. A la pantalla inicial, la taula, les columnes del selector i el carrusel s’ajusten a l’espai real del panell. Al taller, «Galeria» i «Veure exemples» obren un diàleg amb carrusel, cerca i projectes desats. «La teva maqueta» mostra el resum de la fitxa mentre el visor mostra el model corresponent. Queda revisar l’enquadrament, la llegibilitat i els temps de generació en ús, i comprovar el gruix de la base a les fitxes costaneres.
 
 ### RO-047 — Precàrrega opcional de fonts alternatives
 

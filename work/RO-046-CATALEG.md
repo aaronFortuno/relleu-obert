@@ -1,6 +1,6 @@
 # Catàleg inicial de llocs per a maquetes
 
-La proposta de RO-046 recull **28 enquadraments** per al selector de Territori, agrupats per mode i àmbit. En **Relleu pur**, el punt de partida és una forma que es pugui reconèixer al terreny o al contorn de l’aigua. En **Model complet**, cada retall proposa un patró de carrers, edificis o infraestructures que es pugui llegir en relació amb el lloc.
+RO-046 recull **29 enquadraments**, agrupats per mode i àmbit. En **Relleu pur**, el punt de partida és una forma que es pugui reconèixer al terreny o al contorn de l’aigua. En **Model complet**, cada retall proposa un patró de carrers, edificis o infraestructures que es pugui llegir en relació amb el lloc.
 
 ## Primera tria per a les mostres
 
@@ -29,13 +29,15 @@ Les tres imatges WebP de 720 × 450 píxels ocupen 168 kB en total. Les captures
 
 ## Catàleg complet al carrusel
 
-El lot final incorpora els onze retalls de Relleu pur i els vuit de Model complet que faltaven. Els 28 retalls de les taules es poden generar des de la fitxa, amb la mida, el centre, el gir i l’escala documentats. El carrusel reparteix les 17 fitxes de Relleu pur i les 11 de Model complet al llarg del bucle. Els exemples addicionals de Territori es documenten al final de la pàgina.
+El lot final incorpora els onze retalls de Relleu pur i els vuit de Model complet que faltaven. Amb la incorporació de la badia de Tamariu, el carrusel reparteix 17 fitxes de Relleu pur i 12 de Model complet al llarg del bucle. Els 29 retalls de les taules es poden generar des de la fitxa, amb la mida, el centre, el gir i l’escala documentats.
 
 La captura panoràmica de Tenerife mostra les tres peces. A Granada, el visor conserva les vies ordinàries i els edificis quan falla la integració dels perfils suaus. A Amsterdam, la unió dels carrers es recupera amb un ajust de precisió projectada i es conserva el retall. Els models urbans grans poden trigar diversos minuts en l’equip de prova.
 
 Les dinou captures del lot final són WebP de 720 × 450 píxels i ocupen 729 kB en total. La cartografia i els edificis d’aquest lot provenen d’OpenStreetMap via OpenFreeMap. [Imatges](../public/examples/) · [OpenStreetMap](https://www.openstreetmap.org/copyright)
 
 En obrir una maqueta del catàleg, «La teva maqueta» mostra el nom del lloc, el mode, el tipus i la mateixa descripció de la fitxa. El resum correspon al retall que es veu al visor. Es recupera en tornar a generar un projecte desat del catàleg.
+
+La fitxa de Tamariu conserva el centre de la mostra original i l’identificador dels projectes desats. La maqueta és d’una sola peça i té el nord a dalt. [Dades de la mostra](../public/data/tamariu.json)
 
 | Proveïdor d’elevacions registrat | Captures del lot final |
 | --- | --- |
@@ -99,6 +101,7 @@ A la versió 0.22.21, el **Model complet** admet fins a 1:20.000, amb un límit 
 
 | Què representa | Lloc | Centre del retall | Extensió real | Maqueta i escala | Què s’hi hauria de llegir |
 | --- | --- | --- | --- | --- | --- |
+| Badia petita | Badia de Tamariu | `41.9180,3.2075` | 1,8 × 1,8 km | 18 × 18 cm · 1:10.000 | La platja, les cases i els penya-segats. Permet comparar el perfil de costa amb la badia més oberta de Roses. |
 | Eixample planificat | Barcelona · Eixample de Cerdà | `41.3950,2.1630` [Mapa](https://www.openstreetmap.org/?mlat=41.3950&mlon=2.1630#map=14/41.3950/2.1630) | 2,4 × 2,4 km | 24 × 24 cm · 1:10.000 | La quadrícula i els xamfrans, amb la Diagonal i el passeig de Gràcia com a referències. [Ajuntament de Barcelona](https://bcnroc.ajuntament.barcelona.cat/jspui/bitstream/11703/129573/5/jardins-eixample-cat_web-compressed_paginaxpagina.pdf) |
 | Nucli històric i riu | Girona · Barri Vell i Onyar | `41.9860,2.8265` [Mapa](https://www.openstreetmap.org/?mlat=41.9860&mlon=2.8265#map=14/41.9860/2.8265) | 1,6 × 1,6 km | 16 × 16 cm · 1:10.000 | El riu, els ponts, els carrers estrets i el pendent cap a la catedral i la muralla. [Ajuntament de Girona](https://web.girona.cat/mobilitat/circulacio/barrivell-criteris) |
 | Vila fortificada i paisatge miner | Cardona · Castell, vila i Vall Salina | `41.9110,1.6800` [Mapa](https://www.openstreetmap.org/?mlat=41.9110&mlon=1.6800#map=14/41.9110/1.6800) | 2,4 × 2,4 km | 24 × 24 cm · 1:10.000 | El turó fortificat, la vila i el paisatge de l’explotació salina en superfície. [Patrimoni Cultural](https://patrimoni.gencat.cat/ca/monuments/monuments/castell-de-cardona/) · [Vall Salina](https://patrimoni.gencat.cat/ca/node/1416) |
@@ -129,7 +132,6 @@ A la versió 0.22.21, el **Model complet** admet fins a 1:20.000, amb un límit 
 ## Exemples de l’aplicació que es poden aprofitar
 
 - **Serralada · Eix dels Pirineus.** Exemple panoràmic existent, amb centre `42.8000,0.7500`. En 100 × 20 cm, a 1:450.000 i amb gir de +15°, abasta 450 × 90 km. Mostra l’eix i els dos mars. El **sector de l’Aneto**, amb centre `42.6350,0.6500`, permet passar de la serralada al detall de l’alta muntanya. [Exemples de Territori](../src/main.js)
-- **Badia petita · Tamariu.** Exemple existent amb centre `41.9180,3.2075` i un retall de referència quadrat d’uns 1,78 km. Pot acompanyar Roses per comparar una badia petita amb una de més oberta. [Fitxa actual](../src/recommended-places.js)
 - **Infraestructura · Viaducte de l’Eix Diagonal.** Exemple existent amb centre `41.71792,1.78391` i retall quadrat de referència d’1,5 km. Es pot aprofitar com a mostra de Model complet centrada en un viaducte. [Fitxa actual](../src/recommended-places.js)
 
 ## Validació abans d’incorporar-los al selector
