@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-05. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.22.38 — Espaiat de la pantalla inicial
+
+RO-046 amplia la separació entre el selector de mides i el carrusel a l’escriptori segons l’alçada de la finestra. A 1280 × 720, el selector puja 16 px i el carrusel baixa 16 px. A 1100 × 680, el desplaçament és de 6 px en cada sentit. Revisats també 1280 × 640, 390 × 844, el formulari de mides personalitzades i l’ampliació de les fitxes amb teclat. Superades les tres proves del carrusel i la compilació estàtica.
+
 ## v0.22.37 — Mida editable a la vista
 
 RO-053 situa l’amplada, la fondària i els límits al començament de «La teva maqueta». El botó «Aplica la mida» s’activa quan canvien els valors i torna a Territori per preparar la generació. El model visible continua disponible fins a generar el nou.

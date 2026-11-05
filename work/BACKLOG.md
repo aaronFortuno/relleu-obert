@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-05 · v0.22.37**. Camps de mida visibles a «La teva maqueta». [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-05 · v0.22.38**. Més espai entre el selector de mides i el carrusel. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -139,7 +139,7 @@ Validar a l’escriptori la coherència dels controls i el desplaçament intern 
 
 ### RO-046 — Catàleg de llocs recomanats
 
-El carrusel incorpora els 28 retalls del [catàleg](RO-046-CATALEG.md), amb 17 fitxes de Relleu pur i 11 de Model complet. L’ordre es barreja en cada càrrega i reparteix els modes al llarg del bucle. «La teva maqueta» mostra el resum de la fitxa mentre el visor mostra el model corresponent. Queda revisar l’enquadrament, la llegibilitat i els temps de generació en ús.
+El carrusel incorpora els 28 retalls del [catàleg](RO-046-CATALEG.md), amb 17 fitxes de Relleu pur i 11 de Model complet. L’ordre es barreja en cada càrrega i reparteix els modes al llarg del bucle. A la pantalla inicial d’escriptori, la separació respecte al selector de mides s’adapta a l’alçada disponible. «La teva maqueta» mostra el resum de la fitxa mentre el visor mostra el model corresponent. Queda revisar l’enquadrament, la llegibilitat i els temps de generació en ús.
 
 ### RO-047 — Precàrrega opcional de fonts alternatives
 

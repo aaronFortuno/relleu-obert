@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.22.38 — 2026-11-05
+
+- A la pantalla inicial d’escriptori, el selector de mides puja i el carrusel baixa. La separació s’adapta a l’alçada de la finestra.
+
 ## v0.22.37 — 2026-11-05
 
 - L’amplada i la fondària es poden editar directament a «La teva maqueta», amb una nota breu sobre els límits de mida.

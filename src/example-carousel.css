@@ -5,6 +5,10 @@
   text-align: left;
 }
 
+@media (min-width: 901px) {
+  #example-carousel { margin-top: clamp(12px, calc(50dvh - 316px), 44px); }
+}
+
 .example-carousel-heading {
   margin: 0 0 6px;
   color: var(--green);
