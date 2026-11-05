@@ -150,9 +150,6 @@ export default {
   'runtime.project.notFound': ["El projecte ja no existeix a la galeria.","El proyecto ya no está en la galería.","O proxecto xa non está na galería.","Proiektua ez dago jada galerian.","The project is no longer in the gallery."],
   'runtime.project.wait': ["Espera que acabi l’actualització de la maqueta.","Espera a que termine la actualización de la maqueta.","Agarda a que remate a actualización da maqueta.","Itxaron maketa eguneratzen amaitu arte.","Wait for the model to finish updating."],
   'runtime.project.saved': ["Projecte desat en aquest navegador.","Proyecto guardado en este navegador.","Proxecto gardado neste navegador.","Proiektua arakatzaile honetan gorde da.","Project saved in this browser."],
-  'runtime.pilot.aneto': ["Pirineus · sector de l’Aneto","Pirineos · sector del Aneto","Pireneos · sector do Aneto","Pirinioak · Aneto ingurua","Pyrenees · Aneto area"],
-  'runtime.pilot.lakes': ["Llacs glacials de l’Aneto","Lagos glaciares del Aneto","Lagos glaciares do Aneto","Anetoko glaziar-aintzirak","Aneto glacial lakes"],
-  'runtime.pilot.range': ["Pirineus · eix de la serralada","Pirineos · eje de la cordillera","Pireneos · eixe da cordilleira","Pirinioak · mendilerroaren ardatza","Pyrenees · mountain range"],
   'runtime.copy.done': ["Adreça copiada","Dirección copiada","Enderezo copiado","Helbidea kopiatu da","Address copied"],
   'runtime.copy.manual': ["Selecciona i copia l’adreça.","Selecciona y copia la dirección.","Selecciona e copia o enderezo.","Hautatu eta kopiatu helbidea.","Select and copy the address."],
 };

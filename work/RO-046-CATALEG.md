@@ -1,10 +1,10 @@
 # Catàleg inicial de llocs per a maquetes
 
-RO-046 recull **29 enquadraments**, agrupats per mode i àmbit. En **Relleu pur**, el punt de partida és una forma que es pugui reconèixer al terreny o al contorn de l’aigua. En **Model complet**, cada retall proposa un patró de carrers, edificis o infraestructures que es pugui llegir en relació amb el lloc.
+RO-046 recull **31 enquadraments**, agrupats per mode i àmbit. En **Relleu pur**, el punt de partida és una forma que es pugui reconèixer al terreny o al contorn de l’aigua. En **Model complet**, cada retall proposa un patró de carrers, edificis o infraestructures que es pugui llegir en relació amb el lloc.
 
 ## Primera tria per a les mostres
 
-- **Relleu pur.** Badia de Roses, Cap de Creus i delta de l’Ebre per comparar tres formes del litoral català. Montserrat i l’eix pirinenc que ja ofereix l’aplicació permeten distingir un massís d’una serralada. Tenerife, Geirangerfjord i el Gran Canó del Colorado amplien la tria amb una illa volcànica, un fiord i un canó fluvial.
+- **Relleu pur.** Badia de Roses, Cap de Creus i delta de l’Ebre per comparar tres formes del litoral català. Montserrat i el sector de l’Aneto mostren dues formes de massís. Tenerife, Geirangerfjord i el Gran Canó del Colorado amplien la tria amb una illa volcànica, un fiord i un canó fluvial.
 - **Model complet.** Barcelona, Girona, Granada i Amsterdam permeten comparar una quadrícula planificada, un nucli històric vora el riu, dos vessants urbans i una ciutat articulada per canals. Cusco afegeix un exemple americà de trama històrica en pendent.
 
 ## Primer lot al carrusel
@@ -46,6 +46,14 @@ La fitxa de Tamariu conserva el centre de la mostra original i l’identificador
 
 El catàleg de Mapterhorn recull el Sistema Cartográfico Nacional per als retalls de l’Estat espanyol, Kartverket per a Noruega, TINITALY i la província de Bolzano per a Itàlia, GSI per al Japó, USGS 3DEP per als EUA, AHN per als Països Baixos i la Direção-Geral do Território per a Portugal. També hi consta el Copernicus GLO-30. El catàleg de Tilezen recull Copernicus EU-DEM per a Europa i les fonts globals de l’USGS i la NOAA. Les llistes originals detallen els crèdits i la cobertura de cada conjunt. [Fonts originals de Mapterhorn](https://mapterhorn.com/attribution/) · [Atribucions de Tilezen](https://github.com/tilezen/joerd/blob/master/docs/attribution.md) · [Registre d’AWS](https://registry.opendata.aws/terrain-tiles/)
 
+## Graella de la galeria i fitxes de l’Aneto
+
+La galeria mostra la descripció completa, el tipus de paisatge, la mida, el mode i l’escala al costat de cada captura. La cerca es combina amb els filtres de mode, dimensions i família de paisatge. Una fitxa pot pertànyer a més d’una família. El carrusel de la pantalla inicial també inclou les dues fitxes noves.
+
+Els dos retalls de l’Aneto comparen el conjunt del massís amb el detall dels llacs. Tots dos són de Relleu pur, amb gir de 0°, detall equilibrat i exageració vertical ×1,5. [Posets-Maladeta · Turisme d’Aragó](https://www.turismodearagon.com/ficha/parque-natural-posets-maladeta/) · [Dades locals de relleu i aigua](RO-055-RELLEU-PUR.md)
+
+Les dues captures WebP de 720 × 450 píxels provenen del visor. Fan servir elevacions de Mapterhorn, roca i neu derivades d’ESA WorldCover 2021 v200 (CC BY 4.0), i aigua i bosc d’OpenStreetMap via OpenFreeMap. [Mapterhorn](https://mapterhorn.com/attribution/) · [ESA WorldCover](https://doi.org/10.5281/zenodo.7254221) · [OpenStreetMap](https://www.openstreetmap.org/copyright)
+
 ## Com reproduir els retalls
 
 1. Tria el mode i introdueix la **mida de la maqueta** en l’ordre amplada × alçada. Fes servir la mida personalitzada quan calgui.
@@ -76,6 +84,8 @@ A la versió 0.22.21, el **Model complet** admet fins a 1:20.000, amb un límit 
 | Illa volcànica | Tenerife (Canàries) | `28.3670,-16.3080` [Mapa](https://www.openstreetmap.org/?mlat=28.3670&mlon=-16.3080#map=8/28.3670/-16.3080) | 153 × 60 km | 51 × 20 cm · 1:300.000 · −25° | El contorn de l’illa sencera, del Teno a Anaga i a la punta de la Rasca, amb el Teide al centre del relleu insular. [Cartografia del Cabildo de Tenerife](https://datos.canarias.es/catalogos/general/dataset/limites-municipales-de-tenerife/resource/91c4573e-d737-4c20-9827-758727d08e3a) |
 | Con volcànic i caldera | Teide i Las Cañadas (Tenerife) | `28.2600,-16.6150` [Mapa](https://www.openstreetmap.org/?mlat=28.2600&mlon=-16.6150#map=10/28.2600/-16.6150) | 24 × 20 km | 24 × 20 cm · 1:100.000 | Retall de detall de l’illa per llegir la vora de la caldera i els cons del Teide i Pico Viejo. [IGN](https://www.ign.es/web/catalogo-cartoteca/resources/pdfcards/card031570.pdf) |
 | Vall glacial | Ordesa i Mont Perdut (Aragó) | `42.6300,0.0250` [Mapa](https://www.openstreetmap.org/?mlat=42.6300&mlon=0.0250#map=10/42.6300/0.0250) | 24 × 20 km | 24 × 20 cm · 1:100.000 | La vall d’Ordesa i les seves parets fins al massís del Mont Perdut. Interessant per comparar la secció amb la d’un canó fluvial. [MITECO](https://www.miteco.gob.es/en/parques-nacionales-oapn/red-parques-nacionales/parques-nacionales/ordesa/valores-naturales/geologia.html) |
+| Massís d’alta muntanya | Pirineus · sector de l’Aneto (Aragó) | `42.6350,0.6500` | 24 × 20 km | 24 × 20 cm · 1:100.000 | El massís de la Maladeta, amb el cim de l’Aneto i les valls que l’envolten. |
+| Estanys glacials | Llacs glacials de l’Aneto (Aragó) | `42.6330,0.6380` | 4,8 × 4,8 km | 24 × 24 cm · 1:20.000 | L’estany de Cregüeña i els de Corones entre les crestes i els circs de la Maladeta. |
 | Arxipèlag litoral | Illes Cíes (Galícia) | `42.2170,-8.9070` [Mapa](https://www.openstreetmap.org/?mlat=42.2170&mlon=-8.9070#map=12/42.2170/-8.9070) | 10 × 12,5 km | 20 × 25 cm · 1:50.000 | Les illes principals, els vessants i el pas entre elles. Cal comprovar que la barra de Rodas i l’aigua que tanca siguin llegibles. [IGN](https://www.ign.es/web/catalogo-cartoteca/resources/pdfcards/card020580.pdf) |
 | Xarxa de barrancs en terreny argilós | Bardenas Reales · Bardena Blanca (Navarra) | `42.2160,-1.5020` [Mapa](https://www.openstreetmap.org/?mlat=42.2160&mlon=-1.5020#map=12/42.2160/-1.5020) | 6 × 6 km | 20 × 20 cm · 1:30.000 | Els barrancs de les Cortinas i els relleus residuals com el Castildetierra. La xarxa de drenatge és el tret principal del retall. [IGME](https://info.igme.es/ielig/LIGInfo.aspx?codigo=EB021) |
 
@@ -131,7 +141,7 @@ A la versió 0.22.21, el **Model complet** admet fins a 1:20.000, amb un límit 
 
 ## Exemples de l’aplicació que es poden aprofitar
 
-- **Serralada · Eix dels Pirineus.** Exemple panoràmic existent, amb centre `42.8000,0.7500`. En 100 × 20 cm, a 1:450.000 i amb gir de +15°, abasta 450 × 90 km. Mostra l’eix i els dos mars. El **sector de l’Aneto**, amb centre `42.6350,0.6500`, permet passar de la serralada al detall de l’alta muntanya. [Exemples de Territori](../src/main.js)
+- **Serralada · Eix dels Pirineus.** Antic retall panoràmic d’«Altres retalls», amb centre `42.8000,0.7500`. En 100 × 20 cm, a 1:450.000 i amb gir de +15°, abasta 450 × 90 km. Els projectes desats conserven el retall i els seus ajustos.
 - **Infraestructura · Viaducte de l’Eix Diagonal.** Exemple existent amb centre `41.71792,1.78391` i retall quadrat de referència d’1,5 km. Es pot aprofitar com a mostra de Model complet centrada en un viaducte. [Fitxa actual](../src/recommended-places.js)
 
 ## Validació abans d’incorporar-los al selector

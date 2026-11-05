@@ -2,6 +2,12 @@
 
 Actualitzat: 2026-11-05. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.23.4 — Galeria amb graella i filtres
+
+RO-046 i RO-054 amplien el diàleg i mantenen la cerca, els filtres i el selector de secció a la vista mentre es desplacen les fitxes. Cada fitxa mostra la captura estàtica, la descripció, el tipus de paisatge, el mode, la mida i l’escala. El sector de l’Aneto i els llacs glacials tenen retalls fixos i captures del visor. Les dreceres d’«Altres retalls» surten de la galeria. [Dades del catàleg](RO-046-CATALEG.md#graella-de-la-galeria-i-fitxes-de-laneto)
+
+Revisats 1280 × 720, 1100 × 680, 740 × 390, 390 × 844 i 320 × 568. S’han comprovat el desplaçament intern, els filtres combinats, l’estat sense resultats, el canvi d’idioma, el retorn del focus i el desament i reobertura d’un projecte de prova. Han passat 41 proves locals. La compilació de producció queda pendent del marge de 2,5 GiB de memòria lliure.
+
 ## v0.23.3 — Taller en cinc idiomes
 
 RO-019 activa català, castellà, gallec, basc i anglès al selector de capçalera. El canvi actualitza la interfície, les fitxes, les etiquetes accessibles i els missatges habituals de generació. La preferència es desa en aquest navegador. Les notes històriques i l’informe tècnic conserven els textos originals. [Configuració i cobertura](RO-019-SETUP.md)

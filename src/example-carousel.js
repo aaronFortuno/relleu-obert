@@ -1,6 +1,7 @@
 import {createCarouselMotion} from './carousel-motion.js';
 import {localizeExample} from './curated-examples.js';
-import {formatNumber, onLocaleChange, t} from './i18n.js';
+import {formatNumber, getLocale, onLocaleChange, t} from './i18n.js';
+import exampleStrings from './locales/workshop-examples.js';
 
 const baseSpeed = 12;
 const arrowSpeed = 85;
@@ -31,7 +32,11 @@ function orderExamples(examples) {
   return ordered.slice(offset).concat(ordered.slice(0, offset));
 }
 
-function createCard({expanded = false, showMode = false} = {}) {
+function formatSize({width, height}) {
+  return `${formatNumber(width / 10)} × ${formatNumber(height / 10)} cm`;
+}
+
+function createCard({expanded = false, gallery = false} = {}) {
   const button = document.createElement('button');
   button.type = 'button';
   button.className = expanded ? 'secondary example-preview-card' : 'secondary example-card';
@@ -53,82 +58,110 @@ function createCard({expanded = false, showMode = false} = {}) {
   caption.append(title, metadata);
   const scale = document.createElement('span');
   const description = document.createElement('span');
-  if (expanded || showMode) caption.append(scale);
-  if (expanded) caption.append(description);
+  if (expanded || gallery) caption.append(scale, description);
+  if (gallery) description.className = 'example-card-description';
   button.append(picture, caption);
 
   return {button, populate(example) {
     const label = localizeExample(example);
     const mode = t(example.pureRelief === false ? 'example.modeComplete' : 'example.modeRelief');
     const details = `${mode} · 1:${formatNumber(example.scale)}`;
-    const width = formatNumber(example.width / 10);
-    const height = formatNumber(example.height / 10);
+    const summary = `${label.category} · ${formatSize(example)}`;
+    const accessibleDescription = `${details}. ${label.description}`;
     button.dataset.example = example.id;
-    button.setAttribute('aria-description', `${details}. ${label.description}`);
+    if (gallery) button.setAttribute('aria-label', label.title);
+    button.setAttribute('aria-description', gallery ? `${summary}. ${accessibleDescription}` : accessibleDescription);
     if (image.getAttribute('src') !== example.image) image.src = example.image;
     title.textContent = label.title;
-    metadata.textContent = `${label.category} · ${width} × ${height} cm`;
+    metadata.textContent = summary;
     scale.textContent = details;
-    if (expanded) description.textContent = label.description;
+    if (expanded || gallery) description.textContent = label.description;
+    return label;
   }};
 }
 
+const sizeKey = ({width, height}) => `${width}x${height}`;
+const landformKey = landform => `gallery.landforms.${landform}`;
+const normalize = text => text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+
+function setFilterOptions(select, options) {
+  const selected = select.value;
+  select.options.length = 1;
+  for (const [value, label] of options) select.add(new Option(label, value));
+  select.value = selected;
+}
+
 export function initExampleGallery(container, examples, onSelect) {
-  const search = container.querySelector('input[type="search"]');
+  const search = container.querySelector('#gallery-search');
+  const mode = container.querySelector('#gallery-mode');
+  const size = container.querySelector('#gallery-size');
+  const landform = container.querySelector('#gallery-landform');
   const results = container.querySelector('.gallery-results');
-  const rail = container.querySelector('.gallery-carousel');
-  const cards = rail.querySelector('.example-cards');
-  const track = cards.querySelector('.example-track');
-  const [previous, next] = rail.querySelectorAll('[data-example-step]');
-  const normalize = text => text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
-  const searchText = example => {
-    const label = localizeExample(example);
-    return normalize([example.title, example.category, label.title, label.category].join(' '));
-  };
+  const body = container.querySelector('#gallery-body');
+  const cards = container.querySelector('#gallery-cards');
   const entries = examples.map(example => {
-    const card = createCard({showMode:true});
-    card.populate(example);
+    const card = createCard({gallery:true});
     card.button.onclick = () => onSelect(example);
-    track.append(card.button);
-    return {example, card, button:card.button, text:searchText(example)};
+    cards.append(card.button);
+    return {
+      example, card,
+      mode: example.pureRelief === false ? 'complete' : 'relief',
+      size: sizeKey(example),
+      landforms: example.landforms ?? [],
+    };
   });
-
-  function syncArrows() {
-    previous.disabled = cards.scrollLeft < 1;
-    next.disabled = cards.scrollWidth - cards.clientWidth - cards.scrollLeft < 1;
-  }
-
-  for (const arrow of [previous, next]) arrow.onclick = () => {
-    const card = entries.find(({button}) => !button.hidden)?.button;
-    if (!card) return;
-    const step = card.getBoundingClientRect().width + parseFloat(getComputedStyle(track).columnGap);
-    cards.scrollBy({left:step * Number(arrow.dataset.exampleStep)});
-  };
-  cards.addEventListener('scroll', syncArrows, {passive:true});
-  new ResizeObserver(syncArrows).observe(cards);
+  const sizes = [...new Map(examples.map(example => [sizeKey(example), example])).values()];
+  sizes.sort((a, b) =>
+    Math.max(a.width, a.height) - Math.max(b.width, b.height) ||
+    a.width - b.width || a.height - b.height
+  );
+  const landforms = [...new Set(entries.flatMap(entry => entry.landforms))];
 
   function filter(resetScroll = true) {
     const words = normalize(search.value).trim().split(/\s+/);
+    const selectedMode = mode.value;
+    const selectedSize = size.value;
+    const selectedLandform = landform.value;
     let count = 0;
-    for (const {button, text} of entries) {
-      button.hidden = !words.every(word => text.includes(word));
-      if (!button.hidden) count++;
+    for (const entry of entries) {
+      const matches = (!selectedMode || entry.mode === selectedMode) &&
+        (!selectedSize || entry.size === selectedSize) &&
+        (!selectedLandform || entry.landforms.includes(selectedLandform)) &&
+        words.every(word => entry.searchText.includes(word));
+      entry.card.button.hidden = !matches;
+      if (matches) count++;
     }
     const key = count === 0 ? 'example.gallery.none' : count === 1 ? 'example.gallery.one' : 'example.gallery.many';
     results.textContent = t(key, {count:formatNumber(count)});
-    rail.hidden = count === 0;
-    if (resetScroll) cards.scrollLeft = 0;
-    syncArrows();
+    cards.hidden = count === 0;
+    if (resetScroll) body.scrollTop = 0;
   }
-  search.addEventListener('input', () => filter());
-  onLocaleChange(() => {
+
+  function refreshLabels() {
+    const collator = new Intl.Collator(getLocale());
+    const landformOptions = landforms.map(group => [group, t(landformKey(group))]);
+    landformOptions.sort(([, a], [, b]) => collator.compare(a, b));
+    setFilterOptions(landform, landformOptions);
+    setFilterOptions(size, sizes.map(example => [sizeKey(example), formatSize(example)]));
     for (const entry of entries) {
-      entry.card.populate(entry.example);
-      entry.text = searchText(entry.example);
+      const {example} = entry;
+      const label = entry.card.populate(example);
+      const groupLabels = entry.landforms.flatMap(group => {
+        const key = landformKey(group);
+        return [exampleStrings[key][0], t(key)];
+      });
+      entry.searchText = normalize([
+        example.title, example.category, example.description,
+        label.title, label.category, label.description, ...groupLabels,
+      ].join(' '));
     }
     filter(false);
-  });
-  filter();
+  }
+
+  search.addEventListener('input', () => filter());
+  for (const select of [mode, size, landform]) select.addEventListener('change', () => filter());
+  onLocaleChange(refreshLabels);
+  refreshLabels();
 }
 
 export function initExampleCarousel(container, examples, onSelect) {

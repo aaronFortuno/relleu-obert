@@ -142,7 +142,7 @@
               <div id="example-cards" class="example-cards"><div class="example-track"></div></div>
               <button type="button" class="quiet-button example-carousel-arrow" data-example-step="1" aria-label="Exemple següent" aria-controls="example-cards" data-i18n-aria="ui.examples.next"><span aria-hidden="true">›</span></button>
             </div>
-            <small class="example-credits"><span data-i18n="ui.examples.credits">Dades ©</span> <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> · © <a href="https://mapterhorn.com/attribution/" target="_blank" rel="noopener">Mapterhorn</a> · <a href="https://github.com/tilezen/joerd/blob/master/docs/attribution.md" target="_blank" rel="noopener">Mapzen</a> · © <a href="https://www.icgc.cat/ca/Geoinformacio-i-mapes/Dades-i-productes/Elevacions/Elevacions-territorial/Models-delevacions" target="_blank" rel="noopener">ICGC</a></small>
+            <small class="example-credits"><span data-i18n="ui.examples.credits">Dades ©</span> <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> · © <a href="https://mapterhorn.com/attribution/" target="_blank" rel="noopener">Mapterhorn</a> · <a href="https://github.com/tilezen/joerd/blob/master/docs/attribution.md" target="_blank" rel="noopener">Mapzen</a> · © <a href="https://www.icgc.cat/ca/Geoinformacio-i-mapes/Dades-i-productes/Elevacions/Elevacions-territorial/Models-delevacions" target="_blank" rel="noopener">ICGC</a> · <a href="https://doi.org/10.5281/zenodo.7254221" target="_blank" rel="noopener">ESA WorldCover</a></small>
           </section>
         </div>
       </div>
@@ -212,43 +212,60 @@
       <path d="m27 9 7-6" stroke="var(--umbrella-accent)" stroke-width="4.5"/>
     </svg><span>ortogra<span class="umbrella-dot">.</span>fi</span>
   </a></p>
-  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer" data-i18n-text="ui.footer.openSource"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions">v0.23.3</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V" data-i18n-aria="ui.footer.about"><span class="desktop-copy" data-i18n="ui.footer.aboutDesktop">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
+  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer" data-i18n-text="ui.footer.openSource"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions">v0.23.4</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V" data-i18n-aria="ui.footer.about"><span class="desktop-copy" data-i18n="ui.footer.aboutDesktop">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
 </footer>
 
 <dialog id="projects-dialog" aria-labelledby="projects-title">
   <div class="dialog-heading"><h2 id="projects-title" data-i18n="ui.gallery.title">Galeria de maquetes</h2><button data-close aria-label="Tanca" autofocus data-i18n-aria="dialog.close">×</button></div>
   <div class="dialog-content">
-    <div class="gallery-sections" role="group" aria-label="Seccions de la galeria" data-i18n-aria="ui.gallery.sections">
-      <button type="button" class="secondary" aria-controls="gallery-examples" aria-pressed="true" data-i18n="ui.gallery.examples">Exemples</button>
-      <button type="button" class="secondary" aria-controls="gallery-saved" aria-pressed="false" data-i18n="ui.gallery.saved">Projectes desats</button>
-    </div>
-    <section id="gallery-examples" aria-label="Exemples de maquetes" data-i18n-aria="ui.examples.title">
-      <div class="search-field"><label class="sr-only" for="gallery-search" data-i18n="ui.gallery.search">Cerca un exemple</label><input id="gallery-search" type="search" placeholder="Cerca un lloc o tipus de paisatge" autocomplete="off" data-i18n-placeholder="ui.gallery.searchPlaceholder"></div>
-      <p class="hint gallery-results" role="status"></p>
-      <div class="example-carousel-rail gallery-carousel">
-        <button type="button" class="quiet-button example-carousel-arrow" data-example-step="-1" aria-label="Exemple anterior" aria-controls="gallery-cards" data-i18n-aria="ui.examples.previous"><span aria-hidden="true">‹</span></button>
-        <div id="gallery-cards" class="example-cards"><div class="example-track"></div></div>
-        <button type="button" class="quiet-button example-carousel-arrow" data-example-step="1" aria-label="Exemple següent" aria-controls="gallery-cards" data-i18n-aria="ui.examples.next"><span aria-hidden="true">›</span></button>
+    <div class="gallery-toolbar">
+      <div class="gallery-sections" role="group" aria-label="Seccions de la galeria" data-i18n-aria="ui.gallery.sections">
+        <button type="button" class="secondary" aria-controls="gallery-examples" aria-pressed="true" data-i18n="ui.gallery.examples">Exemples</button>
+        <button type="button" class="secondary" aria-controls="gallery-saved" aria-pressed="false" data-i18n="ui.gallery.saved">Projectes desats</button>
       </div>
-      <p id="gallery-feedback" class="hint" role="status"></p>
-      <details id="gallery-presets" hidden>
-        <summary data-i18n="ui.gallery.otherAreas">Altres retalls</summary>
-        <div>
-          <button type="button" class="secondary" data-gallery-preset="aneto-llacs" data-i18n="ui.gallery.anetoLakes">Llacs glacials de l’Aneto</button>
-          <button type="button" class="secondary" data-gallery-preset="pirineus-relleu" data-i18n="ui.gallery.anetoArea">Pirineus · sector de l’Aneto</button>
-          <button type="button" class="secondary" data-gallery-preset="pirineus-eix" hidden data-i18n="ui.gallery.pyreneesAxis">Pirineus · eix de la serralada</button>
-        </div>
-      </details>
-    </section>
-    <section id="gallery-saved" aria-label="Projectes desats" hidden data-i18n-aria="ui.gallery.saved">
-      <p data-i18n="ui.gallery.savedHint">Els ajustos es desen en aquest navegador. En obrir un projecte, podràs tornar a generar la maqueta.</p>
-      <form id="save-project" hidden>
-        <label for="project-name" data-i18n="ui.gallery.projectName">Nom del projecte actual</label>
-        <div class="project-actions"><input id="project-name" maxlength="100" required><button class="primary" type="submit" data-i18n="ui.action.saveSettings">Desa els ajustos</button></div>
-      </form>
-      <p id="project-feedback" class="hint" role="status"></p>
-      <div id="project-list"></div>
-    </section>
+      <div id="gallery-search-field" class="search-field"><label class="sr-only" for="gallery-search" data-i18n="ui.gallery.search">Cerca un exemple</label><input id="gallery-search" type="search" placeholder="Cerca un lloc o tipus de paisatge" autocomplete="off" data-i18n-placeholder="ui.gallery.searchPlaceholder"></div>
+      <div id="gallery-filters">
+        <label>
+          <span class="sr-only" data-i18n="gallery.filters.mode">Mode</span>
+          <select id="gallery-mode">
+            <option value="" data-i18n="gallery.filters.anyMode">Tots els modes</option>
+            <option value="relief" data-i18n="example.modeRelief">Relleu pur</option>
+            <option value="complete" data-i18n="example.modeComplete">Model complet</option>
+          </select>
+        </label>
+        <label>
+          <span class="sr-only" data-i18n="gallery.filters.size">Mida</span>
+          <select id="gallery-size">
+            <option value="" data-i18n="gallery.filters.anySize">Totes les mides</option>
+          </select>
+        </label>
+        <label>
+          <span class="sr-only" data-i18n="gallery.filters.landform">Tipus de paisatge</span>
+          <select id="gallery-landform">
+            <option value="" data-i18n="gallery.filters.anyLandform">Tots els paisatges</option>
+          </select>
+        </label>
+      </div>
+      <div id="gallery-example-status">
+        <p class="hint gallery-results" role="status"></p>
+        <p id="gallery-feedback" class="hint" role="status"></p>
+      </div>
+    </div>
+    <div id="gallery-body">
+      <section id="gallery-examples" aria-label="Exemples de maquetes" data-i18n-aria="ui.examples.title">
+        <div id="gallery-cards"></div>
+        <div id="gallery-credits"></div>
+      </section>
+      <section id="gallery-saved" aria-label="Projectes desats" hidden data-i18n-aria="ui.gallery.saved">
+        <p data-i18n="ui.gallery.savedHint">Els ajustos es desen en aquest navegador. En obrir un projecte, podràs tornar a generar la maqueta.</p>
+        <form id="save-project" hidden>
+          <label for="project-name" data-i18n="ui.gallery.projectName">Nom del projecte actual</label>
+          <div class="project-actions"><input id="project-name" maxlength="100" required><button class="primary" type="submit" data-i18n="ui.action.saveSettings">Desa els ajustos</button></div>
+        </form>
+        <p id="project-feedback" class="hint" role="status"></p>
+        <div id="project-list"></div>
+      </section>
+    </div>
   </div>
 </dialog>
 <dialog id="changelog-dialog" aria-labelledby="changelog-title">

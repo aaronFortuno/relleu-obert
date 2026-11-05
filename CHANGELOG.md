@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.23.4 — 2026-11-05
+
+- Galeria més ampla amb graella adaptable, fitxes amb descripció i desplaçament intern. El selector d’exemples i projectes desats comparteix espai amb la cerca.
+- Filtres combinables per mode, mida de maqueta i tipus de paisatge. El sector de l’Aneto i els llacs glacials tenen fitxa pròpia amb captures del model.
+
 ## v0.23.3 — 2026-11-05
 
 - Interfície en català, castellà, gallec, basc i anglès, amb els cinc idiomes disponibles al desplegable de capçalera.
