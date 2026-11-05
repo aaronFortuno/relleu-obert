@@ -2,6 +2,12 @@
 
 Actualitzat: 2026-11-05. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.22.40 — Pantalla inicial adaptable
+
+RO-046 adapta l’alçada de la taula i de les miniatures a l’espai central. Els controls passen sota la taula quan el panell fa 452 px o menys. El carrusel passa a una fitxa sencera quan el rail fa 380 px o menys. En finestres baixes i prou amples, la graella del selector aprofita una tercera columna.
+
+Revisats vuit formats entre 320 × 568 i 1280 × 720. A 1280 × 640, la pantalla inicial cap sencera amb el formulari plegat. A 920 × 720, el desplaçament vertical del panell baixa de 167 a 8 px. A 320 × 568, els camps personalitzats mantenen 44 px d’alçada i la fitxa ampliada queda dins la pantalla després de desplaçar el panell. Superades 12 proves locals i la compilació estàtica.
+
 ## v0.22.39 — Relleu pur fins a 1:500.000 en peces quadrades
 
 RO-055 unifica el topall de Relleu pur al mapa, la geometria i la galeria de projectes. En peces quadrades i rectangulars, el rang és d’1:10.000 a 1:500.000. La càrrega adapta la resolució a l’extensió geogràfica i manté el pressupost de mostres. [Mesures i fonts](RO-055-RELLEU-PUR.md)

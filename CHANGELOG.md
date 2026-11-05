@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.22.40 — 2026-11-05
+
+- La pantalla inicial ajusta la taula, la graella de mides i les miniatures a l’espai del panell. En panells estrets, els controls passen sota la taula i el carrusel mostra una fitxa sencera.
+
 ## v0.22.39 — 2026-11-05
 
 - Relleu pur permet arribar a 1:500.000 també en formats quadrats i rectangulars. Els retalls amplis ajusten la càrrega de dades a l’extensió i es poden desar a Projectes.

@@ -43,28 +43,5 @@
 }
 
 @media (max-width: 600px) {
-  #piece-choice .piece-setup { display: grid; }
-
-  #piece-choice .piece-preview {
-    width: min(300px, 100%);
-    justify-self: center;
-  }
-
-  #piece-choice .piece-setup-controls {
-    width: min(400px, 100%);
-    max-width: none;
-    justify-self: center;
-  }
-
-  #piece-sizes { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-
   #example-carousel { margin-top: 8px; }
-}
-
-@media (max-width: 430px) {
-  .example-track { grid-auto-columns: 100%; }
-}
-
-@media (min-width: 400px) and (max-width: 600px) {
-  #piece-sizes { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
