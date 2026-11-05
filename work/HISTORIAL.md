@@ -2,6 +2,12 @@
 
 Actualitzat: 2026-11-05. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.22.43 — Ponts curts sobre canals
+
+RO-033 ajusta la cota dels taulers curts que poden deixar pas sobre l’aigua i recolzar a totes dues ribes. En retalls densos es prioritzen els creuaments i es reparteixen pel retall. L’enllaç cerca vies dins la distància que pot recórrer i mostra el progrés per pont.
+
+Controls de Model complet a Amsterdam i Empuriabrava a 1:10.000 i 1:5.000. Control de relleu, aigua i ponts a l’extensió completa d’Amsterdam. Han passat 86 proves locals i la compilació estàtica. Pendent de validar la maqueta gran amb totes les capes al navegador i al laminador. [Mesures](RO-033-CONTROLS-PROCEDIMENTALS.md#ponts-curts-sobre-canals)
+
 ## v0.22.42 — Galeria al taller
 
 RO-046 i RO-054 reuneixen el carrusel d’exemples i els projectes desats. La galeria s’obre des de la capçalera o des de Territori. El carrusel del diàleg avança manualment i es pot cercar per nom o tipus de paisatge. «Badia de Tamariu» és la primera fitxa, amb una miniatura del visor de la peça de 18 × 18 cm en Model complet.

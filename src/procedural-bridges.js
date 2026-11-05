@@ -202,7 +202,7 @@ function joinFragments(fragments){
   return merged;
 }
 
-export function generateProceduralBridgeItems(features,elevationAt,{scale=.1,minWidthMM,bbox,trailWidth}={}){
+export function generateProceduralBridgeItems(features,elevationAt,{scale=.1,minWidthMM,bbox,trailWidth,crossesWater}={}){
   if(!Array.isArray(features))throw Error('Les entitats d’entrada han de ser un array.');
   if(typeof elevationAt!=='function')throw Error('Cal un callback elevationAt(lon,lat).');
   if(!Number.isFinite(scale)||scale<=0)throw Error('Escala invàlida.');
@@ -256,7 +256,17 @@ export function generateProceduralBridgeItems(features,elevationAt,{scale=.1,min
   inBBox.sort((a,b)=>a.points[0][0]-b.points[0][0]||a.points[0][1]-b.points[0][1]||a.points.length-b.points.length||a.group.localeCompare(b.group));
   if(inBBox.length>MAX_BRIDGES){
     warnings.push(`Pressupost de ${MAX_BRIDGES} ponts aplicat: ${inBBox.length-MAX_BRIDGES} eixos omesos.`);
-    inBBox.length=MAX_BRIDGES;
+    if(crossesWater){
+      const crossing=[],other=[];
+      for(const axis of inBBox)(crossesWater(axis.points)?crossing:other).push(axis);
+      const keep=new Set();
+      for(const group of [crossing,other]){
+        const count=Math.min(group.length,MAX_BRIDGES-keep.size);
+        // Select across the sorted extent rather than taking its western end.
+        for(let i=0;i<count;i++)keep.add(group[Math.floor((i+.5)*group.length/count)]);
+      }
+      for(let i=inBBox.length-1;i>=0;i--)if(!keep.has(inBBox[i]))inBBox.splice(i,1);
+    }else inBBox.length=MAX_BRIDGES;
   }
   const items=[];
   inBBox.forEach((axis,order)=>{

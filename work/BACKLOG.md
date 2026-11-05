@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-05 · v0.22.42**. Galeria accessible des del taller. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-05 · v0.22.43**. Ponts curts sobre canals. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -23,7 +23,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | ID | Prioritat | Estat | Proper resultat comprovable |
 | ------------------------------------------------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
 | [RO-053](#ro-053--flux-de-treball-per-etapes) | P1 | Taller mòbil i canvi de mida al mateix projecte | Validar el taller en telèfons reals i millorar el contrast de les guies al bosc |
-| [RO-033](#ro-033--ponts-i-viaductes) | P1 | Millau i el cupó del Bages validats al visor. Montgròs conserva el pas al laminat del cupó | Comprovar llums i accessos en una placa completa |
+| [RO-033](#ro-033--ponts-i-viaductes) | P1 | Montgròs validat al cupó. Obertures mesurades a Amsterdam i Empuriabrava | Laminar els ponts curts i comprovar les llums en una placa completa |
 | [RO-034](#ro-034--túnels-imprimibles) | P1 | Dues boques i rasant compartida verificades al cupó 3MF | Validar el cupó i revisar el tram cobert de Sant Salvador al laminador |
 | [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | Encaix per tram i cobertura ampliada, també als talls de la peça | Validar Marganell i resoldre les unions complexes |
 | [RO-052](#ro-052--continuïtat-i-amplada-del-traçat-viari) | P1 | Senders amb amplada ajustable. Quatre enllaços a Millau a 1:20.000 | Validar els senders al laminador i mesurar els enllaços de la C-37 |
@@ -118,6 +118,8 @@ Comparar petjades i parts d’edificis d’ICGC, Catastre i OSM en una segona zo
 El motor incorpora cobertes amb dades obertes d’OSM quan els atributs ho permeten i conserva les petjades amb coberta plana si la consulta torna buida. L’RTL de l’ICGC documenta plans LoD2, amb un servei públic de careners en 2D. Resta verificar una font de cobertes 3D consultable des del navegador. [Fonts de cobertes](RO-032-DADES-COBERTES.md#seguiment-del-4-de-novembre) · [Integració](RO-032-INTEGRACIO.md)
 
 ### RO-033 — Ponts i viaductes
+
+Els ponts curts que poden recolzar a totes dues ribes s’ajusten a la cota de l’aigua modelada. El pressupost es reparteix pel retall i prioritza els creuaments. Verificar el model complet d’Amsterdam al visor i laminar les obertures. [Mesures dels canals](RO-033-CONTROLS-PROCEDIMENTALS.md#ponts-curts-sobre-canals)
 
 Pilars i taulers procedimentals, amb dades específiques documentades per a Rajadell. Millau i el cupó del Bages estan validats al visor. La regla general per als fragments continguts recupera el tauler de Montgròs a 1:20.000 i conserva el de la Fessona, amb dues unions a cadascun. L’obertura de 0,27 mm de Montgròs es conserva a la secció mostrejada del cupó laminat amb capes de 0,10 i 0,20 mm. Pendent de comprovar en una placa completa i en una impressió física. [Controls procedimentals](RO-033-CONTROLS-PROCEDIMENTALS.md) · [Suports segons escala](RO-033-SUPORTS-ESCALA.md)
 

@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.22.43 — 2026-11-05
+
+- Els ponts curts cartografiats poden ajustar la cota del tauler per deixar una obertura sota el pont i conservar el contacte amb totes dues ribes.
+- En retalls densos es prioritzen els creuaments d’aigua i es reparteixen els ponts dins del pressupost. La cerca d’accessos acota els traçats a l’entorn del pont i el visor mostra el progrés dels enllaços.
+
 ## v0.22.42 — 2026-11-05
 
 - «Galeria» a la capçalera i «Veure exemples» a Territori obren el carrusel amb cerca i els projectes desats. En triar una fitxa es genera la maqueta.

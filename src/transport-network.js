@@ -58,19 +58,30 @@ export function continuationRoute(end,outward,lines,routeIdentity,maxLength,{all
     throw Error('Configuració de continuïtat viària invàlida.');
   const heading=direction([0,0],outward);
   if(!heading[0]&&!heading[1])return {points:[],segments:[]};
+  const radius=maxLength+maxStartDistanceMM+EPS;
+  const [west,south,east,north]=[end[0]-radius,end[1]-radius,end[0]+radius,end[1]+radius];
   const entries=[];
   for(const [index,line]of lines.entries()){
-    if(!line||!Array.isArray(line.points)||line.points.length<2||line.points.some(p=>!point(p)))continue;
+    if(!line||!Array.isArray(line.points)||line.points.length<2)continue;
     if(!allowStructures&&line.brunnel)continue;
+    // A route cannot leave the distance budget. Test the whole line's
+    // bounds since an interior segment can repair a generalized junction.
+    let xmin=Infinity,ymin=Infinity,xmax=-Infinity,ymax=-Infinity;
+    for(const p of line.points){
+      if(!point(p)){xmin=Infinity;break;}
+      xmin=Math.min(xmin,p[0]);xmax=Math.max(xmax,p[0]);
+      ymin=Math.min(ymin,p[1]);ymax=Math.max(ymax,p[1]);
+    }
+    if(xmin===Infinity||xmin>east||xmax<west||ymin>north||ymax<south)continue;
+    if(!compatibleTransport(routeIdentity,line))continue;
     const points=line.points.map(p=>p.slice(0,2)).filter((p,i,a)=>!i||distance(p,a[i-1])>EPS);
-    if(points.length<2||!compatibleTransport(routeIdentity,line))continue;
+    if(points.length<2)continue;
     entries.push({index,line,points,key:stableKey(line,points)});
   }
   const visited=new Set(),points=[end.slice(0,2)],segments=[];let length=0,currentIdentity=routeIdentity,currentHeading=heading,completedEntry=null;
   function candidate(entry,reversed){
-    if(visited.has(entry.index)||!compatibleTransport(currentIdentity,entry.line))return null;
-    const path=reversed?entry.points.slice().reverse():entry.points;
-    const a=path[0],b=path[1],edge=direction(a,b),alignment=dot(currentHeading,edge),current=points.at(-1);
+    if(visited.has(entry.index))return null;
+    const a=reversed?entry.points.at(-1):entry.points[0],b=reversed?entry.points.at(-2):entry.points[1],edge=direction(a,b),alignment=dot(currentHeading,edge),current=points.at(-1);
     if(alignment<=.15||dot(currentHeading,[b[0]-current[0],b[1]-current[1]])<=EPS)return null;
     const edgeLength=distance(a,b),along=dot([current[0]-a[0],current[1]-a[1]],edge);
     // A generalized endpoint may be a little inside the first segment. Never
@@ -78,7 +89,8 @@ export function continuationRoute(end,outward,lines,routeIdentity,maxLength,{all
     const nearEndpoint=distance(current,a)<=maxStartDistanceMM+EPS;
     const projected=[a[0]+edge[0]*along,a[1]+edge[1]*along];
     const nearProjection=along>=0&&along<=Math.min(edgeLength,maxStartDistanceMM)+EPS&&distance(current,projected)<=maxStartDistanceMM+EPS;
-    if(!nearEndpoint&&!nearProjection)return null;
+    if((!nearEndpoint&&!nearProjection)||!compatibleTransport(currentIdentity,entry.line))return null;
+    const path=reversed?entry.points.slice().reverse():entry.points;
     return {entry,path,alignment,distance:distance(current,a),rank:rank(routeIdentity,entry.line)+rank(currentIdentity,entry.line),key:entry.key+(reversed?'|reverse':'|forward')};
   }
   function projectedContinuation(){

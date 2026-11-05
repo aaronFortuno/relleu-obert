@@ -1,5 +1,19 @@
 # RO-033 / RO-052 — Controls de ponts procedimentals
 
+## Ponts curts sobre canals
+
+**v0.22.43.** L’informe d’Amsterdam a 1:10.000 comptava 192 taulers procedimentals i 299 eixos descartats pel pressupost de 200. Els avisos de pendent afectaven els perfils viaris principals. El problema als canals era la cota del tauler, interpolada a partir del DEM dels extrems, respecte de l’aigua modelada.
+
+La regla s’aplica a un pont cartografiat que creua una làmina d’aigua curta i té les dues ribes al retall. Ajusta el tauler de 0,4 mm per deixar un pas objectiu de 0,25 mm, amb marge de mostreig i contacte amb les ribes. Els ponts amb prou pas i els casos que exigirien separar-se de les ribes conserven el perfil d’origen. La cerca d’accessos acota els traçats per distància. El pressupost de ponts prioritza els creuaments d’aigua i els reparteix pel retall.
+
+| Control a 1:10.000 | Pas mesurat abans | Pas mesurat després |
+| --- | ---: | ---: |
+| Amsterdam, 600 × 600 m, Model complet amb carrers i edificis | 0 ponts amb 0,24 mm o més | 15 ponts, 0,259–0,275 mm |
+| Amsterdam, 2,5 × 2,5 km, relleu, aigua i ponts | 0 ponts amb 0,24 mm o més | 164 ponts, 0,256–0,291 mm |
+| Empuriabrava, 700 × 700 m, Model complet amb carrers i edificis | 0 ponts amb 0,24 mm o més | 3 ponts, 0,258–0,260 mm |
+
+Al retall ampli d’Amsterdam hi ha 84 ponts sobre aigua a l’oest i 113 a l’est del centre. Abans n’hi havia 185 a l’oest i cap a l’est. Es conserva el límit de 200 i hi ha eixos que queden fora. Al control complet de 600 m s’han calculat 21 accessos per als taulers ajustats. A Empuriabrava se n’han calculat sis per als tres ponts. A 1:5.000 s’han mesurat obertures en 13 ponts del retall urbà d’Amsterdam i en els tres d’Empuriabrava. Queda pendent comprovar les obertures al laminador i generar el retall gran amb totes les capes.
+
 ## Torrent de Montgròs
 
 **v0.21.8.** Control del retall de Sant Salvador de 3 × 3 km a 1:20.000,

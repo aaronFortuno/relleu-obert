@@ -119,3 +119,16 @@ test('structure peers are opt-in, and a one-way physical road remains reachable 
   assert.deepEqual(continuationRoute([0,0],[1,0],[a,b],route,30,{allowStructures:true}).points,[[0,0],[10,0],[20,0]]);
   assert.deepEqual(continuationRoute([20,0],[-1,0],[a,b],route,30,{allowStructures:true}).points,[[20,0],[10,0],[0,0]]);
 });
+
+test('the continuation budget retains nearby endpoints and the interior of a long line',()=>{
+  const short=line([[0,0],[9.95,0]],route);
+  const beyond=line([[10.08,0],[13,0]],route);
+  const joined=continuationRoute([0,0],[1,0],[short,beyond],route,10);
+  assert.strictEqual(joined.segments.at(-1).line,beyond);
+  assert.deepEqual(joined.points.at(-1),[10,0]);
+
+  const first=line([[0,0],[5,0]],route);
+  const crossing=line([[-50,.04],[50,.04]],route);
+  const repaired=continuationRoute([0,0],[1,0],[first,crossing],route,10);
+  assert(repaired.segments.some(s=>s.line===crossing&&s.estimatedRepair));
+});
