@@ -14,7 +14,7 @@ import {polygonTester} from './polygon-index.js';
 import {lineBuffer} from './roads.js';
 import {isRailway,isInactiveRailway,railwayOptions,railwayWidthMetres} from './railways.js';
 import {buildingOptions,buildingRise} from './building-options.js';
-import {MAX_MODEL_SIDE_MM,validateScale,isPanoramicSize,validPieceDimensions,PANORAMIC_SCALE_RANGE} from './selection.js';
+import {MAX_MODEL_SIDE_MM,validateScale,isPanoramicSize,validPieceDimensions,PURE_SCALE_RANGE,PANORAMIC_SCALE_RANGE} from './selection.js';
 import {localRasterSampler} from './local-raster.js';
 import {treeDimensions,TREE_CROWN_METRES,MIN_TREE_MM} from './tree-scale.js';
 import {treeSampler,fitTrees,MAX_TREES} from './vegetation-budget.js';
@@ -541,11 +541,11 @@ function buildPureRelief(data,options,progress,preview){
   const {size=160,exaggeration=1.5,resolution=56}=options;
   const {width,height,scale,project,unproject}=makeProjection(data.meta.bbox,size,options);
   const panoramic=isPanoramicSize(width,height);
-  const [minimum,maximum]=panoramic?PANORAMIC_SCALE_RANGE:[10000,100000];
+  const [minimum,maximum]=panoramic?PANORAMIC_SCALE_RANGE:PURE_SCALE_RANGE;
   if(![width,height,exaggeration].every(Number.isFinite)||Math.min(width,height)<=0||
       (panoramic?!validPieceDimensions(width,height):Math.max(width,height)>MAX_MODEL_SIDE_MM)||exaggeration<1||exaggeration>5||
       !Number.isInteger(resolution)||resolution<2||resolution>PURE_RELIEF_RESOLUTIONS[56]||1000/scale<minimum-.1||1000/scale>maximum+1)
-    throw Error(panoramic?'El format panoràmic admet escales d’1:50.000 a 1:500.000 i fins a 100 × 20 cm.':'El mode Relleu pur admet escales d’1:10.000 a 1:100.000.');
+    throw Error(panoramic?'El format panoràmic admet escales d’1:50.000 a 1:500.000 i fins a 100 × 20 cm.':'El mode Relleu pur admet escales d’1:10.000 a 1:500.000.');
   const {columns,rows}=reliefGridSize(width,height,resolution,panoramic),stride=columns+1;
   preview?.stage('terrain','Revisant les mostres d’altitud…');
   const prepared=data.terrainRaster?{diagnostics:{invalid:0,spikes:0,repaired:0,source:data.meta.terrain?.provider}}:prepareElevationTiles(data.dem);

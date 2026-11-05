@@ -1,5 +1,5 @@
 import {normalizeAssignments,normalizeReliefAssignments} from './materials.js';
-import {pieceDimensions,isPanoramicSize,PANORAMIC_SCALE_RANGE} from './selection.js';
+import {pieceDimensions,isPanoramicSize,PURE_SCALE_RANGE,PANORAMIC_SCALE_RANGE} from './selection.js';
 import {TRAIL_WIDTH_MULTIPLIERS} from './transport-width.js';
 import {RELIEF_VEGETATION_DEFAULTS,validVegetationHeight,validVegetationNoise} from './relief-vegetation-options.js';
 
@@ -32,7 +32,7 @@ function validatedSettings(settings){
   const {sizePreset,pureRelief,pose,materials,reliefMaterials,options,strokes,placeName,exampleId}=settings;
   const {center,widthM,heightM,rotation}=pose,[width,height]=pieceDimensions(sizePreset);
   const panoramic=isPanoramicSize(width,height);
-  const [minScale,maxScale]=panoramic?PANORAMIC_SCALE_RANGE:[0,100000];
+  const [minScale,maxScale]=panoramic?PANORAMIC_SCALE_RANGE:[0,pureRelief?PURE_SCALE_RANGE[1]:100000];
   const validSpan=(metres,mm)=>range(metres,Math.max(.001,mm*(minScale-1)/1000),mm*(maxScale+1)/1000);
   if(panoramic&&!pureRelief)throw invalid();
   if(!Array.isArray(center)||center.length!==2||!range(center[0],-70,70)||!range(center[1],-180,180)||

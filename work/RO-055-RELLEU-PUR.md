@@ -1,6 +1,6 @@
 # RO-055 · Pilot de Relleu pur
 
-A Territori, el mode Relleu pur permet treballar d’1:10.000 a 1:100.000. Des de la v0.19.17 el navegador pot sol·licitar fins a 96 tessel·les, amb 32 MiB de pressupost per a les mostres d’elevació que conserva. Omet les consultes de vies i edificis. El mode complet conserva els seus límits i activa Perfils suaus per defecte.
+A Territori, el mode Relleu pur permet treballar d’1:10.000 a 1:500.000 en formats quadrats i rectangulars. El format panoràmic admet d’1:50.000 a 1:500.000. El navegador pot sol·licitar fins a 96 tessel·les d’elevació en retalls petits i fins a 144 en retalls amplis, amb un pressupost de 32 MiB per a les mostres que conserva. En retalls amplis s’ajusta el detall de les fonts a l’extensió. Relleu pur omet les consultes de vies i edificis. El mode complet conserva els seus límits.
 
 ## Font dels colors
 

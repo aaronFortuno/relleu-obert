@@ -1,7 +1,8 @@
 export const SIZE_PRESETS={'10x10':[100,100],'15x15':[150,150],'18x18':[180,180],'20x20':[200,200],'20x15':[200,150],'30x30':[300,300],'40x40':[400,400]};
 export const MAX_MODEL_SIDE_MM=500;
 export const MAX_PRINT_TILE_MM=250;
-export const PANORAMIC_SCALE_RANGE=[50000,500000];
+export const PURE_SCALE_RANGE=[10000,500000];
+export const PANORAMIC_SCALE_RANGE=[50000,PURE_SCALE_RANGE[1]];
 
 export function isPanoramicSize(width,height){
   return Math.max(width,height)>MAX_MODEL_SIDE_MM;

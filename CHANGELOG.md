@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.22.39 — 2026-11-05
+
+- Relleu pur permet arribar a 1:500.000 també en formats quadrats i rectangulars. Els retalls amplis ajusten la càrrega de dades a l’extensió i es poden desar a Projectes.
+
 ## v0.22.38 — 2026-11-05
 
 - A la pantalla inicial d’escriptori, el selector de mides puja i el carrusel baixa. La separació s’adapta a l’alçada de la finestra.

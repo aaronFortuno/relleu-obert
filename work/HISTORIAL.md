@@ -2,6 +2,14 @@
 
 Actualitzat: 2026-11-05. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.22.39 — Relleu pur fins a 1:500.000 en peces quadrades
+
+RO-055 unifica el topall de Relleu pur al mapa, la geometria i la galeria de projectes. En peces quadrades i rectangulars, el rang és d’1:10.000 a 1:500.000. La càrrega adapta la resolució a l’extensió geogràfica i manté el pressupost de mostres. [Mesures i fonts](RO-055-RELLEU-PUR.md)
+
+Han passat 41 proves locals i la compilació. Comprovades les dimensions i les escales al selector, el desament d’un quadrat a 1:500.000 i les càrregues simulades de 100 × 100 km al Bodensee i de 250 × 250 km en un retall girat 45°.
+
+Al navegador, el retall real centrat a 47,65° N i 9,37° E s’ha generat en una peça de 20 × 20 cm a 1:500.000, amb el llac sencer visible i l’exportació disponible. Revisat el selector a 1280 × 720 i 1100 × 680. Model complet manté el seu topall.
+
 ## v0.22.38 — Espaiat de la pantalla inicial
 
 RO-046 amplia la separació entre el selector de mides i el carrusel a l’escriptori segons l’alçada de la finestra. A 1280 × 720, el selector puja 16 px i el carrusel baixa 16 px. A 1100 × 680, el desplaçament és de 6 px en cada sentit. Revisats també 1280 × 640, 390 × 844, el formulari de mides personalitzades i l’ampliació de les fitxes amb teclat. Superades les tres proves del carrusel i la compilació estàtica.

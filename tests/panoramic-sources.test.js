@@ -47,7 +47,7 @@ test('standard pure relief recovers missing elevation over verified open sea',as
   assert(region.dem[0].elev.every(height=>height===0));
 });
 
-test('the coast-to-coast envelope uses bounded terrain and vector loads in panoramic relief',async t=>{
+test('wide square and panoramic envelopes use bounded terrain and vector loads',async t=>{
   const previous=globalThis.fetch,requests=[];
   let active=0,peak=0;
   globalThis.fetch=async value=>{
@@ -70,16 +70,25 @@ test('the coast-to-coast envelope uses bounded terrain and vector loads in panor
   await assert.rejects(loadRegion({bbox,pureRelief:true,decodeElevation:decode}),/límits de Relleu pur/);
   await assert.rejects(loadRegion({bbox,panoramic:true,decodeElevation:decode}),/només es pot generar en Relleu pur/);
   assert.equal(requests.length,0);
-  const region=await loadRegion({bbox,panoramic:true,pureRelief:true,decodeElevation:decode});
-  assert.equal(region.meta.panoramic,true);
-  assert.equal(region.meta.terrain.zoom,10);
-  assert.equal(region.dem.length,136);
-  assert.equal(peak,4);
-  assert.equal(region.meta.forests.zoom,9);
-  assert.equal(region.meta.forests.tileCount,45);
-  assert.equal(region.meta.forests.failures,0);
-  assert.equal(region.meta.buildingSource,null);
-  assert.deepEqual(region.features,[]);
+
+  const selections=[
+    {bounds:bbox,panoramic:true,terrainZoom:10,terrainTiles:136,vectorZoom:9,vectorTiles:45},
+    {bounds:physicalBBox([47.65,9.37],100,100),terrainZoom:11,terrainTiles:72,vectorZoom:10,vectorTiles:25},
+    {bounds:selectionPose(physicalBBox([68,12],250,250),45).bbox,terrainZoom:8,terrainTiles:49,vectorZoom:7,vectorTiles:16}
+  ];
+  for(const {bounds,panoramic,terrainZoom,terrainTiles,vectorZoom,vectorTiles} of selections){
+    peak=0;
+    const region=await loadRegion({bbox:bounds,panoramic,pureRelief:true,decodeElevation:decode});
+    assert.equal(region.meta.panoramic,panoramic);
+    assert.equal(region.meta.terrain.zoom,terrainZoom);
+    assert.equal(region.dem.length,terrainTiles);
+    assert.equal(peak,4);
+    assert.equal(region.meta.forests.zoom,vectorZoom);
+    assert.equal(region.meta.forests.tileCount,vectorTiles);
+    assert.equal(region.meta.forests.failures,0);
+    assert.equal(region.meta.buildingSource,null);
+    assert.deepEqual(region.features,[]);
+  }
 });
 
 test('panoramic terrain retries a coarser zoom instead of flattening unverified land',async t=>{

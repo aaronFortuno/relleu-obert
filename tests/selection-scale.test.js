@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {pieceDimensions,scaledBBox,validateScale,tilePlan,selectionPose,coveringSelectionBox,isPanoramicSize,PANORAMIC_SCALE_RANGE} from '../src/selection.js';
+import {pieceDimensions,scaledBBox,validateScale,tilePlan,selectionPose,coveringSelectionBox,isPanoramicSize,PURE_SCALE_RANGE,PANORAMIC_SCALE_RANGE} from '../src/selection.js';
 import {makeProjection,buildModel} from '../src/geometry.js';
 import {threeMF} from '../src/export.js';
 import {unzipSync,strFromU8} from 'fflate';
@@ -61,6 +61,18 @@ test('both geometry modes accept a 50 cm model side',()=>{
     assert.equal(model.height,400);
     assert.throws(()=>buildModel(data,{...options,widthMM:510}),/rang admès|format panoràmic/);
   }
+});
+test('pure relief uses 1:500,000 for regular squares and rectangles',()=>{
+  const center=[47.63,9.37],denominator=500000;
+  for(const [widthMM,heightMM,rotation] of [[200,200,0],[200,150,20],[500,500,45]]){
+    const pose=selectionPose(scaledBBox(center,widthMM,heightMM,denominator,PURE_SCALE_RANGE),rotation);
+    close(pose.widthM,widthMM*500);
+    close(pose.heightM,heightMM*500);
+    const data={meta:{bbox:pose.bbox},dem:[{z:0,x:0,y:0,size:2,elev:new Float32Array(4).fill(50)}]};
+    const model=buildModel(data,{widthMM,heightMM,selectionPose:pose,resolution:12,pureRelief:true,trees:false});
+    assert.deepEqual([model.width,model.height,model.scale],[widthMM,heightMM,denominator]);
+  }
+  assert.throws(()=>validateScale(500001,PURE_SCALE_RANGE),/escala/);
 });
 test('fixed scales preserve horizontal scale, dimensions and coordinates at different latitudes',()=>{
   for(const lat of [0,41.918,65])for(const [widthMM,heightMM]of [[150,150],[150,200],[200,150],[400,400]])for(const scale of [1000,1500,2000,7345]){

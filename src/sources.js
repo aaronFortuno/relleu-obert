@@ -12,6 +12,7 @@ import {fetchOSMBuildings} from './roof-sources.js';
 import {loadReliefWaterways,RELIEF_WATERWAY_SOURCE} from './relief-waterways.js';
 import {isFlowingWater,isMarineWater,isStandingWater} from './standing-water.js';
 import {polygonOps} from './polygon-ops.js';
+import {MAX_MODEL_SIDE_MM,PURE_SCALE_RANGE} from './selection.js';
 
 export {lonLatTile} from './elevation.js';
 import {lonLatTile} from './elevation.js';
@@ -59,12 +60,12 @@ export function mergeStandingWaterFragments(lakes){
   return merged;
 }
 
-async function loadReliefVectors(bbox,sample,progress,forestOnly,panoramic){
-  const maxTiles=panoramic?48:MAX_REGION_TILES;
-  const zoom=(panoramic?[14,13,12,11,10,9,8,7]:[14,13,12,11,10,9,8]).find(z=>regionTileCount(bbox,z)<=maxTiles);
+async function loadReliefVectors(bbox,sample,progress,forestOnly,wide){
+  const maxTiles=wide?48:MAX_REGION_TILES;
+  const zoom=(wide?[14,13,12,11,10,9,8,7]:[14,13,12,11,10,9,8]).find(z=>regionTileCount(bbox,z)<=maxTiles);
   const tiles=tileList(bbox,zoom,maxTiles),base=(import.meta.env?.BASE_URL||'./')+'data/';
   const place=typeof sample==='string'?recommendedPlace(sample):null;
-  const deadline=AbortSignal.timeout(panoramic?20000:12000);
+  const deadline=AbortSignal.timeout(wide?20000:12000);
   const request=async url=>{
     const response=await fetch(url,{signal:deadline});
     if(!response.ok)throw Error(`HTTP ${response.status}`);
@@ -157,14 +158,18 @@ export function applyBuildingLayer(region,layer){
   region.meta={...region.meta,buildings:layer.metadata,buildingSource:layer.source,sourceWarnings:[...(region.terrainWarnings||[]),...layer.warnings],localSources:{...region.meta.localSources,buildings:layer.source==='local'?layer.metadata:null}};
   return region;
 }
-function validReliefBounds(bbox,panoramic){
-  if(!Array.isArray(bbox)||bbox.length!==4||!bbox.every(Number.isFinite))return false;
+function reliefBounds(bbox,panoramic){
+  if(!Array.isArray(bbox)||bbox.length!==4||!bbox.every(Number.isFinite))return null;
   const [west,south,east,north]=bbox;
-  if(west>=east||south>=north||west< -180||east>180||south< -70||north>70)return false;
-  if(!panoramic)return east-west<=2&&north-south<=1;
-  // The envelope of a rotated 500 × 100 km rectangle can be much wider than the strip.
+  if(west>=east||south>=north||west< -180||east>180||south< -70||north>70)return null;
   const width=(east-west)*111.32*Math.cos((south+north)/2*Math.PI/180),height=(north-south)*111.32;
-  return width<=510.1&&height<=510.1&&Math.hypot(width,height)<=600.1;
+  const squareSide=MAX_MODEL_SIDE_MM*PURE_SCALE_RANGE[1]/1e6;
+  // A rotated footprint may need a wider source envelope than its own sides.
+  const maxAxis=panoramic?510.1:squareSide*Math.SQRT2+.5;
+  const maxDiagonal=panoramic?600.1:2*squareSide+.5;
+  if(Math.max(width,height)>maxAxis||Math.hypot(width,height)>maxDiagonal)return null;
+  // Keep the smaller source budget for selections within the former 50 km square envelope.
+  return {wide:panoramic||Math.max(width,height)>50*Math.SQRT2+.1};
 }
 
 export async function loadRegion({sample=true,bbox,buildingSource,decodeElevation=decodeDEM,localDEM,localBuildings,buildingFallbacks=[],onTiming,pureRelief=false,panoramic=false},progress=()=>{}){
@@ -182,20 +187,22 @@ export async function loadRegion({sample=true,bbox,buildingSource,decodeElevatio
   }
   if(panoramic&&!pureRelief)throw Error('El format panoràmic només es pot generar en Relleu pur.');
   if(pureRelief){
-    if(!validReliefBounds(bbox,panoramic))throw Error(panoramic?'Retall fora dels límits del format panoràmic.':'Retall fora dels límits de Relleu pur.');
+    const bounds=reliefBounds(bbox,panoramic);
+    if(!bounds)throw Error(panoramic?'Retall fora dels límits del format panoràmic.':'Retall fora dels límits de Relleu pur.');
+    const {wide}=bounds;
     const [w,s,e,n]=RELIEF_LAKE_SOURCE.bounds;
     const insidePilot=bbox[0]>=w&&bbox[1]>=s&&bbox[2]<=e&&bbox[3]<=n;
     let vectorsPromise,oceanProof;
     const loadVectors=()=>vectorsPromise??=time(insidePilot?'source.relief-forest':'source.relief-vectors',
-      ()=>loadReliefVectors(bbox,sample,progress,insidePilot,panoramic));
+      ()=>loadReliefVectors(bbox,sample,progress,insidePilot,wide));
     const isOcean=async tile=>{
       // Only request the cartography early when a DEM tile needs coastal proof.
       oceanProof??=loadVectors().then(vectors=>oceanTilePredicate(vectors.oceans,bbox)).catch(()=>()=>false);
       return (await oceanProof)(tile);
     };
     const terrain=await time('source.terrain',()=>loadPreferredTerrain(bbox,decodeElevation,fetch,progress,isOcean,{
-      zooms:panoramic?[14,13,12,11,10,9,8]:[14,13,12,11,10],maxTiles:panoramic?144:96,maxSamples:8*1024**2,
-      concurrency:panoramic?4:1
+      zooms:wide?[14,13,12,11,10,9,8]:[14,13,12,11,10],maxTiles:wide?144:96,maxSamples:8*1024**2,
+      concurrency:wide?4:1
     }));
     let coverage=[],lakes=[],waterways=[],waterAreas=[],forests=[],oceans=[],vectorCoverage;
     const warnings=terrain.warnings.slice();

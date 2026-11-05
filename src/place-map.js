@@ -1,11 +1,10 @@
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import {parseCoordinates,scaledBBox,physicalBBox,selectionPose,coveringSelectionBox,isPanoramicSize,PANORAMIC_SCALE_RANGE} from './selection.js';
+import {parseCoordinates,scaledBBox,physicalBBox,selectionPose,coveringSelectionBox,isPanoramicSize,PURE_SCALE_RANGE,PANORAMIC_SCALE_RANGE} from './selection.js';
 import {recommendedPlace,DEFAULT_PLACE,placeSelection} from './recommended-places.js';
 import {maxRegionScale,regionTileCount,MAX_REGION_TILES} from './region-limits.js';
 
 export const MAX_PROJECT_SCALE=20000;
-export const PURE_SCALE_RANGE=[10000,100000];
 
 export function createPlaceMap(container,{onChange,onName,width=150,height=150}){
   const map=L.map(container,{zoomControl:true,attributionControl:true,zoomSnap:0,zoomAnimation:false,scrollWheelZoom:true,minZoom:4,maxZoom:18}).setView(recommendedPlace(DEFAULT_PLACE).center,15);
@@ -81,14 +80,13 @@ export function createPlaceMap(container,{onChange,onName,width=150,height=150})
     frame.style.width=fw+'px';frame.style.height=fh+'px';
     const a=map.containerPointToLatLng([(w-fw)/2,(h+fh)/2]),b=map.containerPointToLatLng([(w+fw)/2,(h-fh)/2]);
     let bounds=[a.lng,a.lat,b.lng,b.lat];
-    const panoramic=isPanoramicSize(...physical);
-    if(panoramic){
+    if(pureRelief){
       const {lat,lng}=map.getCenter();
       // Keep a single horizontal scale in both directions despite the map projection.
       bounds=scaleBox([lat,lng],selectionPose(bounds).widthM*1000/physical[0]);
     }
     const limited=limitBox(bounds);
-    if(panoramic||limited!==bounds)drawBounds(limited);
+    if(pureRelief||limited!==bounds)drawBounds(limited);
     return limited;
   }
   function pose(){const b=baseSelection();if(!b)return null;lastBase=b;return selectionPose(b,rotation);}

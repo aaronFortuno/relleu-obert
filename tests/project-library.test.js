@@ -54,6 +54,15 @@ test('panoramic projects preserve dimensions, mode and scales larger than the re
   assert.throws(()=>saveProject(storage,{name:'Escala insuficient',settings:{...panoramic,pose:{...panoramic.pose,widthM:49900}}}),/no és vàlida/);
 });
 
+test('a square pure relief project at 1:500,000 can be saved and restored',()=>{
+  const storage=memoryStorage();
+  const square={...settings,sizePreset:'20x20',pureRelief:true,
+    pose:{center:[47.63,9.37],widthM:100000,heightM:100000,rotation:0}};
+  saveProject(storage,{name:'Bodensee',settings:square},firstDate);
+  assert.deepEqual(readProjects(storage)[0].settings,square);
+  assert.throws(()=>saveProject(storage,{name:'Model complet',settings:{...square,pureRelief:false}}),/no és vàlida/);
+});
+
 test('saved projects store pure relief assignments separately from landscape materials',()=>{
   const storage=memoryStorage();
   const reliefMaterials={count:3,assignments:[0,0,2,1,2,1]};
