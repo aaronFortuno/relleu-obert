@@ -1,5 +1,7 @@
 # RO-025 — Edificis i vies d’altres èpoques
 
+**Pilot retirat a la v0.23.13.** A Cardona i Cornellà del Llobregat, les capes històriques van dibuixar superfícies urbanitzades contínues. L’objectiu docent requereix distingir les petjades i, quan sigui possible, el perfil de cada edifici. Es reprendrà amb una font històrica que ofereixi aquest nivell de detall amb cobertura útil. Els projectes antics es poden obrir i conserven els ajustos. El taller avisa que la generació utilitza cartografia actual.
+
 Objectiu: poder imprimir dues maquetes del mateix lloc i comparar l’evolució del teixit construït i de la xarxa de comunicacions. «Actual» és el valor per defecte. El taller parteix de geometries o punts ja publicats, amb una data o una edició documentada. Les ortofotos serveixen per contrastar resultats.
 
 ### Fonts comunes: abast i decisió
@@ -57,13 +59,13 @@ python scripts/package-urban-cover.py pack urban-icgc 2009=cobertes-sol-v1r0-200
 python scripts/package-urban-cover.py compare urban-icgc 2.800 41.968 2.839 42.006
 ```
 
-### Publicació al taller
+### Publicació al taller entre la v0.23.10 i la v0.23.12
 
 «Sòl urbanitzat · edició» apareix al peu del visor del Model complet quan el retall té cobertura. La selecció ordinària combina les edicions **1956, 1977 i 1990** a l’àrea metropolitana de Barcelona amb **2005 i 2014** del SIOSE a Espanya. El navegador consulta els serveis oficials quan es tria l’any i només demana la geometria del retall. La font i la cobertura parcial s’indiquen al control i es conserven a l’exportació. Si la consulta falla, es conserva l’edició vàlida que es veia al visor.
 
 Cada edició substitueix els edificis individuals amb una capa de superfície. L’escala i els criteris de classificació poden variar entre fonts. Es manté el mateix relleu de referència i «Actual» recupera els edificis. El 2009 de l’ICGC s’ofereix allà on la màscara del SIOSE queda fora del retall. Els projectes desats amb edicions de l’ICGC mantenen la tria, inclòs el 2024. Els exemples ferroviaris conserven el seu propi selector d’edició.
 
-El repositori desa una còpia comprimida del paquet de l’ICGC, de 32,9 MB. `pnpm build` en publica l’índex i les cel·les per separat. La màscara territorial simplificada només serveix per indicar cobertura i la geometria urbana manté el detall del paquet. Es regenera amb `python scripts/package-urban-cover.py web-coverage datasets/icgc-urban-2009-2024.zip public/data/historical/urban-coverage.json.gz`.
+El repositori conserva una còpia comprimida del paquet de l’ICGC, de 32,9 MB. L’índex i les cel·les es poden extreure amb `node scripts/unpack-urban-history.mjs`. El resultat es desa a `output/archived-historical/`. La màscara territorial es regenera amb `python scripts/package-urban-cover.py web-coverage datasets/icgc-urban-2009-2024.zip datasets/historical/urban-coverage.json.gz`.
 
 Els fitxers grans que ja són a Git només surten de l’historial si se’n reescriuen els commits i les referències. Per als paquets futurs es poden fer servir adjunts de GitHub Releases. La compilació podria descarregar els paquets actius i verificar-ne el SHA-256. Els paquets retirats es podrien esborrar sense reescriure el codi. Es manté el límit d’1 GB per al lloc publicat. [Fitxers grans a GitHub](https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-on-github) · [Gestió de versions publicades](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository) · [Límits de Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits)
 
@@ -83,7 +85,7 @@ Les tessel·les de Logronyo ocupen **50.058 bytes el 2005** i **52.912 el 2014**
 
 Les cinc mostres sumen 11.376 polígons i 2.868.255 bytes. Extrapolant als 153.966 registres oficials de les cinc classes, les tessel·les de 2005 ocuparien uns **39 MB**, a banda de l’índex i la màscara. Amb la ràtio de cadascuna de les mostres extremes, el resultat és de 21 a 91 MB. Al mateix retall de La Rioja, l’edició de 2014 ocupa 813.143 bytes, un 3,2% més que la de 2005.
 
-Per reproduir la mesura local, crea primer la carpeta `output/siose-pilot`. Per provar la consulta directa al taller, tria **Logroño · SIOSE** a **Territori → Llocs amb dades històriques**.
+Per reproduir la mesura local, crea primer la carpeta `output/siose-pilot`.
 
 ```sh
 node scripts/fetch-siose-urban.mjs 2005 output/siose-pilot/logrono-2005.geojson -2.52 42.41 -2.40 42.52
@@ -102,7 +104,7 @@ python scripts/package-urban-cover.py web-coverage output/siose-pilot/logrono ou
 
 A **Territori → Llocs amb dades històriques** es pot centrar el mapa a la Vall d’Aro, a la Garrotxa o a Avinyó. El control **Any de la cartografia** admet només edicions documentades quan tot el retall està cobert per una font amb almenys dues dates. El mode és Model complet; la font i la data queden a les metadades d’exportació i la tria es conserva als projectes desats.
 
-Els carrilets són visibles el 1960 i absents el 1980. A Avinyó, els anys 2009, 2018 i 2024 mostren l’àrea urbanitzada amb una capa de color de 0,3 mm, sense convertir els polígons en volums d’edificis. Els retalls i l’atribució són a [les dades del pilot](../public/data/historical/README.md). El relleu i les capes no documentades per a l’any triat són actuals; no es recuperen ponts, túnels ni rasants ferroviàries històriques si no consten a la font.
+Els carrilets són visibles el 1960 i absents el 1980. A Avinyó, els anys 2009, 2018 i 2024 mostren l’àrea urbanitzada amb una capa de color de 0,3 mm, sense convertir els polígons en volums d’edificis. Els retalls i l’atribució són a [les dades del pilot](../datasets/historical/README.md). El relleu i les capes no documentades per a l’any triat són actuals; no es recuperen ponts, túnels ni rasants ferroviàries històriques si no consten a la font.
 
 | Font | Què es pot recuperar | Limitació |
 | --- | --- | --- |

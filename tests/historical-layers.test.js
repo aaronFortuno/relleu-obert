@@ -7,7 +7,7 @@ import {buildModel,updateBuildings} from '../src/geometry.js';
 import {threeMF} from '../src/export.js';
 import {physicalBBox} from '../src/selection.js';
 
-const catalog=createHistoricalCatalog(async name=>JSON.parse(await readFile(new URL('../public/data/historical/'+name,import.meta.url),'utf8')));
+const catalog=createHistoricalCatalog(async name=>JSON.parse(await readFile(new URL('../datasets/historical/'+name,import.meta.url),'utf8')));
 const areas=await catalog.areas();
 const line=(id,coordinates,properties)=>({type:'Feature',id,geometry:{type:'LineString',coordinates},properties:{sourceLayer:'transportation',...properties}});
 const rectangle=(west,south,east,north)=>[[west,south],[east,south],[east,north],[west,north],[west,south]];

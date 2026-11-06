@@ -7,7 +7,7 @@ import {selectionPose} from '../src/selection.js';
 
 test('the Catalonia archive loads only the selected cells and separates missing coverage from empty land',async()=>{
   const archive=unzipSync(await readFile(new URL('../datasets/icgc-urban-2009-2024.zip',import.meta.url)));
-  const mask=await readFile(new URL('../public/data/historical/urban-coverage.json.gz',import.meta.url));
+  const mask=await readFile(new URL('../datasets/historical/urban-coverage.json.gz',import.meta.url));
   const requested=[];
   const history=createUrbanHistory(async file=>{
     requested.push(file);

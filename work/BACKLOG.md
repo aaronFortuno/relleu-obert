@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-06 · v0.23.9**. Primers retalls amb selector d’any. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-06 · v0.23.13**. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -13,13 +13,12 @@ Actualitzat el **2026-11-06 · v0.23.9**. Primers retalls amb selector d’any. 
 | **Validació en paral·lel** | RO-024, RO-033, RO-046, RO-054, RO-055 | Revisar Tamariu 40 × 45 cm i Amsterdam amb totes les capes al laminador. També queden la recuperació d’un projecte girat i els talls dels Rasos–Gallina Pelada. |
 | **Pilot de relleu rocós** | RO-023, RO-035 | Després dels temps de generació, reprendre el Cavall Bernat i el Pedraforca, i el cupó georeferenciat dels Degotalls per als voladissos. [Resultats](RELLEU-ROCOS.md) |
 | **Cobertes obertes** | RO-032, RO-026 | Integrar l’ICGC si es verifica un servei públic que retorni geometria de coberta. |
-| **Cartografia històrica** | RO-025 | Comparar el sòl urbanitzat amb edicions separades aproximadament una dècada o més, segons la cobertura. La reconstrucció històrica de carrers i edificis queda ajornada. [Fonts i controls](RO-025-CARTOGRAFIA-HISTORICA.md#fonts-comunes-abast-i-decisió) |
 
 Els encàrrecs independents avancen en paral·lel. Cada bloc validat té el seu commit i es manté una sola prova pesada alhora. Els casos que requereixen inspecció al laminador poden quedar pendents mentre avancen altres línies.
 
 Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixes regles de generació. Les correccions han de basar-se en la geometria, les dades disponibles i l’escala, com la col·locació procedimental de pilars. Quan corregim un defecte, cal reproduir-lo en un control petit i contrastar la regla en un altre retall o escala.
 
-**Seguiment:** 21 línies obertes, 5 ajornades i 30 arxivades. «Implementat» vol dir disponible; la validació local, la d’usuari, el laminat i la impressió es registren per separat.
+**Seguiment:** 20 línies obertes, 6 ajornades i 30 arxivades. «Implementat» vol dir disponible. La validació local, la d’usuari, el laminat i la impressió es registren per separat.
 
 ## Desenvolupament prioritari
 
@@ -45,7 +44,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | [RO-050](#ro-050--ferrocarrils-diferenciats) | P2 | Implementat i comprovat localment | Usuari: realç ferroviari i assignació de material; laminat |
 | [RO-046](#ro-046--catàleg-de-llocs-recomanats) | P2 | 31 retalls amb captures, graella amb filtres i generació directa | Revisar la llegibilitat i els temps de generació en ús |
 | [RO-044](#ro-044--catastre-per-seccions-i-recuperació-de-configuracions) | P1 | Vista progressiva validada a Tamariu | Buit/mixt, subdivisions i recuperació després d’error |
-| [RO-045](#ro-045--coherència-visual-dels-sidebars) | P2 | Implementat; pendent d’usuari | Coherència de controls i scroll a escriptori |
+| [RO-045](#ro-045--coherència-visual-dels-sidebars) | P2 | La roda desplaça Territori també damunt del mapa | Validar l’accés als controls inferiors amb una maqueta carregada |
 | [RO-019](#ro-019--internacionalització) | P2 | Cinc idiomes disponibles | Revisió lingüística i dels diagnòstics tècnics poc freqüents |
 
 ## Després del nucli imprimible
@@ -53,7 +52,6 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | ID | Prioritat | Estat | Abast |
 | -------------------------------------------------------- | --------- | ------------------ | -------------------------------------------------------------- |
 | [RO-035](#ro-035--cavitats-i-relleus-amb-voladissos) | P3 | Dades 3D pendents | Coves, baumes i arcs naturals; un MDT no en descriu l’interior |
-| [RO-025](#ro-025--vegetació-mesurada-i-paisatges-històrics) | P2 | Selector amb les edicions de l’AMB i el SIOSE segons cobertura | Validar la consulta i l’exportació al web publicat |
 | [RO-012](#ro-012--presentació-realista-del-model-imprès) | P3 | Objectiu redefinit | Imatge estàtica fotorealista del model amb entorn escolar |
 | [RO-011](#ro-011--comptador-dexportacions-i-umami) | P3 | Per estudiar | Definir recompte i font real abans de publicar una xifra |
 
@@ -66,6 +64,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | [RO-017](#ro-017--rosa-dels-vents-i-altres-complements) | P3 | Ajornat; menú retirat | Reprendre amb disseny de rosa incrustada |
 | [RO-003](#ro-003--configuració-inesperada-en-importar-a-bambu) | P2 | Ajornat | Perfils d’impressora/filament secundaris |
 | [RO-047](#ro-047--precàrrega-opcional-de-fonts-alternatives) | P3 | Ajornat | Primer consultes i recuperació fiables |
+| [RO-025](#ro-025--vegetació-mesurada-i-paisatges-històrics) | P2 | Prova històrica retirada | Reprendre amb fonts d’època que diferenciïn edificis individuals |
 
 ## Criteris de seguiment
 
@@ -111,9 +110,7 @@ El cupó del Bages permet consultar els materials per altura. A Montserrat, l’
 
 ### RO-025 — Vegetació mesurada i paisatges històrics
 
-La v0.23.12 ofereix 1956, 1977 i 1990 de l’AMB, i 2005 i 2014 del SIOSE. Les edicions disponibles depenen del retall. Cal validar les consultes i l’exportació en ús. El MUCSC de 1987 queda com a candidat per ampliar la cobertura catalana fora de l’AMB. [Fonts i criteris de cobertura](RO-025-CARTOGRAFIA-HISTORICA.md)
-
-La v0.23.9 habilita les dates amb cobertura de tot el retall. Els dos carrilets canvien la capa ferroviària; a Avinyó, els polígons de l’ICGC substitueixen els volums d’edificis. Les altres capes són actuals. Pendent de validació d’usuari.
+El pilot històric queda ajornat. La revisió d’usuari a Cardona i Cornellà ha mostrat superfícies urbanitzades contínues, amb un detall insuficient per representar cada edifici i el seu perfil. La v0.23.13 retira el selector i els accessos. Es conservaran els resultats per reprendre la línia quan hi hagi fonts històriques amb petjades individuals i cobertura útil. [Resultats i criteri de retorn](RO-025-CARTOGRAFIA-HISTORICA.md)
 
 ### RO-026 — Fidelitat dels edificis i selecció de fonts
 
@@ -143,7 +140,7 @@ Càrrega progressiva validada a Tamariu. Comprovar una consulta mixta amb sector
 
 ### RO-045 — Coherència visual dels sidebars
 
-Validar a l’escriptori la coherència dels controls i el desplaçament intern dels panells. [Auditoria](AUDITORIA-USABILITAT.md)
+La roda desplaça Territori fins als controls inferiors quan el cursor és damunt del mapa. A 1280 × 720 i 1100 × 680, el desplaçament conserva l’escala i el botó «+» l’actualitza. Queda la validació d’usuari amb una maqueta carregada. [Auditoria](AUDITORIA-USABILITAT.md)
 
 ### RO-046 — Catàleg de llocs recomanats
 

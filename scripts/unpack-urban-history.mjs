@@ -2,7 +2,7 @@ import {mkdir,readFile,writeFile} from 'node:fs/promises';
 import {unzipSync} from 'fflate';
 
 const archive=new URL('../datasets/icgc-urban-2009-2024.zip',import.meta.url);
-const output=new URL('../public/data/historical/icgc-urban-v1/',import.meta.url);
+const output=new URL('../output/archived-historical/',import.meta.url);
 const files=unzipSync(await readFile(archive),{filter:({name})=>name==='index.json'||/^\d{4}\/\d+-\d+\.json\.gz$/.test(name)});
 const index=JSON.parse(new TextDecoder().decode(files['index.json']));
 await mkdir(output,{recursive:true});

@@ -41,5 +41,5 @@ for(let x=Math.floor(w*tilesPerDegree);x<Math.ceil(e*tilesPerDegree);x++){
 }
 const mask={tilesPerDegree,bbox,full:[],partial,source:layer};
 const bytes=gzipSync(JSON.stringify(mask),{level:9});
-await writeFile(new URL('../public/data/historical/amb-urban-coverage.json.gz',import.meta.url),bytes);
+await writeFile(new URL('../datasets/historical/amb-urban-coverage.json.gz',import.meta.url),bytes);
 console.log(`AMB coverage: 36 municipalities, ${Object.keys(partial).length} cells, ${bytes.length} B`);

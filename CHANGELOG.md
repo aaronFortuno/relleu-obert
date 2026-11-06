@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.23.13 — 2026-11-06
+
+- La roda desplaça l’apartat Territori encara que el cursor estigui damunt del mapa. El zoom es controla amb els botons del mapa, el teclat o el gest tàctil.
+- Es retira el selector històric i els seus accessos directes. L’exploració i les mostres es conserven al repositori.
+
 ## v0.23.12 — 2026-11-06
 
 - El visor ofereix les edicions de sòl urbanitzat del 1956, 1977 i 1990 a l’àrea metropolitana de Barcelona i les del 2005 i 2014 on arriba el SIOSE. «Actual» continua sent el valor inicial.

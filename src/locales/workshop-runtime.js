@@ -58,6 +58,7 @@ export default {
   'runtime.pending.buildingHeight': ["Altura dels edificis pendent de generar","Altura de los edificios pendiente de generar","Altura dos edificios pendente de xerar","Eraikinen altuera sortzeko zain","Building height not yet generated"],
   'runtime.pending.cadastre': ["Catastre pendent d’actualitzar","Catastro pendiente de actualizar","Catastro pendente de actualizar","Katastroa eguneratzeko zain","Cadastre awaiting update"],
   'runtime.pending.project': ["Projecte carregat. Genera el model","Proyecto cargado. Genera el modelo","Proxecto cargado. Xera o modelo","Proiektua kargatu da. Sortu eredua","Project loaded. Generate the model"],
+  'runtime.pending.projectCurrentData': ["Projecte carregat. La maqueta es generarà amb cartografia actual.","Proyecto cargado. La maqueta se generará con cartografía actual.","Proxecto cargado. A maqueta xerarase con cartografía actual.","Proiektua kargatu da. Maketa egungo kartografiarekin sortuko da.","Project loaded. The model will use current mapping."],
   'runtime.material.monochrome': ["1 material · impressió monocroma","1 material · impresión monocroma","1 material · impresión monocroma","Material 1 · kolore bakarreko inprimaketa","1 material · monochrome printing"],
   'runtime.material.count': ["{count} materials","{count} materiales","{count} materiais","{count} material","{count} materials"],
   'runtime.material.for': ["Material de {category}","Material para {category}","Material para {category}","{category} kategoriaren materiala","Material for {category}"],

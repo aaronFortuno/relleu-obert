@@ -4,4 +4,3 @@ dist/
 *.log
 output/
 .publish-local.ps1
-public/data/historical/icgc-urban-v1/

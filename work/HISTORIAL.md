@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-06. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.23.13 — Scroll de Territori i retirada del pilot històric
+
+La roda desplaça el contingut de Territori també damunt del mapa. La revisió a Cardona i Cornellà confirma que les cobertes històriques disponibles només permeten dibuixar superfícies urbanitzades. Es retiren els controls del pilot i se n’arxiven les dades. En obrir un projecte desat amb una edició històrica, el taller recupera els ajustos i avisa que generarà la maqueta amb cartografia actual.
+
 ## v0.23.12 — Selecció d’edicions per cobertura (RO-025)
 
 El visor combina 1956, 1977 i 1990 de l’AMB amb 2005 i 2014 del SIOSE quan les fonts cobreixen el retall. Les capes es consulten quan es tria l’any. «Actual» és el valor inicial i es mantenen les edicions anteriors quan es recupera un projecte que les tenia desades. Les proves locals comproven la selecció d’anys i la reutilització de la malla en canviar d’edició o de font d’edificis. Queda la validació al web publicat.

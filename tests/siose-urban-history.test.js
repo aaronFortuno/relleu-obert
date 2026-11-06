@@ -7,7 +7,7 @@ import {selectionPose} from '../src/selection.js';
 import {createSioseUrbanHistory} from '../src/siose-urban-history.js';
 import {urbanSelection} from '../src/urban-history.js';
 
-const readMask=async name=>JSON.parse(strFromU8(gunzipSync(await readFile(new URL(`../public/data/historical/${name}`,import.meta.url)))));
+const readMask=async name=>JSON.parse(strFromU8(gunzipSync(await readFile(new URL(`../datasets/historical/${name}`,import.meta.url)))));
 
 test('the IGN mask includes mainland, both archipelagos and autonomous cities',async()=>{
   const {area,mask}=await createSioseUrbanHistory(readMask).load();

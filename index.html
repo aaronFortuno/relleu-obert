@@ -47,8 +47,6 @@
         <input id="model-scale" type="range" min="0" max="5" step="any" aria-describedby="scale-info">
         <div id="scale-ticks" aria-hidden="true"></div>
         <p id="scale-info" class="hint" role="status" hidden></p>
-        <label for="historical-example" id="historical-example-label" data-i18n="ui.historical.examples" hidden>Llocs amb dades històriques</label>
-        <select id="historical-example" hidden aria-labelledby="historical-example-label"></select>
         <label for="exag" data-i18n-text="ui.place.exaggeration">Exageració vertical <output id="exag-value">×1,5</output></label><input id="exag" type="range" min="1" max="3" step=".25" value="1.5">
         <label for="detail" data-i18n="ui.place.detail">Detall</label><select id="detail"><option value="24" data-i18n="ui.place.detailFast">Ràpid</option><option value="36" selected data-i18n="ui.place.detailBalanced">Equilibrat</option><option value="56" data-i18n="ui.place.detailHigh">Alt</option></select>
         <label class="check-row"><input id="streams" type="checkbox" checked><span data-i18n="ui.place.streams">Rius i rierols</span></label>
@@ -148,15 +146,7 @@
           </section>
         </div>
       </div>
-      <div class="preview-bottom">
-        <section id="historical-panel" aria-labelledby="historical-year-label" hidden>
-          <label for="historical-year"><span id="historical-year-label">Any de la cartografia</span> <output id="historical-value" for="historical-year" aria-live="off">Actual</output></label>
-          <input id="historical-year" type="range" min="0" max="1" step="1" value="1" disabled aria-describedby="historical-note">
-          <div id="historical-ticks" class="range-ticks" aria-hidden="true" hidden></div>
-          <p id="historical-note" class="hint" role="status" hidden></p>
-        </section>
-        <div id="status" role="status" aria-live="polite"></div>
-      </div>
+      <div id="status" role="status" aria-live="polite"></div>
     </div>
   </section>
   <aside id="workshop-export" class="sidebar sidebar-right" aria-label="Informació i exportació" data-i18n-aria="ui.output.panel">
@@ -222,7 +212,7 @@
     </section>
     <section class="info-panel">
       <h2><button type="button" class="section-toggle" aria-expanded="false" aria-controls="info-data" data-i18n-text="ui.data.title">Dades i limitacions <i aria-hidden="true">+</i></button></h2>
-      <div class="config-content data-notes" id="info-data" hidden><p class="hint" data-i18n-text="ui.data.relief">Relleu: <span id="terrain-source-name">Mapterhorn / Mapzen</span></p><p id="building-info" class="hint"></p><p id="historical-model-note" class="hint" hidden><span></span> <a target="_blank" rel="noopener noreferrer"></a></p><button id="download-processing" class="quiet-button" type="button" disabled data-i18n="ui.data.downloadTiming">Descarrega els temps de generació ↓</button><p class="hint" data-i18n="ui.data.timingNote">El JSON de la darrera generació inclou coordenades, ajustos i temps.</p><div id="warnings"></div><p class="hint" data-i18n="ui.data.treesNote">Els arbres són procedimentals. Revisa les malles i el laminat abans d’imprimir.</p></div>
+      <div class="config-content data-notes" id="info-data" hidden><p class="hint" data-i18n-text="ui.data.relief">Relleu: <span id="terrain-source-name">Mapterhorn / Mapzen</span></p><p id="building-info" class="hint"></p><button id="download-processing" class="quiet-button" type="button" disabled data-i18n="ui.data.downloadTiming">Descarrega els temps de generació ↓</button><p class="hint" data-i18n="ui.data.timingNote">El JSON de la darrera generació inclou coordenades, ajustos i temps.</p><div id="warnings"></div><p class="hint" data-i18n="ui.data.treesNote">Els arbres són procedimentals. Revisa les malles i el laminat abans d’imprimir.</p></div>
     </section>
     <section class="download-panel">
       <div class="section-heading"><h2 data-i18n="ui.export.title">Descarrega el model</h2></div>
@@ -253,7 +243,7 @@
       <path d="m27 9 7-6" stroke="var(--umbrella-accent)" stroke-width="4.5"/>
     </svg><span>ortogra<span class="umbrella-dot">.</span>fi</span>
   </a></p>
-  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer" data-i18n-text="ui.footer.openSource"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions">v0.23.12</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V" data-i18n-aria="ui.footer.about"><span class="desktop-copy" data-i18n="ui.footer.aboutDesktop">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
+  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer" data-i18n-text="ui.footer.openSource"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions">v0.23.13</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V" data-i18n-aria="ui.footer.about"><span class="desktop-copy" data-i18n="ui.footer.aboutDesktop">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
 </footer>
 
 <dialog id="projects-dialog" aria-labelledby="projects-title">
@@ -345,7 +335,6 @@
     <section class="help-questions" aria-labelledby="guide-faq">
       <h3 id="guide-faq" data-i18n="guide.faq">Dubtes freqüents</h3>
       <details name="guide-questions"><summary data-i18n="guide.modeTitle">Quin mode em convé?</summary><p data-i18n="guide.mode">Tria Model complet per incloure vies i edificis. Relleu pur mostra el relleu, l’aigua i la cobertura del sòl i admet retalls més amplis.</p></details>
-      <details name="guide-questions"><summary data-i18n="guide.historyTitle">Com comparo dues èpoques?</summary><p data-i18n="guide.history">En Model complet, tria una edició al peu del visor. Cada edició mostra l’àrea urbanitzada segons la seva font i manté el relleu i les vies actuals. Entre fonts poden variar l’escala i els criteris de classificació.</p></details>
       <details name="guide-questions"><summary data-i18n="guide.exportTitle">Quin fitxer descarrego?</summary><p data-i18n="guide.export">Tria 3MF per a Bambu Studio per obrir-lo com a projecte, o 3MF estàndard o STL per material segons el laminador. Si algun costat supera els 25 cm, la maqueta es divideix en peces. El projecte de Bambu les reparteix en plaques. Comprova els filaments i les unions al laminador.</p></details>
       <details name="guide-questions"><summary data-i18n="guide.dataTitle">Per què falten detalls?</summary><p data-i18n="guide.data">La maqueta es calcula al navegador amb fonts obertes. A «Altura i coberta de les dades», la coberta és plana si la font no en descriu la forma. La vegetació és simulada.</p></details>
       <details name="guide-questions"><summary data-i18n="guide.loadingTitle">I si la generació s’allarga?</summary><p data-i18n="guide.loading">El visor indica quina fase s’està calculant. A «Dades i limitacions» pots descarregar l’informe de la darrera generació amb els ajustos i els temps.</p></details>
@@ -381,10 +370,6 @@
           <dd>© <a href="https://www.icgc.cat/ca/Geoinformacio-i-mapes/Dades-i-productes/Geoinformacio-cartografica/Referencial-Topografic-Territorial" target="_blank" rel="noreferrer">ICGC RTT</a> (CC BY 4.0) · <a href="https://www.catastro.hacienda.gob.es/webinspire/index.html" target="_blank" rel="noreferrer" data-i18n="ui.about.cadastre">Catastre (Espanya)</a> · <a href="https://github.com/aaronFortuno/relleu-obert/blob/main/SOURCES.md#repartiment-de-pilars-de-rajadell-v015" target="_blank" rel="noreferrer" data-i18n="ui.about.rajadell">Viaducte de Rajadell</a></dd>
           <dt data-i18n="ui.about.landCover">Cobertes del sòl</dt>
           <dd>© <a href="https://www.icgc.cat/ca/Geoinformacio-i-mapes/Mapes/Mapa-de-cobertes-del-sol-de-Catalunya" target="_blank" rel="noreferrer" data-i18n="ui.about.icgcCover">ICGC · Cobertes de Catalunya</a> · © <a href="https://doi.org/10.5281/zenodo.7254221" target="_blank" rel="noreferrer">ESA WorldCover 2021</a> (CC BY 4.0)</dd>
-          <dt data-i18n="ui.historical.urbanYear">Sòl urbanitzat · edició</dt>
-          <dd><a href="https://www.amb.cat/es/web/area-metropolitana/dades-obertes/cataleg/detall/-/dataset/mapa-de-la-ocupacion-urbana-del-amb--ano-1990/1197473/11692" target="_blank" rel="noreferrer">AMB</a> (1956, 1977, 1990) · <a href="https://www.siose.es/descripcion" target="_blank" rel="noreferrer">SIOSE · IGN</a> (2005, 2014)</dd>
-          <dt data-i18n="ui.about.railHistory">Ferrocarril històric</dt>
-          <dd><a href="https://dataverse.csuc.cat/dataset.xhtml?persistentId=doi%3A10.34810%2Fdata917" target="_blank" rel="noreferrer">Railways of Spain GIS</a> · G. Esteban-Oliver, J. Martí-Henneberg (CC BY 4.0)</dd>
           <dt data-i18n="ui.about.search">Cerca</dt>
           <dd><a href="https://github.com/komoot/photon" target="_blank" rel="noreferrer">Photon</a></dd>
         </dl>

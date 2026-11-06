@@ -11,7 +11,7 @@ const origin='https://datacloud.icgc.cat';
 const source={name:'Institut Cartogràfic i Geològic de Catalunya · Cobertes del sòl',url:'https://www.icgc.cat/ca/Geoinformacio-i-mapes/Mapes/Mapa-de-cobertes-del-sol-de-Catalunya',license:'CC BY 4.0'};
 const pilot={id:'avinyo-urban',label:'Avinyó',bbox:[1.95,41.846,1.996,41.88],center:[41.863,1.973],widthM:2000};
 const labels=new Map([[341,'Casc urbà'],[342,'Eixample'],[343,'Zones urbanes laxes'],[344,'Edificacions aïllades en l’espai rural'],[345,'Àrees residencials aïllades'],[347,'Zones industrials, comercials o de serveis']]);
-const out=new URL('../public/data/historical/',import.meta.url);
+const out=new URL('../datasets/historical/',import.meta.url);
 const args=process.argv.slice(2);
 const years=[2009,2018,2024];
 const extracting=args[0]==='--extract'&&args.length===7&&years.includes(Number(args[2]));

@@ -6,7 +6,7 @@ import {createAmbUrbanHistory} from '../src/amb-urban-history.js';
 import {urbanSelection} from '../src/urban-history.js';
 import {physicalBBox,selectionPose} from '../src/selection.js';
 
-const read=async name=>JSON.parse(gunzipSync(await readFile(new URL(`../public/data/historical/${name}`,import.meta.url))));
+const read=async name=>JSON.parse(gunzipSync(await readFile(new URL(`../datasets/historical/${name}`,import.meta.url))));
 const pose=(center,km,angle=0)=>selectionPose(physicalBBox(center,km,km),angle);
 
 test('AMB editions cover metropolitan selections and distinguish the edge of their domain',async()=>{

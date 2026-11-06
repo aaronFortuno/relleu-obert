@@ -169,7 +169,6 @@ export default {
   "ui.about.rajadell": ["Viaducte de Rajadell","Viaducto de Rajadell","Viaduto de Rajadell","Rajadelleko biaduktua","Rajadell viaduct"],
   "ui.about.landCover": ["Cobertes del sòl","Cubiertas del suelo","Cubertas do solo","Lurzoruaren estaldura","Land cover"],
   "ui.about.icgcCover": ["ICGC · Cobertes de Catalunya","ICGC · Cubiertas de Cataluña","ICGC · Cubertas de Cataluña","ICGC · Kataluniako lurzoruaren estaldura","ICGC · Land cover of Catalonia"],
-  "ui.about.railHistory": ["Ferrocarril històric","Ferrocarril histórico","Ferrocarril histórico","Trenbide historikoa","Historical railways"],
   "ui.about.search": ["Cerca","Búsqueda","Busca","Bilaketa","Search"],
   "ui.about.licenses": ["Fonts i llicències completes ↗","Fuentes y licencias completas ↗","Fontes e licenzas completas ↗","Iturri eta lizentzia guztiak ↗","Full sources and licences ↗"],
 };

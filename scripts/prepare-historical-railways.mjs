@@ -11,7 +11,7 @@ const pilots=[
 const rounded=v=>Math.round(v*1e7)/1e7;
 const view=b=>new DataView(b.buffer,b.byteOffset,b.byteLength);
 const featureCollection=features=>({type:'FeatureCollection',features});
-const out=new URL('../public/data/historical/',import.meta.url);
+const out=new URL('../datasets/historical/',import.meta.url);
 const args=process.argv.slice(2);
 const probe=args[0]==='--probe'&&args.length===5?args.slice(1).map(Number):null;
 if(args.length&&(!probe||!args.slice(1).every(value=>value.trim())||!probe.every(Number.isFinite)||
