@@ -47,10 +47,6 @@
         <input id="model-scale" type="range" min="0" max="5" step="any" aria-describedby="scale-info">
         <div id="scale-ticks" aria-hidden="true"></div>
         <p id="scale-info" class="hint" role="status" hidden></p>
-        <label for="historical-year"><span id="historical-year-label">Any de la cartografia</span> <output id="historical-value" for="historical-year">Actual</output></label>
-        <input id="historical-year" type="range" min="0" max="1" step="1" value="1" disabled aria-describedby="historical-note">
-        <div id="historical-ticks" class="range-ticks" aria-hidden="true" hidden></div>
-        <p id="historical-note" class="hint" role="status" data-i18n="ui.historical.checking">Comprovant les dades històriques…</p>
         <label for="historical-example" id="historical-example-label" data-i18n="ui.historical.examples" hidden>Llocs amb dades històriques</label>
         <select id="historical-example" hidden aria-labelledby="historical-example-label"></select>
         <label for="exag" data-i18n-text="ui.place.exaggeration">Exageració vertical <output id="exag-value">×1,5</output></label><input id="exag" type="range" min="1" max="3" step=".25" value="1.5">
@@ -152,7 +148,15 @@
           </section>
         </div>
       </div>
-      <div id="status" role="status" aria-live="polite"></div>
+      <div class="preview-bottom">
+        <section id="historical-panel" aria-labelledby="historical-year-label" hidden>
+          <label for="historical-year"><span id="historical-year-label">Any de la cartografia</span> <output id="historical-value" for="historical-year" aria-live="off">Actual</output></label>
+          <input id="historical-year" type="range" min="0" max="1" step="1" value="1" disabled aria-describedby="historical-note">
+          <div id="historical-ticks" class="range-ticks" aria-hidden="true" hidden></div>
+          <p id="historical-note" class="hint" role="status" hidden></p>
+        </section>
+        <div id="status" role="status" aria-live="polite"></div>
+      </div>
     </div>
   </section>
   <aside id="workshop-export" class="sidebar sidebar-right" aria-label="Informació i exportació" data-i18n-aria="ui.output.panel">
@@ -249,7 +253,7 @@
       <path d="m27 9 7-6" stroke="var(--umbrella-accent)" stroke-width="4.5"/>
     </svg><span>ortogra<span class="umbrella-dot">.</span>fi</span>
   </a></p>
-  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer" data-i18n-text="ui.footer.openSource"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions">v0.23.10</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V" data-i18n-aria="ui.footer.about"><span class="desktop-copy" data-i18n="ui.footer.aboutDesktop">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
+  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer" data-i18n-text="ui.footer.openSource"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions">v0.23.11</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V" data-i18n-aria="ui.footer.about"><span class="desktop-copy" data-i18n="ui.footer.aboutDesktop">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
 </footer>
 
 <dialog id="projects-dialog" aria-labelledby="projects-title">

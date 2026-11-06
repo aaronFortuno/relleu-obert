@@ -47,21 +47,26 @@ export function urbanSelection(mask,pose){
   return keys.length?{crop,keys,partial:area<total*(1-1e-6)}:null;
 }
 
-export function createUrbanHistory(read){
+export function createUrbanHistory(read,{
+  root=editionRoot,maskFile='urban-coverage.json.gz',id='icgc-urban',label='Catalunya',exampleLabel='Girona',
+  center=[41.987,2.8195],widthM=4200
+}={}){
   const tiles=new Map();
   async function load(){
-    const [index,mask]=await Promise.all([read(`${editionRoot}index.json`),read('urban-coverage.json.gz')]);
+    const [index,mask]=await Promise.all([read(`${root}index.json`),read(maskFile)]);
     if(index.version!==1||index.tilesPerDegree!==mask.tilesPerDegree||!Array.isArray(mask.full)||!mask.partial||
-      !Array.isArray(index.editions)||index.editions.map(edition=>edition.year).join(',')!=='2009,2024'){
-      throw Error('Invalid ICGC urban history index');
+      !Array.isArray(index.editions)||index.editions.length<2||index.editions.some(({year,tiles},i)=>
+        !Number.isInteger(year)||year<1000||year>2100||!tiles||i>0&&year<=index.editions[i-1].year)||
+      !index.attribution||!index.license||!URL.canParse(index.source)||new URL(index.source).protocol!=='https:'){
+      throw Error('Invalid urban history index');
     }
-    const area={id:'icgc-urban',label:'Catalunya',exampleLabel:'Girona',layer:'urban',bbox:mask.bbox,center:[41.987,2.8195],widthM:4200,
+    const area={id,label,exampleLabel,layer:'urban',bbox:mask.bbox,center,widthM,
       source:{name:index.attribution,url:index.source,license:index.license},editions:index.editions};
     return {area,mask:{...mask,full:new Set(mask.full)}};
   }
 
   function readTile(area,year,key){
-    const file=`${editionRoot}${year}/${key}.json.gz`;
+    const file=`${root}${year}/${key}.json.gz`;
     const cached=tiles.get(file);
     if(cached){tiles.delete(file);tiles.set(file,cached);return cached;}
     const pending=read(file).then(data=>parseHistoricalEdition(data,area,year));
@@ -73,7 +78,7 @@ export function createUrbanHistory(read){
 
   async function edition(area,year,selection){
     const entry=area.editions.find(item=>item.year===year);
-    if(!entry||!selection)throw Error('This ICGC edition does not cover the selection');
+    if(!entry||!selection)throw Error('This edition does not cover the selection');
     const {crop,keys,partial}=selection;
     const batches=await Promise.all(keys.filter(key=>Object.hasOwn(entry.tiles,key)).map(key=>readTile(area,year,key)));
     const features=[];

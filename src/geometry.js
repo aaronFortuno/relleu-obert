@@ -1247,7 +1247,9 @@ export function previewBuildingLayer(previous,features,changes={}){
 export function updateBuildings(previous,layer={},changes={},progress=()=>{},preview,measure=(_phase,run)=>run()){
   if(!previous.context)throw Error('Cal generar primer el terreny.');
   const old=previous.context,options={...old.options,...changes},config=buildingOptions(options),{buildingMode,maxBuildingHeight}=config;
-  const ctx={...old,options:{...options,...config},meta:{...(layer.meta||old.meta),historical:old.meta.historical,infrastructure:old.meta.infrastructure,tunnels:old.meta.tunnels,railways:old.meta.railways,majorRoads:old.meta.majorRoads,transportContinuity:old.meta.transportContinuity},buildingFeatures:layer.features||old.buildingFeatures,vegetationCache:null};
+  const switchingHistory=Object.hasOwn(layer,'historical');
+  const historical=switchingHistory?layer.historical??undefined:old.meta.historical;
+  const ctx={...old,options:{...options,...config},meta:{...(layer.meta||old.meta),historical,infrastructure:old.meta.infrastructure,tunnels:old.meta.tunnels,railways:old.meta.railways,majorRoads:old.meta.majorRoads,transportContinuity:old.meta.transportContinuity},buildingFeatures:layer.features||old.buildingFeatures,vegetationCache:null};
   const {width,height,ground,scale,rect}=ctx;
   const cached=old.buildingGeometry;
   preview?.stage('buildings','Calculant els edificis…');
@@ -1313,7 +1315,7 @@ export function updateBuildings(previous,layer={},changes={},progress=()=>{},pre
     if(unconnected.length>clipped)ctx.warnings.push(`${unconnected.length-clipped} extrems sense enllaç suau dins del retall.`);
     if(stats.some(s=>s.connectedComponents>1))ctx.warnings.push('Alguns ponts contenen fragments separats. Revisa les unions i els extrems al laminador abans d’imprimir.');
   }
-  if(!previous.categories){
+  if(!previous.categories||switchingHistory){
     preview?.parts('buildings',ctx.base,ctx);
     return updateVegetation({context:ctx},ctx.options,progress,preview);
   }

@@ -53,7 +53,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | ID | Prioritat | Estat | Abast |
 | -------------------------------------------------------- | --------- | ------------------ | -------------------------------------------------------------- |
 | [RO-035](#ro-035--cavitats-i-relleus-amb-voladissos) | P3 | Dades 3D pendents | Coves, baumes i arcs naturals; un MDT no en descriu l’interior |
-| [RO-025](#ro-025--vegetació-mesurada-i-paisatges-històrics) | P2 | Dues edicions de l’ICGC integrades al taller per a Catalunya | Validació d’ús i prova pilot amb el SIOSE a la resta de l’Estat |
+| [RO-025](#ro-025--vegetació-mesurada-i-paisatges-històrics) | P2 | Selector al visor per al 2009 i el 2024 de l’ICGC | Validar l’ús al web, avaluar el pes del SIOSE i provar la sèrie anterior a 1990 |
 | [RO-012](#ro-012--presentació-realista-del-model-imprès) | P3 | Objectiu redefinit | Imatge estàtica fotorealista del model amb entorn escolar |
 | [RO-011](#ro-011--comptador-dexportacions-i-umami) | P3 | Per estudiar | Definir recompte i font real abans de publicar una xifra |
 
@@ -111,7 +111,7 @@ El cupó del Bages permet consultar els materials per altura. A Montserrat, l’
 
 ### RO-025 — Vegetació mesurada i paisatges històrics
 
-La v0.23.10 permet comparar les edicions de 2009 i 2024 de les cobertes de sòl de l’ICGC en qualsevol retall amb cobertura catalana. Cal validar la lectura dels resultats i l’exportació en ús. Per a la resta de l’Estat, el SIOSE del CNIG és candidat a una prova de compatibilitat entre edicions. [Fonts i criteris de cobertura](RO-025-CARTOGRAFIA-HISTORICA.md)
+La v0.23.11 permet canviar l’edició al visor i reutilitzar la malla de terreny. Cal validar la lectura dels resultats i l’exportació en ús. El SIOSE té un pilot local amb dues edicions i una estimació de pes. Per ampliar la sèrie antiga, les primeres fonts a provar són el MUCSC de 1987 i els vectors històrics de l’AMB. [Fonts i criteris de cobertura](RO-025-CARTOGRAFIA-HISTORICA.md)
 
 La v0.23.9 habilita les dates amb cobertura de tot el retall. Els dos carrilets canvien la capa ferroviària; a Avinyó, els polígons de l’ICGC substitueixen els volums d’edificis. Les altres capes són actuals. Pendent de validació d’usuari.
 

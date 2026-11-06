@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-06. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.23.11 — Selector d’edició al visor (RO-025)
+
+El control d’edició apareix al peu de la previsualització quan el Model complet té dades històriques. Canviar d’any aplica la capa i conserva l’enquadrament del retall. Les proves del motor verifiquen que les edicions de sòl urbanitzat i el retorn a «Actual» reutilitzen els mateixos buffers de terreny. La situació del control i el canvi de mode s’han revisat a 1280 × 720 i 1100 × 680.
+
 ## v0.23.10 — Comparació del sòl urbanitzat (RO-025)
 
 El taller carrega les edicions 2009 i 2024 per cel·les segons el retall. La previsualització indica la superfície cartografiada i el model conserva la font i l’any. Queda pendent la validació d’ús. [Publicació i fonts](RO-025-CARTOGRAFIA-HISTORICA.md#publicació-al-taller)

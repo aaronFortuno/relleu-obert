@@ -59,11 +59,42 @@ python scripts/package-urban-cover.py compare urban-icgc 2.800 41.968 2.839 42.0
 
 ### Publicació al taller
 
-La v0.23.10 activa «Sòl urbanitzat · edició» al Model complet quan el retall toca terra a Catalunya. Les dues edicions substitueixen els edificis individuals amb una capa de superfície. Es manté el mateix relleu de referència i «Actual» recupera els edificis. El visor mostra la superfície cartografiada dins del retall girat, i s’avisa quan la cobertura és parcial. Les mostres prèvies són accessibles des del desplegable d’exemples.
+«Sòl urbanitzat · edició» apareix al peu del visor del Model complet quan el retall toca terra a Catalunya. Les dues edicions substitueixen els edificis individuals amb una capa de superfície. Es manté el mateix relleu de referència i «Actual» recupera els edificis. El visor mostra la superfície cartografiada dins del retall girat i avisa quan la cobertura és parcial. Les mostres prèvies són accessibles des del desplegable d’exemples.
 
 El repositori desa una còpia comprimida del paquet de l’ICGC, de 32,9 MB. `pnpm build` en publica l’índex i les cel·les per separat. La màscara territorial simplificada només serveix per indicar cobertura i la geometria urbana manté el detall del paquet. Es regenera amb `python scripts/package-urban-cover.py web-coverage datasets/icgc-urban-2009-2024.zip public/data/historical/urban-coverage.json.gz`.
 
-El [SIOSE del CNIG](https://centrodedescargas.cnig.es/CentroDescargas/siose) ofereix vectors a 1:25.000 per a 2005, 2009, 2011 i 2014 per comunitat autònoma. Cal traduir-ne les classes, distingir polígons mixtos i validar la comparació en una comunitat de prova. El [SIOSE d’alta resolució](https://centrodedescargas.cnig.es/CentroDescargas/siose-ar) arriba a escales d’1:1.000 a 1:5.000 i es publica per províncies. El CNIG indica que el 2020 encara no cobreix totes les províncies.
+Els fitxers grans que ja són a Git només surten de l’historial si se’n reescriuen els commits i les referències. Per als paquets futurs es poden fer servir adjunts de GitHub Releases. La compilació podria descarregar els paquets actius i verificar-ne el SHA-256. Els paquets retirats es podrien esborrar sense reescriure el codi. Es manté el límit d’1 GB per al lloc publicat. [Fitxers grans a GitHub](https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-on-github) · [Gestió de versions publicades](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository) · [Límits de Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits)
+
+### Pilot del SIOSE
+
+El SIOSE ofereix edicions vectorials a 1:25.000 de 2005, 2009, 2011 i 2014. El pilot desa polígons sencers de les classes 111, 112, 113, 130 i 140, que corresponen a teixit urbà, sòl industrial i equipaments. Els polígons poden contenir cobertes mixtes. La llegenda i l’escala són pròpies del SIOSE, de manera que la comparació entre anys s’ha de fer dins de la mateixa sèrie. [Descripció del SIOSE](https://www.siose.es/descripcion) · [Servei de l’IGN per a 2005](https://serviciosgis2.ign.es/servicios/rest/services/SIOSE/SIOSE_2005/MapServer/0)
+
+Les tessel·les de Logronyo ocupen **50.058 bytes el 2005** i **52.912 el 2014**. El visor local ofereix totes dues dates i el motor les ha aplicat sobre el mateix terreny sintètic amb dades urbanes reals. La compilació de Pages inclou la sèrie de l’ICGC. Els fitxers del pilot SIOSE queden a `output/`.
+
+| Mostra de 2005 | Retall W S E N | Polígons | Bytes gzip |
+| --- | --- | ---: | ---: |
+| La Rioja | `-3.15 41.9 -1.65 42.66` | 3.680 | 788.218 |
+| Madrid | `-3.84 40.34 -3.55 40.54` | 3.146 | 428.237 |
+| Vigo | `-8.90 42.08 -8.55 42.45` | 1.458 | 858.523 |
+| València | `-0.61 39.26 -0.22 39.62` | 2.344 | 409.342 |
+| Tenerife | `-16.60 28.25 -16.12 28.63` | 748 | 383.935 |
+
+Les cinc mostres sumen 11.376 polígons i 2.868.255 bytes. Extrapolant als 153.966 registres oficials de les cinc classes, les tessel·les de 2005 ocuparien uns **39 MB**, a banda de l’índex i la màscara. Amb la ràtio de cadascuna de les mostres extremes, el resultat és de 21 a 91 MB. Al mateix retall de La Rioja, l’edició de 2014 ocupa 813.143 bytes, un 3,2% més que la de 2005.
+
+Per reproduir el pilot, crea primer la carpeta `output/siose-pilot`. Després de preparar les dades, obre el servidor de desenvolupament amb `?siose=pilot` i tria **Logroño · SIOSE** a **Territori → Llocs amb dades històriques**.
+
+```sh
+node scripts/fetch-siose-urban.mjs 2005 output/siose-pilot/logrono-2005.geojson -2.52 42.41 -2.40 42.52
+node scripts/fetch-siose-urban.mjs 2014 output/siose-pilot/logrono-2014.geojson -2.52 42.41 -2.40 42.52
+python scripts/package-urban-cover.py pack output/siose-pilot/logrono 2005=output/siose-pilot/logrono-2005.geojson 2014=output/siose-pilot/logrono-2014.geojson --provider siose --bounds -2.52 42.41 -2.40 42.52
+python scripts/package-urban-cover.py web-coverage output/siose-pilot/logrono output/siose-pilot/logrono/urban-coverage.json.gz
+```
+
+### Cobertes anteriors a 1990
+
+- **Catalunya, 1987.** El mapa d’usos i cobertes del sòl és un ràster classificat de 30 m. L’arxiu comprimit ocupa 6,32 MB. Les classes 5–7 permeten extreure urbanitzacions, zones urbanes i sòl industrial i comercial. La vectorització es pot fer abans de publicar les dades. [Fitxa i metodologia](https://agricultura.gencat.cat/ca/serveis/cartografia-sig/bases-cartografiques/usos-sol-subsol/usos-sol/usos-cobertes-sol/) · [Dades de 1987](https://www.infoambiental.grumets.cat/MapesCobertes_i_Usos/UsosCobertes_1987.zip)
+- **Àrea metropolitana de Barcelona, 1965.** El catàleg ofereix SHP i GeoPackage, amb classes residencials, industrials, viàries i ferroviàries. Per descarregar el paquet cal iniciar sessió. El servei públic ja retorna els polígons de 1956, 1977 i 1990. S’han comprovat les tres dates en un retall de l’Hospitalet i el Prat. [Especificacions de l’AMB](https://geoportalcartografia.amb.cat/AppGeoportalCartografia2/DadesAplicacio/Especificacions/AMB_MapaUsosSol_Especificacions_ca.pdf) · [Servei de polígons](https://ide.amb.cat/geoserveispi/rest/services/Hosted/03_EvolucioUsosSol/FeatureServer)
+- **Tot l’Estat, 1990.** CORINE està disponible en vector a 1:100.000. La unitat mínima de 25 hectàrees el fa adequat per a maquetes regionals. [Descàrrega CNIG](https://centrodedescargas.cnig.es/CentroDescargas/corine-land-cover) · [Resolució de CORINE](https://land.copernicus.eu/en/products/corine-land-cover/clc-1990)
 
 ### Pilot al taller (v0.23.9)
 

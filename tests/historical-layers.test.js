@@ -75,3 +75,25 @@ test('Avinyó years yield flat urban cover instead of current buildings, with re
   assert.notEqual(outputs[0],outputs[2]);
   assert.throws(()=>parseHistoricalEdition({type:'FeatureCollection',features:[road]},entry,2009),/geometry/);
 });
+
+test('switching an urban edition and returning to current buildings reuses the terrain mesh',async()=>{
+  const entry=areas.find(a=>a.id==='avinyo-urban'),bbox=centerCrop(entry),[w,s,e,n]=bbox;
+  const original={type:'Feature',id:'building',properties:{sourceLayer:'building',render_height:10},
+    geometry:{type:'Polygon',coordinates:[rectangle(w+(e-w)*.2,s+(n-s)*.2,w+(e-w)*.25,s+(n-s)*.25)]}};
+  const base=localRegion(bbox,[original]);
+  const current=buildModel(base,options),terrain=part(current,'terrain');
+  let model=current;
+  for(const year of [2009,2024]){
+    const target=applyHistoricalEdition(base,entry,year,await catalog.edition(entry,year));
+    model=updateBuildings(model,{features:target.features,meta:target.meta,historical:target.meta.historical},
+      {historical:{areaId:entry.id,year}});
+    assert.equal(model.provenance.historical.year,year);
+    assert.equal(model.buildingCount,0);
+    assert.ok(part(model,'buildings')?.faces.length);
+    assert.ok(part(model,'terrain').vertices===terrain.vertices);
+  }
+  const restored=updateBuildings(model,{features:base.features,meta:base.meta,historical:null},{historical:null});
+  assert.equal(restored.provenance.historical,undefined);
+  assert.equal(restored.buildingCount,current.buildingCount);
+  assert.ok(part(restored,'terrain').vertices===terrain.vertices);
+});

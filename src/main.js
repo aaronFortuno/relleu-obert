@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {gunzipSync,strFromU8} from 'fflate';
 import {loadRegion,loadBuildingLayer,applyBuildingLayer,defaultBuildingSource} from './sources.js';
 import {inCatalonia} from './buildings.js';
 import {createPlaceMap,MAX_PROJECT_SCALE} from './place-map.js';
@@ -89,30 +90,40 @@ document.addEventListener('keydown',event=>{
 let region,model,busy=false,selection,dirty=false,buildingSourceDirty=false,needsBuild=false,placeName='',strokes=[],brush='navigate',pendingVegetation=false,timer,job,drawing=false,lastPoint,gesture=0;
 const historicalSlider=$('#historical-year'),historicalExamples=$('#historical-example');
 const historyText=(key,params)=>t('ui.historical.'+key,params);
-async function readHistoricalFile(file){
-  const response=await fetch((import.meta.env.BASE_URL||'./')+'data/historical/'+file,{signal:AbortSignal.timeout(12000)});
+async function readHistoricalFile(file,base=(import.meta.env.BASE_URL||'./')+'data/historical/'){
+  const response=await fetch(base+file,{signal:AbortSignal.timeout(12000)});
   if(!response.ok)throw Error('HTTP '+response.status);
   if(file.endsWith('.gz')){
     const bytes=new Uint8Array(await response.arrayBuffer());
-    const {gunzipSync,strFromU8}=await import('fflate');
     return JSON.parse(strFromU8(bytes[0]===31&&bytes[1]===139?gunzipSync(bytes):bytes));
   }
   return response.json();
 }
 const historicalCatalog=createHistoricalCatalog(readHistoricalFile);
 const urbanHistory=createUrbanHistory(readHistoricalFile);
+const urbanProviders=[urbanHistory];
+if(import.meta.env.DEV&&new URLSearchParams(location.search).get('siose')==='pilot'){
+  urbanProviders.push(createUrbanHistory(file=>readHistoricalFile(file,'/output/siose-pilot/logrono/'),{
+    root:'',id:'siose-pilot',label:'SIOSE',exampleLabel:'Logroño · SIOSE',center:[42.465,-2.46],widthM:4000
+  }));
+}
 let historicalAreas=[],historicalArea=null,historicalStatus='checking',historicalChoice=null;
-let urbanCatalogue=null,urbanCrop=null,urbanPose=null,historicalExampleId=null;
+let urbanCatalogues=[],urbanCatalogue=null,urbanCrop=null,urbanPose=null,historicalExampleId=null,pendingHistoricalSwitch=null;
 const historicalActive=()=>historicalArea?.id===historicalChoice?.areaId&&!pureSelected()?historicalChoice:null;
 const historicalUrban=()=>historicalActive()&&historicalArea.layer==='urban';
 const historicalYears=()=>[...(historicalArea?.editions.map(e=>e.year)??[]),null];
 function syncHistoricalControls(updating=busy||pendingVegetation){
-  if(urbanCatalogue&&selectedPose!==urbanPose){
+  if(selectedPose!==urbanPose){
     urbanPose=selectedPose;
-    urbanCrop=urbanSelection(urbanCatalogue.mask,urbanPose);
+    urbanCatalogue=null;
+    urbanCrop=null;
+    for(const catalogue of urbanCatalogues){
+      const crop=urbanSelection(catalogue.mask,urbanPose);
+      if(crop){urbanCatalogue=catalogue;urbanCrop=crop;break;}
+    }
   }
   const preferredId=historicalChoice?.areaId??historicalExampleId;
-  const legacy=historicalAreas.filter(area=>area.id!==urbanCatalogue?.area.id);
+  const legacy=historicalAreas.filter(area=>!urbanCatalogues.some(catalogue=>catalogue.area===area));
   const preferred=preferredId?matchHistoricalArea(legacy.filter(area=>area.id===preferredId),selection):null;
   historicalArea=pureSelected()?null:preferred||(urbanCrop?urbanCatalogue.area:matchHistoricalArea(legacy,selection));
   if(historicalStatus!=='checking'&&historicalChoice&&
@@ -120,15 +131,15 @@ function syncHistoricalControls(updating=busy||pendingVegetation){
   const years=historicalYears(),year=historicalActive()?.year??null,value=year??historyText('current');
   historicalSlider.max=Math.max(1,years.length-1);
   historicalSlider.value=historicalArea?years.indexOf(year):1;
-  historicalSlider.disabled=updating||!historicalArea;
+  $('#historical-panel').hidden=!selectedSize||!historicalArea;
+  historicalSlider.disabled=updating||drawing||tooLargeRegion||!historicalArea;
   historicalSlider.setAttribute('aria-valuetext',value);
   $('#historical-value').textContent=value;
   const note=$('#historical-note');
-  note.removeAttribute('data-i18n');
-  const national=historicalArea?.id===urbanCatalogue?.area.id&&!!historicalArea;
-  $('#historical-year-label').textContent=historyText(national?'urbanYear':'year');
-  const message=historyText(historicalStatus==='checking'?'checking':pureSelected()?'pure':
-    national&&urbanCrop.partial?'urbanPartial':historicalArea?.layer??(historicalStatus==='failed'?'failed':'unavailable'));
+  const mappedUrban=historicalArea&&historicalArea===urbanCatalogue?.area;
+  $('#historical-year-label').textContent=historyText(mappedUrban?'urbanYear':'year');
+  const message=mappedUrban&&urbanCrop.partial?historyText('partialShort'):'';
+  note.hidden=!message;
   if(note.textContent!==message)note.textContent=message;
   const ticks=$('#historical-ticks'),tickKey=(historicalArea?.id??'')+':'+getLocale();
   ticks.hidden=!historicalArea;
@@ -150,7 +161,7 @@ function syncHistoricalModelNote(){
   const edition=model?.provenance.historical,note=$('#historical-model-note');
   note.hidden=!edition;
   if(!edition)return;
-  const scope=historyText(edition.partial?'urbanPartial':edition.layer);
+  const scope=historyText(edition.partial?(edition.areaId==='icgc-urban'?'urbanPartial':'partialShort'):edition.layer);
   note.querySelector('span').textContent=Number.isFinite(edition.urbanHa)?`${historicalBadge(edition)}. ${scope}`:
     historyText('applied',{year:edition.year,scope});
   const link=note.querySelector('a');link.href=edition.source.url;link.textContent=`${edition.source.name} · ${edition.source.license}`;
@@ -593,10 +604,10 @@ function sameTerrainFrame(options){
     a.center.every((value,index)=>Math.abs(value-b.center[index])<1e-10);
 }
 const reliefKeys=['baseThickness','exaggeration','streams','streamWidth'];
-function sameTerrain(options,includeTransport=true){
+function sameTerrain(options,includeTransport=true,includeEpoch=true){
   const old=model?.provenance.options;
   const keys=includeTransport?[...reliefKeys,'roadRise','railRise','trailWidth','estimatedTunnels','majorRoads']:reliefKeys;
-  return sameTerrainFrame(options)&&sameEpoch(options.historical,old.historical)&&keys.every(key=>options[key]===old[key]);
+  return sameTerrainFrame(options)&&(!includeEpoch||sameEpoch(options.historical,old.historical))&&keys.every(key=>options[key]===old[key]);
 }
 const canUpdateRelief=options=>options.pureRelief&&!tooLargeRegion&&sameTerrainFrame(options);
 function cancelReliefUpdate(){
@@ -669,6 +680,8 @@ async function generate(autoTransport=false){
   const atDefaultCenter=options.pureRelief&&selectedPose?.center.every((value,i)=>Math.abs(value-defaultCenter[i])<1e-5);
   const useSample=recommendedPlace(exampleSelection?.id)?.id||(atDefaultCenter?DEFAULT_PLACE:false);
   const applied=model?.provenance.options;
+  const historicalLayerOnly=!!pendingHistoricalSwitch&&!reload&&!options.pureRelief&&
+    model?.provenance.historical?.layer!=='railways'&&editionArea?.layer!=='railways'&&sameTerrain(options,true,false);
   const transportOnly=!options.pureRelief&&autoTransport&&!reload&&!buildingSourceDirty&&sameTerrain(options,false)&&options.trailWidth===(applied.trailWidth??1)&&
     ['buildingMode','maxBuildingHeight','trees','treeType'].every(key=>options[key]===applied[key]);
   if(transportOnly){
@@ -677,7 +690,7 @@ async function generate(autoTransport=false){
     return;
   }
   const incremental=!options.pureRelief&&!urbanEdition&&!reload&&sameTerrain(options);
-  if(!incremental){pendingBrushFrame=brushHistory.prepare(options,strokes);options.strokes=pendingBrushFrame.strokes;}
+  if(!incremental&&!historicalLayerOnly){pendingBrushFrame=brushHistory.prepare(options,strokes);options.strokes=pendingBrushFrame.strokes;}
   if(!incremental){
     const {strokes:brushStrokes,...settings}=options;
     processingRun={started:performance.now(),startedAt:new Date().toISOString(),schemaVersion:1,
@@ -691,7 +704,7 @@ async function generate(autoTransport=false){
     if(options.historical){
       try{
         if(editionArea===urbanCatalogue?.area){
-          const {features,...coverage}=await urbanHistory.edition(editionArea,options.historical.year,urbanCrop);
+          const {features,...coverage}=await urbanCatalogue.provider.edition(editionArea,options.historical.year,urbanCrop);
           historicalFeatures=features;
           historicalCoverage=coverage;
         }else historicalFeatures=await historicalCatalog.edition(editionArea,options.historical.year);
@@ -710,7 +723,15 @@ async function generate(autoTransport=false){
       const source=$('#building-source').value;
       pendingBuildingLayer=await loadProjectBuildings(region,source,options,()=>incremental&&sameTerrain(options));
     }
-    if(incremental){
+    if(historicalLayerOnly){
+      const base=pendingBuildingLayer?applyBuildingLayer({...region,meta:{...region.meta}},pendingBuildingLayer):region;
+      const target=options.historical?applyHistoricalEdition(base,editionArea,options.historical.year,historicalFeatures,historicalCoverage):base;
+      const layer={features:target.features.filter(feature=>feature.properties?.sourceLayer==='building'),
+        meta:target.meta,historical:target.meta.historical??null};
+      job='buildings';
+      lock(true);
+      worker.postMessage({type:'buildings',layer,options,measureBuildings:true});
+    }else if(incremental){
       job='buildings';const layer=pendingBuildingLayer?{features:pendingBuildingLayer.features,meta:{...region.meta,buildings:pendingBuildingLayer.metadata,buildingSource:pendingBuildingLayer.source,sourceWarnings:[...(region.terrainWarnings||[]),...pendingBuildingLayer.warnings],localSources:{...region.meta.localSources,buildings:null}}}:{};
       needsBuild=tooLargeRegion||dirty||configurationKey(options)!==configurationKey(modelOptions());say(baseMessage('status.updatingBuildings'));worker.postMessage({type:'buildings',layer,options});
     }else{
@@ -753,8 +774,10 @@ function recoverBuildings(error){
     $('#building-mode').value=prior.mode;$('#building-height').value=prior.height;
     buildingSourceDirty=false;
   }
+  const historicalSwitch=pendingHistoricalSwitch;
+  if(historicalSwitch){historicalChoice=historicalSwitch.previous;pendingHistoricalSwitch=null;}
   needsBuild=!model||!sameTerrain(modelOptions())||configurationKey(model.provenance.options)!==configurationKey(modelOptions());
-  buildingControls();badge(needsBuild?statusMessage('pending.selection'):'');lock(false);
+  buildingControls();badge(needsBuild?statusMessage('pending.selection'):model?.provenance.historical?()=>historicalBadge(model.provenance.historical):'');lock(false);
   if(!model){
     $('#welcome').hidden=false;
     showWorkshopPanel('settings');
@@ -846,6 +869,7 @@ worker.onmessage=({data})=>{
   if(data.type==='build-preview'){showBuildPreview(data);return;}
   if(data.type==='progress'&&!stagedBuild?.label)say(data.message);
   if(data.type==='model'){
+    pendingHistoricalSwitch=null;
     clearBuildingPreview();
     let startCadastre=false;
     if(!data.vegetation&&!data.buildings&&pendingBrushFrame){strokes=brushHistory.accept(pendingBrushFrame,strokes);pendingBrushFrame=null;}
@@ -1003,14 +1027,15 @@ historicalSlider.oninput=()=>{
   $('#historical-value').textContent=value;
 };
 historicalSlider.onchange=()=>{
-  if(historicalSlider.disabled||!historicalArea)return;
+  if(historicalSlider.disabled||!historicalArea||busy||pendingVegetation||drawing||tooLargeRegion)return;
   const year=historicalYears()[Number(historicalSlider.value)];
   const choice=year==null?null:{areaId:historicalArea.id,year};
   if(sameEpoch(choice,historicalChoice))return;
+  pendingHistoricalSwitch={previous:historicalChoice};
   historicalChoice=choice;
   buildingControls();
-  if(model&&!needsBuild&&!tooLargeRegion&&sameTerrainFrame(modelOptions()))generate();
-  else requireBuild(()=>historyText('pending'));
+  say(()=>historyText('switching',{year:year??historyText('current')}));
+  generate();
 };
 historicalExamples.onchange=()=>{
   const area=historicalAreas.find(a=>a.id===historicalExamples.value);
@@ -1629,6 +1654,7 @@ $('#release-list').insertAdjacentHTML('afterbegin',`<article class="release-entr
 $('#release-list').insertAdjacentHTML('afterbegin',`<article class="release-entry"><div><strong>v0.23.8</strong><time datetime="2026-11-06">06/11/2026</time></div><p data-i18n="history.0.23.8">${t('history.0.23.8')}</p></article>`);
 $('#release-list').insertAdjacentHTML('afterbegin',`<article class="release-entry"><div><strong>v0.23.9</strong><time datetime="2026-11-06">06/11/2026</time></div><p data-i18n="history.0.23.9">${t('history.0.23.9')}</p></article>`);
 $('#release-list').insertAdjacentHTML('afterbegin',`<article class="release-entry"><div><strong>v0.23.10</strong><time datetime="2026-11-06">06/11/2026</time></div><p data-i18n="history.0.23.10">${t('history.0.23.10')}</p></article>`);
+$('#release-list').insertAdjacentHTML('afterbegin',`<article class="release-entry"><div><strong>v0.23.11</strong><time datetime="2026-11-06">06/11/2026</time></div><p data-i18n="history.0.23.11">${t('history.0.23.11')}</p></article>`);
 $('#copy-lightning').onclick=async()=>{try{await navigator.clipboard.writeText('aptswim903@walletofsatoshi.com');feedback('copy-status',statusMessage('copy.done'));}catch{feedback('copy-status',statusMessage('copy.manual'));}};
 for(const toggle of document.querySelectorAll('.sidebar-left .section-toggle'))toggle.disabled=true;
 function refreshWorkshopLanguage(){
@@ -1662,15 +1688,16 @@ function refreshWorkshopLanguage(){
 onLocaleChange(refreshWorkshopLanguage);
 initI18n();
 try{restoreProject();}catch(error){say(error.message,true);}
-function settleHistoricalCatalog([legacy,urban]){
+function settleHistoricalCatalog([legacy,...urban]){
   const wanted=historicalChoice;
-  urbanCatalogue=urban.status==='fulfilled'?urban.value:null;
-  historicalAreas=[...(legacy.status==='fulfilled'?legacy.value:[]),...(urbanCatalogue?[urbanCatalogue.area]:[])];
-  historicalStatus=urbanCatalogue?'ready':'failed';
+  urbanCatalogues=urban.flatMap((result,index)=>result.status==='fulfilled'?[{...result.value,provider:urbanProviders[index]}]:[]);
+  urbanPose=null;
+  historicalAreas=[...(legacy.status==='fulfilled'?legacy.value:[]),...urbanCatalogues.map(catalogue=>catalogue.area)];
+  historicalStatus=urbanCatalogues.length?'ready':'failed';
   syncHistoricalControls();
   renderHistoricalExamples();
   buildingControls();
   syncStepActions(busy||pendingVegetation||reliefTimer!==null);
   if(wanted&&!historicalChoice)say(()=>historyText('restoredMissing'),true);
 }
-Promise.allSettled([historicalCatalog.areas(),urbanHistory.load()]).then(settleHistoricalCatalog);
+Promise.allSettled([historicalCatalog.areas(),...urbanProviders.map(provider=>provider.load())]).then(settleHistoricalCatalog);

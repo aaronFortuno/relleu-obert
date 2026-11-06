@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.23.11 — 2026-11-06
+
+- El selector d’edició històrica apareix al peu del visor quan el retall té cobertura. Canviar d’edició carrega la capa i conserva l’enquadrament.
+
 ## v0.23.10 — 2026-11-06
 
 - Compara el sòl urbanitzat de Catalunya el 2009 i el 2024. El taller indica la superfície cartografiada i assenyala els retalls amb cobertura parcial.
