@@ -2,9 +2,11 @@
 
 Actualitzat: 2026-11-06. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
-## v0.23.13 — Scroll de Territori i retirada del pilot històric
+## v0.23.13 — Territori, pilot històric i ponts de vies principals
 
 La roda desplaça el contingut de Territori també damunt del mapa. La revisió a Cardona i Cornellà confirma que les cobertes històriques disponibles només permeten dibuixar superfícies urbanitzades. Es retiren els controls del pilot i se n’arxiven les dades. En obrir un projecte desat amb una edició històrica, el taller recupera els ajustos i avisa que generarà la maqueta amb cartografia actual.
+
+Al retall de l’Hospitalet i el Prat, el model sense arbres conserva els dos taulers principals amb una separació mesurada de 0,28 i 0,36 mm respecte de l’aigua al llarg de l’eix. Les dues calçades conserven els enllaços. Pendent de revisar la maqueta completa al visor i al laminador. [Mesures i límits](RO-052-CONTINUITAT.md#hospitalet-i-el-prat-v02313)
 
 ## v0.23.12 — Selecció d’edicions per cobertura (RO-025)
 

@@ -62,3 +62,11 @@ test('regional pavement stitches compatible fragments and leaves an untagged cro
   assert.equal(raised.provenance.surfaceRoads.accepted,model.provenance.surfaceRoads.accepted);
   assert(Math.abs(roadTop(raised)(45,24)-after(45,24)-.5)<.0001);
 });
+
+test('roads outside the plate do not exhaust the regional paving budget',()=>{
+  const outside=Array.from({length:1001},(_,index)=>road(`outside-${index}`,[[103,10],[110,10]],'outside'));
+  const model=buildModel({...fixture,features:[...outside,...fixture.features]},
+    {...options,surfaceRoads:'regional'},()=>{},api);
+  assert.equal(model.provenance.surfaceRoads.omissionCounts['source-budget'],undefined);
+  assert.equal(model.provenance.surfaceRoads.fullAccepted,3);
+});

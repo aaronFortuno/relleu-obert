@@ -26,7 +26,7 @@ import {topSampler,planApproaches,planPiers,columnSolid,deferredObstacleMask} fr
 import {uniteMaterials} from './solid-operations.js';
 import {auditPart} from './solid-audit.js';
 import {generateProceduralBridgeItems} from './procedural-bridges.js';
-import {bridgeCrossesWater,fitWaterBridge} from './bridge-water.js';
+import {bridgeCrossesWater,fitWaterBridge,fitMainWaterBridge} from './bridge-water.js';
 import {generateProceduralTunnelVoids} from './procedural-tunnels.js';
 import {carveAvailableTunnels} from './tunnel-operations.js';
 import {generateMajorRoadItems,reserveProfileEnds} from './major-roads.js';
@@ -974,14 +974,24 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
     let axis=item.axis?.map(project)||(matches[0]?.score>0?matches[0].t.points:null);
     const inside=([x,y])=>x>=0&&x<=width&&y>=0&&y<=height;
     let waterFit;
-    if(item.elevationMethod==='linear-dem-endpoints'&&waterPoly.length&&inside(axis[0])&&inside(axis.at(-1))){
+    if(item.elevationMethod==='linear-dem-endpoints'&&waterPoly.length&&axis){
       const rows=axis.map((_,i)=>points.slice(i*2,i*2+2));
-      waterFit=fitWaterBridge(axis,rows,ground,terrain.waterAt);
+      if(inside(axis[0])&&inside(axis.at(-1)))waterFit=fitWaterBridge(axis,rows,ground,terrain.waterAt);
       if(waterFit){
         const zScale=scale*exaggeration;
         item={...item,coordinates:item.coordinates.map(([lon,lat],i)=>[lon,lat,originMeters+(waterFit.heights[i>>1]-verticalReference.minimumSurfaceMM)/zScale]),
           elevationMethod:'estimated-short-water-crossing'};
         points=points.map(([x,y],i)=>[x,y,waterFit.heights[i>>1]]);
+      }else if(!railway&&['motorway','trunk','primary'].includes(item.roadClass)&&![true,1,'1','yes'].includes(item.ramp)){
+        waterFit=fitMainWaterBridge(axis,rows,ground,terrain.waterAt,{maxGrade:.12*exaggeration,inModel:inside});
+        if(waterFit){
+          axis=waterFit.axis;
+          points=waterFit.rows.flat();
+          const zScale=scale*exaggeration,faces=[];
+          for(let i=0;i<points.length-2;i+=2)faces.push(i,i+1,i+3,i,i+3,i+2);
+          item={...item,coordinates:points.map(([x,y,z])=>[...proj.unproject([x,y]),originMeters+(z-minimumSurfaceMM)/zScale]),
+            faces,elevationMethod:'estimated-main-water-crossing'};
+        }
       }
     }
     const thickness=(waterFit?.thicknessMM??.6)+surfaceRise;
@@ -1058,8 +1068,9 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
   const proceduralCount=bridges.filter(b=>b.estimated&&!b.mainRoad).length,knownCount=bridges.filter(b=>!b.estimated).length;
   if(knownCount)warnings.push(`${knownCount} taulers amb cota de la font específica. Pilars i enllaços simplificats per imprimir. El datum vertical de l’ICGC no s’ha transformat al del relleu.`);
   const waterBridgeCount=bridges.filter(b=>b.waterClearanceMM).length;
+  const shortWaterBridgeCount=bridges.filter(b=>b.elevationMethod==='estimated-short-water-crossing').length;
   if(proceduralCount)warnings.push(`${proceduralCount} ponts procedimentals amb cotes estimades a partir del relleu i la cartografia.`);
-  if(waterBridgeCount)warnings.push(`${waterBridgeCount} taulers curts ajustats per deixar pas sobre l’aigua. Comprova l’obertura al laminador.`);
+  if(waterBridgeCount)warnings.push(`${waterBridgeCount} taulers ajustats per deixar pas sobre l’aigua. Comprova l’obertura al laminador.`);
   if(railPoly.length||bridges.some(b=>b.railway))warnings.push(`Ferrocarrils realçats ${railRise.toLocaleString('ca')} mm sobre el nivell dels camins; és una plataforma simplificada de la maqueta, no una cota real.`);
   if(roadRise)warnings.push(`Camins realçats ${roadRise.toLocaleString('ca')} mm sobre el terreny; és un efecte de la maqueta, no una altura real.`);
   const majorDecks=bridges.filter(b=>b.mainRoad);
@@ -1131,7 +1142,8 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
   context.meta.transportContinuity={widthPolicy:'mapped width, then lanes, then road class; scale-sensitive floor; independent of structural deck and bore',minimumCarriagewayMM:MIN_ROAD_WIDTH_MM,connections:bridges.map(b=>({id:b.id,identity:b.identity,carriagewayWidthMM:b.roadWidth,joins:b.approaches.plans.map(p=>({startWidthMM:p.startWidthMM,endWidthMM:p.endWidthMM,targetFeatureIds:p.targetFeatureIds,routingRepairs:p.routingRepairs})),unconnectedEnds:b.approaches.missed})),portals:openedTunnels.flatMap(t=>t.portalConnections||[])};
   if(context.meta.infrastructure){
     context.meta.infrastructure.mainRoadCount=majorDecks.length;
-    context.meta.infrastructure.shortWaterCrossings=waterBridgeCount;
+    context.meta.infrastructure.shortWaterCrossings=shortWaterBridgeCount;
+    context.meta.infrastructure.mainWaterCrossings=waterBridgeCount-shortWaterBridgeCount;
     for(const [index,bridge] of bridges.entries())if(bridge.waterClearanceMM)
       context.meta.infrastructure.deckProfiles[index].waterClearanceMM=bridge.waterClearanceMM;
   }

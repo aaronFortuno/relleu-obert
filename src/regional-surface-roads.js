@@ -175,15 +175,17 @@ export function planRegionalSurfaceRoads(terrain,{rise,thickness,blockedMask=[],
     if(metadata.omissions.length<64)metadata.omissions.push({reason,sourceFeatureIds:ids,detail,count});
   };
   const {transport,roadPieces,rect,proj:{width,height}}=terrain,box=[0,0,width,height];
-  if(transport.length>limits.sources||roadPieces.length>limits.sources){
-    omit('source-budget',[],'El retall supera el pressupost de fonts del paviment regional.',Math.max(transport.length,roadPieces.length));
-    return result;
-  }
 
   // Vector tiles may assign one ID to several unrelated lines in a
   // MultiLineString. Each source footprint belongs to one projected line.
+  // Tiles can cover far more area than the model. Count only footprints that
+  // can affect the model towards the regional planning budget.
   const sources=roadPieces.map(({id,polys},key)=>({key,id,polys,box:bounds(polys.flat(2))}));
   const visible=sources.filter(entry=>overlapsBox(entry.box,box));
+  if(visible.length>limits.sources){
+    omit('source-budget',[],'El retall supera el pressupost de fonts del paviment regional.',visible.length);
+    return result;
+  }
   const protectedKeys=new Set([...blockedIds].map(String));
   const structures=[];
   for(const route of transport){

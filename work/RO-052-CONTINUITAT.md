@@ -1,5 +1,18 @@
 # RO-052 — Continuïtat i amplada de la calçada
 
+## Hospitalet i el Prat, v0.23.13
+
+Retall d’`hospitalet.json` centrat a `41.340975, 2.093828`, 1.200 × 1.200 m, peça de 240 × 240 mm a 1:5.000, detall 64, relleu Mapterhorn i edificis ICGC. S’han comparat el model anterior i el corregit amb els arbres desactivats en ambdós. El pressupost inicial de paviment comptava 5.256 fragments de totes les tessel·les. Comptant les petjades que poden tocar la peça, la prova aplica 5 trams complets i 27 de parcials.
+
+Els dos taulers de l’autopista sobre el Llobregat tenien cotes estimades a partir dels extrems. La correcció mostreja l’aigua i el relleu al llarg de l’amplada del tauler. Ajusta la rasant amb un límit de pendent i conserva el recolzament als extrems. S’aplica a ponts cartografiats de vies principals quan la cota del tauler és estimada i hi ha espai per fer l’ajust. Tres passos o ramals pròxims mantenen el perfil anterior.
+
+| Traçat d’OSM | Pas lliure mínim abans, a l’eix | Pas lliure mínim després, a l’eix | Mostres seques amb terreny per sobre del tauler |
+| --- | ---: | ---: | ---: |
+| `2249864642` | −0,284 mm | +0,355 mm | 15 → 0 |
+| `197912442` | −0,378 mm | +0,277 mm | 22 → 0 |
+
+Tots dos taulers conserven dos enllaços i la seva malla supera l’auditoria de tancament. El càlcul ha passat de 36,33 a 36,98 s. Queda el contrast visual amb vegetació i la comprovació al laminador.
+
 **v0.19.9 · terminacions dels perfils experimentals.** Cada extrem interior reserva
 espai a la mateixa via cartografiada. El tram de transició pren la cota
 i el pendent del perfil i els de la via sobre el relleu als dos punts

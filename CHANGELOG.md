@@ -4,6 +4,7 @@
 
 - La roda desplaça l’apartat Territori encara que el cursor estigui damunt del mapa. El zoom es controla amb els botons del mapa, el teclat o el gest tàctil.
 - Es retira el selector històric i els seus accessos directes. L’exploració i les mostres es conserven al repositori.
+- Els ponts de vies principals cartografiats amb cotes estimades poden ajustar el tauler per sobre de l’aigua i dels marges. El pressupost de paviment compta les vies que poden tocar el retall.
 
 ## v0.23.12 — 2026-11-06
 

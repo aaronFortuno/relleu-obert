@@ -28,7 +28,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | [RO-033](#ro-033--ponts-i-viaductes) | P1 | Montgròs validat al cupó. Obertures mesurades a Amsterdam i Empuriabrava | Laminar els ponts curts i comprovar les llums en una placa completa |
 | [RO-034](#ro-034--túnels-imprimibles) | P1 | Dues boques i rasant compartida verificades al cupó 3MF | Validar el cupó i revisar el tram cobert de Sant Salvador al laminador |
 | [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | Encaix per tram i cobertura ampliada, també als talls de la peça | Validar Marganell i resoldre les unions complexes |
-| [RO-052](#ro-052--continuïtat-i-amplada-del-traçat-viari) | P1 | Senders amb amplada ajustable. Quatre enllaços a Millau a 1:20.000 | Validar els senders al laminador i mesurar els enllaços de la C-37 |
+| [RO-052](#ro-052--continuïtat-i-amplada-del-traçat-viari) | P1 | Taulers principals de l’Hospitalet verificats en una prova sense arbres | Revisar l’encreuament complet, laminar els senders i mesurar els enllaços de la C-37 |
 | [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió) | P1 | Filament per peça validat a Montserrat. Projecte de quatre plaques obert a Bambu Studio | Contrastar el laminat de les quatre peces de Tamariu |
 | [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts) | P1 | Fonts en estudi | Comparació de parts i petjades en segona zona |
 | [RO-032](#ro-032--cobertes-i-volums-singulars) | P1 | Consulta opcional d’OSM amb retorn a petjades planes si és buida | Verificar una font de cobertes 3D consultable de l’ICGC |
@@ -160,7 +160,7 @@ Les vies ràpides i el ferrocarril han de conservar una rasant contínua. Valida
 
 ### RO-052 — Continuïtat i amplada del traçat viari
 
-Els senders tenen un mínim de 0,30 mm i el selector de Vies en modifica l’amplada. Comprovar-ne la visibilitat al laminador. Revisar les unions i amplades de carretera, pont i túnel a dues escales. Separar l’amplada de calçada del contorn estructural i l’obertura imprimible. [Controls i reproducció](RO-052-CONTINUITAT.md)
+Els senders tenen un mínim de 0,30 mm i el selector de Vies en modifica l’amplada. A l’Hospitalet, la v0.23.13 recupera el paviment independent i ajusta els dos taulers principals que tocaven l’aigua. Revisar les unions, els ramals i el laminat amb totes les capes. [Controls i reproducció](RO-052-CONTINUITAT.md)
 
 ### RO-053 — Flux de treball per etapes
 
