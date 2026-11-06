@@ -28,7 +28,34 @@ node scripts/prepare-historical-urban.mjs --probe 1.430 42.332 1.470 42.363
 
 **Control de les carreteres.** La geobase del JRC es pot descarregar i llegir. Retallant les línies a quatre finestres d’uns 2 km, el fitxer dona 0 trams als retalls del centre de Girona i Avinyó, 2 a Manresa i 6 a Lleida, comptant totes les dates del fitxer. Els zeros no indiquen absència històrica de carreteres. Per reproduir el control, cal llegir `European_Network_No_Planarized` (EPSG:3034), reprojectar a WGS 84 i comptar les interseccions de longitud positiva amb els retalls: Avinyó `1.961 41.854 1.985 41.872`; Girona `2.810 41.973 2.834 41.991`; Manresa `1.812 41.715 1.836 41.733`; Lleida `0.611 41.609 0.635 41.627`.
 
-**Següent increment.** Provar primer un índex comú de ferrocarrils, incloent retalls que creuen límits de tessel·la i retalls amb cobertura però sense cap via en servei. Mesurar després una capa urbanitzada estàtica filtrada de l’ICGC en retalls dispersos i a dues escales. La disponibilitat l’ha de determinar la cobertura de cada font, no el recompte d’entitats. El selector ha d’indicar quina capa modifica i conservar «Actual» com a valor per defecte. No s’amplia el catàleg amb excepcions locals mentre es prepara aquesta via.
+**Prioritat acordada.** Centrar la comparació en el sòl urbanitzat de l’ICGC. L’ampliació del ferrocarril queda en segon pla fins que pugui anar acompanyada d’altres capes històriques amb detall comparable. L’[API Territorial de l’ICGC](https://api.icgc.cat/territorial/collections/cobertes-sol) admet filtre de classe i coordenades, i el navegador pot consultar-la directament. La col·lecció correspon a l’edició de 2024. Les altres edicions es preparen a partir dels [vectors oficials](https://datacloud.icgc.cat/datacloud/cobertes-sol/gpkg/) per aplicar els mateixos criteris de selecció i simplificació a totes.
+
+### Comparació estàtica de l’ICGC
+
+L’[eina de preparació](../scripts/package-urban-cover.py) separa els polígons residencials, industrials i de serveis en cel·les de 0,0625° i desa cada cel·la com a GeoJSON comprimit. L’índex descriu les edicions i les cel·les amb geometries. Es consulta per coordenades i es retalla a la mateixa finestra en totes dues edicions. El càlcul uneix els polígons abans de mesurar la superfície en una projecció equivalent. El resultat indica la superfície total per edició i els guanys i pèrdues de superfície cartografiada entre les dues.
+
+La preparació de Catalunya sencera ha generat 959 cel·les el 2009 (14,96 MB) i 965 el 2024 (16,39 MB). El paquet complet ocupa 32,66 MB, incloent-hi l’índex i el límit administratiu. Es pot allotjar com a fitxers estàtics i carregar només les cel·les que creuen el retall. A Girona se’n consulten quatre, amb 163 kB per al 2009 i 175 kB per al 2024. La superfície calculada del 2009 difereix un 0,0093% de la unió retallada dels vectors originals.
+
+| Retall de prova | Superfície el 2009 | Superfície el 2024 | Dades per edició |
+| --- | ---: | ---: | ---: |
+| Girona | 502,28 ha | 521,08 ha | 163–175 kB |
+| Manresa | 564,66 ha | 581,56 ha | 96–106 kB |
+| La Seu d’Urgell | 137,34 ha | 139,78 ha | 44–51 kB |
+| Tamariu | 54,07 ha | 58,26 ha | 28–30 kB |
+| Llívia | 30,73 ha | 34,89 ha | 9–11 kB |
+
+El control de costa ha limitat el càlcul a terra a Tamariu. El retall de Llívia compta només la part dins l’enclavament. Un retall a l’altra banda de la frontera es marca com a exterior, mentre que un retall interior dels Pirineus retorna zero hectàrees urbanitzades en ambdues edicions.
+
+El [límit terrestre de l’ICGC a 1:5.000](https://datacloud.icgc.cat/datacloud/divisions-administratives/json_unzip/divisions-administratives-v2r2-catalunya-5000-20260120.json) permet mesurar només la part catalana d’un retall mixt i descartar una finestra completament exterior. És un límit administratiu modern, i no acredita per si sol la cobertura de cada edició. En el taller caldrà etiquetar un retall amb cobertura parcial i distingir una cel·la amb zero superfície urbanitzada d’una edició o un fitxer no disponible. Les àrees urbanitzades poden incloure jardins, aparcaments i altres espais de l’entorn construït. Els canvis poden venir tant d’una transformació del sòl com d’una revisió cartogràfica. [Llegenda i metodologia de l’ICGC](https://www.icgc.cat/ca/Geoinformacio-i-mapes/Mapes/Mapa-de-cobertes-del-sol-de-Catalunya)
+
+El taller pot presentar-ho com a **comparació de sòl urbanitzat**, amb un mateix relleu de referència i un color reservat a la coberta seleccionada. La xifra d’hectàrees correspon al polígon cartografiat dins del retall, amb independència de l’escala física d’impressió. La prova amb el motor existent ha exportat dos 3MF de Girona de 16 × 21 cm amb dos materials, una malla de terreny idèntica i la data de cada coberta a les metadades. El laminat queda pendent.
+
+Per reproduir-ho cal Python amb Shapely 2.1 o superior i pyproj. `pack` requereix una carpeta de sortida nova i admet `--bounds W S E N` per fer una prova petita. També accepta GeoJSON obtingut amb `node scripts/prepare-historical-urban.mjs --extract FITXER ANY W S E N`, sempre amb `--bounds` ajustat a l’extracció.
+
+```sh
+python scripts/package-urban-cover.py pack urban-icgc 2009=cobertes-sol-v1r0-2009.zip 2024=cobertes-sol-v1r0-2024.zip --boundary catalunya-5000.geojson
+python scripts/package-urban-cover.py compare urban-icgc 2.800 41.968 2.839 42.006
+```
 
 ### Pilot al taller (v0.23.9)
 

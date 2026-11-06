@@ -13,11 +13,15 @@ const pilot={id:'avinyo-urban',label:'Avinyó',bbox:[1.95,41.846,1.996,41.88],ce
 const labels=new Map([[341,'Casc urbà'],[342,'Eixample'],[343,'Zones urbanes laxes'],[344,'Edificacions aïllades en l’espai rural'],[345,'Àrees residencials aïllades'],[347,'Zones industrials, comercials o de serveis']]);
 const out=new URL('../public/data/historical/',import.meta.url);
 const args=process.argv.slice(2);
-const probe=args[0]==='--probe'&&args.length===5?args.slice(1).map(Number):null;
-const [w,s,e,n]=probe??pilot.bbox;
-if(args.length&&(!probe||!probe.every(Number.isFinite)||!args.slice(1).every(value=>value.trim())||
+const years=[2009,2018,2024];
+const extracting=args[0]==='--extract'&&args.length===7&&years.includes(Number(args[2]));
+const probing=args[0]==='--probe'&&args.length===5;
+const windowArgs=extracting?args.slice(3):probing?args.slice(1):null;
+const window=windowArgs?.map(Number);
+const [w,s,e,n]=window??pilot.bbox;
+if(args.length&&(!window||!window.every(Number.isFinite)||!windowArgs.every(value=>value.trim())||
   w< -180||e>180||s< -90||n>90||e<=w||n<=s||e-w>.12||n-s>.12)){
-  throw Error('Usage: node scripts/prepare-historical-urban.mjs [--probe west south east north] (up to 0.12° per side)');
+  throw Error('Use --probe W S E N or --extract FILE YEAR W S E N (up to 0.12° per side)');
 }
 const rect={minX:w,minY:s,maxX:e,maxY:n},clipRing=[[w,s],[e,s],[e,n],[w,n],[w,s]];
 
@@ -34,11 +38,11 @@ const rangeWithoutCors=new Set();
 async function fetchRange(url,options){
   if(new URL(url).origin!==origin||!new Headers(options?.headers).has('range'))throw Error('Only indexed requests to ICGC are permitted');
   const headers=new Headers(options.headers);
-  if(probe)headers.set('Origin','https://relleu.ortogra.fi');
+  if(probing)headers.set('Origin','https://relleu.ortogra.fi');
   const response=await fetch(url,{...options,headers,signal:AbortSignal.timeout(18000)});
   rangeCount++;
   const allowed=response.headers.get('access-control-allow-origin');
-  if(!allowed||!['*','https://relleu.ortogra.fi'].includes(allowed))rangeWithoutCors.add(url);
+  if(probing&&!['*','https://relleu.ortogra.fi'].includes(allowed))rangeWithoutCors.add(url);
   const length=Number(response.headers.get('content-length'));
   if(response.status!==206||!length||length>16e6||(totalRead+=length)>64e6){
     await response.body?.cancel();
@@ -60,9 +64,9 @@ function normalizeRing(ring){
   return clean.length>=4?clean:null;
 }
 
-if(!probe)await mkdir(out,{recursive:true});
+if(!window)await mkdir(out,{recursive:true});
 const editions=[];
-for(const year of [2009,2018,2024]){
+for(const year of extracting?[Number(args[2])]:years){
   const features=[];
   totalRead=rangeCount=0;
   const started=performance.now();
@@ -86,9 +90,10 @@ for(const year of [2009,2018,2024]){
   }
   features.sort((a,b)=>a.id<b.id?-1:a.id>b.id?1:0);
   if(new Set(features.map(feature=>feature.id)).size!==features.length)throw Error(`Duplicate clipped polygons in ${year}`);
-  if(probe){
-    console.log(JSON.stringify({bbox:probe,year,features:features.length,rangeCount,bytes:totalRead,
-      milliseconds:Math.round(performance.now()-started),cors:!rangeWithoutCors.has(url)}));
+  if(window){
+    if(extracting)await writeFile(args[1],JSON.stringify({type:'FeatureCollection',bbox:window,edition:year,features})+'\n',{flag:'wx'});
+    console.log(JSON.stringify({bbox:window,year,features:features.length,rangeCount,bytes:totalRead,
+      milliseconds:Math.round(performance.now()-started),...(probing?{cors:!rangeWithoutCors.has(url)}:{})}));
     continue;
   }
   if(!features.length)throw Error(`No urban features in ${year}`);
@@ -98,7 +103,7 @@ for(const year of [2009,2018,2024]){
   console.log(`${pilot.id} · ${year}: ${features.length} polígons font · ${totalRead} bytes llegits`);
 }
 
-if(!probe){
+if(!window){
   const index=new URL('index.json',out);
   const previous=await readFile(index,'utf8').then(JSON.parse,error=>{if(error.code==='ENOENT')return {areas:[]};throw error;});
   await writeFile(index,JSON.stringify({areas:[...previous.areas.filter(area=>area.id!==pilot.id),{...pilot,source,layer:'urban',editions}]},null,2)+'\n');

@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-06. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## 2026-11-06 — Índex de cobertes urbanitzades (RO-025)
+
+S’han preparat les edicions vectorials de 2009 i 2024 per a tot Catalunya i verificat la consulta per coordenades, incloent retalls que creuen cel·les, costa i frontera. El paquet mesurat ocupa 32,66 MB. Queda pendent incorporar la comparació i la publicació de les dades al taller. [Mesures i eina de preparació](RO-025-CARTOGRAFIA-HISTORICA.md#comparació-estàtica-de-licgc)
+
 ## 2026-11-06 — Cobertura de fonts històriques (RO-025)
 
 La mateixa consulta per retall funciona amb tres edicions de les cobertes de l’ICGC a Lleida, Girona i la Seu d’Urgell, i amb els traçats de servei de la UdL a Sant Joan de les Abadesses. La xarxa principal del JRC s’ha descarregat i comparat en quatre retalls d’uns 2 km; no té prou detall per a l’ús urbà. Es prioritza una distribució estàtica de les dues capes comunes i s’ajorna la reconstrucció de carrers i edificis d’època. La interfície conserva els tres pilots existents. [Controls i límits](RO-025-CARTOGRAFIA-HISTORICA.md#fonts-comunes-abast-i-decisió)

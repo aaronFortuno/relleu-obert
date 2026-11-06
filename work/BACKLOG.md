@@ -13,7 +13,7 @@ Actualitzat el **2026-11-06 · v0.23.9**. Primers retalls amb selector d’any. 
 | **Validació en paral·lel** | RO-024, RO-033, RO-046, RO-054, RO-055 | Revisar Tamariu 40 × 45 cm i Amsterdam amb totes les capes al laminador. També queden la recuperació d’un projecte girat i els talls dels Rasos–Gallina Pelada. |
 | **Pilot de relleu rocós** | RO-023, RO-035 | Després dels temps de generació, reprendre el Cavall Bernat i el Pedraforca, i el cupó georeferenciat dels Degotalls per als voladissos. [Resultats](RELLEU-ROCOS.md) |
 | **Cobertes obertes** | RO-032, RO-026 | Integrar l’ICGC si es verifica un servei públic que retorni geometria de coberta. |
-| **Cartografia històrica** | RO-025 | Passar dels pilots a fonts comunes: índex ferroviari i capa de sòl urbanitzat de l’ICGC. La reconstrucció de carrers i edificis d’època queda ajornada. [Fonts i controls](RO-025-CARTOGRAFIA-HISTORICA.md#fonts-comunes-abast-i-decisió) |
+| **Cartografia històrica** | RO-025 | Comparar el sòl urbanitzat amb un índex comú de l’ICGC. Es deixa en segon pla l’ampliació ferroviària aïllada i s’ajorna la reconstrucció de carrers i edificis. [Fonts i controls](RO-025-CARTOGRAFIA-HISTORICA.md#fonts-comunes-abast-i-decisió) |
 
 Els encàrrecs independents avancen en paral·lel. Cada bloc validat té el seu commit i es manté una sola prova pesada alhora. Els casos que requereixen inspecció al laminador poden quedar pendents mentre avancen altres línies.
 
@@ -53,7 +53,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | ID | Prioritat | Estat | Abast |
 | -------------------------------------------------------- | --------- | ------------------ | -------------------------------------------------------------- |
 | [RO-035](#ro-035--cavitats-i-relleus-amb-voladissos) | P3 | Dades 3D pendents | Coves, baumes i arcs naturals; un MDT no en descriu l’interior |
-| [RO-025](#ro-025--vegetació-mesurada-i-paisatges-històrics) | P2 | Fonts comunes verificades per a ferrocarril i sòl urbanitzat; selector limitat als pilots | Provar un índex espacial ferroviari i mesurar el pes d’una capa urbanitzada de tot Catalunya |
+| [RO-025](#ro-025--vegetació-mesurada-i-paisatges-històrics) | P2 | Preparació i consulta local de fragments de sòl urbanitzat del 2009 i el 2024 | Validar la presentació de dues edicions al taller i definir la publicació de l’índex |
 | [RO-012](#ro-012--presentació-realista-del-model-imprès) | P3 | Objectiu redefinit | Imatge estàtica fotorealista del model amb entorn escolar |
 | [RO-011](#ro-011--comptador-dexportacions-i-umami) | P3 | Per estudiar | Definir recompte i font real abans de publicar una xifra |
 
@@ -111,7 +111,7 @@ El cupó del Bages permet consultar els materials per altura. A Montserrat, l’
 
 ### RO-025 — Vegetació mesurada i paisatges històrics
 
-El mode actual continua per defecte. S’han comprovat els traçats ferroviaris amb dates de servei de la UdL i les cobertes de sòl urbanitzat de l’ICGC fora dels pilots. La via de continuació és publicar dades preparades per cobertura i carregar-les per coordenades. Es deixa per més endavant la reconstrucció de carrers i edificis: la xarxa històrica del JRC és regional i l’antiguitat cadastral només permet filtrar les petjades actuals. Les ortofotos es reserven per a la comprovació. La vegetació mesurada continua ajornada. [Fonts i criteris de cobertura](RO-025-CARTOGRAFIA-HISTORICA.md)
+La prioritat és comparar el sòl residencial, industrial i de serveis amb els vectors de l’ICGC. La prova prepara les edicions de 2009 i 2024 per cel·les i consulta el mateix retall en les dues. El ferrocarril queda en segon pla mentre no es pugui acompanyar d’altres capes històriques amb detall comparable. La xarxa del JRC és regional i l’antiguitat cadastral només permet filtrar les petjades actuals. La vegetació mesurada continua ajornada. [Fonts i criteris de cobertura](RO-025-CARTOGRAFIA-HISTORICA.md)
 
 La v0.23.9 habilita les dates amb cobertura de tot el retall. Els dos carrilets canvien la capa ferroviària; a Avinyó, els polígons de l’ICGC substitueixen els volums d’edificis. Les altres capes són actuals. Pendent de validació d’usuari.
 
