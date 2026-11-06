@@ -57,6 +57,14 @@ python scripts/package-urban-cover.py pack urban-icgc 2009=cobertes-sol-v1r0-200
 python scripts/package-urban-cover.py compare urban-icgc 2.800 41.968 2.839 42.006
 ```
 
+### Publicació al taller
+
+La v0.23.10 activa «Sòl urbanitzat · edició» al Model complet quan el retall toca terra a Catalunya. Les dues edicions substitueixen els edificis individuals amb una capa de superfície. Es manté el mateix relleu de referència i «Actual» recupera els edificis. El visor mostra la superfície cartografiada dins del retall girat, i s’avisa quan la cobertura és parcial. Les mostres prèvies són accessibles des del desplegable d’exemples.
+
+El repositori desa una còpia comprimida del paquet de l’ICGC, de 32,9 MB. `pnpm build` en publica l’índex i les cel·les per separat. La màscara territorial simplificada només serveix per indicar cobertura i la geometria urbana manté el detall del paquet. Es regenera amb `python scripts/package-urban-cover.py web-coverage datasets/icgc-urban-2009-2024.zip public/data/historical/urban-coverage.json.gz`.
+
+El [SIOSE del CNIG](https://centrodedescargas.cnig.es/CentroDescargas/siose) ofereix vectors a 1:25.000 per a 2005, 2009, 2011 i 2014 per comunitat autònoma. Cal traduir-ne les classes, distingir polígons mixtos i validar la comparació en una comunitat de prova. El [SIOSE d’alta resolució](https://centrodedescargas.cnig.es/CentroDescargas/siose-ar) arriba a escales d’1:1.000 a 1:5.000 i es publica per províncies. El CNIG indica que el 2020 encara no cobreix totes les províncies.
+
 ### Pilot al taller (v0.23.9)
 
 A **Territori → Llocs amb dades històriques** es pot centrar el mapa a la Vall d’Aro, a la Garrotxa o a Avinyó. El control **Any de la cartografia** admet només edicions documentades quan tot el retall està cobert per una font amb almenys dues dates. El mode és Model complet; la font i la data queden a les metadades d’exportació i la tria es conserva als projectes desats.

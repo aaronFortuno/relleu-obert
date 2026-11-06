@@ -2,6 +2,12 @@
 
 Actualitzat: 2026-11-06. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.23.10 — Comparació del sòl urbanitzat (RO-025)
+
+El taller carrega les edicions 2009 i 2024 per cel·les segons el retall. La previsualització indica la superfície cartografiada i el model conserva la font i l’any. Queda pendent la validació d’ús. [Publicació i fonts](RO-025-CARTOGRAFIA-HISTORICA.md#publicació-al-taller)
+
+Impressió incorpora un plànol zenital dels talls. La tria de files i columnes i els tiradors ajusten les dimensions de les peces. La capçalera explicita el projecte d’aula, i el diàleg V4V agrupa les fonts de dades per capa. S’han revisat els controls d’edició, el moviment del tall amb el teclat i la lectura de les fonts a 1280 × 720 i 1100 × 680. El laminat continua pendent.
+
 ## 2026-11-06 — Índex de cobertes urbanitzades (RO-025)
 
 S’han preparat les edicions vectorials de 2009 i 2024 per a tot Catalunya i verificat la consulta per coordenades, incloent retalls que creuen cel·les, costa i frontera. El paquet mesurat ocupa 32,66 MB. Queda pendent incorporar la comparació i la publicació de les dades al taller. [Mesures i eina de preparació](RO-025-CARTOGRAFIA-HISTORICA.md#comparació-estàtica-de-licgc)

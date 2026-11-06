@@ -219,6 +219,28 @@ def compare(root, bounds):
     return result
 
 
+def web_coverage(archive, output):
+    with ZipFile(archive) as package:
+        boundary = shape(json.loads(gzip.decompress(package.read('coverage.json.gz'))))
+    # This compact mask describes coverage on the map. The edition tiles retain their source detail.
+    boundary = shapely.set_precision(shapely.simplify(boundary, 0.00007, preserve_topology=True), 0.00001)
+    shapely.prepare(boundary)
+    full, partial = [], {}
+    step = TILES_PER_DEGREE
+    for x, y in tile_keys(boundary.bounds):
+        key = f'{x}-{y}'
+        cell = box(x / step, y / step, (x + 1) / step, (y + 1) / step)
+        if boundary.covers(cell):
+            full.append(key)
+        elif boundary.intersects(cell):
+            clipped = boundary.intersection(cell)
+            parts = [mapping(part)['coordinates'] for part in polygons(clipped)]
+            if parts:
+                partial[key] = parts
+    mask = {'tilesPerDegree': step, 'bbox': boundary.bounds, 'full': full, 'partial': partial}
+    output.write_bytes(gzip.compress(json.dumps(mask, separators=(',', ':')).encode(), mtime=0))
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest='command', required=True)
@@ -230,7 +252,13 @@ def main():
     crop = commands.add_parser('compare')
     crop.add_argument('index', type=Path)
     crop.add_argument('bounds', type=float, nargs=4, metavar=('W', 'S', 'E', 'N'))
+    mask = commands.add_parser('web-coverage')
+    mask.add_argument('archive', type=Path)
+    mask.add_argument('output', type=Path)
     args = parser.parse_args()
+    if args.command == 'web-coverage':
+        web_coverage(args.archive, args.output)
+        return
     if args.command == 'compare':
         if not valid_bounds(args.bounds):
             parser.error('Invalid WGS84 bounds')

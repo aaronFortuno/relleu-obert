@@ -1,11 +1,11 @@
 {
   "name": "relleu-obert",
-  "version": "0.23.9",
+  "version": "0.23.10",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite --host 127.0.0.1 --configLoader native",
-    "build": "vite build --base=./ --configLoader native",
+    "dev": "node scripts/prepare-urban-pages.mjs && vite --host 127.0.0.1 --configLoader native",
+    "build": "node scripts/prepare-urban-pages.mjs && vite build --base=./ --configLoader native",
     "test": "node --test --test-concurrency=1 tests/*.test.js"
   },
   "dependencies": {

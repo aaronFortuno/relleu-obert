@@ -1,5 +1,11 @@
 # Canvis
 
+## v0.23.10 — 2026-11-06
+
+- Compara el sòl urbanitzat de Catalunya el 2009 i el 2024. El taller indica la superfície cartografiada i assenyala els retalls amb cobertura parcial.
+- Ajusta la distribució de les peces en un plànol zenital amb tiradors i actualitza les guies de tall de la maqueta.
+- Fes visible la finalitat educativa del projecte i consulta les fonts de dades agrupades al quadre V4V.
+
 ## v0.23.9 — 2026-11-06
 
 - «Any de la cartografia» s’activa a Model complet quan dues edicions històriques cobreixen tot el retall. «Actual» continua sent el valor per defecte; l’any i la font es conserven a l’exportació i l’edició es desa amb el projecte.

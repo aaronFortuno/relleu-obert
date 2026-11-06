@@ -74,10 +74,10 @@ export function createHistoricalCatalog(read){
 
 // The base region remains current and reusable. Each run replaces only the
 // documented layer, including a verified empty edition after a closure.
-export function applyHistoricalEdition(region,entry,year,features){
-  if(!contains(entry.bbox,region.meta.bbox)||!entry.editions.some(e=>e.year===year))throw Error('Historical edition does not cover this selection.');
+export function applyHistoricalEdition(region,entry,year,features,coverage){
+  if((!coverage&&!contains(entry.bbox,region.meta.bbox))||!entry.editions.some(e=>e.year===year))throw Error('Historical edition does not cover this selection.');
   const railway=entry.layer==='railways',replace=railway?rail:building;
-  const historical={areaId:entry.id,place:entry.label,layer:entry.layer,year,source:entry.source,
+  const historical={areaId:entry.id,place:entry.label,layer:entry.layer,year,source:entry.source,...coverage,
     method:railway?'historic railway alignments on current terrain':'historical urban land-cover polygons on current terrain'};
   return {...region,features:[...region.features.filter(f=>!replace(f)),...features],
     ...(railway?{bridgeFeatures:region.bridgeFeatures?.filter(f=>!rail(f)),

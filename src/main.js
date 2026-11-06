@@ -6,8 +6,10 @@ import {createPlaceMap,MAX_PROJECT_SCALE} from './place-map.js';
 import {PURE_RELIEF_RESOLUTIONS} from './pure-relief-mesh.js';
 import {smoothTerrainNormals} from './terrain-normals.js';
 import {CATEGORIES,PALETTES,defaultAssignments,RELIEF_MATERIALS,RELIEF_PALETTES,defaultReliefAssignments,reliefMaterialId} from './materials.js';
-import {pieceDimensions,tilePlan,validPrintBands,validPrintCuts,MAX_PRINT_PIECES,scaledBBox,physicalBBox,selectionPose,isPanoramicSize,PURE_SCALE_RANGE,PANORAMIC_SCALE_RANGE} from './selection.js';
-import {BAMBU_PROJECT_BED_MM,DEFAULT_BASE_THICKNESS_MM,validBaseThickness,parsePrintBands,fitsBambuProject,printExportFormat} from './print-settings.js';
+import {pieceDimensions,tilePlan,validPrintCuts,scaledBBox,physicalBBox,selectionPose,isPanoramicSize,PURE_SCALE_RANGE,PANORAMIC_SCALE_RANGE} from './selection.js';
+import {BAMBU_PROJECT_BED_MM,DEFAULT_BASE_THICKNESS_MM,validBaseThickness,fitsBambuProject,printExportFormat} from './print-settings.js';
+import {bindPrintCutEditor} from './print-cut-editor.js';
+import './print-cut-editor.css';
 import {initPiecePicker,bindPieceDimensions} from './piece-picker.js';
 import {CURATED_EXAMPLES,localizeExample} from './curated-examples.js';
 import {initExampleCarousel,initExampleGallery} from './example-carousel.js';
@@ -26,6 +28,7 @@ import {TERRAIN_REMOTE} from './source-options.js';
 import {buildRequest} from './build-request.js';
 import {DEFAULT_PLACE,recommendedPlace} from './recommended-places.js';
 import {applyHistoricalEdition,createHistoricalCatalog,matchHistoricalArea} from './historical-layers.js';
+import {createUrbanHistory,urbanSelection} from './urban-history.js';
 import './style.css';
 import './ui-tokens.css';
 import './usability.css';
@@ -86,17 +89,32 @@ document.addEventListener('keydown',event=>{
 let region,model,busy=false,selection,dirty=false,buildingSourceDirty=false,needsBuild=false,placeName='',strokes=[],brush='navigate',pendingVegetation=false,timer,job,drawing=false,lastPoint,gesture=0;
 const historicalSlider=$('#historical-year'),historicalExamples=$('#historical-example');
 const historyText=(key,params)=>t('ui.historical.'+key,params);
-const historicalCatalog=createHistoricalCatalog(async file=>{
+async function readHistoricalFile(file){
   const response=await fetch((import.meta.env.BASE_URL||'./')+'data/historical/'+file,{signal:AbortSignal.timeout(12000)});
   if(!response.ok)throw Error('HTTP '+response.status);
+  if(file.endsWith('.gz')){
+    const bytes=new Uint8Array(await response.arrayBuffer());
+    const {gunzipSync,strFromU8}=await import('fflate');
+    return JSON.parse(strFromU8(bytes[0]===31&&bytes[1]===139?gunzipSync(bytes):bytes));
+  }
   return response.json();
-});
+}
+const historicalCatalog=createHistoricalCatalog(readHistoricalFile);
+const urbanHistory=createUrbanHistory(readHistoricalFile);
 let historicalAreas=[],historicalArea=null,historicalStatus='checking',historicalChoice=null;
+let urbanCatalogue=null,urbanCrop=null,urbanPose=null,historicalExampleId=null;
 const historicalActive=()=>historicalArea?.id===historicalChoice?.areaId&&!pureSelected()?historicalChoice:null;
 const historicalUrban=()=>historicalActive()&&historicalArea.layer==='urban';
 const historicalYears=()=>[...(historicalArea?.editions.map(e=>e.year)??[]),null];
 function syncHistoricalControls(updating=busy||pendingVegetation){
-  historicalArea=pureSelected()?null:matchHistoricalArea(historicalAreas,selection);
+  if(urbanCatalogue&&selectedPose!==urbanPose){
+    urbanPose=selectedPose;
+    urbanCrop=urbanSelection(urbanCatalogue.mask,urbanPose);
+  }
+  const preferredId=historicalChoice?.areaId??historicalExampleId;
+  const legacy=historicalAreas.filter(area=>area.id!==urbanCatalogue?.area.id);
+  const preferred=preferredId?matchHistoricalArea(legacy.filter(area=>area.id===preferredId),selection):null;
+  historicalArea=pureSelected()?null:preferred||(urbanCrop?urbanCatalogue.area:matchHistoricalArea(legacy,selection));
   if(historicalStatus!=='checking'&&historicalChoice&&
     (historicalArea?.id!==historicalChoice.areaId||!historicalArea.editions.some(e=>e.year===historicalChoice.year)))historicalChoice=null;
   const years=historicalYears(),year=historicalActive()?.year??null,value=year??historyText('current');
@@ -107,7 +125,10 @@ function syncHistoricalControls(updating=busy||pendingVegetation){
   $('#historical-value').textContent=value;
   const note=$('#historical-note');
   note.removeAttribute('data-i18n');
-  const message=historyText(historicalStatus!=='ready'?historicalStatus:pureSelected()?'pure':historicalArea?.layer??'unavailable');
+  const national=historicalArea?.id===urbanCatalogue?.area.id&&!!historicalArea;
+  $('#historical-year-label').textContent=historyText(national?'urbanYear':'year');
+  const message=historyText(historicalStatus==='checking'?'checking':pureSelected()?'pure':
+    national&&urbanCrop.partial?'urbanPartial':historicalArea?.layer??(historicalStatus==='failed'?'failed':'unavailable'));
   if(note.textContent!==message)note.textContent=message;
   const ticks=$('#historical-ticks'),tickKey=(historicalArea?.id??'')+':'+getLocale();
   ticks.hidden=!historicalArea;
@@ -122,23 +143,29 @@ function syncHistoricalControls(updating=busy||pendingVegetation){
 function renderHistoricalExamples(){
   const areas=historicalAreas.filter(area=>area.center&&area.editions.length>=2);
   historicalExamples.replaceChildren(new Option(historyText('choose'),''));
-  for(const area of areas)historicalExamples.add(new Option(area.label,area.id));
+  for(const area of areas)historicalExamples.add(new Option(area.exampleLabel??area.label,area.id));
   historicalExamples.hidden=$('#historical-example-label').hidden=!areas.length;
 }
 function syncHistoricalModelNote(){
   const edition=model?.provenance.historical,note=$('#historical-model-note');
   note.hidden=!edition;
   if(!edition)return;
-  note.querySelector('span').textContent=historyText('applied',{year:edition.year,scope:historyText(edition.layer)});
+  const scope=historyText(edition.partial?'urbanPartial':edition.layer);
+  note.querySelector('span').textContent=Number.isFinite(edition.urbanHa)?`${historicalBadge(edition)}. ${scope}`:
+    historyText('applied',{year:edition.year,scope});
   const link=note.querySelector('a');link.href=edition.source.url;link.textContent=`${edition.source.name} · ${edition.source.license}`;
 }
+const historicalBadge=edition=>Number.isFinite(edition.urbanHa)?historyText('urbanPreview',{
+  year:edition.year,area:formatNumber(edition.urbanHa,{maximumFractionDigits:1})
+}):historyText('preview',{year:edition.year});
 const brushHistory=createProjectBrushHistory();
 let pendingBrushFrame=null,transportTimer=null,reliefTimer=null;
 let exportFormat='bambu';
-let baseThickness=DEFAULT_BASE_THICKNESS_MM,cutFieldsSize='',cutError=null;
+let baseThickness=DEFAULT_BASE_THICKNESS_MM,cutPreviewFrame=null;
 const cutSettings=new Map(),sizeKey=(width,height)=>`${width}x${height}`;
 const printCuts=(width,height)=>cutSettings.get(sizeKey(width,height))??{};
 const printPlan=(width,height)=>tilePlan(width,height,printCuts(width,height));
+const cutEditor=bindPrintCutEditor($('#print-cuts-fields'),{text,formatNumber,onChange:applyPrintCuts});
 let pendingFullRegion=null,lastValidBuildings=null,recoveryNotice='';
 let pendingCadastralBuild=false;
 let stagedBuild=null;
@@ -486,32 +513,15 @@ function shownPrintPlan(){
 function syncPrintSettings(locked=busy||pendingVegetation||reliefTimer!==null||drawing){
   $('#print-panel').hidden=!selectedSize;
   if(!selectedSize)return;
-  const [width,height]=size(),key=sizeKey(width,height),cuts=printCuts(width,height);
-  const columns=$('#print-columns'),rows=$('#print-rows');
-  const cm=mm=>formatNumber(mm/10,{maximumFractionDigits:1});
-  if(cutFieldsSize!==key){
-    cutFieldsSize=key;
-    columns.value=cuts.columns?.map(cm).join(' ')??'';
-    rows.value=cuts.rows?.map(cm).join(' ')??'';
-    cutError=null;
-  }
-  const auto=tilePlan(width,height),plan=printPlan(width,height);
-  columns.placeholder=Array(auto.cols).fill(cm(width/auto.cols)).join(' ');
-  rows.placeholder=Array(auto.rows).fill(cm(height/auto.rows)).join(' ');
+  const [width,height]=size(),cuts=printCuts(width,height),plan=printPlan(width,height);
   $('#print-cuts-reset').disabled=!cuts.columns&&!cuts.rows;
   $('#print-cuts-fields').disabled=$('#print-base-fields').disabled=locked;
   syncBaseAction();
+  cutEditor.update({width,height,plan,cuts});
   const summary=$('#print-cuts-summary'),pending=pendingPieceSize();
-  summary.textContent=text(pending?'print.pendingCuts':plan.tiles.length===1?'print.onePiece':'print.grid',
+  const description=text(pending?'print.pendingCuts':plan.tiles.length===1?'print.onePiece':'print.grid',
     {columns:formatNumber(plan.cols),rows:formatNumber(plan.rows),count:formatNumber(plan.tiles.length)});
-  const error=$('#print-cuts-feedback');
-  error.textContent=cutError?text(cutError.key,Object.fromEntries(Object.entries(cutError.params??{}).map(([k,v])=>[k,formatNumber(v)]))):'';
-  error.hidden=!cutError;
-  for(const field of [columns,rows]){
-    if(cutError?.field===field.id)field.setAttribute('aria-invalid','true');
-    else field.removeAttribute('aria-invalid');
-    field.setAttribute('aria-describedby',cutError?.field===field.id?'print-cuts-note print-cuts-feedback':'print-cuts-note');
-  }
+  if(summary.textContent!==description)summary.textContent=description;
 }
 function syncBaseAction(){
   const input=$('#print-base');
@@ -677,9 +687,15 @@ async function generate(autoTransport=false){
       reusedRegion:!reload,sources:[]};
   }
   try{
-    let historicalFeatures;
+    let historicalFeatures,historicalCoverage;
     if(options.historical){
-      try{historicalFeatures=await historicalCatalog.edition(editionArea,options.historical.year);}
+      try{
+        if(editionArea===urbanCatalogue?.area){
+          const {features,...coverage}=await urbanHistory.edition(editionArea,options.historical.year,urbanCrop);
+          historicalFeatures=features;
+          historicalCoverage=coverage;
+        }else historicalFeatures=await historicalCatalog.edition(editionArea,options.historical.year);
+      }
       catch{throw Object.assign(Error('Historical edition unavailable.'),{uiMessage:()=>historyText('editionFailed',{year:options.historical.year})});}
     }
     if(reload){
@@ -703,7 +719,7 @@ async function generate(autoTransport=false){
         pendingBuildingLayer=null;
       }
       const baseRegion=pendingFullRegion||region;
-      const target=options.historical?applyHistoricalEdition(baseRegion,editionArea,options.historical.year,historicalFeatures):baseRegion;
+      const target=options.historical?applyHistoricalEdition(baseRegion,editionArea,options.historical.year,historicalFeatures,historicalCoverage):baseRegion;
       needsBuild=false;say(baseMessage('status.building'));
       const {meta,features,dem,bridgeDem}=target;
       processingRun.data={bbox:meta.bbox,vectorFeatures:features.length,demTiles:dem.length,
@@ -883,7 +899,7 @@ worker.onmessage=({data})=>{
       if(startCadastre){report.awaitingBuildings=true;report.cadastralBlocks=[];}
       else finishProcessing();
     }
-    badge(needsBuild?statusMessage('pending.changes'):model.provenance.historical?()=>historyText('preview',{year:model.provenance.historical.year}):'');
+    badge(needsBuild?statusMessage('pending.changes'):model.provenance.historical?()=>historicalBadge(model.provenance.historical):'');
     lock(false);
     const profiles=model.provenance.majorRoads;
     const surface=model.provenance.surfaceRoads;
@@ -1002,12 +1018,13 @@ historicalExamples.onchange=()=>{
   if(!area||!selectedSize||busy||pendingVegetation||panoramicSelected())return;
   const [width,height]=size(),side=Math.max(width,height),span=area.widthM/1000;
   historicalChoice=null;
+  historicalExampleId=area.id;
   if(pureSelected()){$('#mode-landscape').checked=true;applyPureRelief();}
   exampleSelection=null;
   placeMap.setRotation(0);
   placeMap.setRegion(physicalBBox(area.center,span*width/side,span*height/side));
-  placeName=area.label;
-  $('#place-search').value=area.label;
+  placeName=area.exampleLabel??area.label;
+  $('#place-search').value=placeName;
   $('#search-results').replaceChildren();
   syncHistoricalControls();
   buildingControls();
@@ -1343,37 +1360,23 @@ $('#print-base-form').onsubmit=event=>{
   else if(!needsBuild&&!dirty&&!tooLargeRegion)generate();
   else requireBuild(statusMessage('print.pendingBase'));
 };
-$('#print-cuts-form').oninput=()=>{
-  if(cutError){cutError=null;syncPrintSettings();}
-};
-$('#print-cuts-form').onsubmit=event=>{
-  event.preventDefault();
+function applyPrintCuts(cuts,dragging=false){
   if(!selectedSize||$('#print-cuts-fields').disabled)return;
   const [width,height]=size();
-  const cuts={};
-  for(const [key,id,span] of [['columns','print-columns',width],['rows','print-rows',height]]){
-    const input=$('#'+id),bands=parsePrintBands(input.value);
-    if(bands===undefined)continue;
-    if(!validPrintBands(bands,span)){
-      cutError={field:id,key:'print.invalidBands',params:{total:span/10}};
-      syncPrintSettings();
-      input.focus();
-      return;
-    }
-    cuts[key]=bands;
-  }
-  if(!validPrintCuts(cuts,width,height)){
-    cutError={key:'print.tooMany',params:{limit:MAX_PRINT_PIECES}};
-    syncPrintSettings();
-    return;
-  }
-  applyPrintCuts(cuts);
-};
-function applyPrintCuts(cuts){
-  cutSettings.set(sizeKey(...size()),cuts);
-  cutFieldsSize='';
+  if(!validPrintCuts(cuts,width,height))return;
+  cutSettings.set(sizeKey(width,height),cuts);
   syncPrintSettings();
-  tiling();
+  if(dragging){
+    if(cutPreviewFrame!==null)return;
+    cutPreviewFrame=requestAnimationFrame(()=>{
+      cutPreviewFrame=null;
+      tiling();
+    });
+  }else{
+    if(cutPreviewFrame!==null)cancelAnimationFrame(cutPreviewFrame);
+    cutPreviewFrame=null;
+    tiling();
+  }
 }
 $('#print-cuts-reset').onclick=()=>applyPrintCuts({});
 function syncVegetationControls(updating){
@@ -1625,6 +1628,7 @@ $('#release-list').insertAdjacentHTML('afterbegin',`<article class="release-entr
 $('#release-list').insertAdjacentHTML('afterbegin',`<article class="release-entry"><div><strong>v0.23.7</strong><time datetime="2026-11-05">05/11/2026</time></div><p data-i18n="history.0.23.7">${t('history.0.23.7')}</p></article>`);
 $('#release-list').insertAdjacentHTML('afterbegin',`<article class="release-entry"><div><strong>v0.23.8</strong><time datetime="2026-11-06">06/11/2026</time></div><p data-i18n="history.0.23.8">${t('history.0.23.8')}</p></article>`);
 $('#release-list').insertAdjacentHTML('afterbegin',`<article class="release-entry"><div><strong>v0.23.9</strong><time datetime="2026-11-06">06/11/2026</time></div><p data-i18n="history.0.23.9">${t('history.0.23.9')}</p></article>`);
+$('#release-list').insertAdjacentHTML('afterbegin',`<article class="release-entry"><div><strong>v0.23.10</strong><time datetime="2026-11-06">06/11/2026</time></div><p data-i18n="history.0.23.10">${t('history.0.23.10')}</p></article>`);
 $('#copy-lightning').onclick=async()=>{try{await navigator.clipboard.writeText('aptswim903@walletofsatoshi.com');feedback('copy-status',statusMessage('copy.done'));}catch{feedback('copy-status',statusMessage('copy.manual'));}};
 for(const toggle of document.querySelectorAll('.sidebar-left .section-toggle'))toggle.disabled=true;
 function refreshWorkshopLanguage(){
@@ -1658,14 +1662,15 @@ function refreshWorkshopLanguage(){
 onLocaleChange(refreshWorkshopLanguage);
 initI18n();
 try{restoreProject();}catch(error){say(error.message,true);}
-function settleHistoricalCatalog(areas){
+function settleHistoricalCatalog([legacy,urban]){
   const wanted=historicalChoice;
-  historicalAreas=areas??[];
-  historicalStatus=areas?'ready':'failed';
+  urbanCatalogue=urban.status==='fulfilled'?urban.value:null;
+  historicalAreas=[...(legacy.status==='fulfilled'?legacy.value:[]),...(urbanCatalogue?[urbanCatalogue.area]:[])];
+  historicalStatus=urbanCatalogue?'ready':'failed';
   syncHistoricalControls();
   renderHistoricalExamples();
   buildingControls();
   syncStepActions(busy||pendingVegetation||reliefTimer!==null);
   if(wanted&&!historicalChoice)say(()=>historyText('restoredMissing'),true);
 }
-historicalCatalog.areas().then(settleHistoricalCatalog,()=>settleHistoricalCatalog(null));
+Promise.allSettled([historicalCatalog.areas(),urbanHistory.load()]).then(settleHistoricalCatalog);

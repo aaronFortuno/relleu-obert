@@ -154,6 +154,12 @@
   font-size: var(--ui-label);
 }
 
+.example-credits .quiet-button {
+  font: inherit;
+  color: var(--green);
+  text-decoration: underline;
+}
+
 #projects-dialog {
   width: min(1380px, calc(100% - 48px));
   height: min(880px, calc(100dvh - 48px));

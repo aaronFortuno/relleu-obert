@@ -1,10 +1,10 @@
 <!doctype html>
 <html lang="ca">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content"><meta name="description" content="Dissenya maquetes de llocs reals al navegador i prepara-les per imprimir en 3D." data-i18n-content="ui.app.description"><link rel="icon" type="image/svg+xml" href="./assets/favicon.svg"><title data-i18n="ui.app.title">Relleu Obert — Geografia que pots tocar</title></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content"><meta name="description" content="Projecte educatiu gratuït i de codi obert per explorar a l’aula el relleu de llocs reals amb maquetes 3D." data-i18n-content="ui.app.description"><link rel="icon" type="image/svg+xml" href="./assets/favicon.svg"><title data-i18n="ui.app.title">Relleu Obert — Geografia que pots tocar</title></head>
 <body>
 <header class="app-header">
   <a class="brand" href="./" aria-label="Relleu Obert"><svg viewBox="0 0 38 32" aria-hidden="true"><path d="M3 27 18 3l17 24H3Z"/><path d="m8 23 10-15 11 15H8Zm5-4 5-7 5 7H13Z"/></svg><span>relleu<span class="brand-light">obert</span></span></a>
-  <span class="tagline" data-i18n="app.tagline">Geografia que pots tocar.</span>
+  <span class="tagline"><span data-i18n="app.tagline">Geografia que pots tocar.</span> <span data-i18n="ui.app.education">Un projecte per a l’aula.</span></span>
   <span class="header-spacer" aria-hidden="true"></span>
   <button id="projects-open" type="button" class="header-button header-action" aria-haspopup="dialog" aria-controls="projects-dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="6" y="3" width="15" height="15" rx="2"/><path d="M3 8v11a2 2 0 0 0 2 2h11"/><circle cx="11" cy="8" r="1.5"/><path d="m7 15 4-4 3 3 2-2 4 4"/></svg><span class="gallery-label" data-i18n="header.gallery">Galeria de maquetes</span><span class="gallery-label-short" data-i18n="header.galleryShort">Galeria</span></button>
   <button id="help-open" type="button" class="header-button header-action" aria-haspopup="dialog" aria-controls="help-dialog" aria-label="Com funciona" data-i18n-aria="header.help" title="Com funciona" data-i18n-title="header.help"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg><span class="desktop-copy" data-i18n="header.help">Com funciona</span></button>
@@ -47,7 +47,7 @@
         <input id="model-scale" type="range" min="0" max="5" step="any" aria-describedby="scale-info">
         <div id="scale-ticks" aria-hidden="true"></div>
         <p id="scale-info" class="hint" role="status" hidden></p>
-        <label for="historical-year" data-i18n-text="ui.historical.year">Any de la cartografia <output id="historical-value" for="historical-year">Actual</output></label>
+        <label for="historical-year"><span id="historical-year-label">Any de la cartografia</span> <output id="historical-value" for="historical-year">Actual</output></label>
         <input id="historical-year" type="range" min="0" max="1" step="1" value="1" disabled aria-describedby="historical-note">
         <div id="historical-ticks" class="range-ticks" aria-hidden="true" hidden></div>
         <p id="historical-note" class="hint" role="status" data-i18n="ui.historical.checking">Comprovant les dades històriques…</p>
@@ -111,7 +111,7 @@
       <div id="work-indicator" role="status" aria-live="polite" hidden><span class="work-spinner" aria-hidden="true"></span><span id="work-label" data-i18n="ui.preview.preparing">Preparant el model…</span></div>
       <div id="welcome">
         <h2 id="welcome-title" data-i18n="ui.welcome.chooseSize">Tria la mida de la maqueta</h2>
-        <p id="welcome-instruction"><span class="desktop-copy" data-i18n="ui.welcome.hoverSize">Passa per una mida per veure quant espai ocupa.</span><span class="mobile-copy" data-i18n="ui.welcome.startMobile">Tria una mida o obre un exemple per començar.</span></p>
+        <p id="welcome-instruction"><span class="desktop-copy" data-i18n="ui.welcome.hoverSize">Passa per una mida per veure quant espai ocupa.</span><span class="mobile-copy" data-i18n="ui.welcome.startMobile">Explora el relleu de llocs reals a l’aula. Tria una mida o obre un exemple.</span></p>
         <div id="piece-choice">
           <div class="piece-setup">
             <figure class="piece-preview">
@@ -148,7 +148,7 @@
               <div id="example-cards" class="example-cards"><div class="example-track"></div></div>
               <button type="button" class="quiet-button example-carousel-arrow" data-example-step="1" aria-label="Exemple següent" aria-controls="example-cards" data-i18n-aria="ui.examples.next"><span aria-hidden="true">›</span></button>
             </div>
-            <small class="example-credits"><span data-i18n="ui.examples.credits">Dades ©</span> <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> · © <a href="https://mapterhorn.com/attribution/" target="_blank" rel="noopener">Mapterhorn</a> · <a href="https://github.com/tilezen/joerd/blob/master/docs/attribution.md" target="_blank" rel="noopener">Mapzen</a> · © <a href="https://www.icgc.cat/ca/Geoinformacio-i-mapes/Dades-i-productes/Elevacions/Elevacions-territorial/Models-delevacions" target="_blank" rel="noopener">ICGC</a> · <a href="https://doi.org/10.5281/zenodo.7254221" target="_blank" rel="noopener">ESA WorldCover</a></small>
+            <small class="example-credits">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> · © <a href="https://openmaptiles.org/" target="_blank" rel="noreferrer">OpenMapTiles</a> · <button type="button" class="quiet-button" data-open="about-dialog" data-dialog-focus="about-sources-title" aria-haspopup="dialog" aria-controls="about-dialog" data-i18n="ui.examples.sources">Fonts de les maquetes</button></small>
           </section>
         </div>
       </div>
@@ -194,22 +194,22 @@
             <p id="print-base-note" class="hint" data-i18n="ui.print.baseNote">Distància de sota la maqueta fins a la cota més baixa del relleu o del mar.</p>
           </fieldset>
         </form>
-        <form id="print-cuts-form">
+        <div id="print-cuts-section">
           <fieldset id="print-cuts-fields">
-            <legend data-i18n="ui.print.cuts">Mides de les peces</legend>
-            <div class="two-fields">
-              <div><label for="print-columns" data-i18n-text="ui.print.columns">Amplades <span class="unit">cm</span></label><input id="print-columns" type="text" maxlength="100" autocomplete="off" aria-describedby="print-cuts-note"></div>
-              <div><label for="print-rows" data-i18n-text="ui.print.rows">Fondàries <span class="unit">cm</span></label><input id="print-rows" type="text" maxlength="100" autocomplete="off" aria-describedby="print-cuts-note"></div>
+            <legend data-i18n="ui.print.cuts">Distribució de les peces</legend>
+            <div class="two-fields print-cut-counts">
+              <div><label for="print-column-count" data-i18n="ui.print.columnCount">Columnes</label><select id="print-column-count"></select></div>
+              <div><label for="print-row-count" data-i18n="ui.print.rowCount">Files</label><select id="print-row-count"></select></div>
             </div>
-            <p id="print-cuts-note" class="hint" data-i18n="ui.print.cutsNote">D’esquerra a dreta i de baix a dalt. Separa les mides amb espais. Deixa el camp buit per fer talls automàtics.</p>
-            <p id="print-cuts-feedback" class="hint error" role="alert" hidden></p>
+            <div id="print-cut-blueprint"></div>
+            <p id="print-cut-dimensions"></p>
+            <p id="print-cuts-note" class="hint" data-i18n="ui.print.cutsNote">Arrossega les línies o mou-les amb les fletxes del teclat.</p>
             <div class="print-cuts-actions">
-              <button type="submit" class="secondary" data-i18n="ui.print.applyCuts">Aplica els talls</button>
-              <button id="print-cuts-reset" type="button" class="quiet-button" disabled data-i18n="ui.print.resetCuts">Restableix</button>
+              <p id="print-cuts-summary" class="hint" role="status"></p>
+              <button id="print-cuts-reset" type="button" class="quiet-button" disabled data-i18n="ui.print.resetCuts">Restableix els talls</button>
             </div>
-            <p id="print-cuts-summary" class="hint" role="status"></p>
           </fieldset>
-        </form>
+        </div>
       </div>
     </section>
     <section class="info-panel">
@@ -249,7 +249,7 @@
       <path d="m27 9 7-6" stroke="var(--umbrella-accent)" stroke-width="4.5"/>
     </svg><span>ortogra<span class="umbrella-dot">.</span>fi</span>
   </a></p>
-  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer" data-i18n-text="ui.footer.openSource"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions">v0.23.9</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V" data-i18n-aria="ui.footer.about"><span class="desktop-copy" data-i18n="ui.footer.aboutDesktop">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
+  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer" data-i18n-text="ui.footer.openSource"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions">v0.23.10</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V" data-i18n-aria="ui.footer.about"><span class="desktop-copy" data-i18n="ui.footer.aboutDesktop">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
 </footer>
 
 <dialog id="projects-dialog" aria-labelledby="projects-title">
@@ -328,7 +328,7 @@
     <button data-close aria-label="Tanca" data-i18n-aria="dialog.close" autofocus>×</button>
   </header>
   <div class="dialog-content help-guide">
-    <p class="guide-intro" data-i18n="guide.intro">Converteix un lloc real en una maqueta 3D per explorar-la al navegador o imprimir-la.</p>
+    <p class="guide-intro" data-i18n="guide.intro">Crea una maqueta 3D d’un lloc real per estudiar-ne el relleu i els accidents geogràfics a l’aula. Explora-la al navegador o imprimeix-la.</p>
     <section aria-labelledby="guide-start">
       <h3 id="guide-start" data-i18n="guide.start">Primera maqueta</h3>
       <ol class="help-steps">
@@ -350,6 +350,41 @@
 </dialog>
 
 
-<dialog id="about-dialog" aria-labelledby="about-title"><div class="dialog-heading"><h2 id="about-title" data-i18n="ui.about.title">Un petit espai per aprendre</h2><button data-close aria-label="Tanca" data-i18n-aria="dialog.close">×</button></div><div class="dialog-content"><div class="about-intro"><a class="lightning-qr" href="lightning:LNURL1DP68GURN8GHJ7AMPD3KX2AR0VEEKZAR0WD5XJTNRDAKJ7TNHV4KXCTTTDEHHWM30D3H82UNVWQHKZUR5WDMKJMFEXQESLJTDDS" aria-label="Obre la cartera Lightning" data-i18n-aria="ui.about.openWallet"><img src="./assets/lightning.svg" width="128" height="128" alt="Codi QR per fer una aportació voluntària amb Lightning" data-i18n-alt="ui.about.qrAlt"></a><div><p data-i18n="ui.about.intro">Relleu Obert neix de les ganes de portar la geografia a les mans: preparar maquetes de llocs reals per explorar el relleu, el paisatge i el territori a l’aula.</p><p data-i18n="ui.about.value">El projecte és gratuït i segueix la filosofia Value for Value: si et resulta útil i vols donar-hi suport, pots fer un microdonatiu voluntari per Lightning. Recomanar-lo també ajuda.</p><span class="small-label">LIGHTNING NETWORK</span><div class="lightning-address"><code>aptswim903@walletofsatoshi.com</code><button id="copy-lightning" aria-label="Copia l’adreça Lightning" data-i18n-aria="ui.about.copyAddress" data-i18n="ui.action.copy">Copia</button></div><p id="copy-status" class="hint" role="status"></p></div></div><div class="about-bottom"><div class="author-note"><img src="./assets/aaron-fortuno.png" width="64" height="64" alt="Aarón Fortuño"><div><h3 data-i18n="ui.about.author">Sobre l’autor · Aarón Fortuño</h3><p data-i18n="ui.about.bio">Soc docent i creo aplicacions educatives i altres projectes de codi obert. Si tens curiositat, els trobaràs al meu portfoli.</p><a href="https://aaronfortuno.github.io/portfolio/" target="_blank" rel="noreferrer" data-i18n="ui.about.portfolio">Explora el meu portfoli ↗</a></div></div><section class="about-sources"><h3 data-i18n="ui.about.sources">Fonts i projectes oberts</h3><p><span data-i18n="ui.about.maps">Mapes:</span> <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a>, <a href="https://openfreemap.org/" target="_blank" rel="noreferrer">OpenFreeMap</a> <span data-i18n="ui.about.andOpenMapTiles">i OpenMapTiles.</span><br><span data-i18n="ui.about.buildings">Edificis:</span> <a href="https://www.icgc.cat/" target="_blank" rel="noreferrer">ICGC</a> · CC BY 4.0.</p><p><span data-i18n="ui.data.relief">Relleu:</span> <a href="https://mapterhorn.com/attribution/" target="_blank" rel="noreferrer">Mapterhorn</a> <span data-i18n="ui.about.and">i</span> <a href="https://registry.opendata.aws/terrain-tiles/" target="_blank" rel="noreferrer">Mapzen</a><span data-i18n="ui.about.search">. Cerca:</span> <a href="https://photon.komoot.io/" target="_blank" rel="noreferrer">Photon</a>.</p><p data-i18n="ui.about.engine">Motor: Three.js, Leaflet, Manifold i altres biblioteques obertes.</p><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/SOURCES.md" target="_blank" rel="noreferrer" data-i18n="ui.about.licenses">Fonts i llicències completes ↗</a></section></div></div></dialog>
+<dialog id="about-dialog" aria-labelledby="about-title">
+  <div class="dialog-heading"><h2 id="about-title" data-i18n="ui.about.title">Sobre Relleu Obert</h2><button data-close aria-label="Tanca" data-i18n-aria="dialog.close">×</button></div>
+  <div class="dialog-content">
+    <div class="about-intro">
+      <a class="lightning-qr" href="lightning:LNURL1DP68GURN8GHJ7AMPD3KX2AR0VEEKZAR0WD5XJTNRDAKJ7TNHV4KXCTTTDEHHWM30D3H82UNVWQHKZUR5WDMKJMFEXQESLJTDDS" aria-label="Obre la cartera Lightning" data-i18n-aria="ui.about.openWallet"><img src="./assets/lightning.svg" width="128" height="128" alt="Codi QR per fer una aportació voluntària amb Lightning" data-i18n-alt="ui.about.qrAlt"></a>
+      <div>
+        <p data-i18n="ui.about.intro">Relleu Obert és un projecte educatiu, gratuït i de codi obert. Les maquetes de llocs reals ajuden a estudiar el relleu i els accidents geogràfics a l’aula.</p>
+        <p data-i18n="ui.about.value">Si et resulta útil, pots donar suport al projecte amb una aportació voluntària per Lightning (Value for Value). Recomanar-lo també ajuda.</p>
+        <span class="small-label">LIGHTNING NETWORK</span>
+        <div class="lightning-address"><code>aptswim903@walletofsatoshi.com</code><button id="copy-lightning" aria-label="Copia l’adreça Lightning" data-i18n-aria="ui.about.copyAddress" data-i18n="ui.action.copy">Copia</button></div>
+        <p id="copy-status" class="hint" role="status"></p>
+      </div>
+    </div>
+    <div class="about-bottom">
+      <div class="author-note"><img src="./assets/aaron-fortuno.png" width="64" height="64" alt="Aarón Fortuño"><div><h3 data-i18n="ui.about.author">Sobre l’autor · Aarón Fortuño</h3><p data-i18n="ui.about.bio">Soc docent i creo aplicacions educatives i altres projectes de codi obert. Si tens curiositat, els trobaràs al meu portfoli.</p><a href="https://aaronfortuno.github.io/portfolio/" target="_blank" rel="noreferrer" data-i18n="ui.about.portfolio">Explora el meu portfoli ↗</a></div></div>
+      <section class="about-sources" aria-labelledby="about-sources-title">
+        <h3 id="about-sources-title" tabindex="-1" data-i18n="ui.about.sources">Fonts de dades</h3>
+        <dl>
+          <dt data-i18n="ui.about.maps">Mapa i vies</dt>
+          <dd>© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> (ODbL) · © <a href="https://openmaptiles.org/" target="_blank" rel="noreferrer">OpenMapTiles</a> · <a href="https://openfreemap.org/" target="_blank" rel="noreferrer">OpenFreeMap</a></dd>
+          <dt data-i18n="ui.about.elevation">Relleu</dt>
+          <dd>© <a href="https://www.icgc.cat/ca/Geoinformacio-i-mapes/Dades-i-productes/Elevacions/Elevacions-territorial/Models-delevacions" target="_blank" rel="noreferrer">ICGC MET5</a> · © <a href="https://mapterhorn.com/attribution/" target="_blank" rel="noreferrer">Mapterhorn</a> · <a href="https://github.com/tilezen/joerd/blob/master/docs/attribution.md" target="_blank" rel="noreferrer">Mapzen / Tilezen</a></dd>
+          <dt data-i18n="ui.about.buildings">Edificis i ponts</dt>
+          <dd>© <a href="https://www.icgc.cat/ca/Geoinformacio-i-mapes/Dades-i-productes/Geoinformacio-cartografica/Referencial-Topografic-Territorial" target="_blank" rel="noreferrer">ICGC RTT</a> (CC BY 4.0) · <a href="https://www.catastro.hacienda.gob.es/webinspire/index.html" target="_blank" rel="noreferrer" data-i18n="ui.about.cadastre">Catastre (Espanya)</a> · <a href="https://github.com/aaronFortuno/relleu-obert/blob/main/SOURCES.md#repartiment-de-pilars-de-rajadell-v015" target="_blank" rel="noreferrer" data-i18n="ui.about.rajadell">Viaducte de Rajadell</a></dd>
+          <dt data-i18n="ui.about.landCover">Cobertes del sòl</dt>
+          <dd>© <a href="https://www.icgc.cat/ca/Geoinformacio-i-mapes/Mapes/Mapa-de-cobertes-del-sol-de-Catalunya" target="_blank" rel="noreferrer" data-i18n="ui.about.icgcCover">ICGC · Cobertes de Catalunya</a> · © <a href="https://doi.org/10.5281/zenodo.7254221" target="_blank" rel="noreferrer">ESA WorldCover 2021</a> (CC BY 4.0)</dd>
+          <dt data-i18n="ui.about.railHistory">Ferrocarril històric</dt>
+          <dd><a href="https://dataverse.csuc.cat/dataset.xhtml?persistentId=doi%3A10.34810%2Fdata917" target="_blank" rel="noreferrer">Railways of Spain GIS</a> · G. Esteban-Oliver, J. Martí-Henneberg (CC BY 4.0)</dd>
+          <dt data-i18n="ui.about.search">Cerca</dt>
+          <dd><a href="https://github.com/komoot/photon" target="_blank" rel="noreferrer">Photon</a></dd>
+        </dl>
+        <a href="https://github.com/aaronFortuno/relleu-obert/blob/main/SOURCES.md" target="_blank" rel="noreferrer" data-i18n="ui.about.licenses">Fonts i llicències completes ↗</a>
+      </section>
+    </div>
+  </div>
+</dialog>
 <script type="module" src="./src/main.js"></script>
 </body></html>

@@ -1,0 +1,67 @@
+.sidebar .print-cut-counts label {margin-bottom:4px}
+#print-cut-blueprint {
+  position:relative;
+  width:min(100%,var(--print-blueprint-width,100%));
+  aspect-ratio:var(--print-blueprint-ratio,2);
+  margin:12px auto 6px;
+  border:1px solid var(--muted);
+  border-radius:3px;
+  background:var(--ui-control-bg);
+  user-select:none;
+}
+.print-cut-handle {position:absolute;z-index:1;touch-action:none}
+.print-cut-handle.is-column {
+  inset-block:0;
+  left:var(--print-cut-position);
+  width:min(24px,var(--print-cut-target));
+  transform:translateX(-50%);
+  cursor:ew-resize;
+}
+.print-cut-handle.is-row {
+  inset-inline:0;
+  top:var(--print-cut-position);
+  height:min(24px,var(--print-cut-target));
+  transform:translateY(-50%);
+  cursor:ns-resize;
+}
+.print-cut-handle::before {
+  content:'';
+  position:absolute;
+  pointer-events:none;
+  border-color:var(--muted);
+  border-style:dashed;
+  border-width:0;
+}
+.print-cut-handle.is-column::before {inset-block:0;left:50%;border-left-width:1px}
+.print-cut-handle.is-row::before {inset-inline:0;top:50%;border-top-width:1px}
+.print-cut-handle.is-active,.print-cut-handle:focus-visible {z-index:2}
+.print-cut-handle:focus-visible {outline:none}
+.print-cut-handle:is(.is-active,:focus-visible)::before {border-color:var(--green);border-style:solid}
+.print-cut-handle.is-column:is(.is-active,:focus-visible)::before {border-left-width:2px}
+.print-cut-handle.is-row:is(.is-active,:focus-visible)::before {border-top-width:2px}
+.print-cut-handle[aria-disabled="true"] {cursor:default}
+.print-cut-grip {
+  position:absolute;
+  width:9px;
+  height:9px;
+  transform:translate(-50%,-50%);
+  border:1px solid var(--green);
+  border-radius:50%;
+  background:var(--paper);
+  pointer-events:none;
+}
+.print-cut-handle.is-column .print-cut-grip {left:50%;top:27%}
+.print-cut-handle.is-row .print-cut-grip {left:73%;top:50%}
+.print-cut-handle:is(.is-active,:focus-visible) .print-cut-grip {background:var(--green)}
+.print-cut-handle:focus-visible .print-cut-grip {outline:2px solid var(--green);outline-offset:2px}
+.print-cut-handle[aria-disabled="true"] .print-cut-grip {display:none}
+#print-cut-dimensions {
+  margin:0;
+  color:var(--ui-control-text);
+  font-size:var(--ui-label);
+  font-variant-numeric:tabular-nums;
+  text-align:center;
+}
+#print-cuts-note {margin-top:6px}
+.print-cuts-actions {display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:3px 8px;margin-top:8px}
+.print-cuts-actions .hint {margin:0}

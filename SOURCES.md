@@ -1,5 +1,7 @@
 # Fonts i atribució
 
+El quadre **Sobre el projecte · V4V** reuneix les fonts de les maquetes per capa. El mapa interactiu i les imatges de la galeria mostren l’atribució d’OpenStreetMap al lloc d’ús.
+
 ## Cartografia
 
 - Dades © OpenStreetMap contributors: https://www.openstreetmap.org/copyright (ODbL).
@@ -8,6 +10,7 @@
 - Edificacions: © Institut Cartogràfic i Geològic de Catalunya, Referencial Topogràfic Territorial, CC BY 4.0. Consulta de polígons `tipus=edi`, excloent projectes, construccions en curs i ruïnes: https://geoserveis.icgc.cat/vector01/rest/services/topografia_territorial/MapServer/10 . La mostra s’ha consultat l’1 de novembre de 2026; data i URL a `tamariu-buildings-icgc.geojson`. No s’hi descarreguen noms ni dades de propietaris. Alçàries absents o invàlides s’identifiquen com a estimades.
 - La mostra de Tamariu inclou quatre tessel·les MVT de la versió que consta a `public/data/tamariu.json`. Es conserven com a dades derivades d’OSM amb la seva atribució i condicions de reutilització; la llicència MIT del codi no s’aplica a aquestes dades.
 - Cartografia històrica: [Railways of Spain GIS (1848–2023)](https://doi.org/10.34810/data917), Guillermo Esteban-Oliver i Jordi Martí-Henneberg, i [Cobertes del sòl de Catalunya](https://www.icgc.cat/ca/Geoinformacio-i-mapes/Mapes/Mapa-de-cobertes-del-sol-de-Catalunya), ICGC. Retalls i conversions a GeoJSON sota [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/); vegeu [l’atribució i el procés](public/data/historical/README.md).
+- Cobertes de roca i neu de la mostra de l’Aneto: © [ESA WorldCover 2021 v200](https://doi.org/10.5281/zenodo.7254221), CC BY 4.0. Conté dades Copernicus Sentinel modificades (2021) que ha processat el consorci ESA WorldCover. [Cita i llicència](https://esa-worldcover.org/en/data-access#license)
 
 ## Altures i simplificació dels edificis
 

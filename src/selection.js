@@ -25,9 +25,10 @@ export function parseCoordinates(text){
   const lat=Number(m[1]),lon=Number(m[2]);if(Math.abs(lat)>70||Math.abs(lon)>179.8)throw Error('Coordenades fora de l’àmbit admès: latitud entre −70 i 70.');return {lat,lon};
 }
 export const MAX_PRINT_PIECES=16;
+export const MIN_PRINT_BAND_MM=10;
 export function validPrintBands(bands,length){
   return Array.isArray(bands)&&bands.length>0&&bands.length<=MAX_PRINT_PIECES&&
-    Array.from(bands).every(mm=>Number.isSafeInteger(mm)&&mm>=10)&&bands.reduce((sum,mm)=>sum+mm,0)===length;
+    Array.from(bands).every(mm=>Number.isSafeInteger(mm)&&mm>=MIN_PRINT_BAND_MM)&&bands.reduce((sum,mm)=>sum+mm,0)===length;
 }
 export function validPrintCuts(cuts,width,height){
   if(!cuts||typeof cuts!=='object'||Array.isArray(cuts))return false;

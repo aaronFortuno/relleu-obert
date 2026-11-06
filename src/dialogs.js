@@ -7,7 +7,13 @@ export function initDialogs(){
     dialog.close();delete dialog.dataset.closing;
   }
   for(const [id,target]of [['help-open','help-dialog'],['version-open','changelog-dialog']])document.getElementById(id).onclick=()=>document.getElementById(target).showModal();
-  document.querySelectorAll('[data-open]').forEach(button=>button.onclick=()=>document.getElementById(button.dataset.open).showModal());
+  document.addEventListener('click',event=>{
+    const button=event.target.closest?.('[data-open]');
+    if(!button)return;
+    const dialog=document.getElementById(button.dataset.open);
+    if(!dialog.open)dialog.showModal();
+    if(button.dataset.dialogFocus)document.getElementById(button.dataset.dialogFocus)?.focus();
+  });
   document.querySelectorAll('[data-close]').forEach(button=>button.onclick=()=>close(button.closest('dialog')));
   const helpGallery=document.getElementById('help-gallery');
   helpGallery.onclick=()=>{

@@ -7,7 +7,7 @@ Actualitzat el **2026-11-06 · v0.23.9**. Primers retalls amb selector d’any. 
 | Lot | Línies | Resultat que permet avançar |
 | --- | --- | --- |
 | **Temps de generació** | RO-053 | Primera optimització d’edificis mesurada amb la mateixa malla. Tornar a mesurar Amsterdam complet i aïllar la integració de les vies principals. [Mesures](RO-053-TEMPS.md) |
-| **Ajustos d’impressió** | RO-056 | Comprovar al laminador dues peces contigües de mides diferents. Després, estudiar els perfils d’impressora i la comprovació de mida per placa. |
+| **Ajustos d’impressió** | RO-056 | Validar els tiradors del plànol i laminar dues peces contigües de mides diferents. Després, estudiar els perfils d’impressora i la mida de cada placa. |
 | **Paviment de superfície** | RO-051, RO-052 | Cobertura ampliada al retall de Marganell, amb encaix per tram i secció plana a les vores. Validar visualment i resoldre les unions complexes. [Control de Marganell](RO-051-PERFILS-VIARIS.md#més-cobertura-del-paviment-independent-a-la-v02211) |
 | **Seguiment de les estructures** | RO-033, RO-034, RO-050 | Registrar noves incidències amb retall i escala. A Sant Salvador, dos perfils segueixen el terreny pel pendent dels enllaços. El túnel a 1:20.000 té les dues boques comprovades al 3MF. El pas de Montgròs es conserva al cupó laminat. [Controls de vies](RO-051-PERFILS-VIARIS.md#transicions-pendents-a-la-v0220) · [Montgròs](RO-033-CONTROLS-PROCEDIMENTALS.md#laminat-del-cupó-de-montgròs) |
 | **Validació en paral·lel** | RO-024, RO-033, RO-046, RO-054, RO-055 | Revisar Tamariu 40 × 45 cm i Amsterdam amb totes les capes al laminador. També queden la recuperació d’un projecte girat i els talls dels Rasos–Gallina Pelada. |
@@ -36,7 +36,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | [RO-023](#ro-023--relleu-local-i-fonts-vectorials-de-més-precisió) | P2 | MET5 integrat i auditat al Pedraforca | Contrast visual i refinament de malla |
 | [RO-055](#ro-055--mode-de-relleu-pur) | P2 | Retalls fins a 1:500.000 en tots els formats de Relleu pur | Laminar Tamariu i un panorama amb textura i comprovar dos talls adjacents |
 | [RO-054](#ro-054--galeria-local-de-projectes) | P2 | Catàleg local amb còpia JSON a v0.23.7 | Validar la recuperació entre dispositius en l’ús habitual |
-| [RO-056](#ro-056--base-talls-i-plaques) | P2 | Gruix i talls manuals implementats a v0.23.8 | Laminar talls asimètrics i definir com comprovar les plaques de cada impressora |
+| [RO-056](#ro-056--base-talls-i-plaques) | P2 | Plànol de talls interactiu a v0.23.10 | Laminar talls asimètrics i definir com comprovar les plaques de cada impressora |
 
 ## Validació i retocs acotats
 
@@ -53,7 +53,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | ID | Prioritat | Estat | Abast |
 | -------------------------------------------------------- | --------- | ------------------ | -------------------------------------------------------------- |
 | [RO-035](#ro-035--cavitats-i-relleus-amb-voladissos) | P3 | Dades 3D pendents | Coves, baumes i arcs naturals; un MDT no en descriu l’interior |
-| [RO-025](#ro-025--vegetació-mesurada-i-paisatges-històrics) | P2 | Preparació i consulta local de fragments de sòl urbanitzat del 2009 i el 2024 | Validar la presentació de dues edicions al taller i definir la publicació de l’índex |
+| [RO-025](#ro-025--vegetació-mesurada-i-paisatges-històrics) | P2 | Dues edicions de l’ICGC integrades al taller per a Catalunya | Validació d’ús i prova pilot amb el SIOSE a la resta de l’Estat |
 | [RO-012](#ro-012--presentació-realista-del-model-imprès) | P3 | Objectiu redefinit | Imatge estàtica fotorealista del model amb entorn escolar |
 | [RO-011](#ro-011--comptador-dexportacions-i-umami) | P3 | Per estudiar | Definir recompte i font real abans de publicar una xifra |
 
@@ -111,7 +111,7 @@ El cupó del Bages permet consultar els materials per altura. A Montserrat, l’
 
 ### RO-025 — Vegetació mesurada i paisatges històrics
 
-La prioritat és comparar el sòl residencial, industrial i de serveis amb els vectors de l’ICGC. La prova prepara les edicions de 2009 i 2024 per cel·les i consulta el mateix retall en les dues. El ferrocarril queda en segon pla mentre no es pugui acompanyar d’altres capes històriques amb detall comparable. La xarxa del JRC és regional i l’antiguitat cadastral només permet filtrar les petjades actuals. La vegetació mesurada continua ajornada. [Fonts i criteris de cobertura](RO-025-CARTOGRAFIA-HISTORICA.md)
+La v0.23.10 permet comparar les edicions de 2009 i 2024 de les cobertes de sòl de l’ICGC en qualsevol retall amb cobertura catalana. Cal validar la lectura dels resultats i l’exportació en ús. Per a la resta de l’Estat, el SIOSE del CNIG és candidat a una prova de compatibilitat entre edicions. [Fonts i criteris de cobertura](RO-025-CARTOGRAFIA-HISTORICA.md)
 
 La v0.23.9 habilita les dates amb cobertura de tot el retall. Els dos carrilets canvien la capa ferroviària; a Avinyó, els polígons de l’ICGC substitueixen els volums d’edificis. Les altres capes són actuals. Pendent de validació d’usuari.
 
