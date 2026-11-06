@@ -196,8 +196,7 @@
 #historical-value {float:none}
 #historical-year {display:block;height:20px;margin:2px 0 1px;touch-action:pan-y}
 #historical-ticks:not([hidden]) {height:13px;padding-inline:10px}
-#historical-ticks span:first-child {text-align:left}
-#historical-ticks span:last-child {text-align:right}
+#historical-ticks span {display:flex;justify-content:center;direction:ltr}
 #historical-note {margin:3px 0 0;font-size:var(--ui-note)}
 .preview-bottom:has(#historical-panel:not([hidden])) #status {
   position:static;transform:none;min-width:0;margin-inline:auto;max-width:100%;overflow-wrap:anywhere

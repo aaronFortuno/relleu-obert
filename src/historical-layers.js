@@ -33,6 +33,29 @@ export function matchHistoricalArea(areas,bbox){
     .sort((a,b)=>area(a.bbox)-area(b.bbox)||a.id.localeCompare(b.id))[0]??null;
 }
 
+export function historicalTimeline(urbanMatches,legacy,bbox,{choice,exampleId}={}){
+  const selected=legacy.find(entry=>entry.id===(choice?.areaId??exampleId));
+  const railways=legacy.filter(entry=>entry.layer==='railways');
+  const railway=matchHistoricalArea(selected?.layer==='railways'?[selected]:urbanMatches.length?[]:railways,bbox);
+  if(railway)return railway.editions.map(({year})=>({area:railway,year}));
+
+  const stops=new Map();
+  const icgc=urbanMatches.find(match=>match.area.id==='icgc-urban');
+  for(const match of urbanMatches){
+    if(match===icgc)continue;
+    for(const {year} of match.area.editions)if(!stops.has(year))stops.set(year,{...match,year});
+  }
+  // Preserve an older snapshot for Catalunya if the statewide series is unavailable.
+  if(icgc&&![...stops.keys()].some(year=>year>=2000))stops.set(2009,{...icgc,year:2009});
+
+  if(choice){
+    const restored=urbanMatches.find(match=>match.area.id===choice.areaId)??
+      (selected?.layer==='urban'&&matchHistoricalArea([selected],bbox)?{area:selected}:null);
+    if(restored?.area.editions.some(({year})=>year===choice.year))stops.set(choice.year,{...restored,year:choice.year});
+  }
+  return [...stops.values()].sort((a,b)=>a.year-b.year);
+}
+
 const rail=f=>f.properties?.sourceLayer==='transportation'&&(isRailway(f.properties)||isInactiveRailway(f.properties));
 const building=f=>f.properties?.sourceLayer==='building';
 const position=p=>Array.isArray(p)&&p.length>=2&&Number.isFinite(p[0])&&Math.abs(p[0])<=180&&Number.isFinite(p[1])&&Math.abs(p[1])<=90;

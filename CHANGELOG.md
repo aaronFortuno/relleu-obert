@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.23.12 — 2026-11-06
+
+- El visor ofereix les edicions de sòl urbanitzat del 1956, 1977 i 1990 a l’àrea metropolitana de Barcelona i les del 2005 i 2014 on arriba el SIOSE. «Actual» continua sent el valor inicial.
+- Les edicions de l’AMB i del SIOSE es consulten per retall. Les edicions de l’ICGC triades en projectes desats es poden recuperar.
+
 ## v0.23.11 — 2026-11-06
 
 - El selector d’edició històrica apareix al peu del visor quan el retall té cobertura. Canviar d’edició carrega la capa i conserva l’enquadrament.

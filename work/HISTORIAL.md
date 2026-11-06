@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-06. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.23.12 — Selecció d’edicions per cobertura (RO-025)
+
+El visor combina 1956, 1977 i 1990 de l’AMB amb 2005 i 2014 del SIOSE quan les fonts cobreixen el retall. Les capes es consulten quan es tria l’any. «Actual» és el valor inicial i es mantenen les edicions anteriors quan es recupera un projecte que les tenia desades. Les proves locals comproven la selecció d’anys i la reutilització de la malla en canviar d’edició o de font d’edificis. Queda la validació al web publicat.
+
 ## v0.23.11 — Selector d’edició al visor (RO-025)
 
 El control d’edició apareix al peu de la previsualització quan el Model complet té dades històriques. Canviar d’any aplica la capa i conserva l’enquadrament del retall. Les proves del motor verifiquen que les edicions de sòl urbanitzat i el retorn a «Actual» reutilitzen els mateixos buffers de terreny. La situació del control i el canvi de mode s’han revisat a 1280 × 720 i 1100 × 680.

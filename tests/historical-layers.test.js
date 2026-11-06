@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {unzipSync,strFromU8} from 'fflate';
-import {createHistoricalCatalog,matchHistoricalArea,applyHistoricalEdition,parseHistoricalEdition} from '../src/historical-layers.js';
+import {createHistoricalCatalog,matchHistoricalArea,applyHistoricalEdition,parseHistoricalEdition,historicalTimeline} from '../src/historical-layers.js';
 import {buildModel,updateBuildings} from '../src/geometry.js';
 import {threeMF} from '../src/export.js';
 import {physicalBBox} from '../src/selection.js';
@@ -28,6 +28,20 @@ test('only two or more documented years covering the whole selection enable hist
     assert.equal(matchHistoricalArea(areas,[entry.bbox[0]-.001,bbox[1],bbox[2],bbox[3]]),null);
   }
   assert.equal(matchHistoricalArea(areas,[3.204,41.916,3.21,41.92]),null);
+});
+
+test('the default timeline combines covered editions and retains a saved legacy edition',()=>{
+  const match=(id,years)=>({area:{id,layer:'urban',editions:years.map(year=>({year}))},selection:{partial:false}});
+  const amb=match('amb-urban',[1956,1977,1990]),siose=match('siose-urban',[2005,2014]),icgc=match('icgc-urban',[2009,2024]);
+  const avinyo=areas.find(entry=>entry.id==='avinyo-urban'),bbox=centerCrop(avinyo);
+  const stops=(matches,options)=>historicalTimeline(matches,areas,bbox,options).map(({area,year})=>[year,area.id]);
+  assert.deepEqual(stops([amb,siose,icgc]),[[1956,'amb-urban'],[1977,'amb-urban'],[1990,'amb-urban'],[2005,'siose-urban'],[2014,'siose-urban']]);
+  assert.deepEqual(stops([siose]),[[2005,'siose-urban'],[2014,'siose-urban']]);
+  assert.deepEqual(stops([icgc]),[[2009,'icgc-urban']]);
+  assert.deepEqual(stops([siose,icgc],{choice:{areaId:'icgc-urban',year:2024}}),[[2005,'siose-urban'],[2014,'siose-urban'],[2024,'icgc-urban']]);
+  assert.deepEqual(stops([siose,icgc],{choice:{areaId:avinyo.id,year:2018}}),[[2005,'siose-urban'],[2014,'siose-urban'],[2018,avinyo.id]]);
+  const railway=areas.find(entry=>entry.layer==='railways');
+  assert.deepEqual(historicalTimeline([siose,icgc],areas,centerCrop(railway),{exampleId:railway.id}).map(({year})=>year),[1960,1980]);
 });
 
 test('each carrilet is printable before closure, absent after closure, and independent from present roads',async()=>{
@@ -96,4 +110,8 @@ test('switching an urban edition and returning to current buildings reuses the t
   assert.equal(restored.provenance.historical,undefined);
   assert.equal(restored.buildingCount,current.buildingCount);
   assert.ok(part(restored,'terrain').vertices===terrain.vertices);
+  const newSource=updateBuildings(restored,{features:[],meta:{...base.meta,buildingSource:'catastre'}});
+  assert.equal(newSource.provenance.buildingSource,'catastre');
+  assert.equal(newSource.buildingCount,0);
+  assert.ok(part(newSource,'terrain').vertices===terrain.vertices);
 });

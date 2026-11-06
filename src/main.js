@@ -28,8 +28,10 @@ import {withoutLastGesture} from './brush-coverage.js';
 import {TERRAIN_REMOTE} from './source-options.js';
 import {buildRequest} from './build-request.js';
 import {DEFAULT_PLACE,recommendedPlace} from './recommended-places.js';
-import {applyHistoricalEdition,createHistoricalCatalog,matchHistoricalArea} from './historical-layers.js';
+import {applyHistoricalEdition,createHistoricalCatalog,historicalTimeline} from './historical-layers.js';
 import {createUrbanHistory,urbanSelection} from './urban-history.js';
+import {createAmbUrbanHistory} from './amb-urban-history.js';
+import {createSioseUrbanHistory} from './siose-urban-history.js';
 import './style.css';
 import './ui-tokens.css';
 import './usability.css';
@@ -90,8 +92,8 @@ document.addEventListener('keydown',event=>{
 let region,model,busy=false,selection,dirty=false,buildingSourceDirty=false,needsBuild=false,placeName='',strokes=[],brush='navigate',pendingVegetation=false,timer,job,drawing=false,lastPoint,gesture=0;
 const historicalSlider=$('#historical-year'),historicalExamples=$('#historical-example');
 const historyText=(key,params)=>t('ui.historical.'+key,params);
-async function readHistoricalFile(file,base=(import.meta.env.BASE_URL||'./')+'data/historical/'){
-  const response=await fetch(base+file,{signal:AbortSignal.timeout(12000)});
+async function readHistoricalFile(file){
+  const response=await fetch((import.meta.env.BASE_URL||'./')+'data/historical/'+file,{signal:AbortSignal.timeout(12000)});
   if(!response.ok)throw Error('HTTP '+response.status);
   if(file.endsWith('.gz')){
     const bytes=new Uint8Array(await response.arrayBuffer());
@@ -100,52 +102,45 @@ async function readHistoricalFile(file,base=(import.meta.env.BASE_URL||'./')+'da
   return response.json();
 }
 const historicalCatalog=createHistoricalCatalog(readHistoricalFile);
-const urbanHistory=createUrbanHistory(readHistoricalFile);
-const urbanProviders=[urbanHistory];
-if(import.meta.env.DEV&&new URLSearchParams(location.search).get('siose')==='pilot'){
-  urbanProviders.push(createUrbanHistory(file=>readHistoricalFile(file,'/output/siose-pilot/logrono/'),{
-    root:'',id:'siose-pilot',label:'SIOSE',exampleLabel:'Logroño · SIOSE',center:[42.465,-2.46],widthM:4000
-  }));
-}
-let historicalAreas=[],historicalArea=null,historicalStatus='checking',historicalChoice=null;
-let urbanCatalogues=[],urbanCatalogue=null,urbanCrop=null,urbanPose=null,historicalExampleId=null,pendingHistoricalSwitch=null;
-const historicalActive=()=>historicalArea?.id===historicalChoice?.areaId&&!pureSelected()?historicalChoice:null;
-const historicalUrban=()=>historicalActive()&&historicalArea.layer==='urban';
-const historicalYears=()=>[...(historicalArea?.editions.map(e=>e.year)??[]),null];
-function syncHistoricalControls(updating=busy||pendingVegetation){
-  if(selectedPose!==urbanPose){
-    urbanPose=selectedPose;
-    urbanCatalogue=null;
-    urbanCrop=null;
-    for(const catalogue of urbanCatalogues){
-      const crop=urbanSelection(catalogue.mask,urbanPose);
-      if(crop){urbanCatalogue=catalogue;urbanCrop=crop;break;}
-    }
-  }
-  const preferredId=historicalChoice?.areaId??historicalExampleId;
-  const legacy=historicalAreas.filter(area=>!urbanCatalogues.some(catalogue=>catalogue.area===area));
-  const preferred=preferredId?matchHistoricalArea(legacy.filter(area=>area.id===preferredId),selection):null;
-  historicalArea=pureSelected()?null:preferred||(urbanCrop?urbanCatalogue.area:matchHistoricalArea(legacy,selection));
-  if(historicalStatus!=='checking'&&historicalChoice&&
-    (historicalArea?.id!==historicalChoice.areaId||!historicalArea.editions.some(e=>e.year===historicalChoice.year)))historicalChoice=null;
-  const years=historicalYears(),year=historicalActive()?.year??null,value=year??historyText('current');
-  historicalSlider.max=Math.max(1,years.length-1);
-  historicalSlider.value=historicalArea?years.indexOf(year):1;
-  $('#historical-panel').hidden=!selectedSize||!historicalArea;
-  historicalSlider.disabled=updating||drawing||tooLargeRegion||!historicalArea;
+const urbanProviders=[createAmbUrbanHistory(readHistoricalFile),createSioseUrbanHistory(readHistoricalFile),createUrbanHistory(readHistoricalFile)];
+let historicalAreas=[],legacyHistoricalAreas=[],historicalStops=[],historicalStatus='checking',historicalChoice=null;
+let urbanCatalogues=[],urbanMatches=[],urbanPose=null,historicalExampleId=null,pendingHistoricalSwitch=null;
+const activeHistoricalStop=()=>historicalChoice&&historicalStops.find(({area,year})=>area.id===historicalChoice.areaId&&year===historicalChoice.year);
+const historicalActive=()=>activeHistoricalStop()&&!pureSelected()?historicalChoice:null;
+const historicalUrban=()=>activeHistoricalStop()?.area.layer==='urban';
+function showHistoricalStop(stop){
+  const value=stop?.year??historyText('current');
   historicalSlider.setAttribute('aria-valuetext',value);
   $('#historical-value').textContent=value;
   const note=$('#historical-note');
-  const mappedUrban=historicalArea&&historicalArea===urbanCatalogue?.area;
-  $('#historical-year-label').textContent=historyText(mappedUrban?'urbanYear':'year');
-  const message=mappedUrban&&urbanCrop.partial?historyText('partialShort'):'';
+  const source=stop?.selection?(stop.area.source.shortName??stop.area.label):'';
+  const partial=stop?.selection?.partial?historyText('partialShort'):'';
+  const message=[source,partial].filter(Boolean).join(' · ');
   note.hidden=!message;
   if(note.textContent!==message)note.textContent=message;
-  const ticks=$('#historical-ticks'),tickKey=(historicalArea?.id??'')+':'+getLocale();
-  ticks.hidden=!historicalArea;
+}
+function syncHistoricalControls(updating=busy||pendingVegetation){
+  if(selectedPose!==urbanPose){
+    urbanPose=selectedPose;
+    urbanMatches=urbanCatalogues.flatMap(({area,provider,mask})=>{
+      const crop=urbanSelection(mask,urbanPose);
+      return crop?[{area,provider,selection:crop}]:[];
+    });
+  }
+  historicalStops=pureSelected()?[]:historicalTimeline(urbanMatches,legacyHistoricalAreas,selection,{choice:historicalChoice,exampleId:historicalExampleId});
+  const active=activeHistoricalStop(),hasYears=historicalStops.length>0;
+  if(historicalStatus!=='checking'&&historicalChoice&&!active)historicalChoice=null;
+  historicalSlider.max=Math.max(1,historicalStops.length);
+  historicalSlider.value=active?historicalStops.indexOf(active):historicalStops.length;
+  $('#historical-panel').hidden=!selectedSize||!hasYears;
+  historicalSlider.disabled=updating||drawing||tooLargeRegion||!hasYears;
+  $('#historical-year-label').textContent=historyText(historicalStops[0]?.area.layer==='urban'?'urbanYear':'year');
+  showHistoricalStop(active);
+  const years=historicalStops.map(({year})=>year),ticks=$('#historical-ticks'),tickKey=years.join(',')+':'+getLocale();
+  ticks.hidden=!hasYears;
   if(ticks.dataset.key!==tickKey){
     ticks.dataset.key=tickKey;
-    ticks.replaceChildren(...(historicalArea?years:[]).map(year=>{
+    ticks.replaceChildren(...[...years,null].map(year=>{
       const tick=document.createElement('span');tick.textContent=year??historyText('current');return tick;
     }));
   }
@@ -670,7 +665,7 @@ async function generate(autoTransport=false){
   }
   job=autoTransport?'transport':'build';lock(true);pendingVegetation=false;pendingBuildingLayer=null;pendingFullRegion=null;pendingCadastralBuild=false;recoveryNotice='';
   pendingBrushFrame=null;
-  const options=modelOptions(),requestedName=placeName||text('status.region'),editionArea=historicalArea;
+  const options=modelOptions(),requestedName=placeName||text('status.region'),editionStop=activeHistoricalStop(),editionArea=editionStop?.area;
   const urbanEdition=options.historical&&editionArea.layer==='urban';
   pendingCatalogPlace=CURATED_EXAMPLES.find(example=>example.id===exampleSelection?.id&&
     (example.pureRelief!==false)===options.pureRelief)??null;
@@ -703,8 +698,8 @@ async function generate(autoTransport=false){
     let historicalFeatures,historicalCoverage;
     if(options.historical){
       try{
-        if(editionArea===urbanCatalogue?.area){
-          const {features,...coverage}=await urbanCatalogue.provider.edition(editionArea,options.historical.year,urbanCrop);
+        if(editionStop.provider){
+          const {features,...coverage}=await editionStop.provider.edition(editionArea,options.historical.year,editionStop.selection);
           historicalFeatures=features;
           historicalCoverage=coverage;
         }else historicalFeatures=await historicalCatalog.edition(editionArea,options.historical.year);
@@ -1020,21 +1015,16 @@ function setExampleRegion(id,name,bbox,rotation){
   $('#search-results').replaceChildren();
   placeMap.setRegion(bbox);
 }
-historicalSlider.oninput=()=>{
-  const year=historicalYears()[Number(historicalSlider.value)];
-  const value=year??historyText('current');
-  historicalSlider.setAttribute('aria-valuetext',value);
-  $('#historical-value').textContent=value;
-};
+historicalSlider.oninput=()=>showHistoricalStop(historicalStops[Number(historicalSlider.value)]);
 historicalSlider.onchange=()=>{
-  if(historicalSlider.disabled||!historicalArea||busy||pendingVegetation||drawing||tooLargeRegion)return;
-  const year=historicalYears()[Number(historicalSlider.value)];
-  const choice=year==null?null:{areaId:historicalArea.id,year};
+  if(historicalSlider.disabled||busy||pendingVegetation||drawing||tooLargeRegion)return;
+  const stop=historicalStops[Number(historicalSlider.value)];
+  const choice=stop?{areaId:stop.area.id,year:stop.year}:null;
   if(sameEpoch(choice,historicalChoice))return;
   pendingHistoricalSwitch={previous:historicalChoice};
   historicalChoice=choice;
   buildingControls();
-  say(()=>historyText('switching',{year:year??historyText('current')}));
+  say(()=>historyText('switching',{year:stop?.year??historyText('current')}));
   generate();
 };
 historicalExamples.onchange=()=>{
@@ -1210,7 +1200,7 @@ function sourceSummary(){
   const provider=({icgc:'ICGC',osm:'OpenStreetMap',osm3d:text('source.osmRoof'),catastre:text('source.cadastre')})[$('#building-source').value]??text('source.unknown');
   $('#terrain-source-name').textContent=text('source.remote',{provider:region?.meta?.terrain?.provider||TERRAIN_REMOTE});
   const source=text('source.remote',{provider});
-  $('#building-source-name').textContent=pureSelected()?'—':historicalUrban()?historicalArea.source.name:buildingSourceDirty?text('source.pending',{source}):source;
+  $('#building-source-name').textContent=pureSelected()?'—':historicalUrban()?activeHistoricalStop().area.source.name:buildingSourceDirty?text('source.pending',{source}):source;
 }
 const stepNext={place:'vegetation',vegetation:'transport',transport:'buildings'};
 function syncStepActions(updating){
@@ -1547,6 +1537,7 @@ function restoreProject(){
   placeMap.setRegion(physicalBBox(pose.center,pose.widthM/1000,pose.heightM/1000));
   placeName=savedPlace||project.name;
   historicalChoice=historical??null;
+  historicalExampleId=historical?.areaId.startsWith('carrilet-')?historical.areaId:null;
   const knownExample=CURATED_EXAMPLES.some(example=>example.id===exampleId)||legacyAnetoIds.includes(exampleId)||
     (exampleId===panoramicPilotId&&panoramicPilotAvailable());
   if(knownExample||recommendedPlace(exampleId)){
@@ -1655,6 +1646,7 @@ $('#release-list').insertAdjacentHTML('afterbegin',`<article class="release-entr
 $('#release-list').insertAdjacentHTML('afterbegin',`<article class="release-entry"><div><strong>v0.23.9</strong><time datetime="2026-11-06">06/11/2026</time></div><p data-i18n="history.0.23.9">${t('history.0.23.9')}</p></article>`);
 $('#release-list').insertAdjacentHTML('afterbegin',`<article class="release-entry"><div><strong>v0.23.10</strong><time datetime="2026-11-06">06/11/2026</time></div><p data-i18n="history.0.23.10">${t('history.0.23.10')}</p></article>`);
 $('#release-list').insertAdjacentHTML('afterbegin',`<article class="release-entry"><div><strong>v0.23.11</strong><time datetime="2026-11-06">06/11/2026</time></div><p data-i18n="history.0.23.11">${t('history.0.23.11')}</p></article>`);
+$('#release-list').insertAdjacentHTML('afterbegin',`<article class="release-entry"><div><strong>v0.23.12</strong><time datetime="2026-11-06">06/11/2026</time></div><p data-i18n="history.0.23.12">${t('history.0.23.12')}</p></article>`);
 $('#copy-lightning').onclick=async()=>{try{await navigator.clipboard.writeText('aptswim903@walletofsatoshi.com');feedback('copy-status',statusMessage('copy.done'));}catch{feedback('copy-status',statusMessage('copy.manual'));}};
 for(const toggle of document.querySelectorAll('.sidebar-left .section-toggle'))toggle.disabled=true;
 function refreshWorkshopLanguage(){
@@ -1692,7 +1684,8 @@ function settleHistoricalCatalog([legacy,...urban]){
   const wanted=historicalChoice;
   urbanCatalogues=urban.flatMap((result,index)=>result.status==='fulfilled'?[{...result.value,provider:urbanProviders[index]}]:[]);
   urbanPose=null;
-  historicalAreas=[...(legacy.status==='fulfilled'?legacy.value:[]),...urbanCatalogues.map(catalogue=>catalogue.area)];
+  legacyHistoricalAreas=legacy.status==='fulfilled'?legacy.value:[];
+  historicalAreas=[...legacyHistoricalAreas,...urbanCatalogues.map(catalogue=>catalogue.area)];
   historicalStatus=urbanCatalogues.length?'ready':'failed';
   syncHistoricalControls();
   renderHistoricalExamples();

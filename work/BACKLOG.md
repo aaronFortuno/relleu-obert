@@ -13,7 +13,7 @@ Actualitzat el **2026-11-06 · v0.23.9**. Primers retalls amb selector d’any. 
 | **Validació en paral·lel** | RO-024, RO-033, RO-046, RO-054, RO-055 | Revisar Tamariu 40 × 45 cm i Amsterdam amb totes les capes al laminador. També queden la recuperació d’un projecte girat i els talls dels Rasos–Gallina Pelada. |
 | **Pilot de relleu rocós** | RO-023, RO-035 | Després dels temps de generació, reprendre el Cavall Bernat i el Pedraforca, i el cupó georeferenciat dels Degotalls per als voladissos. [Resultats](RELLEU-ROCOS.md) |
 | **Cobertes obertes** | RO-032, RO-026 | Integrar l’ICGC si es verifica un servei públic que retorni geometria de coberta. |
-| **Cartografia històrica** | RO-025 | Comparar el sòl urbanitzat amb un índex comú de l’ICGC. Es deixa en segon pla l’ampliació ferroviària aïllada i s’ajorna la reconstrucció de carrers i edificis. [Fonts i controls](RO-025-CARTOGRAFIA-HISTORICA.md#fonts-comunes-abast-i-decisió) |
+| **Cartografia històrica** | RO-025 | Comparar el sòl urbanitzat amb edicions separades aproximadament una dècada o més, segons la cobertura. La reconstrucció històrica de carrers i edificis queda ajornada. [Fonts i controls](RO-025-CARTOGRAFIA-HISTORICA.md#fonts-comunes-abast-i-decisió) |
 
 Els encàrrecs independents avancen en paral·lel. Cada bloc validat té el seu commit i es manté una sola prova pesada alhora. Els casos que requereixen inspecció al laminador poden quedar pendents mentre avancen altres línies.
 
@@ -53,7 +53,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | ID | Prioritat | Estat | Abast |
 | -------------------------------------------------------- | --------- | ------------------ | -------------------------------------------------------------- |
 | [RO-035](#ro-035--cavitats-i-relleus-amb-voladissos) | P3 | Dades 3D pendents | Coves, baumes i arcs naturals; un MDT no en descriu l’interior |
-| [RO-025](#ro-025--vegetació-mesurada-i-paisatges-històrics) | P2 | Selector al visor per al 2009 i el 2024 de l’ICGC | Validar l’ús al web, avaluar el pes del SIOSE i provar la sèrie anterior a 1990 |
+| [RO-025](#ro-025--vegetació-mesurada-i-paisatges-històrics) | P2 | Selector amb les edicions de l’AMB i el SIOSE segons cobertura | Validar la consulta i l’exportació al web publicat |
 | [RO-012](#ro-012--presentació-realista-del-model-imprès) | P3 | Objectiu redefinit | Imatge estàtica fotorealista del model amb entorn escolar |
 | [RO-011](#ro-011--comptador-dexportacions-i-umami) | P3 | Per estudiar | Definir recompte i font real abans de publicar una xifra |
 
@@ -111,7 +111,7 @@ El cupó del Bages permet consultar els materials per altura. A Montserrat, l’
 
 ### RO-025 — Vegetació mesurada i paisatges històrics
 
-La v0.23.11 permet canviar l’edició al visor i reutilitzar la malla de terreny. Cal validar la lectura dels resultats i l’exportació en ús. El SIOSE té un pilot local amb dues edicions i una estimació de pes. Per ampliar la sèrie antiga, les primeres fonts a provar són el MUCSC de 1987 i els vectors històrics de l’AMB. [Fonts i criteris de cobertura](RO-025-CARTOGRAFIA-HISTORICA.md)
+La v0.23.12 ofereix 1956, 1977 i 1990 de l’AMB, i 2005 i 2014 del SIOSE. Les edicions disponibles depenen del retall. Cal validar les consultes i l’exportació en ús. El MUCSC de 1987 queda com a candidat per ampliar la cobertura catalana fora de l’AMB. [Fonts i criteris de cobertura](RO-025-CARTOGRAFIA-HISTORICA.md)
 
 La v0.23.9 habilita les dates amb cobertura de tot el retall. Els dos carrilets canvien la capa ferroviària; a Avinyó, els polígons de l’ICGC substitueixen els volums d’edificis. Les altres capes són actuals. Pendent de validació d’usuari.
 

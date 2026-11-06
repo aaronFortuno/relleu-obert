@@ -44,7 +44,23 @@ export function urbanSelection(mask,pose){
       area+=covered;
     }
   }
-  return keys.length?{crop,keys,partial:area<total*(1-1e-6)}:null;
+  return keys.length?{bbox:pose.bbox,crop,keys,partial:area<total*(1-1e-6)}:null;
+}
+
+export function clipUrbanFeatures(area,year,batches,crop,partial){
+  const features=[];
+  let squareMetres=0;
+  for(const batch of batches){
+    const polygons=[];
+    for(const feature of batch){
+      const clipped=operations.intersection(feature.geometry.coordinates,crop);
+      if(!clipped.length)continue;
+      polygons.push(clipped);
+      features.push({...feature,id:`${area.id}-${year}-${features.length}`,geometry:{type:'MultiPolygon',coordinates:clipped}});
+    }
+    if(polygons.length)squareMetres+=surface(operations.union(...polygons),equalArea);
+  }
+  return {features,urbanHa:squareMetres/10000,partial};
 }
 
 export function createUrbanHistory(read,{
@@ -81,19 +97,7 @@ export function createUrbanHistory(read,{
     if(!entry||!selection)throw Error('This edition does not cover the selection');
     const {crop,keys,partial}=selection;
     const batches=await Promise.all(keys.filter(key=>Object.hasOwn(entry.tiles,key)).map(key=>readTile(area,year,key)));
-    const features=[];
-    let squareMetres=0;
-    for(const batch of batches){
-      const polygons=[];
-      for(const feature of batch){
-        const clipped=operations.intersection(feature.geometry.coordinates,crop);
-        if(!clipped.length)continue;
-        polygons.push(clipped);
-        features.push({...feature,id:`${area.id}-${year}-${features.length}`,geometry:{type:'MultiPolygon',coordinates:clipped}});
-      }
-      if(polygons.length)squareMetres+=surface(operations.union(...polygons),equalArea);
-    }
-    return {features,urbanHa:squareMetres/10000,partial};
+    return clipUrbanFeatures(area,year,batches,crop,partial);
   }
 
   return {load,edition};
