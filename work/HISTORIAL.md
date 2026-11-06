@@ -6,6 +6,8 @@ Actualitzat: 2026-11-06. Les entrades validades surten del [backlog actiu](BACKL
 
 Es reprèn la línia per comparar edificis i vies de dates diferents. L’estudi distingeix l’historial d’edició d’OSM de les fonts que documenten el paisatge d’època i defineix un pilot que es pot servir sense backend propi. Encara no hi ha selector a l’aplicació. [Fonts, prova i criteris](RO-025-CARTOGRAFIA-HISTORICA.md)
 
+S’han verificat dos fitxers aptes per a pilots sense processar imatges: els traçats ferroviaris amb dates de servei de la UdL i les petjades actuals amb dates de construcció del Cadastre de Palafrugell. L’antiguitat cadastral no permet recuperar edificis desapareguts ni la planta d’altres èpoques. Queda pendent validar una sèrie de carreteres. [Comprovacions i abast](RO-025-CARTOGRAFIA-HISTORICA.md)
+
 ## v0.23.8 — Base ajustable i talls manuals
 
 RO-056 incorpora «Impressió» al lateral dret. La base es pot ajustar entre 2 i 30 mm. Els talls manuals es defineixen per amplades i fondàries; els camps buits mantenen el repartiment automàtic. El visor, els 3MF i el mapa de muntatge del ZIP comparteixen els mateixos talls.
