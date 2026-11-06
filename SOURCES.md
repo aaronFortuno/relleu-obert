@@ -7,6 +7,7 @@
 - Distribució de tessel·les: OpenFreeMap, https://openfreemap.org/ . TileJSON: https://tiles.openfreemap.org/planet .
 - Edificacions: © Institut Cartogràfic i Geològic de Catalunya, Referencial Topogràfic Territorial, CC BY 4.0. Consulta de polígons `tipus=edi`, excloent projectes, construccions en curs i ruïnes: https://geoserveis.icgc.cat/vector01/rest/services/topografia_territorial/MapServer/10 . La mostra s’ha consultat l’1 de novembre de 2026; data i URL a `tamariu-buildings-icgc.geojson`. No s’hi descarreguen noms ni dades de propietaris. Alçàries absents o invàlides s’identifiquen com a estimades.
 - La mostra de Tamariu inclou quatre tessel·les MVT de la versió que consta a `public/data/tamariu.json`. Es conserven com a dades derivades d’OSM amb la seva atribució i condicions de reutilització; la llicència MIT del codi no s’aplica a aquestes dades.
+- Cartografia històrica: [Railways of Spain GIS (1848–2023)](https://doi.org/10.34810/data917), Guillermo Esteban-Oliver i Jordi Martí-Henneberg, i [Cobertes del sòl de Catalunya](https://www.icgc.cat/ca/Geoinformacio-i-mapes/Mapes/Mapa-de-cobertes-del-sol-de-Catalunya), ICGC. Retalls i conversions a GeoJSON sota [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/); vegeu [l’atribució i el procés](public/data/historical/README.md).
 
 ## Altures i simplificació dels edificis
 

@@ -47,6 +47,12 @@
         <input id="model-scale" type="range" min="0" max="5" step="any" aria-describedby="scale-info">
         <div id="scale-ticks" aria-hidden="true"></div>
         <p id="scale-info" class="hint" role="status" hidden></p>
+        <label for="historical-year" data-i18n-text="ui.historical.year">Any de la cartografia <output id="historical-value" for="historical-year">Actual</output></label>
+        <input id="historical-year" type="range" min="0" max="1" step="1" value="1" disabled aria-describedby="historical-note">
+        <div id="historical-ticks" class="range-ticks" aria-hidden="true" hidden></div>
+        <p id="historical-note" class="hint" role="status" data-i18n="ui.historical.checking">Comprovant les dades històriques…</p>
+        <label for="historical-example" id="historical-example-label" data-i18n="ui.historical.examples" hidden>Llocs amb dades històriques</label>
+        <select id="historical-example" hidden aria-labelledby="historical-example-label"></select>
         <label for="exag" data-i18n-text="ui.place.exaggeration">Exageració vertical <output id="exag-value">×1,5</output></label><input id="exag" type="range" min="1" max="3" step=".25" value="1.5">
         <label for="detail" data-i18n="ui.place.detail">Detall</label><select id="detail"><option value="24" data-i18n="ui.place.detailFast">Ràpid</option><option value="36" selected data-i18n="ui.place.detailBalanced">Equilibrat</option><option value="56" data-i18n="ui.place.detailHigh">Alt</option></select>
         <label class="check-row"><input id="streams" type="checkbox" checked><span data-i18n="ui.place.streams">Rius i rierols</span></label>
@@ -212,7 +218,7 @@
     </section>
     <section class="info-panel">
       <h2><button type="button" class="section-toggle" aria-expanded="false" aria-controls="info-data" data-i18n-text="ui.data.title">Dades i limitacions <i aria-hidden="true">+</i></button></h2>
-      <div class="config-content data-notes" id="info-data" hidden><p class="hint" data-i18n-text="ui.data.relief">Relleu: <span id="terrain-source-name">Mapterhorn / Mapzen</span></p><p id="building-info" class="hint"></p><button id="download-processing" class="quiet-button" type="button" disabled data-i18n="ui.data.downloadTiming">Descarrega els temps de generació ↓</button><p class="hint" data-i18n="ui.data.timingNote">El JSON de la darrera generació inclou coordenades, ajustos i temps.</p><div id="warnings"></div><p class="hint" data-i18n="ui.data.treesNote">Els arbres són procedimentals. Revisa les malles i el laminat abans d’imprimir.</p></div>
+      <div class="config-content data-notes" id="info-data" hidden><p class="hint" data-i18n-text="ui.data.relief">Relleu: <span id="terrain-source-name">Mapterhorn / Mapzen</span></p><p id="building-info" class="hint"></p><p id="historical-model-note" class="hint" hidden><span></span> <a target="_blank" rel="noopener noreferrer"></a></p><button id="download-processing" class="quiet-button" type="button" disabled data-i18n="ui.data.downloadTiming">Descarrega els temps de generació ↓</button><p class="hint" data-i18n="ui.data.timingNote">El JSON de la darrera generació inclou coordenades, ajustos i temps.</p><div id="warnings"></div><p class="hint" data-i18n="ui.data.treesNote">Els arbres són procedimentals. Revisa les malles i el laminat abans d’imprimir.</p></div>
     </section>
     <section class="download-panel">
       <div class="section-heading"><h2 data-i18n="ui.export.title">Descarrega el model</h2></div>
@@ -243,7 +249,7 @@
       <path d="m27 9 7-6" stroke="var(--umbrella-accent)" stroke-width="4.5"/>
     </svg><span>ortogra<span class="umbrella-dot">.</span>fi</span>
   </a></p>
-  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer" data-i18n-text="ui.footer.openSource"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions">v0.23.8</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V" data-i18n-aria="ui.footer.about"><span class="desktop-copy" data-i18n="ui.footer.aboutDesktop">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
+  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer" data-i18n-text="ui.footer.openSource"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions">v0.23.9</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V" data-i18n-aria="ui.footer.about"><span class="desktop-copy" data-i18n="ui.footer.aboutDesktop">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
 </footer>
 
 <dialog id="projects-dialog" aria-labelledby="projects-title">

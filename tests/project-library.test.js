@@ -43,6 +43,17 @@ test('custom centimetre dimensions round-trip and define the valid stroke area',
     assert.throws(()=>saveProject(storage,{name:'Invàlida',settings:{...custom,sizePreset}}),/no és vàlida/);
 });
 
+test('project backups preserve a historical edition and reject malformed choices',()=>{
+  const from=memoryStorage(),to=memoryStorage(),historical={areaId:'carrilet-vall-aro',year:1960};
+  const historicalSettings={...settings,historical};
+  saveProject(from,{name:'Carrilet',settings:historicalSettings},firstDate);
+  assert.deepEqual(importProjectLibrary(to,exportProjectLibrary(from)),{added:1,skipped:0});
+  assert.deepEqual(readProjects(to)[0].settings.historical,historical);
+  for(const invalid of [{areaId:'../index',year:1960},{areaId:historical.areaId,year:'1960'}]){
+    assert.throws(()=>saveProject(from,{name:'Invàlida',settings:{...settings,historical:invalid}}),/no és vàlida/);
+  }
+});
+
 test('panoramic projects preserve dimensions, mode and scales larger than the regular range',()=>{
   const storage=memoryStorage();
   const panoramic={...settings,sizePreset:'100x20',pureRelief:true,

@@ -3,6 +3,7 @@ import {pieceDimensions,isPanoramicSize,validPrintCuts,PURE_SCALE_RANGE,PANORAMI
 import {validBaseThickness} from './print-settings.js';
 import {TRAIL_WIDTH_MULTIPLIERS} from './transport-width.js';
 import {RELIEF_VEGETATION_DEFAULTS,validVegetationHeight,validVegetationNoise} from './relief-vegetation-options.js';
+import {validHistoricalChoice} from './historical-layers.js';
 
 export const PROJECT_LIBRARY_KEY='relleu-obert.projects';
 const VERSION=1;
@@ -30,12 +31,13 @@ function validatedSettings(settings){
   if(!object(settings)||!pieceDimensions(settings.sizePreset)||!boolean(settings.pureRelief)||
     !object(settings.pose)||!object(settings.materials)||!object(settings.options)||!Array.isArray(settings.strokes))
     throw invalid();
-  const {sizePreset,pureRelief,pose,materials,reliefMaterials,options,strokes,print,placeName,exampleId}=settings;
+  const {sizePreset,pureRelief,pose,materials,reliefMaterials,options,strokes,print,historical,placeName,exampleId}=settings;
   const {center,widthM,heightM,rotation}=pose,[width,height]=pieceDimensions(sizePreset);
   const panoramic=isPanoramicSize(width,height);
   const [minScale,maxScale]=panoramic?PANORAMIC_SCALE_RANGE:[0,pureRelief?PURE_SCALE_RANGE[1]:100000];
   const validSpan=(metres,mm)=>range(metres,Math.max(.001,mm*(minScale-1)/1000),mm*(maxScale+1)/1000);
   if(panoramic&&!pureRelief)throw invalid();
+  if(historical!==undefined&&(pureRelief||!validHistoricalChoice(historical)))throw invalid();
   if(print!==undefined&&(!object(print)||!validBaseThickness(print.baseThickness)||!validPrintCuts(print.cuts,width,height)))throw invalid();
   if(!Array.isArray(center)||center.length!==2||!range(center[0],-70,70)||!range(center[1],-180,180)||
     !validSpan(widthM,width)||!validSpan(heightM,height)||!range(rotation,-180,180)||
@@ -70,6 +72,7 @@ function validatedSettings(settings){
     ...(print?{print:{baseThickness:print.baseThickness,cuts:Object.fromEntries(
       ['columns','rows'].filter(key=>print.cuts[key]!==undefined).map(key=>[key,[...print.cuts[key]]]))}}:{}),
     ...(cleanedReliefMaterials?{reliefMaterials:cleanedReliefMaterials}:{}),
+    ...(historical?{historical:{areaId:historical.areaId,year:historical.year}}:{}),
     ...(placeName!=null?{placeName}:{}),...(exampleId!=null?{exampleId}:{})};
 }
 

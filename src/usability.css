@@ -178,10 +178,10 @@
 .map-rotation-reset {display:grid;place-items:center;width:25px;height:25px;padding:0;border:0;border-radius:3px;background:#fff;color:#526b45}
 .map-rotation-reset:disabled {opacity:1;background:#f4f4f4;color:#bbb;cursor:default}
 .map-rotation-reset svg {width:16px;height:16px}
-#scale-ticks {display:flex;justify-content:space-between;padding:0 6px;height:16px;font-size:8px;color:#65755d}
-#scale-ticks span {position:relative;width:0;text-align:center;white-space:nowrap}
-#scale-ticks span::before {content:'';position:absolute;left:0;top:-5px;height:3px;border-left:1px solid var(--muted)}
-#scale-ticks span:last-child {direction:rtl}
+#scale-ticks,.range-ticks:not([hidden]) {display:flex;justify-content:space-between;padding:0 6px;height:16px;font-size:8px;color:#65755d}
+:is(#scale-ticks,.range-ticks) span {position:relative;width:0;text-align:center;white-space:nowrap}
+:is(#scale-ticks,.range-ticks) span::before {content:'';position:absolute;left:0;top:-5px;height:3px;border-left:1px solid var(--muted)}
+:is(#scale-ticks,.range-ticks) span:last-child {direction:rtl}
 .mode-switch{padding:0;margin:0;border:0;min-inline-size:0}
 .mode-switch legend{padding:0;margin-bottom:6px;color:var(--ui-control-text);font-size:var(--ui-label)}
 .mode-segments{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--ui-control-border);border-radius:5px;background:var(--ui-control-bg)}

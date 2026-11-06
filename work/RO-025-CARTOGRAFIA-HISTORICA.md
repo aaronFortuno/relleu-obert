@@ -1,6 +1,12 @@
 # RO-025 — Edificis i vies d’altres èpoques
 
-Objectiu: poder imprimir dues maquetes del mateix lloc i comparar l’evolució del teixit construït i de la xarxa de comunicacions. «Actual» continuaria sent el valor per defecte. El taller ha de partir de geometries o punts ja publicats, amb una data o una edició documentada. Les ortofotos serveixen per contrastar resultats. L’estudi no ha activat cap selector a l’aplicació.
+Objectiu: poder imprimir dues maquetes del mateix lloc i comparar l’evolució del teixit construït i de la xarxa de comunicacions. «Actual» és el valor per defecte. El taller parteix de geometries o punts ja publicats, amb una data o una edició documentada. Les ortofotos serveixen per contrastar resultats.
+
+### Pilot al taller (v0.23.9)
+
+A **Territori → Llocs amb dades històriques** es pot centrar el mapa a la Vall d’Aro, a la Garrotxa o a Avinyó. El control **Any de la cartografia** admet només edicions documentades quan tot el retall està cobert per una font amb almenys dues dates. El mode és Model complet; la font i la data queden a les metadades d’exportació i la tria es conserva als projectes desats.
+
+Els carrilets són visibles el 1960 i absents el 1980. A Avinyó, els anys 2009, 2018 i 2024 mostren l’àrea urbanitzada amb una capa de color de 0,3 mm, sense convertir els polígons en volums d’edificis. Els retalls i l’atribució són a [les dades del pilot](../public/data/historical/README.md). El relleu i les capes no documentades per a l’any triat són actuals; no es recuperen ponts, túnels ni rasants ferroviàries històriques si no consten a la font.
 
 | Font | Què es pot recuperar | Limitació |
 | --- | --- | --- |

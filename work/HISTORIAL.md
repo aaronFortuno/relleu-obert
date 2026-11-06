@@ -2,6 +2,12 @@
 
 Actualitzat: 2026-11-06. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.23.9 — Any de la cartografia (RO-025)
+
+El selector d’any de Territori mostra les dates disponibles per a tot el retall en Model complet. Els carrilets de Sant Feliu i Olot es comparen el 1960 i el 1980; Avinyó té cobertes de sòl urbanitzat del 2009, 2018 i 2024. El relleu i la resta de capes són actuals. La font consta al model i l’any es pot desar amb el projecte. Pendent de revisió d’usuari i laminat. [Fonts i límits](RO-025-CARTOGRAFIA-HISTORICA.md)
+
+S’ha comprovat al navegador el selector desactivat a Tamariu, el canvi 1960 → 1980 → Actual a la Vall d’Aro i la generació d’Avinyó el 2009 (1280 × 720 i 1100 × 680). Han passat 45 proves focalitzades i la compilació estàtica inclou les set edicions.
+
 ## 2026-11-06 — Estudi de cartografia històrica (RO-025)
 
 Es reprèn la línia per comparar edificis i vies de dates diferents. L’estudi distingeix l’historial d’edició d’OSM de les fonts que documenten el paisatge d’època i defineix un pilot que es pot servir sense backend propi. Encara no hi ha selector a l’aplicació. [Fonts, prova i criteris](RO-025-CARTOGRAFIA-HISTORICA.md)

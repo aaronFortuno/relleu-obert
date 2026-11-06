@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.23.9 — 2026-11-06
+
+- «Any de la cartografia» s’activa a Model complet quan dues edicions històriques cobreixen tot el retall. «Actual» continua sent el valor per defecte; l’any i la font es conserven a l’exportació i l’edició es desa amb el projecte.
+- Primers exemples: carrilets de Sant Feliu de Guíxols–Girona i Olot–Girona (1960 i 1980), i sòl urbanitzat d’Avinyó (2009, 2018 i 2024). Només canvia la capa documentada.
+
 ## v0.23.8 — 2026-11-06
 
 - «Impressió» permet ajustar el gruix de la base entre 2 i 30 mm i definir les amplades i fondàries de les peces. Les guies del visor coincideixen amb els talls de l’exportació.

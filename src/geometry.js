@@ -1160,7 +1160,8 @@ function prepareBuildingGeometry(ctx,config,progress,preview,measure=(_phase,run
   let buildingCount=0,approximate=0,limited=0,shapedRoofs=0,fallbackRoofs=0,omitted=0,duplicates=0;
   progress('Actualitzant la capa d’edificis…');
   const features=ctx.buildingFeatures.filter(f=>f?.properties?.sourceLayer==='building'&&!f.properties.hide_3d);
-  const isDry=buildingMode==='none'||!features.length?null:dryFootprints(waterPoly,width,height,res);
+  const urbanCover=ctx.meta.historical?.layer==='urban';
+  const isDry=(buildingMode==='none'&&!urbanCover)||!features.length?null:dryFootprints(waterPoly,width,height,res);
   let batch={vertices:[],faces:[]},lastPreview=performance.now();
   for(const [index,f] of features.entries()){
     if(preview&&(index===0||index%32===0)){
@@ -1183,11 +1184,13 @@ function prepareBuildingGeometry(ctx,config,progress,preview,measure=(_phase,run
       const h=Number(p.render_height),valid=Number.isFinite(h)&&h>0&&h<=1200;
       for(const poly of polygons){
         const inside=intersect([poly],rect);
-        if(buildingMode==='none'){footprints.push(...inside);continue;}
-        const polys=(isDry(inside)?inside:intersect(inside,land)).filter(p=>Math.abs(area(p[0]))>=.04);if(!polys.length)continue;
-        const rise=buildingRise(valid?h:6,scale,config);
-        const profile=buildingMode==='source'?roofProfile(p,poly[0],scale,valid?h:6,options.selectionPose?.rotation||0):null;
-        const solid=buildingMode==='flat'?terrainSolid(polys,(x,y)=>ground(x,y)+rise,(x,y)=>ground(x,y)-.3,width,height,res):levelBuildingSolid(polys,rise,ground,width,height,res,profile);
+        if(buildingMode==='none'&&!urbanCover){footprints.push(...inside);continue;}
+        const cover=urbanCover&&p.historical_urban;
+        const dry=isDry(inside)?inside:intersect(inside,land);
+        const polys=(cover&&ctx.roadPoly.length?subtract(dry,ctx.roadPoly):dry).filter(p=>Math.abs(area(p[0]))>=.04);if(!polys.length)continue;
+        const rise=cover ? .3 : buildingRise(valid?h:6,scale,config);
+        const profile=!cover&&buildingMode==='source'?roofProfile(p,poly[0],scale,valid?h:6,options.selectionPose?.rotation||0):null;
+        const solid=cover||buildingMode==='flat'?terrainSolid(polys,(x,y)=>ground(x,y)+rise,(x,y)=>ground(x,y)-.3,width,height,res):levelBuildingSolid(polys,rise,ground,width,height,res,profile);
         if(!solid.faces.length)continue;
         footprints.push(...polys);fragments.push({solid,profile,count:polys.length});
       }
@@ -1215,6 +1218,7 @@ function prepareBuildingGeometry(ctx,config,progress,preview,measure=(_phase,run
   },{footprints:footprints.length});
   for(const {p,id,h,valid,fragments}of accepted){
     for(const {solid,profile,count}of fragments){
+      if(urbanCover&&p.historical_urban){append(mesh,solid);continue;}
       if(profile?.parts)shapedRoofs++;if(profile?.fallback)fallbackRoofs++;
       append(mesh,solid);buildingCount+=count;if(p.height_estimated||!valid)approximate+=count;if(buildingMode==='limited'&&h>maxBuildingHeight)limited+=count;
       volumes.push({id:id??null,family:p.family??null,fragments:count,roof:solid.roof??null,roofShape:solid.roofShape||'flat',roofFallback:profile?.fallback||null,roofSource:p.roofSource||null,roofMetadata:profile?.metadata||null,baseOffsetMM:profile?.baseOffsetMM||0,estimated:!!p.height_estimated||!valid});
@@ -1223,14 +1227,14 @@ function prepareBuildingGeometry(ctx,config,progress,preview,measure=(_phase,run
   if(omitted)warnings.push(`Edificis omesos per geometria invàlida: ${omitted}.`);
   if(duplicates)warnings.push(`Còpies d’edificis omeses: ${duplicates}. Es conserva una petjada per còpia.`);
   if(approximate)warnings.push(approximate+' fragments d’edificis amb alçària estimada; consulta la procedència de la font.');
-  if(buildingMode==='limited')warnings.push('Edificis amb coberta horitzontal, com a màxim '+maxBuildingHeight+' m reals sobre el punt més alt de la petjada. La façana del costat baix pot superar aquest valor. '+limited+' fragments limitats en altura.');
-  if(buildingMode==='source')warnings.push('Altures de la font sobre el punt més alt de la petjada; coberta plana quan falten dades de forma.');
+  if(!urbanCover&&buildingMode==='limited')warnings.push('Edificis amb coberta horitzontal, com a màxim '+maxBuildingHeight+' m reals sobre el punt més alt de la petjada. La façana del costat baix pot superar aquest valor. '+limited+' fragments limitats en altura.');
+  if(!urbanCover&&buildingMode==='source')warnings.push('Altures de la font sobre el punt més alt de la petjada; coberta plana quan falten dades de forma.');
   if(shapedRoofs)warnings.push(shapedRoofs+' cobertes inclinades o corbes segons els atributs de la font; consulta els criteris derivats a la procedència.');
   if(fallbackRoofs)warnings.push(fallbackRoofs+' cobertes simplificades a planes perquè falten paràmetres o la forma encara no s’admet.');
-  if(buildingMode==='flat')warnings.push('Petjades de color de 0,12 mm, sense volum.');
-  if(buildingMode==='none')warnings.push('Edificis omesos; es conserva el relleu actual, sense reconstrucció històrica.');
+  if(!urbanCover&&buildingMode==='flat')warnings.push('Petjades de color de 0,12 mm, sense volum.');
+  if(!urbanCover&&buildingMode==='none')warnings.push('Edificis omesos; es conserva el relleu actual, sense reconstrucció històrica.');
   return {features:ctx.buildingFeatures,mode:buildingMode,height:maxBuildingHeight,part:surfacePart(2,mesh),
-    mask:buildingMode==='none'?[]:mask,contains:polygonTester(buildingMode==='none'?[]:mask),obstacleMask:mask,count:buildingCount,volumes,warnings};
+    mask:buildingMode==='none'&&!urbanCover?[]:mask,contains:polygonTester(buildingMode==='none'&&!urbanCover?[]:mask),obstacleMask:urbanCover?[]:mask,count:buildingCount,volumes,warnings};
 }
 
 export function previewBuildingLayer(previous,features,changes={}){
@@ -1243,7 +1247,7 @@ export function previewBuildingLayer(previous,features,changes={}){
 export function updateBuildings(previous,layer={},changes={},progress=()=>{},preview,measure=(_phase,run)=>run()){
   if(!previous.context)throw Error('Cal generar primer el terreny.');
   const old=previous.context,options={...old.options,...changes},config=buildingOptions(options),{buildingMode,maxBuildingHeight}=config;
-  const ctx={...old,options:{...options,...config},meta:{...(layer.meta||old.meta),infrastructure:old.meta.infrastructure,tunnels:old.meta.tunnels,railways:old.meta.railways,majorRoads:old.meta.majorRoads,transportContinuity:old.meta.transportContinuity},buildingFeatures:layer.features||old.buildingFeatures,vegetationCache:null};
+  const ctx={...old,options:{...options,...config},meta:{...(layer.meta||old.meta),historical:old.meta.historical,infrastructure:old.meta.infrastructure,tunnels:old.meta.tunnels,railways:old.meta.railways,majorRoads:old.meta.majorRoads,transportContinuity:old.meta.transportContinuity},buildingFeatures:layer.features||old.buildingFeatures,vegetationCache:null};
   const {width,height,ground,scale,rect}=ctx;
   const cached=old.buildingGeometry;
   preview?.stage('buildings','Calculant els edificis…');

@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-06 · v0.23.8**. Base ajustable, talls manuals i estudi de cartografia històrica. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-06 · v0.23.9**. Primers retalls amb selector d’any. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -13,7 +13,7 @@ Actualitzat el **2026-11-06 · v0.23.8**. Base ajustable, talls manuals i estudi
 | **Validació en paral·lel** | RO-024, RO-033, RO-046, RO-054, RO-055 | Revisar Tamariu 40 × 45 cm i Amsterdam amb totes les capes al laminador. També queden la recuperació d’un projecte girat i els talls dels Rasos–Gallina Pelada. |
 | **Pilot de relleu rocós** | RO-023, RO-035 | Després dels temps de generació, reprendre el Cavall Bernat i el Pedraforca, i el cupó georeferenciat dels Degotalls per als voladissos. [Resultats](RELLEU-ROCOS.md) |
 | **Cobertes obertes** | RO-032, RO-026 | Integrar l’ICGC si es verifica un servei públic que retorni geometria de coberta. |
-| **Cartografia històrica** | RO-025 | Provar ferrocarril a dues dates i un filtre d’antiguitat dels edificis actuals. Per a carreteres, encara cal verificar una sèrie vectorial. [Fonts i proposta](RO-025-CARTOGRAFIA-HISTORICA.md) |
+| **Cartografia històrica** | RO-025 | Validar els dos carrilets i el sòl urbanitzat d’Avinyó al taller. Queden l’antiguitat cadastral i les edicions de carreteres. [Fonts i controls](RO-025-CARTOGRAFIA-HISTORICA.md) |
 
 Els encàrrecs independents avancen en paral·lel. Cada bloc validat té el seu commit i es manté una sola prova pesada alhora. Els casos que requereixen inspecció al laminador poden quedar pendents mentre avancen altres línies.
 
@@ -53,7 +53,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | ID | Prioritat | Estat | Abast |
 | -------------------------------------------------------- | --------- | ------------------ | -------------------------------------------------------------- |
 | [RO-035](#ro-035--cavitats-i-relleus-amb-voladissos) | P3 | Dades 3D pendents | Coves, baumes i arcs naturals; un MDT no en descriu l’interior |
-| [RO-025](#ro-025--vegetació-mesurada-i-paisatges-històrics) | P2 | Ferrocarril i dates cadastrals verificats; pilots pendents | Comparar el tren a dues dates i separar l’antiguitat de la reconstrucció històrica |
+| [RO-025](#ro-025--vegetació-mesurada-i-paisatges-històrics) | P2 | Selector i tres retalls implementats | Validar els models i separar l’antiguitat cadastral de la reconstrucció històrica |
 | [RO-012](#ro-012--presentació-realista-del-model-imprès) | P3 | Objectiu redefinit | Imatge estàtica fotorealista del model amb entorn escolar |
 | [RO-011](#ro-011--comptador-dexportacions-i-umami) | P3 | Per estudiar | Definir recompte i font real abans de publicar una xifra |
 
@@ -112,6 +112,8 @@ El cupó del Bages permet consultar els materials per altura. A Montserrat, l’
 ### RO-025 — Vegetació mesurada i paisatges històrics
 
 El mode actual continua per defecte. Ja hi ha traçats ferroviaris amb dates de servei i petjades cadastrals actuals amb dates de construcció. Són dos usos diferents: mostrar la xarxa ferroviària d’una data i filtrar els edificis que encara consten al Cadastre. Falta trobar edicions vectorials comparables per a les carreteres i les petjades antigues. Les ortofotos es reserven per a la comprovació. La vegetació mesurada continua ajornada. [Fonts i criteris del pilot](RO-025-CARTOGRAFIA-HISTORICA.md)
+
+La v0.23.9 habilita les dates amb cobertura de tot el retall. Els dos carrilets canvien la capa ferroviària; a Avinyó, els polígons de l’ICGC substitueixen els volums d’edificis. Les altres capes són actuals. Pendent de validació d’usuari.
 
 ### RO-026 — Fidelitat dels edificis i selecció de fonts
 

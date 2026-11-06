@@ -1,0 +1,101 @@
+{
+  "areas": [
+    {
+      "id": "carrilet-vall-aro",
+      "label": "Carrilet de Sant Feliu de Guíxols a Girona",
+      "bbox": [
+        2.97,
+        41.797,
+        3.023,
+        41.834
+      ],
+      "center": [
+        41.8115,
+        2.998
+      ],
+      "widthM": 2000,
+      "source": {
+        "name": "Railways of Spain GIS (1848–2023) · Guillermo Esteban-Oliver i Jordi Martí-Henneberg",
+        "url": "https://doi.org/10.34810/data917",
+        "license": "CC BY 4.0"
+      },
+      "layer": "railways",
+      "editions": [
+        {
+          "year": 1960,
+          "file": "carrilet-vall-aro-1960.geojson"
+        },
+        {
+          "year": 1980,
+          "file": "carrilet-vall-aro-1980.geojson"
+        }
+      ]
+    },
+    {
+      "id": "carrilet-garrotxa",
+      "label": "Carrilet d’Olot a Girona",
+      "bbox": [
+        2.514,
+        42.035,
+        2.56,
+        42.079
+      ],
+      "center": [
+        42.057,
+        2.538
+      ],
+      "widthM": 2000,
+      "source": {
+        "name": "Railways of Spain GIS (1848–2023) · Guillermo Esteban-Oliver i Jordi Martí-Henneberg",
+        "url": "https://doi.org/10.34810/data917",
+        "license": "CC BY 4.0"
+      },
+      "layer": "railways",
+      "editions": [
+        {
+          "year": 1960,
+          "file": "carrilet-garrotxa-1960.geojson"
+        },
+        {
+          "year": 1980,
+          "file": "carrilet-garrotxa-1980.geojson"
+        }
+      ]
+    },
+    {
+      "id": "avinyo-urban",
+      "label": "Avinyó",
+      "bbox": [
+        1.95,
+        41.846,
+        1.996,
+        41.88
+      ],
+      "center": [
+        41.863,
+        1.973
+      ],
+      "widthM": 2000,
+      "source": {
+        "name": "Institut Cartogràfic i Geològic de Catalunya · Cobertes del sòl",
+        "url": "https://www.icgc.cat/ca/Geoinformacio-i-mapes/Mapes/Mapa-de-cobertes-del-sol-de-Catalunya",
+        "license": "CC BY 4.0"
+      },
+      "layer": "urban",
+      "editions": [
+        {
+          "year": 2009,
+          "file": "avinyo-urban-2009.geojson"
+        },
+        {
+          "year": 2018,
+          "file": "avinyo-urban-2018.geojson"
+        },
+        {
+          "year": 2024,
+          "file": "avinyo-urban-2024.geojson"
+        }
+      ]
+    }
+  ]
+}
