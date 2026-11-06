@@ -1,6 +1,14 @@
 # Historial i validacions de Relleu Obert
 
-Actualitzat: 2026-11-05. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
+Actualitzat: 2026-11-06. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
+
+## v0.23.8 — Base ajustable i talls manuals
+
+RO-056 incorpora «Impressió» al lateral dret. La base es pot ajustar entre 2 i 30 mm. Els talls manuals es defineixen per amplades i fondàries; els camps buits mantenen el repartiment automàtic. El visor, els 3MF i el mapa de muntatge del ZIP comparteixen els mateixos talls.
+
+S’han comprovat la geometria dels talls de 30 + 30 + 20 cm en un panorama de 80 × 20 cm, les vores adjacents i el mar fins a sota. Un control del motor del navegador verifica l’actualització del gruix, el canvi a ZIP quan una peça supera els 256 mm i la recuperació del 3MF multiplaca amb les mides automàtiques. S’han revisat el formulari, la validació i la recuperació d’ajustos desats al navegador (1280 × 720, 1100 × 680 i 390 × 844). Queda pendent el laminat de les peces personalitzades.
+
+Han passat 102 proves focalitzades. La compilació de producció no s’ha iniciat en local perquè la memòria disponible era per sota dels 2,5 GiB del protocol del projecte.
 
 ## v0.23.7 — Còpia del catàleg local
 

@@ -27,7 +27,9 @@ test('generated terrain uses triangle planes rather than the original nonlinear 
   assert.throws(()=>createTerrainField({width:10,height:10,resolution:2,at:()=>NaN}),/invàlida/);
 });
 test('inland water keeps its local altitude rather than becoming a sea-level pit',()=>{
-  const f={type:'Feature',properties:{sourceLayer:'water',class:'swimming_pool'},geometry:{type:'Polygon',coordinates:[[[.002,.002],[.004,.002],[.004,.004],[.002,.004],[.002,.002]]]}},m=buildModel({meta:{bbox:[0,0,.01,.01]},features:[f],dem:[{z:0,x:0,y:0,size:2,elev:new Float32Array(4).fill(100)}]},{size:50,resolution:2,trees:false});
+  const f={type:'Feature',properties:{sourceLayer:'water',class:'swimming_pool'},geometry:{type:'Polygon',coordinates:[[[.002,.002],[.004,.002],[.004,.004],[.002,.004],[.002,.002]]]}},
+    terrainRaster={epsg:4326,width:2,height:2,values:Float32Array.of(100,160,100,160),affine:[.01,0,0,0,.01,0]},
+    m=buildModel({meta:{bbox:[0,0,.01,.01]},features:[f],terrainRaster},{size:50,resolution:2,trees:false});
   const water=m.parts.find(p=>p.id==='water');let max=0;for(let i=2;i<water.vertices.length;i+=3)max=Math.max(max,water.vertices[i]);assert(Math.abs(max-(m.context.ground(15,15)-.3))<1e-5);
 });
 

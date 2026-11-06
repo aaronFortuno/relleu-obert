@@ -3,7 +3,8 @@ import {bambuPlateProject,threeMF,stlZip} from './export.js';
 import {groupMaterials,groupReliefMaterials} from './materials.js';
 import {splitModel,tileArchive} from './mesh-tiles.js';
 import {splitPureRelief} from './pure-relief-mesh.js';
-import {MAX_PRINT_TILE_MM} from './selection.js';
+import {MAX_PRINT_TILE_MM,isPanoramicSize,tilePlan,validPrintCuts} from './selection.js';
+import {printExportFormat} from './print-settings.js';
 import {previewPieces} from './preview-pieces.js';
 import Module from 'manifold-3d';
 import wasmURL from 'manifold-3d/manifold.wasm?url';
@@ -93,16 +94,20 @@ try{
   }
   if(data.type==='export'){
     if(!current)throw Error('Genera primer el model.');
-    const {materialCount,assignments}=data,format=data.format==='bambu-zip'?'bambu':data.format;
+    const {materialCount,assignments,cuts={}}=data;
+    if(!validPrintCuts(cuts,current.width,current.height))throw Error('La divisió de la maqueta no és vàlida.');
+    const plan=tilePlan(current.width,current.height,cuts),requested=printExportFormat(data.format,plan);
+    const format=requested==='bambu-zip'?'bambu':requested;
     let bytes,archive=false,plateCount;
-    if(current.width>MAX_PRINT_TILE_MM||current.height>MAX_PRINT_TILE_MM){
+    const split=plan.tiles.length>1;
+    if(split||current.reliefGrid&&isPanoramicSize(current.width,current.height)){
       const pureRelief=current.provenance?.options?.pureRelief;
       let model=pureRelief?current:groupMaterials(current,materialCount,assignments);
       progress('Preparant els talls de les peces…');
-      let pieces=model.reliefGrid&&splitPureRelief(model,MAX_PRINT_TILE_MM,progress);
+      let pieces=model.reliefGrid&&splitPureRelief(model,plan,progress);
       if(!pieces){
         if(!api){api=await Module({locateFile:()=>wasmURL});api.setup();}
-        pieces=splitModel(model,api,MAX_PRINT_TILE_MM,progress);
+        pieces=splitModel(model,api,plan,progress);
       }
       if(pureRelief){
         progress('Agrupant els filaments de les peces…');
@@ -113,7 +118,9 @@ try{
           pieces[i]=groupReliefMaterials({...piece,categories:undefined},materialCount,assignments);
         }
       }
-      if(data.format==='bambu'){
+      if(!split){
+        bytes=format==='stl'?stlZip(pieces[0]):threeMF(pieces[0],{bambu:format==='bambu'});
+      }else if(requested==='bambu'){
         progress('Preparant el projecte amb les plaques de Bambu Studio…');
         bytes=bambuPlateProject(model,pieces);plateCount=pieces.length;
       }else{

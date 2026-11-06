@@ -6,7 +6,8 @@ import {createPlaceMap,MAX_PROJECT_SCALE} from './place-map.js';
 import {PURE_RELIEF_RESOLUTIONS} from './pure-relief-mesh.js';
 import {smoothTerrainNormals} from './terrain-normals.js';
 import {CATEGORIES,PALETTES,defaultAssignments,RELIEF_MATERIALS,RELIEF_PALETTES,defaultReliefAssignments,reliefMaterialId} from './materials.js';
-import {pieceDimensions,tilePlan,MAX_PRINT_TILE_MM,scaledBBox,physicalBBox,selectionPose,isPanoramicSize,PURE_SCALE_RANGE,PANORAMIC_SCALE_RANGE} from './selection.js';
+import {pieceDimensions,tilePlan,validPrintBands,validPrintCuts,MAX_PRINT_PIECES,scaledBBox,physicalBBox,selectionPose,isPanoramicSize,PURE_SCALE_RANGE,PANORAMIC_SCALE_RANGE} from './selection.js';
+import {BAMBU_PROJECT_BED_MM,DEFAULT_BASE_THICKNESS_MM,validBaseThickness,parsePrintBands,fitsBambuProject,printExportFormat} from './print-settings.js';
 import {initPiecePicker,bindPieceDimensions} from './piece-picker.js';
 import {CURATED_EXAMPLES,localizeExample} from './curated-examples.js';
 import {initExampleCarousel,initExampleGallery} from './example-carousel.js';
@@ -85,6 +86,10 @@ let region,model,busy=false,selection,dirty=false,buildingSourceDirty=false,need
 const brushHistory=createProjectBrushHistory();
 let pendingBrushFrame=null,transportTimer=null,reliefTimer=null;
 let exportFormat='bambu';
+let baseThickness=DEFAULT_BASE_THICKNESS_MM,cutFieldsSize='',cutError=null;
+const cutSettings=new Map(),sizeKey=(width,height)=>`${width}x${height}`;
+const printCuts=(width,height)=>cutSettings.get(sizeKey(width,height))??{};
+const printPlan=(width,height)=>tilePlan(width,height,printCuts(width,height));
 let pendingFullRegion=null,lastValidBuildings=null,recoveryNotice='';
 let pendingCadastralBuild=false;
 let stagedBuild=null;
@@ -129,7 +134,6 @@ function pendingPieceSize(){
   const [width,height]=size();
   return width!==model.width||height!==model.height;
 }
-const needsCuts=(width,height)=>Math.max(width,height)>MAX_PRINT_TILE_MM;
 const pureSelected=()=>$('#mode-relief').checked;
 const LANDSCAPE_RESOLUTIONS={24:36,36:64,56:96};
 const isPure=m=>!!m?.provenance.options.pureRelief;
@@ -159,6 +163,7 @@ function lock(value){
   $('#building-height').disabled=updating||$('#building-mode').value!=='limited';
   placeMap.setLocked(updating);
   resizeFields.disabled=workPending||drawing;
+  syncPrintSettings(workPending||drawing);
   syncExport(workPending||!model);
   syncVegetationControls(workPending);
   view.setAttribute('aria-busy',String(workPending));
@@ -229,7 +234,7 @@ window.addEventListener('blur',()=>{
 });
 scene.add(new THREE.HemisphereLight(0xffffff,0x798269,2.5));const light=new THREE.DirectionalLight(0xfff6df,3.3);light.position.set(-170,-160,400);light.castShadow=true;light.shadow.mapSize.set(2048,2048);Object.assign(light.shadow.camera,{left:-350,right:350,top:350,bottom:-350,far:1200});light.shadow.normalBias=.2;scene.add(light);
 const ground=new THREE.Mesh(new THREE.PlaneGeometry(2500,2500),new THREE.ShadowMaterial({opacity:.13}));ground.position.z=-.5;ground.receiveShadow=true;scene.add(ground);
-const group=new THREE.Group();scene.add(group);let seams,seamModel;
+const group=new THREE.Group();scene.add(group);let seams,seamModel,seamPlanKey;
 function home(){
   const bounds=new THREE.Box3().setFromObject(group);
   const preview=stagedBuild?.preview;
@@ -423,32 +428,75 @@ function showModelNotes(m){
   if(budget)budgetNote.textContent=budget.manualDropped?text('vegetation.budgetManual'):text('vegetation.budgetLimit',{count:formatNumber(budget.limit)});
   const list=document.createElement('ul');for(const message of m.warnings){const li=document.createElement('li');li.textContent=translateEngineMessage(message);list.appendChild(li);}$('#warnings').replaceChildren(list);
 }
+function shownPrintPlan(){
+  return printPlan(...(model?[model.width,model.height]:size()));
+}
+function syncPrintSettings(locked=busy||pendingVegetation||reliefTimer!==null||drawing){
+  $('#print-panel').hidden=!selectedSize;
+  if(!selectedSize)return;
+  const [width,height]=size(),key=sizeKey(width,height),cuts=printCuts(width,height);
+  const columns=$('#print-columns'),rows=$('#print-rows');
+  const cm=mm=>formatNumber(mm/10,{maximumFractionDigits:1});
+  if(cutFieldsSize!==key){
+    cutFieldsSize=key;
+    columns.value=cuts.columns?.map(cm).join(' ')??'';
+    rows.value=cuts.rows?.map(cm).join(' ')??'';
+    cutError=null;
+  }
+  const auto=tilePlan(width,height),plan=printPlan(width,height);
+  columns.placeholder=Array(auto.cols).fill(cm(width/auto.cols)).join(' ');
+  rows.placeholder=Array(auto.rows).fill(cm(height/auto.rows)).join(' ');
+  $('#print-cuts-reset').disabled=!cuts.columns&&!cuts.rows;
+  $('#print-cuts-fields').disabled=$('#print-base-fields').disabled=locked;
+  syncBaseAction();
+  const summary=$('#print-cuts-summary'),pending=pendingPieceSize();
+  summary.textContent=text(pending?'print.pendingCuts':plan.tiles.length===1?'print.onePiece':'print.grid',
+    {columns:formatNumber(plan.cols),rows:formatNumber(plan.rows),count:formatNumber(plan.tiles.length)});
+  const error=$('#print-cuts-feedback');
+  error.textContent=cutError?text(cutError.key,Object.fromEntries(Object.entries(cutError.params??{}).map(([k,v])=>[k,formatNumber(v)]))):'';
+  error.hidden=!cutError;
+  for(const field of [columns,rows]){
+    if(cutError?.field===field.id)field.setAttribute('aria-invalid','true');
+    else field.removeAttribute('aria-invalid');
+    field.setAttribute('aria-describedby',cutError?.field===field.id?'print-cuts-note print-cuts-feedback':'print-cuts-note');
+  }
+}
+function syncBaseAction(){
+  const input=$('#print-base');
+  $('#print-base-apply').disabled=!validBaseThickness(input.valueAsNumber)||input.valueAsNumber===baseThickness;
+}
 function describeTiling(){
   if(!selectedSize)return;
   const [draftWidth,draftHeight]=size();
   const pending=$('#piece-resize-pending');
   pending.hidden=!pendingPieceSize();
   pending.textContent=pending.hidden?'':text('tiling.pending',{width:formatNumber(draftWidth/10),height:formatNumber(draftHeight/10)});
-  const [w,h]=model?[model.width,model.height]:[draftWidth,draftHeight],plan=tilePlan(w,h);
+  const [w,h]=model?[model.width,model.height]:[draftWidth,draftHeight],plan=shownPrintPlan();
   const split=plan.tiles.length>1;
+  const fits=fitsBambuProject(plan),format=printExportFormat(exportFormat,plan);
+  $('[data-format="bambu"]').hidden=!fits;
   $('[data-format="bambu-zip"]').hidden=!split;
-  if(!split&&exportFormat==='bambu-zip')selectExportFormat('bambu');
+  showExportFormat(format);
   const mm=value=>formatNumber(value,{maximumFractionDigits:1});
   const count=formatNumber(plan.tiles.length);
-  $('#tiling-summary').textContent=split?text('tiling.pieces',{count,width:mm(plan.tiles[0].width),height:mm(plan.tiles[0].height)}):text('tiling.piece',{width:mm(w),height:mm(h)});
-  const hint=split?(exportFormat==='bambu'?text('tiling.bambu',{count}):text('tiling.zip')):
-    text(exportFormat==='stl'?'tiling.stl':'tiling.checkFilaments');
+  const first=plan.tiles[0];
+  const uniform=plan.tiles.every(tile=>Math.abs(tile.width-first.width)<1e-6&&Math.abs(tile.height-first.height)<1e-6);
+  $('#tiling-summary').textContent=split?(uniform?text('tiling.pieces',{count,width:mm(first.width),height:mm(first.height)}):text('print.customPieces',{count})):
+    text('tiling.piece',{width:mm(w),height:mm(h)});
+  const hint=!fits?text('print.bedLimit',{limit:mm(BAMBU_PROJECT_BED_MM)}):
+    split?(format==='bambu'?text('tiling.bambu',{count}):text('tiling.zip')):text(format==='stl'?'tiling.stl':'tiling.checkFilaments');
   $('#export-hint').textContent=model&&needsBuild?text('tiling.pendingDownload',{hint}):hint;
 }
 function tiling(){
   describeTiling();
-  const show=model&&needsCuts(model.width,model.height);
-  if(seams&&(!show||seamModel!==model)){
+  const plan=model&&shownPrintPlan(),show=plan&&plan.tiles.length>1;
+  const planKey=show&&JSON.stringify([plan.xCuts,plan.yCuts]);
+  if(seams&&(!show||seamModel!==model||seamPlanKey!==planKey)){
     scene.remove(seams);seams.geometry.dispose();seams.material.dispose();seams=null;
   }
   if(show&&!stagedBuild?.preview&&!seams){
     const geo=new THREE.BufferGeometry();
-    const positions=cutGuideSegments(model),distances=new Float32Array(positions.length/3);
+    const positions=cutGuideSegments(model,plan),distances=new Float32Array(positions.length/3);
     // Keep the dash phase along each cut, even across separate terrain faces.
     for(let i=0;i<positions.length;i+=6){
       const axis=positions[i]===positions[i+3]?1:0;
@@ -464,13 +512,15 @@ function tiling(){
     seams.renderOrder=5;
     scene.add(seams);
     seamModel=model;
+    seamPlanKey=planKey;
   }
   if(seams&&!presentationMode?.isActive())seams.visible=!stagedBuild?.preview;
   refreshPresentation(stagedBuild?.preview||model);
+  invalidateView();
 }
 const regionalPavementEnabled=new URLSearchParams(location.search).get('paviment')!=='antic';
-function modelOptions(){const [widthMM,heightMM]=size(),pureRelief=pureSelected(),detail=Number($('#detail').value);return {pureRelief,surfaceRoads:!pureRelief&&regionalPavementEnabled?'regional':undefined,streams:$('#streams').checked,streamWidth:Number($('#stream-width').value),size:Math.max(widthMM,heightMM),widthMM,heightMM,exaggeration:Number($('#exag').value),resolution:pureRelief?PURE_RELIEF_RESOLUTIONS[detail]:LANDSCAPE_RESOLUTIONS[detail],roadRise:Number($('#road-rise').value),railRise:Number($('#rail-rise').value),trailWidth:Number($('#trail-width').value),estimatedTunnels:!pureRelief&&$('#estimated-tunnels').checked,majorRoads:!pureRelief&&$('#major-profiles').checked,smoothProfiles:true,targetScale:null,selectionPose:selectedPose,buildingMode:pureRelief?'none':$('#building-mode').value,maxBuildingHeight:Number($('#building-height').value),...vegetation()};}
-function configurationKey(o){return JSON.stringify([!!o.pureRelief,o.widthMM,o.heightMM,o.exaggeration,o.resolution,o.streams,o.streamWidth,o.roadRise??0,o.railRise??0,o.trailWidth??1,o.estimatedTunnels??true,o.majorRoads??false,o.targetScale,o.selectionPose?.center,o.selectionPose?.widthM,o.selectionPose?.heightM,o.selectionPose?.rotation,o.buildingMode,o.maxBuildingHeight]);}
+function modelOptions(){const [widthMM,heightMM]=size(),pureRelief=pureSelected(),detail=Number($('#detail').value);return {pureRelief,surfaceRoads:!pureRelief&&regionalPavementEnabled?'regional':undefined,streams:$('#streams').checked,streamWidth:Number($('#stream-width').value),size:Math.max(widthMM,heightMM),widthMM,heightMM,baseThickness,exaggeration:Number($('#exag').value),resolution:pureRelief?PURE_RELIEF_RESOLUTIONS[detail]:LANDSCAPE_RESOLUTIONS[detail],roadRise:Number($('#road-rise').value),railRise:Number($('#rail-rise').value),trailWidth:Number($('#trail-width').value),estimatedTunnels:!pureRelief&&$('#estimated-tunnels').checked,majorRoads:!pureRelief&&$('#major-profiles').checked,smoothProfiles:true,targetScale:null,selectionPose:selectedPose,buildingMode:pureRelief?'none':$('#building-mode').value,maxBuildingHeight:Number($('#building-height').value),...vegetation()};}
+function configurationKey(o){return JSON.stringify([!!o.pureRelief,o.widthMM,o.heightMM,o.baseThickness,o.exaggeration,o.resolution,o.streams,o.streamWidth,o.roadRise??0,o.railRise??0,o.trailWidth??1,o.estimatedTunnels??true,o.majorRoads??false,o.targetScale,o.selectionPose?.center,o.selectionPose?.widthM,o.selectionPose?.heightM,o.selectionPose?.rotation,o.buildingMode,o.maxBuildingHeight]);}
 function sameTerrainFrame(options){
   const old=model?.provenance.options;
   if(!old||dirty||options.pureRelief!==!!old.pureRelief)return false;
@@ -479,7 +529,7 @@ function sameTerrainFrame(options){
     ['widthM','heightM','rotation'].every(key=>Math.abs(a[key]-b[key])<1e-6)&&
     a.center.every((value,index)=>Math.abs(value-b.center[index])<1e-10);
 }
-const reliefKeys=['exaggeration','streams','streamWidth'];
+const reliefKeys=['baseThickness','exaggeration','streams','streamWidth'];
 function sameTerrain(options,includeTransport=true){
   const old=model?.provenance.options;
   const keys=includeTransport?[...reliefKeys,'roadRise','railRise','trailWidth','estimatedTunnels','majorRoads']:reliefKeys;
@@ -515,7 +565,9 @@ function flushReliefUpdate(){
 }
 function recoverRelief(error){
   if(reliefTimer===null&&canUpdateRelief(modelOptions())){
-    const {exaggeration,streams,streamWidth}=model.provenance.options;
+    const {exaggeration,streams,streamWidth,baseThickness:previousBase}=model.provenance.options;
+    baseThickness=previousBase;
+    $('#print-base').value=baseThickness;
     $('#exag').value=exaggeration;
     syncExaggerationLabel();
     $('#streams').checked=streams;
@@ -889,6 +941,7 @@ function selectPieceSize(preset){
   syncModelMode();
   placeMap.setSize(width,height,pureSelected());
   openStep('place',{focus:true});
+  syncPrintSettings();
   tiling();
 }
 initPiecePicker($('#piece-choice'),selectPieceSize);
@@ -1117,21 +1170,24 @@ for(const [id,unit] of textureSliders){
   syncTextureLabel(id,unit);
 }
 const formatOptions=[...document.querySelectorAll('#export-options [data-format]')];
-function selectExportFormat(format){
-  exportFormat=format;
+function showExportFormat(format){
   for(const option of formatOptions)option.setAttribute('aria-pressed',String(option.dataset.format===format));
   $('#export-model').textContent=formatOptions.find(option=>option.dataset.format===format).textContent+' ↓';
+}
+function selectExportFormat(format){
+  exportFormat=format;
+  showExportFormat(selectedSize?printExportFormat(format,shownPrintPlan()):format);
 }
 function setFormatMenu(open,{focus=false}={}){
   $('#export-options').hidden=!open;
   $('#export-formats').setAttribute('aria-expanded',String(open));
   if(focus){
-    const target=open?formatOptions.find(option=>option.dataset.format===exportFormat):$('#export-formats');
+    const target=open?formatOptions.find(option=>option.getAttribute('aria-pressed')==='true'):$('#export-formats');
     target.focus();
   }
 }
 function syncExport(disabled){
-  $('#mobile-workshop [data-mobile-panel=export]').disabled=!model;
+  $('#mobile-workshop [data-mobile-panel=export]').disabled=!selectedSize;
   $('#export-model').disabled=disabled;
   $('#export-formats').disabled=disabled;
   if(disabled)setFormatMenu(false);
@@ -1143,7 +1199,7 @@ function exportModel(){
   lock(true);
   say(baseMessage('status.exporting'));
   const {count,assignments}=isPure(model)?reliefMaterials:landscapeMaterials;
-  worker.postMessage({type:'export',format:exportFormat,materialCount:count,assignments});
+  worker.postMessage({type:'export',format:exportFormat,cuts:printCuts(model.width,model.height),materialCount:count,assignments});
 }
 $('#export-model').onclick=exportModel;
 $('#export-formats').onclick=()=>setFormatMenu($('#export-options').hidden,{focus:true});
@@ -1173,6 +1229,52 @@ for(const toggle of infoToggles)toggle.onclick=()=>{
     button.querySelector('i').textContent=open?'−':'+';
   }
 };
+$('#print-base').oninput=syncBaseAction;
+$('#print-base-form').onsubmit=event=>{
+  event.preventDefault();
+  if(!selectedSize||$('#print-base-fields').disabled)return;
+  const value=$('#print-base').valueAsNumber;
+  if(!validBaseThickness(value)||value===baseThickness)return;
+  baseThickness=value;
+  syncBaseAction();
+  if(!model)return;
+  if(pureSelected()&&canUpdateRelief(modelOptions()))requestReliefUpdate(statusMessage('print.pendingBase'));
+  else if(!needsBuild&&!dirty&&!tooLargeRegion)generate();
+  else requireBuild(statusMessage('print.pendingBase'));
+};
+$('#print-cuts-form').oninput=()=>{
+  if(cutError){cutError=null;syncPrintSettings();}
+};
+$('#print-cuts-form').onsubmit=event=>{
+  event.preventDefault();
+  if(!selectedSize||$('#print-cuts-fields').disabled)return;
+  const [width,height]=size();
+  const cuts={};
+  for(const [key,id,span] of [['columns','print-columns',width],['rows','print-rows',height]]){
+    const input=$('#'+id),bands=parsePrintBands(input.value);
+    if(bands===undefined)continue;
+    if(!validPrintBands(bands,span)){
+      cutError={field:id,key:'print.invalidBands',params:{total:span/10}};
+      syncPrintSettings();
+      input.focus();
+      return;
+    }
+    cuts[key]=bands;
+  }
+  if(!validPrintCuts(cuts,width,height)){
+    cutError={key:'print.tooMany',params:{limit:MAX_PRINT_PIECES}};
+    syncPrintSettings();
+    return;
+  }
+  applyPrintCuts(cuts);
+};
+function applyPrintCuts(cuts){
+  cutSettings.set(sizeKey(...size()),cuts);
+  cutFieldsSize='';
+  syncPrintSettings();
+  tiling();
+}
+$('#print-cuts-reset').onclick=()=>applyPrintCuts({});
 function syncVegetationControls(updating){
   const pure=pureSelected(),enabled=$('#trees').checked;
   $('#trees').disabled=updating;
@@ -1239,14 +1341,14 @@ const projectControls={
   vegetationHeight:'vegetation-height',vegetationNoise:'vegetation-noise'
 };
 function captureProject(){
-  const options={exportFormat,split:needsCuts(...size())};
+  const options={exportFormat,split:printPlan(...size()).tiles.length>1};
   for(const [key,id] of Object.entries(projectControls)){
     const control=$('#'+id);
     options[key]=control.type==='checkbox'?control.checked:
       ['buildingSource','buildingMode','treeType'].includes(key)?control.value:Number(control.value);
   }
   return {sizePreset:selectedSize,pose:selectedPose,pureRelief:pureSelected(),placeName:placeName||undefined,
-    exampleId:exampleSelection?.id,materials:landscapeMaterials,reliefMaterials,options,
+    exampleId:exampleSelection?.id,materials:landscapeMaterials,reliefMaterials,options,print:{baseThickness,cuts:printCuts(...size())},
     strokes:brushHistory.prepare(modelOptions(),strokes).strokes};
 }
 const feedbackMessages=new Map();
@@ -1303,7 +1405,12 @@ function restoreProject(){
   sessionStorage.removeItem(projectRestoreKey);
   const project=readProjects(localStorage).find(item=>item.id===id);
   if(!project)throw Error(text('project.notFound'));
-  const {sizePreset,pose,pureRelief,materials,reliefMaterials:savedReliefMaterials,options,placeName:savedPlace,exampleId,strokes:savedStrokes}=project.settings;
+  const {sizePreset,pose,pureRelief,materials,reliefMaterials:savedReliefMaterials,options,print,placeName:savedPlace,exampleId,strokes:savedStrokes}=project.settings;
+  if(print){
+    baseThickness=print.baseThickness;
+    $('#print-base').value=baseThickness;
+    cutSettings.set(sizeKey(...pieceDimensions(sizePreset)),print.cuts);
+  }
   regularPureRelief=pureRelief&&!isPanoramicSize(...pieceDimensions(sizePreset));
   selectPieceSize(sizePreset);
   placeMap.setRotation(pose.rotation);
@@ -1413,6 +1520,7 @@ $('#release-list').insertAdjacentHTML('afterbegin',`<article class="release-entr
 $('#release-list').insertAdjacentHTML('afterbegin',`<article class="release-entry"><div><strong>v0.23.5</strong><time datetime="2026-11-05">05/11/2026</time></div><p data-i18n="guide.release">${t('guide.release')}</p></article>`);
 $('#release-list').insertAdjacentHTML('afterbegin',`<article class="release-entry"><div><strong>v0.23.6</strong><time datetime="2026-11-05">05/11/2026</time></div><p data-i18n="history.tenerifeFrame">${t('history.tenerifeFrame')}</p></article>`);
 $('#release-list').insertAdjacentHTML('afterbegin',`<article class="release-entry"><div><strong>v0.23.7</strong><time datetime="2026-11-05">05/11/2026</time></div><p data-i18n="history.0.23.7">${t('history.0.23.7')}</p></article>`);
+$('#release-list').insertAdjacentHTML('afterbegin',`<article class="release-entry"><div><strong>v0.23.8</strong><time datetime="2026-11-06">06/11/2026</time></div><p data-i18n="history.0.23.8">${t('history.0.23.8')}</p></article>`);
 $('#copy-lightning').onclick=async()=>{try{await navigator.clipboard.writeText('aptswim903@walletofsatoshi.com');feedback('copy-status',statusMessage('copy.done'));}catch{feedback('copy-status',statusMessage('copy.manual'));}};
 for(const toggle of document.querySelectorAll('.sidebar-left .section-toggle'))toggle.disabled=true;
 function refreshWorkshopLanguage(){
@@ -1429,6 +1537,7 @@ function refreshWorkshopLanguage(){
   if(model&&region){buildingInfo();showModelNotes(model);}
   buildingControls();
   legend();metrics();
+  syncPrintSettings();
   selectExportFormat(exportFormat);
   scaleHint();
   $('#status').textContent=messageText(currentStatus);

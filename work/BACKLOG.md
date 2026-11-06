@@ -1,12 +1,13 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-05 · v0.23.6**. Retall de Tenerife en dues peces. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-06 · v0.23.8**. Base ajustable i talls manuals. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
 | Lot | Línies | Resultat que permet avançar |
 | --- | --- | --- |
 | **Temps de generació** | RO-053 | Primera optimització d’edificis mesurada amb la mateixa malla. Tornar a mesurar Amsterdam complet i aïllar la integració de les vies principals. [Mesures](RO-053-TEMPS.md) |
+| **Ajustos d’impressió** | RO-056 | Comprovar al laminador dues peces contigües de mides diferents. Després, estudiar els perfils d’impressora i la comprovació de mida per placa. |
 | **Paviment de superfície** | RO-051, RO-052 | Cobertura ampliada al retall de Marganell, amb encaix per tram i secció plana a les vores. Validar visualment i resoldre les unions complexes. [Control de Marganell](RO-051-PERFILS-VIARIS.md#més-cobertura-del-paviment-independent-a-la-v02211) |
 | **Seguiment de les estructures** | RO-033, RO-034, RO-050 | Registrar noves incidències amb retall i escala. A Sant Salvador, dos perfils segueixen el terreny pel pendent dels enllaços. El túnel a 1:20.000 té les dues boques comprovades al 3MF. El pas de Montgròs es conserva al cupó laminat. [Controls de vies](RO-051-PERFILS-VIARIS.md#transicions-pendents-a-la-v0220) · [Montgròs](RO-033-CONTROLS-PROCEDIMENTALS.md#laminat-del-cupó-de-montgròs) |
 | **Validació en paral·lel** | RO-024, RO-033, RO-046, RO-054, RO-055 | Revisar Tamariu 40 × 45 cm i Amsterdam amb totes les capes al laminador. També queden la recuperació d’un projecte girat i els talls dels Rasos–Gallina Pelada. |
@@ -17,7 +18,7 @@ Els encàrrecs independents avancen en paral·lel. Cada bloc validat té el seu 
 
 Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixes regles de generació. Les correccions han de basar-se en la geometria, les dades disponibles i l’escala, com la col·locació procedimental de pilars. Quan corregim un defecte, cal reproduir-lo en un control petit i contrastar la regla en un altre retall o escala.
 
-**Seguiment:** 19 línies obertes, 6 ajornades i 30 arxivades. «Implementat» vol dir disponible; la validació local, la d’usuari, el laminat i la impressió es registren per separat.
+**Seguiment:** 20 línies obertes, 6 ajornades i 30 arxivades. «Implementat» vol dir disponible; la validació local, la d’usuari, el laminat i la impressió es registren per separat.
 
 ## Desenvolupament prioritari
 
@@ -34,6 +35,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | [RO-023](#ro-023--relleu-local-i-fonts-vectorials-de-més-precisió) | P2 | MET5 integrat i auditat al Pedraforca | Contrast visual i refinament de malla |
 | [RO-055](#ro-055--mode-de-relleu-pur) | P2 | Retalls fins a 1:500.000 en tots els formats de Relleu pur | Laminar Tamariu i un panorama amb textura i comprovar dos talls adjacents |
 | [RO-054](#ro-054--galeria-local-de-projectes) | P2 | Catàleg local amb còpia JSON a v0.23.7 | Validar la recuperació entre dispositius en l’ús habitual |
+| [RO-056](#ro-056--base-talls-i-plaques) | P2 | Gruix i talls manuals implementats a v0.23.8 | Laminar talls asimètrics i definir com comprovar les plaques de cada impressora |
 
 ## Validació i retocs acotats
 
@@ -183,6 +185,10 @@ L’exageració vertical, els rius i la textura de vegetació s’apliquen autom
 «Vegetació simulada» activa una textura contínua i editable sobre el bosc. A 1:10.000 l’alçada màxima per defecte és de 0,8 mm, regulable entre 0,2 i 2 mm, i la irregularitat inicial és del 45 %. L’altura varia amb l’escala i se suavitza als límits del bosc. Les vores internes de les tessel·les queden dissoltes, comprovat amb el retall de linies-vegetacio.json. Queda pendent comprovar el laminat i una impressió de prova.
 
 Validar les quatre peces dels Rasos–Gallina Pelada al laminador, sobretot les vores adjacents i la visibilitat de rierols i arbres. [Mesures i fonts](RO-055-RELLEU-PUR.md)
+
+### RO-056 — Base, talls i plaques
+
+«Impressió» permet ajustar la base i repartir la maqueta amb mides diferents per columna i fila. Les guies i l’exportació comparteixen els mateixos talls. El 3MF multiplaca actual té una placa de referència de 256 × 256 mm; els talls més grans s’exporten en fitxers separats. Queda comprovar el laminat i, en una fase posterior, verificar els perfils reals d’impressores i avisar si una peça no hi cap.
 
 El format panoràmic admet de 51 a 100 cm de costat llarg i de 10 a 20 cm de costat curt, en Relleu pur. A la vista inicial, les peces que superen conjuntament els 60 cm es disposen en dues files a la mateixa escala que la taula. La malla rectangular segueix un pas físic similar als dos eixos i comparteix mostres i cota de base als talls.
 

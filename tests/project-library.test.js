@@ -54,6 +54,19 @@ test('panoramic projects preserve dimensions, mode and scales larger than the re
   assert.throws(()=>saveProject(storage,{name:'Escala insuficient',settings:{...panoramic,pose:{...panoramic.pose,widthM:49900}}}),/no és vàlida/);
 });
 
+test('project backups transfer manual cuts and base thickness and reject inconsistent plans',()=>{
+  const from=memoryStorage(),to=memoryStorage();
+  const print={baseThickness:7.5,cuts:{columns:[300,300,200],rows:[200]}};
+  const panorama={...settings,sizePreset:'80x20',pureRelief:true,
+    pose:{...settings.pose,widthM:40000,heightM:10000},strokes:[],print};
+  saveProject(from,{name:'Panorama',settings:panorama},firstDate);
+  assert.deepEqual(importProjectLibrary(to,exportProjectLibrary(from)),{added:1,skipped:0});
+  assert.deepEqual(readProjects(to)[0].settings.print,print);
+  for(const invalid of [{...print,baseThickness:7.1},{...print,cuts:{columns:[300,200]}}]){
+    assert.throws(()=>saveProject(from,{name:'Invàlid',settings:{...panorama,print:invalid}}),/no és vàlida/);
+  }
+});
+
 test('a square pure relief project at 1:500,000 can be saved and restored',()=>{
   const storage=memoryStorage();
   const square={...settings,sizePreset:'20x20',pureRelief:true,

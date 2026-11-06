@@ -167,7 +167,7 @@ test('real Rajadell MVT/DEM fixture generates an explicitly estimated main tunne
     globalThis.fetch=async url=>new Response(await readFile(new URL('../public/'+String(url).replace(/^\.\//,''),import.meta.url)));
     const data=await loadRegion({sample:'eix-diagonal',buildingSource:'osm',decodeElevation:async(blob,t)=>decodeDEMTile(await blob.arrayBuffer(),t,decode)});
     const model=buildModel(data,{size:150,resolution:24,trees:false},()=>{},api),prepared=prepareElevationTiles(data.dem);
-    const r=generateProceduralTunnelVoids(data.features,(lon,lat)=>sampleHeight(prepared.tiles,lon,lat),{enabled:true,projection:model.context.proj,verticalReference:model.context.verticalReference,ground:model.context.ground,waterMask:model.context.waterPoly});
+    const r=generateProceduralTunnelVoids(data.features,(lon,lat)=>sampleHeight(prepared.tiles,lon,lat),{enabled:true,projection:model.context.proj,verticalReference:model.context.verticalReference,minimumVoidFloorMM:model.context.verticalReference.minimumSurfaceMM,ground:model.context.ground,waterMask:model.context.waterPoly});
     const main=r.items.find(t=>t.sourceFeatureIds.includes(1820235140));
     assert(main,JSON.stringify(r.warnings));assert.equal(main.estimated,true);assert(main.maximumRoofCoverMM>.3);assert.deepEqual(auditPart(main).errors,[]);
   }finally{globalThis.fetch=prior;}

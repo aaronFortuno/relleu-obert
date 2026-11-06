@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.23.8 — 2026-11-06
+
+- «Impressió» permet ajustar el gruix de la base entre 2 i 30 mm i definir les amplades i fondàries de les peces. Les guies del visor coincideixen amb els talls de l’exportació.
+- Els projectes desats i les còpies del catàleg conserven el gruix i els talls. Les peces que superen els 256 mm del projecte multiplaca de Bambu es poden exportar per separat.
+
 ## v0.23.7 — 2026-11-05
 
 - «Projectes desats» permet descarregar una còpia JSON del catàleg i importar-la en un altre navegador. La importació conserva els projectes locals i evita duplicats.

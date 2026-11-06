@@ -2,8 +2,8 @@ import {MAX_PRINT_TILE_MM,tilePlan} from './selection.js';
 import {threeMF,stlZip} from './export.js';
 import {zipSync,strToU8} from 'fflate';
 // Clip solids, including buildings and crowns crossing a seam, and cap every cut.
-export function splitModel(model,api,max=MAX_PRINT_TILE_MM,progress=()=>{}){
-  const plan=tilePlan(model.width,model.height,max),solids=[];
+export function splitModel(model,api,maxOrPlan=MAX_PRINT_TILE_MM,progress=()=>{}){
+  const plan=maxOrPlan?.tiles?maxOrPlan:tilePlan(model.width,model.height,maxOrPlan),solids=[];
   try{
     for(const part of model.parts){const mesh=new api.Mesh({numProp:3,vertProperties:part.vertices,triVerts:part.faces});mesh.merge();const solid=new api.Manifold(mesh);solids.push({part,solid});if(solid.status()!=='NoError')throw Error(`No es pot dividir la capa «${part.name}»: cal revisar-ne la malla.`);}
     return plan.tiles.map((tile,i)=>{

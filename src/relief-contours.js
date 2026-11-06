@@ -1,3 +1,5 @@
+import {fractionalBounds,reliefBoundsClipper,sampleBounds} from './relief-bounds.js';
+
 export const RELIEF_SKIN_DEPTH=.65;
 
 // Interpolate class weights on the raster. Each grid vertex receives three
@@ -46,8 +48,10 @@ function grow(array,minimum){
 }
 
 function skinBuilder(bounds,grid,toBase=false,bottomAt){
-  const {left,bottom,right,top}=bounds,{resolution:n,rows=n,width,height}=grid;
-  const stride=right-left+1,integer=new Uint32Array(stride*(top-bottom+1));
+  const {left,bottom}=bounds,{resolution:n,rows=n,width,height}=grid;
+  const nodes=sampleBounds(bounds),stride=nodes.right-nodes.left+1;
+  const integer=new Uint32Array(stride*(nodes.top-nodes.bottom+1));
+  const trim=fractionalBounds(bounds)?reliefBoundsClipper(bounds):null;
   const intersections=new Map(),boundary=new Map(),edgeStride=2**24;
   let vertices=new Float32Array(1024),faces=new Uint32Array(1024),nv=0,nf=0;
   function vertex(point){
@@ -57,7 +61,7 @@ function skinBuilder(bounds,grid,toBase=false,bottomAt){
     if(vx===Math.fround((ix-left)*width/n))x=ix;
     if(vy===Math.fround((iy-bottom)*height/rows))y=iy;
     const lattice=Number.isInteger(x)&&Number.isInteger(y);
-    const key=lattice?(y-bottom)*stride+x-left:vx+','+vy;
+    const key=lattice?(y-nodes.bottom)*stride+x-nodes.left:vx+','+vy;
     const found=lattice?integer[key]:intersections.get(key);
     if(found)return found-1;
     vertices=grow(vertices,nv+6);
@@ -126,16 +130,21 @@ function skinBuilder(bounds,grid,toBase=false,bottomAt){
     }
     return replacements;
   }
+  function patch(poly){
+    const ids=poly.map(vertex);
+    for(let i=1;i+1<ids.length;i++){
+      const a=ids[0],b=ids[i],c=ids[i+1];
+      if(a===b||b===c||a===c)continue;
+      edge(a,b,nf);edge(b,c,nf);edge(c,a,nf);
+      tri(a,b,c);tri(a+1,c+1,b+1);
+    }
+  }
   return {
-    patch(poly){
-      const ids=poly.map(vertex);
-      for(let i=1;i+1<ids.length;i++){
-        const a=ids[0],b=ids[i],c=ids[i+1];
-        if(a===b||b===c||a===c)continue;
-        edge(a,b,nf);edge(b,c,nf);edge(c,a,nf);
-        tri(a,b,c);tri(a+1,c+1,b+1);
-      }
-    },
+    // Trim the same triangles as the uncut surface, including any nonplanar
+    // vegetation. Retriangulating whole contours would change their heights.
+    patch:trim?poly=>{
+      for(let i=1;i+1<poly.length;i++)patch(trim([poly[0],poly[i],poly[i+1]]));
+    }:patch,
     finish(){
       if(!nf)return null;
       // Build walls from actual open top edges. Independent clipping passes
@@ -153,8 +162,66 @@ function skinBuilder(bounds,grid,toBase=false,bottomAt){
   };
 }
 
+export function clippedReliefCore(grid,bounds,depth){
+  const {left,bottom,right,top}=sampleBounds(bounds),stride=right-left+1;
+  const {resolution:n,rows=n,width,height,heights,diagonals}=grid;
+  const trim=reliefBoundsClipper(bounds),nodes=new Uint32Array(stride*(top-bottom+1));
+  const seamNodes=new Map(),floorNodes=new Map();
+  let vertices=new Float32Array(nodes.length*3),faces=new Uint32Array((right-left)*(top-bottom)*6),nv=0,nf=0;
+  function vertex(x,y,z){
+    vertices=grow(vertices,nv+3);
+    vertices[nv++]=x;vertices[nv++]=y;vertices[nv++]=z;
+    return nv/3-1;
+  }
+  function triangle(a,b,c){
+    if(a===b||b===c||a===c)return;
+    faces=grow(faces,nf+3);
+    faces[nf++]=a;faces[nf++]=b;faces[nf++]=c;
+  }
+  const xMM=x=>Math.fround((x-bounds.left)*width/n),yMM=y=>Math.fround((y-bounds.bottom)*height/rows);
+  const centre=vertex(xMM((bounds.left+bounds.right)/2),yMM((bounds.bottom+bounds.top)/2),0);
+  const near=(a,b)=>Math.abs(a-b)<1e-10;
+  function topIndex([x,y,z]){
+    const px=xMM(x),py=yMM(y),ix=Math.round(x),iy=Math.round(y);
+    if(px===xMM(ix)&&py===yMM(iy)){
+      const key=(iy-bottom)*stride+ix-left;
+      if(!nodes[key])nodes[key]=vertex(px,py,z)+1;
+      return nodes[key]-1;
+    }
+    const key=px+','+py;
+    if(!seamNodes.has(key))seamNodes.set(key,vertex(px,py,z));
+    return seamNodes.get(key);
+  }
+  function floorIndex(i){
+    if(!floorNodes.has(i))floorNodes.set(i,vertex(vertices[i*3],vertices[i*3+1],0));
+    return floorNodes.get(i);
+  }
+  function patch(poly){
+    if(poly.length<3)return;
+    const ids=poly.map(topIndex);
+    for(let i=1;i+1<ids.length;i++)triangle(ids[0],ids[i],ids[i+1]);
+    for(let i=0;i<ids.length;i++){
+      const j=(i+1)%ids.length,a=poly[i],b=poly[j],p=ids[i],q=ids[j];
+      if(p===q)continue;
+      if(!(near(a[0],bounds.left)&&near(b[0],bounds.left)||near(a[0],bounds.right)&&near(b[0],bounds.right)||
+           near(a[1],bounds.bottom)&&near(b[1],bounds.bottom)||near(a[1],bounds.top)&&near(b[1],bounds.top)))continue;
+      const pb=floorIndex(p),qb=floorIndex(q);
+      triangle(p,pb,qb);triangle(p,qb,q);
+      // The rectangular bottom only needs the perimeter and a centre fan.
+      triangle(centre,qb,pb);
+    }
+  }
+  const point=(x,y)=>[x,y,heights[y*(n+1)+x]-depth];
+  for(let y=bottom;y<top;y++)for(let x=left;x<right;x++){
+    const a=point(x,y),b=point(x+1,y),c=point(x+1,y+1),d=point(x,y+1);
+    if(diagonals[y*n+x]){patch(trim([a,b,d]));patch(trim([b,c,d]));}
+    else{patch(trim([a,b,c]));patch(trim([a,c,d]));}
+  }
+  return {vertices:vertices.slice(0,nv),faces:faces.slice(0,nf)};
+}
+
 export function coverageSkins(grid,bounds,coastal=false){
-  const {left,bottom,right,top}=bounds;
+  const {left,bottom,right,top}=sampleBounds(bounds);
   const {resolution:n,heights,diagonals,scores,lakeWeights,forestWeights,oceanWeights,seaLevelMM}=grid;
   const layered=scores||lakeWeights||forestWeights;
   const builders=!coastal||layered?Array.from({length:5},()=>skinBuilder(bounds,grid)):[];
@@ -217,8 +284,9 @@ export function coverageSkins(grid,bounds,coastal=false){
 export function vegetationSkin(grid,bounds){
   const {vegetationTexture,heights,diagonals,resolution:n,rows=n,width,height}=grid;
   if(!vegetationTexture)return null;
-  const {coverage,raise}=vegetationTexture,{left,bottom,right,top}=bounds;
+  const {coverage,raise}=vegetationTexture,{left,bottom,right,top}=sampleBounds(bounds);
   const skin=skinBuilder(bounds,grid,false,point=>point[3]-.06);
+  const trim=fractionalBounds(bounds)?reliefBoundsClipper(bounds):null;
   const point=(x,y,index)=>[x,y,heights[index],coverage[index],raise[index]];
   let area=0;
   function patch(a,b,c){
@@ -226,8 +294,9 @@ export function vegetationSkin(grid,bounds){
     const triangle=[a,b,c];
     const contour=triangle.every(p=>p[3]>=0)?triangle:clip(triangle,p=>p[3]);
     if(contour.length<3)return;
-    for(let i=1;i+1<contour.length;i++){
-      const [p,q,r]=[contour[0],contour[i],contour[i+1]];
+    const areaContour=trim?trim(contour):contour;
+    for(let i=1;i+1<areaContour.length;i++){
+      const [p,q,r]=[areaContour[0],areaContour[i],areaContour[i+1]];
       area+=((q[0]-p[0])*(r[1]-p[1])-(q[1]-p[1])*(r[0]-p[0]))/2;
     }
     skin.patch(contour.map(([x,y,ground,weight,offset])=>{

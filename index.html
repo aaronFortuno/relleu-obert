@@ -175,6 +175,37 @@
         <div id="tiling-summary" class="subtle-note" data-i18n="ui.output.sizePending">Mida pendent de triar</div>
       </div>
     </section>
+    <section class="info-panel" id="print-panel" hidden>
+      <h2><button type="button" class="section-toggle" aria-expanded="false" aria-controls="info-print" data-i18n-text="ui.print.title">Impressió <i aria-hidden="true">+</i></button></h2>
+      <div class="config-content" id="info-print" hidden>
+        <form id="print-base-form">
+          <fieldset id="print-base-fields">
+            <label for="print-base" data-i18n-text="ui.print.base">Gruix de la base <span class="unit">mm</span></label>
+            <div class="print-base-row">
+              <input id="print-base" type="number" min="2" max="30" step="0.5" value="5" required aria-describedby="print-base-note">
+              <button id="print-base-apply" type="submit" class="secondary" disabled data-i18n="ui.print.applyBase">Aplica el gruix</button>
+            </div>
+            <p id="print-base-note" class="hint" data-i18n="ui.print.baseNote">Distància de sota la maqueta fins a la cota més baixa del relleu o del mar.</p>
+          </fieldset>
+        </form>
+        <form id="print-cuts-form">
+          <fieldset id="print-cuts-fields">
+            <legend data-i18n="ui.print.cuts">Mides de les peces</legend>
+            <div class="two-fields">
+              <div><label for="print-columns" data-i18n-text="ui.print.columns">Amplades <span class="unit">cm</span></label><input id="print-columns" type="text" maxlength="100" autocomplete="off" aria-describedby="print-cuts-note"></div>
+              <div><label for="print-rows" data-i18n-text="ui.print.rows">Fondàries <span class="unit">cm</span></label><input id="print-rows" type="text" maxlength="100" autocomplete="off" aria-describedby="print-cuts-note"></div>
+            </div>
+            <p id="print-cuts-note" class="hint" data-i18n="ui.print.cutsNote">D’esquerra a dreta i de baix a dalt. Separa les mides amb espais. Deixa el camp buit per fer talls automàtics.</p>
+            <p id="print-cuts-feedback" class="hint error" role="alert" hidden></p>
+            <div class="print-cuts-actions">
+              <button type="submit" class="secondary" data-i18n="ui.print.applyCuts">Aplica els talls</button>
+              <button id="print-cuts-reset" type="button" class="quiet-button" disabled data-i18n="ui.print.resetCuts">Restableix</button>
+            </div>
+            <p id="print-cuts-summary" class="hint" role="status"></p>
+          </fieldset>
+        </form>
+      </div>
+    </section>
     <section class="info-panel">
       <h2><button type="button" class="section-toggle" aria-expanded="false" aria-controls="info-materials" data-i18n-text="ui.materials.title">Colors i materials <i aria-hidden="true">+</i></button></h2>
       <div class="config-content" id="info-materials" hidden><label id="material-count-label" for="material-count" data-i18n="ui.materials.count">Colors / materials</label><select id="material-count"><option value="1" data-i18n="ui.materials.one">1 material · impressió monocroma</option><option value="2" data-i18n="ui.materials.two">2 materials</option><option value="4" selected data-i18n="ui.materials.four">4 materials</option><option value="8" data-i18n="ui.materials.eight">8 materials</option></select><div id="material-legend" class="material-legend"></div></div>
@@ -212,7 +243,7 @@
       <path d="m27 9 7-6" stroke="var(--umbrella-accent)" stroke-width="4.5"/>
     </svg><span>ortogra<span class="umbrella-dot">.</span>fi</span>
   </a></p>
-  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer" data-i18n-text="ui.footer.openSource"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions">v0.23.7</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V" data-i18n-aria="ui.footer.about"><span class="desktop-copy" data-i18n="ui.footer.aboutDesktop">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
+  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer" data-i18n-text="ui.footer.openSource"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions">v0.23.8</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V" data-i18n-aria="ui.footer.about"><span class="desktop-copy" data-i18n="ui.footer.aboutDesktop">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
 </footer>
 
 <dialog id="projects-dialog" aria-labelledby="projects-title">

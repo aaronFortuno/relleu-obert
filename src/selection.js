@@ -24,10 +24,35 @@ export function parseCoordinates(text){
   const m=text.trim().match(/^([+-]?\d{1,2}(?:\.\d+)?)\s*[,;]\s*([+-]?\d{1,3}(?:\.\d+)?)$/);if(!m)return null;
   const lat=Number(m[1]),lon=Number(m[2]);if(Math.abs(lat)>70||Math.abs(lon)>179.8)throw Error('Coordenades fora de l’àmbit admès: latitud entre −70 i 70.');return {lat,lon};
 }
-export function tilePlan(width,height,max=MAX_PRINT_TILE_MM){
-  const cols=Math.ceil(width/max),rows=Math.ceil(height/max),tiles=[];
-  for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){const x0=col*width/cols,y0=(rows-row-1)*height/rows;tiles.push({name:`fila-${row+1}-columna-${col+1}`,row:row+1,col:col+1,x0,y0,x1:(col+1)*width/cols,y1:(rows-row)*height/rows,width:width/cols,height:height/rows});}
-  return {cols,rows,tiles};
+export const MAX_PRINT_PIECES=16;
+export function validPrintBands(bands,length){
+  return Array.isArray(bands)&&bands.length>0&&bands.length<=MAX_PRINT_PIECES&&
+    Array.from(bands).every(mm=>Number.isSafeInteger(mm)&&mm>=10)&&bands.reduce((sum,mm)=>sum+mm,0)===length;
+}
+export function validPrintCuts(cuts,width,height){
+  if(!cuts||typeof cuts!=='object'||Array.isArray(cuts))return false;
+  const {columns,rows}=cuts;
+  return (columns===undefined||validPrintBands(columns,width))&&(rows===undefined||validPrintBands(rows,height))&&
+    (columns?.length??Math.ceil(width/MAX_PRINT_TILE_MM))*(rows?.length??Math.ceil(height/MAX_PRINT_TILE_MM))<=MAX_PRINT_PIECES;
+}
+export function tilePlan(width,height,maxOrOverrides=MAX_PRINT_TILE_MM){
+  const max=typeof maxOrOverrides==='number'?maxOrOverrides:MAX_PRINT_TILE_MM;
+  const overrides=typeof maxOrOverrides==='object'&&maxOrOverrides?maxOrOverrides:{};
+  const bounds=(span,bands)=>{
+    if(!bands){
+      const count=Math.ceil(span/max);
+      return Array.from({length:count+1},(_,i)=>i*span/count);
+    }
+    let offset=0;
+    return [0,...bands.map(mm=>offset+=mm)];
+  };
+  const x=bounds(width,overrides.columns),y=bounds(height,overrides.rows);
+  const cols=x.length-1,rows=y.length-1,tiles=[];
+  for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){
+    const x0=x[col],x1=x[col+1],y0=y[rows-row-1],y1=y[rows-row];
+    tiles.push({name:`fila-${row+1}-columna-${col+1}`,row:row+1,col:col+1,x0,y0,x1,y1,width:x1-x0,height:y1-y0});
+  }
+  return {cols,rows,tiles,xCuts:x.slice(1,-1),yCuts:y.slice(1,-1)};
 }
 export function physicalBBox([lat,lon],widthKM,heightKM){const dy=heightKM/2/111.32,dx=widthKM/2/(111.32*Math.cos(lat*Math.PI/180));return [lon-dx,lat-dy,lon+dx,lat+dy];}
 export function coveringSelectionBox(pose,widthMM,heightMM){

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {cutGuideSegments} from '../src/cut-guides.js';
+import {tilePlan} from '../src/selection.js';
 
 const vertices=new Float32Array([0,0,5,300,0,35,300,300,95,0,300,65]);
 const surface={id:'terrain',vertices,faces:new Uint32Array([0,1,2,0,2,3])};
@@ -36,4 +37,15 @@ test('rectangular pieces use one seam per side above 25 cm',()=>{
     }
     assert.deepEqual([...seams].sort(),expected);
   }
+});
+
+test('the panoramic guides follow manual 30, 30 and 20 cm print pieces',()=>{
+  const width=800,height=200,vertices=new Float32Array([0,0,5,800,0,5,800,200,45,0,200,45]);
+  const plan=tilePlan(width,height,{columns:[300,300,200]});
+  const guides=cutGuideSegments({width,height,categories:[{...surface,vertices}]},plan);
+  const x=new Set();
+  for(let i=0;i<guides.length;i+=3){
+    x.add(guides[i]);assert(Math.abs(guides[i+2]-(5+guides[i+1]/5))<1e-5);
+  }
+  assert.deepEqual([...x].sort(),[300,600]);
 });

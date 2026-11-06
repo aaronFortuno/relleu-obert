@@ -10,6 +10,8 @@ El Catastre mostra els edificis per blocs sobre la maqueta. Quan dues respostes 
 
 Tria la mida amb els botons proporcionals de la vista inicial. A Territori pots triar un exemple, situar el retall i ajustar l'escala fins a 1:20.000, el gir, l'exageració i el detall. Prem «Genera el model» des del mateix apartat. «Projecte nou» recupera el selector de mides.
 
+Al panell «Impressió» del lateral dret pots triar el gruix de la base (2–30 mm, 5 mm per defecte) i repartir la maqueta en peces de mides diferents. Per exemple, per a 80 × 20 cm, escriu `30 30 20` a Amplades i deixa Fondàries en blanc. Les guies del visor indiquen per on es tallarà el fitxer. Si una peça supera els 256 mm de la placa de referència del 3MF multiplaca de Bambu, la descàrrega de Bambu passa a un ZIP amb els 3MF de cada peça.
+
 RO-053 separa el càlcul de vies de la preparació del relleu. Els canvis de realç i túnels reutilitzen el terreny i els edificis del retall vigent. El motor revisa les unions i reaplica els traços del pinzell, mantenint la càmera.
 
 Els ajustos de vies s'apliquen automàticament a la maqueta generada. El panell dret manté la descàrrega al peu i permet triar i descarregar el format en una sola acció. Els ferrocarrils parteixen de l'altura de les carreteres i, en la paleta de vuit materials, del color dels edificis.

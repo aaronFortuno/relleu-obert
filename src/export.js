@@ -1,4 +1,5 @@
 import {zipSync,strToU8} from 'fflate';
+import {BAMBU_PROJECT_BED_MM} from './print-settings.js';
 const esc=s=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;');
 function xmlBytes(...initial){
   const chunks=[];
@@ -64,7 +65,7 @@ export function threeMF(model,{bambu=false}={}){
 }
 
 export function bambuPlateProject(model,tiles){
-  const bed=256,columns=Math.ceil(Math.sqrt(tiles.length)),pitch=bed*1.2;
+  const bed=BAMBU_PROJECT_BED_MM,columns=Math.ceil(Math.sqrt(tiles.length)),pitch=bed*1.2;
   const provenance={...model.provenance,printPlates:tiles.map(({tile})=>tile)};
   const xml=modelXML(provenance,true),materials=new Map(model.parts.map((part,i)=>[part.id,i]));
   const objects=[],plates=[],build=[];

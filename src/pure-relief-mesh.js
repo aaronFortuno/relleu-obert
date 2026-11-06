@@ -1,7 +1,8 @@
-import {coverageSkins,RELIEF_SKIN_DEPTH,vegetationSkin} from './relief-contours.js';
+import {clippedReliefCore,coverageSkins,RELIEF_SKIN_DEPTH,vegetationSkin} from './relief-contours.js';
 import {RELIEF_MATERIALS,nativeReliefParts} from './materials.js';
 import {tilePlan} from './selection.js';
 import {reliefStreamPart} from './relief-streams.js';
+import {fractionalBounds,sampleBounds} from './relief-bounds.js';
 
 export const PURE_RELIEF_RESOLUTIONS={24:240,36:384,56:540};
 const panoramicSteps={240:1.25,384:.9,540:.65};
@@ -96,7 +97,7 @@ function combine(a,b){
 function hasMarineNodes(grid,bounds){
   const {resolution,oceanWeights}=grid;
   if(!oceanWeights)return false;
-  const {left,bottom,right,top}=bounds,stride=resolution+1;
+  const {left,bottom,right,top}=sampleBounds(bounds),stride=resolution+1;
   for(let row=bottom;row<=top;row++)for(let col=left;col<=right;col++){
     if(oceanWeights[row*stride+col]>0)return true;
   }
@@ -107,7 +108,7 @@ export function reliefParts(grid,bounds=wholeGrid(grid)){
   const coastal=hasMarineNodes(grid,bounds);
   const skins=coastal||grid.scores||grid.lakeWeights||grid.forestWeights?coverageSkins(grid,bounds,coastal):[];
   const layered=skins.slice(1,5).some(Boolean);
-  const base=coastal?skins[6]:reliefBase(grid,bounds,layered);
+  const base=coastal?skins[6]:fractionalBounds(bounds)?clippedReliefCore(grid,bounds,layered?RELIEF_SKIN_DEPTH:0):reliefBase(grid,bounds,layered);
   const terrain=base&&(coastal||layered?combine(base,skins[0]):base);
   const parts=[];
   if(terrain)parts.push({...RELIEF_MATERIALS[0],...terrain});
@@ -121,10 +122,11 @@ export function reliefParts(grid,bounds=wholeGrid(grid)){
   return parts;
 }
 
-function tileBounds(grid,plan,tile){
-  const cols=grid.resolution/plan.cols,rows=(grid.rows??grid.resolution)/plan.rows;
-  const left=(tile.col-1)*cols,bottom=(plan.rows-tile.row)*rows;
-  return {left,bottom,right:left+cols,top:bottom+rows};
+function tileBounds(grid,tile){
+  const {width,height,resolution,rows=resolution}=grid;
+  const snap=value=>Math.abs(value-Math.round(value))<1e-9?Math.round(value):value;
+  const x=mm=>snap(mm/width*resolution),y=mm=>snap(mm/height*rows);
+  return {left:x(tile.x0),bottom:y(tile.y0),right:x(tile.x1),top:y(tile.y1)};
 }
 
 function placeInAssembly(part,tile){
@@ -154,7 +156,7 @@ export function reliefInlandWater(grid,lakes,panoramic){
   if(panoramic){
     const plan=tilePlan(grid.width,grid.height),parts=[];
     for(const tile of plan.tiles){
-      const part=reliefStreamPart(grid,tileBounds(grid,plan,tile));
+      const part=reliefStreamPart(grid,tileBounds(grid,tile));
       if(part)parts.push(placeInAssembly(part,tile));
     }
     stream=joinParts(parts);
@@ -168,7 +170,7 @@ export function previewReliefPieces(grid,emit){
   if(total<2||grid.resolution%plan.cols||(grid.rows??grid.resolution)%plan.rows)return false;
   const previewGrid={...grid,scores:null,lakeWeights:null,forestWeights:null,streamStrips:null,vegetationTexture:null};
   for(const [i,tile] of plan.tiles.entries()){
-    const parts=reliefParts(previewGrid,tileBounds(grid,plan,tile));
+    const parts=reliefParts(previewGrid,tileBounds(grid,tile));
     emit(parts.map(part=>placeInAssembly(part,tile)),{index:i+1,total});
   }
   return true;
@@ -177,7 +179,7 @@ export function previewReliefPieces(grid,emit){
 export function assemblePanoramicRelief(grid,progress){
   const plan=tilePlan(grid.width,grid.height),partsByMaterial=new Map();
   for(const [i,tile] of plan.tiles.entries()){
-    for(const part of reliefParts(grid,tileBounds(grid,plan,tile))){
+    for(const part of reliefParts(grid,tileBounds(grid,tile))){
       if(!partsByMaterial.has(part.id))partsByMaterial.set(part.id,[]);
       partsByMaterial.get(part.id).push(placeInAssembly(part,tile));
     }
@@ -187,14 +189,13 @@ export function assemblePanoramicRelief(grid,progress){
     .map(material=>({...material,...joinParts(partsByMaterial.get(material.id))}));
 }
 
-// All pieces reuse the same sampled heights and diagonals. Rebuild their
-// perimeter walls directly on grid lines instead of cutting large meshes.
-export function splitPureRelief(model,max,progress=()=>{}){
-  const grid=model.reliefGrid,n=grid.resolution,plan=tilePlan(model.width,model.height,max);
-  if(n%plan.cols||(grid.rows??n)%plan.rows)return null;
+// All pieces reuse the same sampled heights and diagonals. For a cut between
+// samples, clip the original triangles and cap their exact intersection.
+export function splitPureRelief(model,maxOrPlan,progress=()=>{}){
+  const grid=model.reliefGrid,plan=maxOrPlan?.tiles?maxOrPlan:tilePlan(model.width,model.height,maxOrPlan);
   return plan.tiles.map((tile,i)=>{
     progress('Tancant la peça '+(i+1)+'/'+plan.tiles.length+'…');
-    const parts=nativeReliefParts(reliefParts(grid,tileBounds(grid,plan,tile)));
+    const parts=nativeReliefParts(reliefParts(grid,tileBounds(grid,tile)));
     const provenance={...model.provenance,tile,
       assembly:{width:model.width,height:model.height,columns:plan.cols,rows:plan.rows},
       name:(model.provenance.name||'Maqueta')+' · '+tile.name};

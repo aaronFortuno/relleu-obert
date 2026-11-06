@@ -43,7 +43,7 @@ classes existents. `output` de formulari no ha de flotar a la dreta.
   Les quatre capçaleres es veuen sempre i només el contingut obert fa scroll.
   L’acció del pas actiu acompanya el títol. Els títols permeten saltar
   directament a un altre pas; «Següent» no inicia un càlcul.
-- Sidebar dret: mètriques, materials i dades amb capçaleres visibles i
+- Sidebar dret: mètriques, impressió, materials i dades amb capçaleres visibles i
   scroll només al contingut obert. Descàrrega ancorada al peu, amb un
   botó principal i un selector de formats que aplica la tria.
 - «Marc exterior» i els complements ajornats no apareixen al sidebar;

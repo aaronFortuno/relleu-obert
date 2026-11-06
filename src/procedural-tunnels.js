@@ -111,17 +111,18 @@ function requiredLowering(samples,minLength){
 /**
  * generateProceduralTunnelVoids(features, elevationAt, {
  *   enabled:false, projection, verticalReference, exaggeration:1.5,
- *   ground:(x,y)=>modelTerrainZ, waterMask:[], minBaseMM:2.5,
+ *   ground:(x,y)=>modelTerrainZ, waterMask:[], minBaseMM:2.5, minimumVoidFloorMM:0,
  *   minOpeningMM:1.2, maxTunnels:24
  * }) -> {items, warnings, metadata}
  * Items contain a closed Float32/Uint32 cutter plus path/section/source IDs.
  */
 export function generateProceduralTunnelVoids(features,elevationAt,options={}){
-  const {enabled=false,projection,verticalReference,exaggeration=1.5,ground,waterMask=[],minBaseMM=2.5,minOpeningMM=1.2,maxTunnels=24,surfaceRiseMM=0,railSurfaceRiseMM=surfaceRiseMM,surfaceAt,surfaceBreaks,portalRoute,sharedPavement,trailWidth}=options;
+  const {enabled=false,projection,verticalReference,exaggeration=1.5,ground,waterMask=[],minBaseMM=2.5,minimumVoidFloorMM=0,minOpeningMM=1.2,maxTunnels=24,surfaceRiseMM=0,railSurfaceRiseMM=surfaceRiseMM,surfaceAt,surfaceBreaks,portalRoute,sharedPavement,trailWidth}=options;
   const pavementThicknessMM=sharedPavement?.thicknessMM??.3,sectionProfile='estimated-parabolic-arch';
+  const minimumFloorMM=Math.max(minBaseMM+pavementThicknessMM,minimumVoidFloorMM);
   const warnings=[],metadata={enabled:enabled===true,estimated:true,method:sharedPavement?'shared-surface-road-grade':'linear-dem-with-generated-surface-portal-ramps',section:sectionProfile,sectionWallHeightRatio:.55,sectionRoofSegments:16,pavementThicknessMM,minimumBaseMM:minBaseMM,minimumOpeningMM:minOpeningMM,count:0,omitted:0,omissions:[]};
   if(!enabled)return {items:[],warnings,metadata};
-  if(enabled!==true||!Array.isArray(features)||typeof elevationAt!=='function'||typeof ground!=='function'||typeof projection?.project!=='function'||![projection?.scale,projection?.width,projection?.height,verticalReference?.originMeters,verticalReference?.minimumSurfaceMM,exaggeration,minBaseMM,minOpeningMM,surfaceRiseMM,railSurfaceRiseMM].every(Number.isFinite)||projection.scale<=0||projection.width<=0||projection.height<=0||exaggeration<=0||minBaseMM<1||minOpeningMM<.8||minOpeningMM>5||surfaceRiseMM<0||surfaceRiseMM>1||railSurfaceRiseMM<0||railSurfaceRiseMM>2||!Number.isSafeInteger(maxTunnels)||maxTunnels<1||maxTunnels>24)
+  if(enabled!==true||!Array.isArray(features)||typeof elevationAt!=='function'||typeof ground!=='function'||typeof projection?.project!=='function'||![projection?.scale,projection?.width,projection?.height,verticalReference?.originMeters,verticalReference?.minimumSurfaceMM,exaggeration,minBaseMM,minimumVoidFloorMM,minOpeningMM,surfaceRiseMM,railSurfaceRiseMM].every(Number.isFinite)||projection.scale<=0||projection.width<=0||projection.height<=0||exaggeration<=0||minBaseMM<1||minimumVoidFloorMM<0||minOpeningMM<.8||minOpeningMM>5||surfaceRiseMM<0||surfaceRiseMM>1||railSurfaceRiseMM<0||railSurfaceRiseMM>2||!Number.isSafeInteger(maxTunnels)||maxTunnels<1||maxTunnels>24)
     throw Error('Configuració de túnels experimentals invàlida.');
   if(surfaceAt!=null&&typeof surfaceAt!=='function'||surfaceBreaks!=null&&typeof surfaceBreaks!=='function'||portalRoute!=null&&typeof portalRoute!=='function')throw Error('Connexió de portals invàlida.');
   if(sharedPavement&&(![sharedPavement.top,sharedPavement.exposed].every(f=>typeof f==='function')||
@@ -165,11 +166,13 @@ export function generateProceduralTunnelVoids(features,elevationAt,options={}){
     let z0,z1;
     try{z0=elevationAt(...f.points[0]);z1=elevationAt(...f.points.at(-1));}catch{fail(id,'falten dades DEM als extrems originals.');continue;}
     if(![z0,z1].every(z=>Number.isFinite(z)&&z>=-500&&z<=9000)){fail(id,'cota DEM invàlida.');continue;}
-    const modelZ=z=>verticalReference.minimumSurfaceMM+(z-verticalReference.originMeters)*projection.scale*exaggeration-.15;
+    // The pavement may lie within the printed base, but its top (the start of
+    // the air passage) must never break through the selected solid layers.
+    const modelZ=z=>Math.max(minimumVoidFloorMM,verticalReference.minimumSurfaceMM+(z-verticalReference.originMeters)*projection.scale*exaggeration-.15);
     const startZ=modelZ(z0),endZ=modelZ(z1),path=xy.map(([x,y],i)=>[x,y,sharedPavement?
       sharedPavement.top(x,y):startZ+(endZ-startZ)*distances[i]/length]);
     if(path.some(p=>!Number.isFinite(p[2]))){fail(id,'la rasant compartida no cobreix l’eix del túnel.');continue;}
-    const floorMargin=Math.min(...path.map(p=>p[2]))-pavementThicknessMM-minBaseMM;
+    const floorMargin=Math.min(...path.map(p=>p[2]))-minimumFloorMM;
     if(floorMargin<0){fail(id,'la cota del paviment tallaria el gruix mínim de base.');continue;}
     let loweringMM=0;
     let coverSamples=sampleRoofCover(path,distances,projection,ground,widthMM,heightMM,1);
@@ -296,7 +299,7 @@ export function generateProceduralTunnelVoids(features,elevationAt,options={}){
     }
     try{footprints=sweptFootprints(extended,widthMM,projection);}catch(error){fail(id,error.message);continue;}
     if(waterMask.length&&footprints.some(p=>polygonOps().intersection([p],waterMask).length)){fail(id,'la prolongació del portal coincideix amb aigua.');continue;}
-    if(pavementSections.some(s=>s.across.some(p=>p[2]-pavementThicknessMM<minBaseMM))){fail(id,'la cota del paviment tallaria el gruix mínim de base.');continue;}
+    if(pavementSections.some(s=>s.across.some(p=>p[2]<minimumFloorMM-1e-7))){fail(id,'la cota del paviment tallaria el gruix mínim de base.');continue;}
     if(!covered){
       fail(id,'el relleu no acredita una coberta contínua sobre l’obertura estimada.');continue;
     }

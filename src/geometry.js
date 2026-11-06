@@ -40,8 +40,18 @@ import {planSurfaceRoad} from './surface-road.js';
 import {planRegionalSurfaceRoads} from './regional-surface-roads.js';
 import {removeCollapsedSurfaceComponents} from './surface-components.js';
 import {isFlowingWater,isMarineWater,isStandingWater,shorelineLevel} from './standing-water.js';
+import {DEFAULT_BASE_THICKNESS_MM,validBaseThickness} from './print-settings.js';
 export {sampleHeight} from './elevation.js';
 const pc=polygonOps(undefined,{recoverMillimetreUnions:true});
+function modelBaseThickness(value=DEFAULT_BASE_THICKNESS_MM){
+  if(!validBaseThickness(value))throw Error('El gruix de la base ha de ser entre 2 i 30 mm, en passos de 0,5 mm.');
+  return value;
+}
+
+function verticalDatum(originMeters,minimumSurfaceMM,hasOcean){
+  return {originMeters,minimumSurfaceMM,seaLevelMM:hasOcean?minimumSurfaceMM:null,
+    method:hasOcean?`sea level at ${minimumSurfaceMM} mm; no bathymetry`:`lowest generated-terrain sample at ${minimumSurfaceMM} mm`};
+}
 
 export const MATERIALS=[{id:'terrain',name:'Terreny',color:'#c6b38d'},{id:'water',name:'Aigua',color:'#8dc5ca'},{id:'built',name:'Edificis i camins',color:'#eee9dc'},{id:'green',name:'Vegetació',color:'#4e8966'}];
 const area=r=>r.reduce((s,p,i)=>{const q=r[(i+1)%r.length];return s+p[0]*q[1]-q[0]*p[1];},0)/2;
@@ -242,7 +252,7 @@ export function treeMesh({x,y,ground,rx,ry,rz,rotation=0,phase=0,crownTaper=0}){
   return {vertices:surf.vertices,faces:surf.faces};
 }
 function prepareTerrain(data,options,progress,preview,measure){
-  const {size=160,exaggeration=1.5,density=2.5,resolution=36}=options,proj=makeProjection(data.meta.bbox,size,options),{width,height,project,scale}=proj,rect=box(width,height),warnings=[];
+  const {size=160,exaggeration=1.5,density=2.5,resolution=36,baseThickness}=options,proj=makeProjection(data.meta.bbox,size,options),{width,height,project,scale}=proj,rect=box(width,height),warnings=[];
   if(!Number.isFinite(density)||density<.25||density>5||!Number.isInteger(resolution)||resolution<2||resolution>100||!Number.isFinite(exaggeration)||exaggeration<1||exaggeration>5||!Number.isFinite(size)||size<50||size>MAX_MODEL_SIDE_MM||width>MAX_MODEL_SIDE_MM||height>MAX_MODEL_SIDE_MM)throw Error('Els ajustos de la maqueta són fora del rang admès.');
   if(options.targetScale!=null&&Math.abs(1000/scale-validateScale(options.targetScale))>options.targetScale*1e-6)throw Error('El retall no concorda amb l’escala demanada. Torna a seleccionar la regió.');
   preview?.stage('terrain','Revisant les mostres d’altitud…');
@@ -346,17 +356,17 @@ function prepareTerrain(data,options,progress,preview,measure){
   let originMeters=Infinity,maximumElevation=-Infinity;
   for(const h of field.values){originMeters=Math.min(originMeters,h);maximumElevation=Math.max(maximumElevation,h);}
   if(hasOcean)originMeters=0;
-  const verticalReference={originMeters,minimumSurfaceMM:5,seaLevelMM:hasOcean?5:null,method:hasOcean?'sea level at 5 mm; no bathymetry':'lowest generated-terrain sample at 5 mm'};
-  for(let i=0;i<field.values.length;i++)field.values[i]=5+(field.values[i]-originMeters)*scale*exaggeration;
+  const verticalReference=verticalDatum(originMeters,baseThickness,hasOcean);
+  for(let i=0;i<field.values.length;i++)field.values[i]=baseThickness+(field.values[i]-originMeters)*scale*exaggeration;
   const ground=field.sample;
   const inland=subtract(waterPoly,oceanPoly),lakes=intersect(inland,mergeLayer(cropped(stillWater)));
   const inlandWater={vertices:[],faces:[]},inlandSupport={vertices:[],faces:[]},lakeLevels=[];
-  const flowingWaterAt=(x,y)=>Math.max(3,ground(x,y)-.3);
+  const flowingWaterAt=(x,y)=>Math.max(baseThickness,ground(x,y)-.3);
   measure('terrain.inland-water',()=>{
     const patches=polys=>terrainPatches(polys,width,height,resolution);
     appendInlandWater(patches(subtract(inland,lakes)),flowingWaterAt,inlandWater,inlandSupport);
     for(const polygon of lakes){
-      const level=Math.max(3,shorelineLevel(polygon,ground,width,height)-.3);
+      const level=Math.max(baseThickness,shorelineLevel(polygon,ground,width,height)-.3);
       appendInlandWater(patches([polygon]),()=>level,inlandWater,inlandSupport);
       let west=Infinity,south=Infinity,east=-Infinity,north=-Infinity;
       for(const [x,y] of polygon[0]){
@@ -370,7 +380,7 @@ function prepareTerrain(data,options,progress,preview,measure){
   const waterAt=(x,y)=>{
     const point=[x,y];
     if(!containsWater(point))return null;
-    if(containsOcean(point))return 5;
+    if(containsOcean(point))return verticalReference.seaLevelMM;
     for(const lake of lakeLevels)if(x>=lake.west&&x<=lake.east&&y>=lake.south&&y<=lake.north){
       lake.contains??=polygonTester([lake.polygon]);
       if(lake.contains(point))return lake.level;
@@ -382,7 +392,7 @@ function prepareTerrain(data,options,progress,preview,measure){
     woodsMask:measure('terrain.woods',()=>merge(cropped(woods)),{inputs:woods.length})};
   terrain.surfaces=measure('terrain.surfaces',()=>terrainCover(forest,bare,terrain,progress));
   const sea=new Surface();
-  for(const polygon of oceanPoly)sea.polygon(polygon,()=>5);
+  for(const polygon of oceanPoly)sea.polygon(polygon,()=>verticalReference.seaLevelMM);
   terrain.surfaces[1]=surfacePart(1,sea.solid(()=>0));
   terrain.surfaces[7]=surfacePart(7,inlandWater);
   return terrain;
@@ -533,7 +543,8 @@ function assembleSurfaceRoads(terrain,rise,api,progress,plan){
   const {mask,fillMask,routes,junctionCount,structure,tunnel}=plan,thickness=.65+rise;
   let sharedPavement;
   const cutters=[];
-  const terrainTop=5+(terrain.maximumElevation-terrain.verticalReference.originMeters)*terrain.proj.scale*terrain.exaggeration;
+  const {originMeters,minimumSurfaceMM}=terrain.verticalReference;
+  const terrainTop=minimumSurfaceMM+(terrain.maximumElevation-originMeters)*terrain.proj.scale*terrain.exaggeration;
   const ceiling=Math.max(terrainTop,...routes.flatMap(r=>r.profile.stations.map(s=>s.heightMM)))+2;
   const corridorParts=routes.flatMap(route=>{
     const pavement=new Surface(),fill=new Surface(),cutter=tunnel?null:new Surface();
@@ -581,6 +592,7 @@ function assembleSurfaceRoads(terrain,rise,api,progress,plan){
 }
 
 export function buildModel(data,options={},progress=()=>{},infrastructureApi=null,diagnostics=null,preview){
+  options={...options,baseThickness:modelBaseThickness(options.baseThickness)};
   if(options.pureRelief)return buildPureRelief(data,options,progress,preview);
   preview?.stage('terrain','Preparant el relleu…');
   const terrain=prepareTerrain(data,options,progress,preview,phaseTimer(diagnostics));
@@ -589,7 +601,7 @@ export function buildModel(data,options={},progress=()=>{},infrastructureApi=nul
 }
 
 function buildPureRelief(data,options,progress,preview){
-  const {size=160,exaggeration=1.5,resolution=56}=options;
+  const {size=160,exaggeration=1.5,resolution=56,baseThickness}=options;
   const {width,height,scale,project,unproject}=makeProjection(data.meta.bbox,size,options);
   const panoramic=isPanoramicSize(width,height);
   const [minimum,maximum]=panoramic?PANORAMIC_SCALE_RANGE:PURE_SCALE_RANGE;
@@ -637,7 +649,7 @@ function buildPureRelief(data,options,progress,preview){
     const point=gridPoint(col+.5,row+.5);
     return oceanWeights&&ocean.contains(point)?0:heightAt(point);
   },rows);
-  const reliefGrid=scaleReliefGrid({resolution:columns,rows,width,height,diagonals,originMeters,oceanWeights},metres,scale,exaggeration);
+  const reliefGrid=scaleReliefGrid({resolution:columns,rows,width,height,diagonals,originMeters,oceanWeights},metres,scale,exaggeration,baseThickness);
   if(preview){
     progress('Preparant la vista per peces…');
     previewReliefPieces(reliefGrid,(parts,piece)=>{
@@ -675,8 +687,7 @@ function buildPureRelief(data,options,progress,preview){
   const forest=sampleReliefMask(forestPolygons,width,height,columns,rows);
   Object.assign(reliefGrid,{scores,lakeWeights:lakes?.count?lakes.weights:null,
     forestWeights:forest?.cells?forest.weights:null,streamStrips:water.streamStrips});
-  const verticalReference={originMeters,minimumSurfaceMM:5,seaLevelMM:reliefGrid.seaLevelMM,
-    method:oceanWeights?'sea level at 5 mm; no bathymetry':'lowest generated-terrain sample at 5 mm'};
+  const verticalReference=verticalDatum(originMeters,baseThickness,!!oceanWeights);
   const provenance={...data.meta,options:{...options,pureRelief:true,exaggeration,streams,streamWidth,trees:options.trees!==false},verticalExaggeration:exaggeration,verticalReference,
     units:'millimeters',reliefSampling:{columns,rows,stepMM:[width/columns,height/rows]},
     coverageCells:{bare:cells[0],snow:cells[1],total:columns*rows},lakeCount:lakes?.count??0,
@@ -685,10 +696,10 @@ function buildPureRelief(data,options,progress,preview){
     warnings:[...(data.meta.sourceWarnings||[])],elevationDiagnostics:prepared.diagnostics,provenance},context,progress,preview);
 }
 
-function scaleReliefGrid(grid,metres,scale,exaggeration){
+function scaleReliefGrid(grid,metres,scale,exaggeration,baseThickness){
   const {originMeters,oceanWeights}=grid;
-  const heights=metres.map(z=>5+(z-originMeters)*scale*exaggeration);
-  const seaLevelMM=oceanWeights?5:null;
+  const heights=metres.map(z=>baseThickness+(z-originMeters)*scale*exaggeration);
+  const seaLevelMM=oceanWeights?baseThickness:null;
   return {...grid,heights,seaLevelMM,exaggeration};
 }
 
@@ -732,17 +743,18 @@ export function updatePureRelief(previous,changes={},progress=()=>{}){
   if(!context)throw Error('Cal generar primer el relleu.');
   const before=previous.provenance.options;
   const {exaggeration=before.exaggeration,streams=before.streams,streamWidth=before.streamWidth}=changes;
+  const baseThickness=modelBaseThickness(changes.baseThickness===undefined?before.baseThickness:changes.baseThickness);
   if(!Number.isFinite(exaggeration)||exaggeration<1||exaggeration>5||typeof streams!=='boolean'||
       !Number.isFinite(streamWidth)||streamWidth<1||streamWidth>3)throw Error('Els ajustos de relleu queden fora del rang admès.');
-  const vertical=exaggeration!==before.exaggeration,wide=streamWidth!==before.streamWidth;
+  const vertical=exaggeration!==before.exaggeration||baseThickness!==before.baseThickness,wide=streamWidth!==before.streamWidth;
   if(!vertical&&!wide&&streams===before.streams)return previous;
   const grid=previous.reliefGrid;
   const nextContext=wide?prepareReliefWaterways(context,grid,streamWidth):context;
   const water=wide||streams!==before.streams?reliefHydrology(grid,nextContext,streams,progress):null;
-  const reliefGrid=vertical?scaleReliefGrid(grid,context.metres,context.scale,exaggeration):{...grid};
+  const reliefGrid=vertical?scaleReliefGrid(grid,context.metres,context.scale,exaggeration,baseThickness):{...grid};
   if(water)reliefGrid.streamStrips=water.streamStrips;
-  const provenance={...previous.provenance,options:{...before,exaggeration,streams,streamWidth},verticalExaggeration:exaggeration,
-    verticalReference:{...previous.provenance.verticalReference,seaLevelMM:reliefGrid.seaLevelMM},
+  const provenance={...previous.provenance,options:{...before,exaggeration,streams,streamWidth,baseThickness},verticalExaggeration:exaggeration,
+    verticalReference:verticalDatum(reliefGrid.originMeters,baseThickness,!!reliefGrid.oceanWeights),
     streamCount:water?.streamCount??previous.provenance.streamCount,
     flowingWaterAreaCount:water?.flowingWaterAreaCount??previous.provenance.flowingWaterAreaCount};
   const next={...previous,reliefGrid,provenance};
@@ -790,7 +802,7 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
   preview?.stage('transport','Calculant les vies…');
   const measure=phaseTimer(diagnostics);
   const {size,exaggeration,resolution,proj,rect,elevationAt,transport,roadPieces,railPieces,waterPoly,land,green,cropped,ground,verticalReference}=terrain;
-  const {width,height,project,scale}=proj,{originMeters}=verticalReference;
+  const {width,height,project,scale}=proj,{originMeters,minimumSurfaceMM}=verticalReference;
   const warnings=terrain.warnings.slice(),deckItems=terrain.deckItems.slice();
   let {deckMask,roadOnlyPoly,railPoly,roadPoly,forest,bare}=terrain;
   let containsDeck=polygonTester(deckMask);
@@ -809,7 +821,7 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
   const knownCrossingSources=knownItems.filter(item=>!item.estimated).map(item=>({item,contains:polygonTester(item.outlines.map(r=>[r.map(project)]))}));
   const representedElevationAt=(lon,lat)=>{
     const [x,y]=project([lon,lat]);if(x<0||y<0||x>width||y>height)return elevationAt(lon,lat);
-    return originMeters+(ground(x,y)-5)/(scale*exaggeration);
+    return originMeters+(ground(x,y)-minimumSurfaceMM)/(scale*exaggeration);
   };
   const majorRoadsEnabled=!surfaceRoad&&options.majorRoads===true;
   if(majorRoadsEnabled)progress('Calculant els perfils de les vies principals…');
@@ -1037,7 +1049,7 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
     return fractions;
   };
   if(preview&&options.estimatedTunnels)progress('Calculant els traçats i portals dels túnels…');
-  const tunnelVoids=generateProceduralTunnelVoids(data.features,elevationAt,{enabled:options.estimatedTunnels===true,projection:proj,verticalReference,exaggeration,ground,surfaceRiseMM:roadRise,railSurfaceRiseMM:roadRise+railRise,waterMask:waterPoly,surfaceAt:exteriorSurface,surfaceBreaks:exteriorBreaks,sharedPavement:surfaceRoad?.sharedPavement,trailWidth:options.trailWidth,portalRoute:({point,outward,properties,sourceFeatureIds,maxLengthMM})=>{
+  const tunnelVoids=generateProceduralTunnelVoids(data.features,elevationAt,{enabled:options.estimatedTunnels===true,projection:proj,verticalReference,exaggeration,ground,minimumVoidFloorMM:minimumSurfaceMM,surfaceRiseMM:roadRise,railSurfaceRiseMM:roadRise+railRise,waterMask:waterPoly,surfaceAt:exteriorSurface,surfaceBreaks:exteriorBreaks,sharedPavement:surfaceRoad?.sharedPavement,trailWidth:options.trailWidth,portalRoute:({point,outward,properties,sourceFeatureIds,maxLengthMM})=>{
     const own=new Set(sourceFeatureIds),lines=transport.filter(t=>t.brunnel!=='tunnel'&&!t.sourceFeatureIds?.some(id=>own.has(id)));
     const route=continuationRoute(point,outward,lines,transportIdentity(properties),maxLengthMM,{allowStructures:true});return route.segments.length?route:null;
   }});

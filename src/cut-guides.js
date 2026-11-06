@@ -4,10 +4,8 @@ const surfaceLayers=new Set(['terrain','water','inland-water','forest','grass','
 
 // Intersect the actual top triangles with the same planes used by the export.
 // The renderer overlays the resulting surface lines so trees cannot hide them.
-export function cutGuideSegments({width,height,categories}){
-  const {cols,rows}=tilePlan(width,height),cuts=[];
-  for(let col=1;col<cols;col++)cuts.push([0,col*width/cols]);
-  for(let row=1;row<rows;row++)cuts.push([1,row*height/rows]);
+export function cutGuideSegments({width,height,categories},plan=tilePlan(width,height)){
+  const cuts=[...plan.xCuts.map(x=>[0,x]),...plan.yCuts.map(y=>[1,y])];
   const segments=[];
   if(!cuts.length)return new Float32Array();
   for(const {id,vertices,faces} of categories){

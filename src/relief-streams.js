@@ -1,5 +1,6 @@
 import earcut from 'earcut';
 import {polygonOps} from './polygon-ops.js';
+import {fractionalBounds,sampleBounds} from './relief-bounds.js';
 
 const pc=polygonOps();
 const STREAM_RAISE=.24,STREAM_EMBED=.12;
@@ -92,11 +93,13 @@ function extrudePatch(poly,heightAt,offset,result){
   for(const {u,v} of boundary)wall(indices[u],indices[v]);
 }
 
-export function reliefStreamPart(grid,{left,bottom,right,top}){
+export function reliefStreamPart(grid,bounds){
   const {resolution:n,rows=n,width,height,heights,diagonals,lakeWeights,oceanWeights,streamStrips}=grid;
   if(!streamStrips?.length)return null;
+  const {left,bottom,right,top}=sampleBounds(bounds);
   const dy=height/rows,stride=n+1;
-  const x=i=>i*width/n,y=i=>i*height/rows,offset=[x(left),y(bottom)],result={vertices:[],faces:[]};
+  const x=i=>i*width/n,y=i=>i*height/rows,offset=[x(bounds.left),y(bounds.bottom)],result={vertices:[],faces:[]};
+  const clip=fractionalBounds(bounds)?rectangle(...offset,x(bounds.right),y(bounds.top)):null;
   const nodes=(i,j)=>{
     const index=j*stride+i;
     return [x(i),y(j),heights[index],lakeWeights?.[index]??-1,oceanWeights?.[index]??-1];
@@ -120,7 +123,8 @@ export function reliefStreamPart(grid,{left,bottom,right,top}){
         const land=landPolygon(triangle,3);
         const dry=oceanWeights?landPolygon(land,4):land;
         if(dry.length<3)continue;
-        const clipped=pc.intersection(candidates,[[dry.map(([px,py])=>[px,py])]]);
+        const needsClip=clip&&(i<bounds.left||i+1>bounds.right||j<bounds.bottom||j+1>bounds.top);
+        const clipped=pc.intersection(candidates,[[dry.map(([px,py])=>[px,py])]],...(needsClip?[clip]:[]));
         if(!clipped.length)continue;
         const [p,q,r]=triangle;
         const determinant=(q[0]-p[0])*(r[1]-p[1])-(q[1]-p[1])*(r[0]-p[0]);

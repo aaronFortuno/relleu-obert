@@ -160,6 +160,15 @@
 .piece-resize-actions .hint {margin:0}
 .piece-resize-actions .secondary {width:auto;flex:none;margin:0;padding:6px 8px;white-space:nowrap}
 #piece-resize-pending {margin:4px 0 0}
+#info-print fieldset {min-inline-size:0;margin:0;padding:0;border:0}
+#print-base-fields label,#print-cuts-fields label {margin-top:2px}
+#print-cuts-form {margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
+#print-cuts-fields legend {padding:0;margin-bottom:6px;color:var(--green);font-size:var(--ui-control);font-weight:600}
+.print-base-row,.print-cuts-actions {display:flex;align-items:center;gap:8px}
+.print-base-row input {flex:1;min-width:0}
+.print-base-row .secondary,.print-cuts-actions .secondary {width:auto;flex:none;margin:0;padding:6px 8px}
+.print-cuts-actions {margin-top:8px}
+#print-cuts-feedback:empty {display:none}
 #examples-open {margin:0 0 8px}
 .sidebar-left #new-project {flex:none;min-height:30px;margin:12px 0 8px;padding:6px 10px}
 .selection-frame {--selection-line:#37583e;border-color:var(--selection-line)}
