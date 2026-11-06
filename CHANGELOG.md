@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.23.14 — 2026-11-06
+
+- A escriptori, la cerca i el mapa es mantenen sota la capçalera de Territori. La roda torna a fer zoom al mapa i desplaça els ajustos quan hi passa per sobre.
+
 ## v0.23.13 — 2026-11-06
 
 - La roda desplaça l’apartat Territori encara que el cursor estigui damunt del mapa. El zoom es controla amb els botons del mapa, el teclat o el gest tàctil.

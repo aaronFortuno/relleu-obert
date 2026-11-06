@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-06. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.23.14 — Zoom i desplaçament de Territori
+
+La cerca i el mapa queden fixats sota la capçalera de Territori a escriptori. La roda fa zoom damunt del mapa i desplaça els ajustos al seu panell. El canvi de pas conserva el retall i deixa tot l’espai als altres apartats. Comprovat localment a 1280 × 720, 1100 × 680 i en el canvi a format mòbil.
+
 ## v0.23.13 — Territori, pilot històric i ponts de vies principals
 
 La roda desplaça el contingut de Territori també damunt del mapa. La revisió a Cardona i Cornellà confirma que les cobertes històriques disponibles només permeten dibuixar superfícies urbanitzades. Es retiren els controls del pilot i se n’arxiven les dades. En obrir un projecte desat amb una edició històrica, el taller recupera els ajustos i avisa que generarà la maqueta amb cartografia actual.

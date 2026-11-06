@@ -8,7 +8,6 @@ import {formatNumber,onLocaleChange,t} from './i18n.js';
 export const MAX_PROJECT_SCALE=20000;
 
 export function createPlaceMap(container,{onChange,onName,width=150,height=150}){
-  // Let the sidebar scroll even when the pointer is over the map.
   const map=L.map(container,{zoomControl:true,attributionControl:true,zoomSnap:0,zoomAnimation:false,scrollWheelZoom:false,minZoom:4,maxZoom:18}).setView(recommendedPlace(DEFAULT_PLACE).center,15);
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(map);
   const frame=document.createElement('div');frame.className='selection-frame';container.appendChild(frame);
@@ -193,7 +192,14 @@ export function createPlaceMap(container,{onChange,onName,width=150,height=150})
     pureRelief=pure;
     fit(physicalBBox(previous.center,previous.heightM*w/h/1000,previous.heightM/1000));
   }
-  return {map,getBBox:selection,getPose:pose,getScaleLimit,setRotation,resizePiece,setSize,setLocked(value){locked=value;handle.disabled=value;reset.disabled=value||rotation===0;},setPureRelief(value){const previous=baseSelection();pureRelief=value;fit(previous);},setScale(value){fit(scaledBBox(pose().center,...physical,value,pureRelief?reliefScaleRange():undefined));},setRegion:fit,async search(text){
+  function setLocked(value,wheelZoom){
+    locked=value;
+    handle.disabled=value;
+    reset.disabled=value||rotation===0;
+    if(wheelZoom&&!value)map.scrollWheelZoom.enable();
+    else map.scrollWheelZoom.disable();
+  }
+  return {map,getBBox:selection,getPose:pose,getScaleLimit,setRotation,resizePiece,setSize,setLocked,setPureRelief(value){const previous=baseSelection();pureRelief=value;fit(previous);},setScale(value){fit(scaledBBox(pose().center,...physical,value,pureRelief?reliefScaleRange():undefined));},setRegion:fit,async search(text){
     const coordinate=parseCoordinates(text);if(coordinate){map.setView([coordinate.lat,coordinate.lon],map.getZoom(),{animate:false});onName(text);return null;}
     const cacheKey='relleu-search:'+text.trim().toLowerCase();let cached;try{cached=JSON.parse(sessionStorage.getItem(cacheKey));}catch{}
     if(cached)return cached;

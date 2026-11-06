@@ -40,15 +40,19 @@ const baseMessage=key=>()=>t(key);
 const messageText=message=>typeof message==='function'?message():translateEngineMessage(message);
 const narrowWorkshop=matchMedia('(max-width: 900px)'),layout=$('.app-layout');
 const workshopNav=$('#mobile-workshop'),workshopButtons=[...workshopNav.querySelectorAll('button')];
+const placeLocation=$('#place-location');
 function arrangeTerritory(){
-  const options=$('#place-mode-options');
-  const focused=options.contains(document.activeElement)?document.activeElement:null;
-  if(narrowWorkshop.matches)$('.map-caption').after(options);
-  else $('#search-form').before(options);
-  focused?.focus({preventScroll:true});
+  const options=$('#place-mode-options'),examples=$('#examples-open'),focused=document.activeElement;
+  if(narrowWorkshop.matches){
+    examples.after(placeLocation);
+    placeLocation.after(options);
+  }else{
+    $('#panel-place').before(placeLocation);
+    examples.after(options);
+  }
+  if(options.contains(focused)||placeLocation.contains(focused))focused.focus({preventScroll:true});
 }
 arrangeTerritory();
-narrowWorkshop.addEventListener('change',arrangeTerritory);
 function showWorkshopPanel(panel,{focus=false}={}){
   const previous=layout.dataset.mobilePanel||'preview';
   const button=workshopButtons.find(item=>item.dataset.mobilePanel===panel);
@@ -163,7 +167,7 @@ function lock(value){
   $('#exag').disabled=value&&job==='build'&&pureSelected();
   for(const id of ['road-rise','rail-rise','trail-width','estimated-tunnels','major-profiles','model-scale','examples-open','new-project'])$('#'+id).disabled=updating;
   lockBuildingControls(updating);
-  placeMap.setLocked(updating);
+  placeMap.setLocked(updating,!narrowWorkshop.matches);
   resizeFields.disabled=workPending||drawing;
   syncPrintSettings(workPending||drawing);
   syncExport(workPending||!model);
@@ -206,6 +210,10 @@ const placeMap=createPlaceMap($('#place-map'),{
     if(region)markDirty();
   },
   onName(name){placeName=name;}
+});
+narrowWorkshop.addEventListener('change',()=>{
+  arrangeTerritory();
+  placeMap.setLocked(busy||pendingVegetation,!narrowWorkshop.matches);
 });
 const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(34,1,.1,6000);camera.up.set(0,0,1);
 const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;view.appendChild(renderer.domElement);
@@ -1088,6 +1096,7 @@ function openStep(id,{focus=false}={}){
     toggle.querySelector('i').textContent=open?'−':'+';
     document.getElementById(toggle.getAttribute('aria-controls')).hidden=!open;
   }
+  placeLocation.hidden=id!=='place';
   syncStepActions(busy||pendingVegetation||reliefTimer!==null);
   if(id)showWorkshopPanel('settings',{focus});
   if(focus&&!narrowWorkshop.matches)$('#step-'+id).focus({preventScroll:true});
@@ -1505,6 +1514,7 @@ $('#release-list').insertAdjacentHTML('afterbegin',`<article class="release-entr
 $('#release-list').insertAdjacentHTML('afterbegin',`<article class="release-entry"><div><strong>v0.23.11</strong><time datetime="2026-11-06">06/11/2026</time></div><p data-i18n="history.0.23.11">${t('history.0.23.11')}</p></article>`);
 $('#release-list').insertAdjacentHTML('afterbegin',`<article class="release-entry"><div><strong>v0.23.12</strong><time datetime="2026-11-06">06/11/2026</time></div><p data-i18n="history.0.23.12">${t('history.0.23.12')}</p></article>`);
 $('#release-list').insertAdjacentHTML('afterbegin',`<article class="release-entry"><div><strong>v0.23.13</strong><time datetime="2026-11-06">06/11/2026</time></div><p data-i18n="history.0.23.13">${t('history.0.23.13')}</p></article>`);
+$('#release-list').insertAdjacentHTML('afterbegin',`<article class="release-entry"><div><strong>v0.23.14</strong><time datetime="2026-11-06">06/11/2026</time></div><p data-i18n="history.0.23.14">${t('history.0.23.14')}</p></article>`);
 $('#copy-lightning').onclick=async()=>{try{await navigator.clipboard.writeText('aptswim903@walletofsatoshi.com');feedback('copy-status',statusMessage('copy.done'));}catch{feedback('copy-status',statusMessage('copy.manual'));}};
 for(const toggle of document.querySelectorAll('.sidebar-left .section-toggle'))toggle.disabled=true;
 function refreshWorkshopLanguage(){

@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-06 · v0.23.13**. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-06 · v0.23.14**. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -44,7 +44,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | [RO-050](#ro-050--ferrocarrils-diferenciats) | P2 | Implementat i comprovat localment | Usuari: realç ferroviari i assignació de material; laminat |
 | [RO-046](#ro-046--catàleg-de-llocs-recomanats) | P2 | 31 retalls amb captures, graella amb filtres i generació directa | Revisar la llegibilitat i els temps de generació en ús |
 | [RO-044](#ro-044--catastre-per-seccions-i-recuperació-de-configuracions) | P1 | Vista progressiva validada a Tamariu | Buit/mixt, subdivisions i recuperació després d’error |
-| [RO-045](#ro-045--coherència-visual-dels-sidebars) | P2 | La roda desplaça Territori també damunt del mapa | Validar l’accés als controls inferiors amb una maqueta carregada |
+| [RO-045](#ro-045--coherència-visual-dels-sidebars) | P2 | Mapa fixat a Territori i zoom amb la roda | Validar l’accés als ajustos inferiors amb una maqueta carregada |
 | [RO-019](#ro-019--internacionalització) | P2 | Cinc idiomes disponibles | Revisió lingüística i dels diagnòstics tècnics poc freqüents |
 
 ## Després del nucli imprimible
@@ -140,7 +140,7 @@ Càrrega progressiva validada a Tamariu. Comprovar una consulta mixta amb sector
 
 ### RO-045 — Coherència visual dels sidebars
 
-La roda desplaça Territori fins als controls inferiors quan el cursor és damunt del mapa. A 1280 × 720 i 1100 × 680, el desplaçament conserva l’escala i el botó «+» l’actualitza. Queda la validació d’usuari amb una maqueta carregada. [Auditoria](AUDITORIA-USABILITAT.md)
+A escriptori, la cerca i el mapa queden sota la capçalera de Territori i els ajustos tenen un desplaçament independent. A 1280 × 720 i 1100 × 680, la roda canvia el zoom al mapa i manté el retall quan es desplacen els ajustos. També s’ha comprovat que el retall es conserva en canviar de pas i en passar al format mòbil. Queda la validació d’usuari amb una maqueta carregada. [Auditoria](AUDITORIA-USABILITAT.md)
 
 ### RO-046 — Catàleg de llocs recomanats
 

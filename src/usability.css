@@ -173,6 +173,10 @@
 .print-base-row .secondary {width:auto;flex:none;margin:0;padding:6px 8px}
 #examples-open {margin:0 0 8px}
 .sidebar-left #new-project {flex:none;min-height:30px;margin:12px 0 8px;padding:6px 10px}
+@media(min-width:901px){
+  #place-location {flex:none;padding-bottom:8px;margin-bottom:8px;border-bottom:1px solid var(--line)}
+  #place-location #place-map {height:clamp(110px,28dvh,204px)}
+}
 .selection-frame {--selection-line:#37583e;border-color:var(--selection-line)}
 .map-rotation-handle {position:absolute;top:-9px;right:-9px;width:16px;height:16px;padding:0;border:2px solid var(--selection-line);border-radius:50%;background:transparent;pointer-events:auto;touch-action:none;cursor:grab}
 .map-rotation-handle:active {cursor:grabbing}
