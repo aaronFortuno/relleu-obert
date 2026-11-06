@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-06 · v0.23.8**. Base ajustable i talls manuals. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-06 · v0.23.8**. Base ajustable, talls manuals i estudi de cartografia històrica. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -13,12 +13,13 @@ Actualitzat el **2026-11-06 · v0.23.8**. Base ajustable i talls manuals. [Histo
 | **Validació en paral·lel** | RO-024, RO-033, RO-046, RO-054, RO-055 | Revisar Tamariu 40 × 45 cm i Amsterdam amb totes les capes al laminador. També queden la recuperació d’un projecte girat i els talls dels Rasos–Gallina Pelada. |
 | **Pilot de relleu rocós** | RO-023, RO-035 | Després dels temps de generació, reprendre el Cavall Bernat i el Pedraforca, i el cupó georeferenciat dels Degotalls per als voladissos. [Resultats](RELLEU-ROCOS.md) |
 | **Cobertes obertes** | RO-032, RO-026 | Integrar l’ICGC si es verifica un servei públic que retorni geometria de coberta. |
+| **Cartografia històrica** | RO-025 | Validar dues dates sobre el mateix retall abans d’oferir un selector d’època. [Fonts i proposta](RO-025-CARTOGRAFIA-HISTORICA.md) |
 
 Els encàrrecs independents avancen en paral·lel. Cada bloc validat té el seu commit i es manté una sola prova pesada alhora. Els casos que requereixen inspecció al laminador poden quedar pendents mentre avancen altres línies.
 
 Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixes regles de generació. Les correccions han de basar-se en la geometria, les dades disponibles i l’escala, com la col·locació procedimental de pilars. Quan corregim un defecte, cal reproduir-lo en un control petit i contrastar la regla en un altre retall o escala.
 
-**Seguiment:** 20 línies obertes, 6 ajornades i 30 arxivades. «Implementat» vol dir disponible; la validació local, la d’usuari, el laminat i la impressió es registren per separat.
+**Seguiment:** 21 línies obertes, 5 ajornades i 30 arxivades. «Implementat» vol dir disponible; la validació local, la d’usuari, el laminat i la impressió es registren per separat.
 
 ## Desenvolupament prioritari
 
@@ -52,6 +53,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | ID | Prioritat | Estat | Abast |
 | -------------------------------------------------------- | --------- | ------------------ | -------------------------------------------------------------- |
 | [RO-035](#ro-035--cavitats-i-relleus-amb-voladissos) | P3 | Dades 3D pendents | Coves, baumes i arcs naturals; un MDT no en descriu l’interior |
+| [RO-025](#ro-025--vegetació-mesurada-i-paisatges-històrics) | P2 | Fonts contrastades; pilot pendent | Comparar edificis i vies de dues èpoques en un retall amb cobertura verificada |
 | [RO-012](#ro-012--presentació-realista-del-model-imprès) | P3 | Objectiu redefinit | Imatge estàtica fotorealista del model amb entorn escolar |
 | [RO-011](#ro-011--comptador-dexportacions-i-umami) | P3 | Per estudiar | Definir recompte i font real abans de publicar una xifra |
 
@@ -63,7 +65,6 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | [RO-016](#ro-016--plaques-i-etiquetes-educatives) | P2 | Ajornat per l’usuari; menú retirat | Prioritzar funcionalitat i qualitat del model |
 | [RO-017](#ro-017--rosa-dels-vents-i-altres-complements) | P3 | Ajornat; menú retirat | Reprendre amb disseny de rosa incrustada |
 | [RO-003](#ro-003--configuració-inesperada-en-importar-a-bambu) | P2 | Ajornat | Perfils d’impressora/filament secundaris |
-| [RO-025](#ro-025--vegetació-mesurada-i-paisatges-històrics) | P3 | Ajornat | Fonts adequades després del nucli |
 | [RO-047](#ro-047--precàrrega-opcional-de-fonts-alternatives) | P3 | Ajornat | Primer consultes i recuperació fiables |
 
 ## Criteris de seguiment
@@ -110,7 +111,7 @@ El cupó del Bages permet consultar els materials per altura. A Montserrat, l’
 
 ### RO-025 — Vegetació mesurada i paisatges històrics
 
-Estudiar fonts obertes de vegetació mesurada i paisatge històric quan el flux principal estigui consolidat.
+Es reprèn la línia per a edificis i vies. El mode actual continua per defecte. Cal validar la cobertura de dues èpoques abans d’exposar dates per capa. Les instantànies d’OpenStreetMap reflecteixen l’estat del mapa; per estudiar canvis físics cal contrastar amb cartografia o fotografia d’època. La vegetació mesurada continua ajornada. [Fonts i criteris del pilot](RO-025-CARTOGRAFIA-HISTORICA.md)
 
 ### RO-026 — Fidelitat dels edificis i selecció de fonts
 
