@@ -12,7 +12,14 @@ const source={name:'Institut Cartogràfic i Geològic de Catalunya · Cobertes d
 const pilot={id:'avinyo-urban',label:'Avinyó',bbox:[1.95,41.846,1.996,41.88],center:[41.863,1.973],widthM:2000};
 const labels=new Map([[341,'Casc urbà'],[342,'Eixample'],[343,'Zones urbanes laxes'],[344,'Edificacions aïllades en l’espai rural'],[345,'Àrees residencials aïllades'],[347,'Zones industrials, comercials o de serveis']]);
 const out=new URL('../public/data/historical/',import.meta.url);
-const [w,s,e,n]=pilot.bbox,rect={minX:w,minY:s,maxX:e,maxY:n},clipRing=[[w,s],[e,s],[e,n],[w,n],[w,s]];
+const args=process.argv.slice(2);
+const probe=args[0]==='--probe'&&args.length===5?args.slice(1).map(Number):null;
+const [w,s,e,n]=probe??pilot.bbox;
+if(args.length&&(!probe||!probe.every(Number.isFinite)||!args.slice(1).every(value=>value.trim())||
+  w< -180||e>180||s< -90||n>90||e<=w||n<=s||e-w>.12||n-s>.12)){
+  throw Error('Usage: node scripts/prepare-historical-urban.mjs [--probe west south east north] (up to 0.12° per side)');
+}
+const rect={minX:w,minY:s,maxX:e,maxY:n},clipRing=[[w,s],[e,s],[e,n],[w,n],[w,s]];
 
 const decoderResponse=await fetch(decoderPackage,{signal:AbortSignal.timeout(15000)});
 if(!decoderResponse.ok)throw Error(`Cannot download preparation decoder: HTTP ${decoderResponse.status}`);
@@ -22,9 +29,16 @@ const decoder=spawnSync('tar',['-xOf','-','package/dist/flatgeobuf-geojson.min.j
 if(decoder.status!==0||!decoder.stdout?.length)throw Error('Cannot extract the FlatGeobuf decoder (tar required)');
 
 let totalRead=0;
+let rangeCount=0;
+const rangeWithoutCors=new Set();
 async function fetchRange(url,options){
   if(new URL(url).origin!==origin||!new Headers(options?.headers).has('range'))throw Error('Only indexed requests to ICGC are permitted');
-  const response=await fetch(url,{...options,signal:AbortSignal.timeout(18000)});
+  const headers=new Headers(options.headers);
+  if(probe)headers.set('Origin','https://relleu.ortogra.fi');
+  const response=await fetch(url,{...options,headers,signal:AbortSignal.timeout(18000)});
+  rangeCount++;
+  const allowed=response.headers.get('access-control-allow-origin');
+  if(!allowed||!['*','https://relleu.ortogra.fi'].includes(allowed))rangeWithoutCors.add(url);
   const length=Number(response.headers.get('content-length'));
   if(response.status!==206||!length||length>16e6||(totalRead+=length)>64e6){
     await response.body?.cancel();
@@ -46,11 +60,12 @@ function normalizeRing(ring){
   return clean.length>=4?clean:null;
 }
 
-await mkdir(out,{recursive:true});
+if(!probe)await mkdir(out,{recursive:true});
 const editions=[];
 for(const year of [2009,2018,2024]){
   const features=[];
-  totalRead=0;
+  totalRead=rangeCount=0;
+  const started=performance.now();
   const url=`${origin}/datacloud/cobertes-sol/fgb_unzip/cobertes-sol-v1r0-${year}.fgb`;
   const verify=header=>{
     if(header.crs?.code!==4326||!header.indexNodeSize||!header.columns?.some(column=>column.name==='nivell_2'))throw Error(`Unexpected ICGC metadata for ${year}`);
@@ -69,15 +84,22 @@ for(const year of [2009,2018,2024]){
     const id=createHash('sha256').update(JSON.stringify([coverClass,coordinates])).digest('hex').slice(0,16);
     features.push({type:'Feature',id:`icgc-${year}-${id}`,properties:{sourceLayer:'landuse',class:coverClass===347?'industrial':'residential',coverClass,description},geometry:{type:'MultiPolygon',coordinates}});
   }
-  if(!features.length)throw Error(`No urban features in ${year}`);
   features.sort((a,b)=>a.id<b.id?-1:a.id>b.id?1:0);
   if(new Set(features.map(feature=>feature.id)).size!==features.length)throw Error(`Duplicate clipped polygons in ${year}`);
+  if(probe){
+    console.log(JSON.stringify({bbox:probe,year,features:features.length,rangeCount,bytes:totalRead,
+      milliseconds:Math.round(performance.now()-started),cors:!rangeWithoutCors.has(url)}));
+    continue;
+  }
+  if(!features.length)throw Error(`No urban features in ${year}`);
   const file=`${pilot.id}-${year}.geojson`;
   await writeFile(new URL(file,out),JSON.stringify({type:'FeatureCollection',features})+'\n');
   editions.push({year,file});
   console.log(`${pilot.id} · ${year}: ${features.length} polígons font · ${totalRead} bytes llegits`);
 }
 
-const index=new URL('index.json',out);
-const previous=await readFile(index,'utf8').then(JSON.parse,error=>{if(error.code==='ENOENT')return {areas:[]};throw error;});
-await writeFile(index,JSON.stringify({areas:[...previous.areas.filter(area=>area.id!==pilot.id),{...pilot,source,layer:'urban',editions}]},null,2)+'\n');
+if(!probe){
+  const index=new URL('index.json',out);
+  const previous=await readFile(index,'utf8').then(JSON.parse,error=>{if(error.code==='ENOENT')return {areas:[]};throw error;});
+  await writeFile(index,JSON.stringify({areas:[...previous.areas.filter(area=>area.id!==pilot.id),{...pilot,source,layer:'urban',editions}]},null,2)+'\n');
+}

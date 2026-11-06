@@ -12,6 +12,12 @@ const rounded=v=>Math.round(v*1e7)/1e7;
 const view=b=>new DataView(b.buffer,b.byteOffset,b.byteLength);
 const featureCollection=features=>({type:'FeatureCollection',features});
 const out=new URL('../public/data/historical/',import.meta.url);
+const args=process.argv.slice(2);
+const probe=args[0]==='--probe'&&args.length===5?args.slice(1).map(Number):null;
+if(args.length&&(!probe||!args.slice(1).every(value=>value.trim())||!probe.every(Number.isFinite)||
+  probe[0]< -180||probe[2]>180||probe[1]< -90||probe[3]>90||probe[0]>=probe[2]||probe[1]>=probe[3])){
+  throw Error('Usage: node scripts/prepare-historical-railways.mjs [--probe west south east north]');
+}
 
 function fields(dbf){
   const data=view(dbf),first=data.getUint16(8,true),stride=data.getUint16(10,true),count=data.getUint32(4,true);
@@ -73,7 +79,7 @@ function inService({OPENING,CLOSURE,REOPENING},year){
   return !close||close>year||Boolean(reopen&&reopen<=year);
 }
 
-await mkdir(out,{recursive:true});
+if(!probe)await mkdir(out,{recursive:true});
 const records=[];
 for(const [file,gauge] of downloads){
   const response=await fetch(`https://dataverse.csuc.cat/api/access/datafile/${file}`,{signal:AbortSignal.timeout(30000)});
@@ -84,8 +90,16 @@ for(const [file,gauge] of downloads){
   records.push(...rows.flatMap((row,i)=>row?[{row,lines:lines[i],gauge}]:[]));
 }
 
+if(probe){
+  const local=records.filter(({lines})=>lines.some(line=>clipLine(line,probe).length));
+  for(const year of [1900,1960,1980,2000,2023]){
+    const active=local.filter(({row})=>inService(row,year));
+    console.log(JSON.stringify({bbox:probe,year,features:active.length,lines:[...new Set(active.map(({row})=>row.LINE))].sort()}));
+  }
+}
+
 const railAreas=[];
-for(const {checkLine,...pilot} of pilots){
+for(const {checkLine,...pilot} of probe?[]:pilots){
   const clipped=records.flatMap(({row,lines,gauge})=>{
     const coordinates=lines.flatMap(line=>clipLine(line,pilot.bbox));
     return coordinates.length?[{row,feature:{type:'Feature',id:`${gauge}-${row.LINE_CODE}-${row.F_ID}`,properties:{sourceLayer:'transportation',class:'rail',subclass:gauge,railway:gauge,name:row.LINE,opened:Number(row.OPENING),closed:Number(row.CLOSURE)||null,reopened:Number(row.REOPENING)||null},geometry:{type:'MultiLineString',coordinates}}}]:[];
@@ -102,7 +116,9 @@ for(const {checkLine,...pilot} of pilots){
   railAreas.push({...pilot,source,layer:'railways',editions});
 }
 
-const index=new URL('index.json',out);
-const previous=await readFile(index,'utf8').then(JSON.parse,error=>{if(error.code==='ENOENT')return {areas:[]};throw error;});
-const ids=new Set(railAreas.map(area=>area.id));
-await writeFile(index,JSON.stringify({areas:[...railAreas,...previous.areas.filter(area=>!ids.has(area.id))]},null,2)+'\n');
+if(!probe){
+  const index=new URL('index.json',out);
+  const previous=await readFile(index,'utf8').then(JSON.parse,error=>{if(error.code==='ENOENT')return {areas:[]};throw error;});
+  const ids=new Set(railAreas.map(area=>area.id));
+  await writeFile(index,JSON.stringify({areas:[...railAreas,...previous.areas.filter(area=>!ids.has(area.id))]},null,2)+'\n');
+}

@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-06. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## 2026-11-06 — Cobertura de fonts històriques (RO-025)
+
+La mateixa consulta per retall funciona amb tres edicions de les cobertes de l’ICGC a Lleida, Girona i la Seu d’Urgell, i amb els traçats de servei de la UdL a Sant Joan de les Abadesses. La xarxa principal del JRC s’ha descarregat i comparat en quatre retalls d’uns 2 km; no té prou detall per a l’ús urbà. Es prioritza una distribució estàtica de les dues capes comunes i s’ajorna la reconstrucció de carrers i edificis d’època. La interfície conserva els tres pilots existents. [Controls i límits](RO-025-CARTOGRAFIA-HISTORICA.md#fonts-comunes-abast-i-decisió)
+
 ## v0.23.9 — Any de la cartografia (RO-025)
 
 El selector d’any de Territori mostra les dates disponibles per a tot el retall en Model complet. Els carrilets de Sant Feliu i Olot es comparen el 1960 i el 1980; Avinyó té cobertes de sòl urbanitzat del 2009, 2018 i 2024. El relleu i la resta de capes són actuals. La font consta al model i l’any es pot desar amb el projecte. Pendent de revisió d’usuari i laminat. [Fonts i límits](RO-025-CARTOGRAFIA-HISTORICA.md)

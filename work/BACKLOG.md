@@ -13,7 +13,7 @@ Actualitzat el **2026-11-06 · v0.23.9**. Primers retalls amb selector d’any. 
 | **Validació en paral·lel** | RO-024, RO-033, RO-046, RO-054, RO-055 | Revisar Tamariu 40 × 45 cm i Amsterdam amb totes les capes al laminador. També queden la recuperació d’un projecte girat i els talls dels Rasos–Gallina Pelada. |
 | **Pilot de relleu rocós** | RO-023, RO-035 | Després dels temps de generació, reprendre el Cavall Bernat i el Pedraforca, i el cupó georeferenciat dels Degotalls per als voladissos. [Resultats](RELLEU-ROCOS.md) |
 | **Cobertes obertes** | RO-032, RO-026 | Integrar l’ICGC si es verifica un servei públic que retorni geometria de coberta. |
-| **Cartografia històrica** | RO-025 | Validar els dos carrilets i el sòl urbanitzat d’Avinyó al taller. Queden l’antiguitat cadastral i les edicions de carreteres. [Fonts i controls](RO-025-CARTOGRAFIA-HISTORICA.md) |
+| **Cartografia històrica** | RO-025 | Passar dels pilots a fonts comunes: índex ferroviari i capa de sòl urbanitzat de l’ICGC. La reconstrucció de carrers i edificis d’època queda ajornada. [Fonts i controls](RO-025-CARTOGRAFIA-HISTORICA.md#fonts-comunes-abast-i-decisió) |
 
 Els encàrrecs independents avancen en paral·lel. Cada bloc validat té el seu commit i es manté una sola prova pesada alhora. Els casos que requereixen inspecció al laminador poden quedar pendents mentre avancen altres línies.
 
@@ -53,7 +53,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | ID | Prioritat | Estat | Abast |
 | -------------------------------------------------------- | --------- | ------------------ | -------------------------------------------------------------- |
 | [RO-035](#ro-035--cavitats-i-relleus-amb-voladissos) | P3 | Dades 3D pendents | Coves, baumes i arcs naturals; un MDT no en descriu l’interior |
-| [RO-025](#ro-025--vegetació-mesurada-i-paisatges-històrics) | P2 | Selector i tres retalls implementats | Validar els models i separar l’antiguitat cadastral de la reconstrucció històrica |
+| [RO-025](#ro-025--vegetació-mesurada-i-paisatges-històrics) | P2 | Fonts comunes verificades per a ferrocarril i sòl urbanitzat; selector limitat als pilots | Provar un índex espacial ferroviari i mesurar el pes d’una capa urbanitzada de tot Catalunya |
 | [RO-012](#ro-012--presentació-realista-del-model-imprès) | P3 | Objectiu redefinit | Imatge estàtica fotorealista del model amb entorn escolar |
 | [RO-011](#ro-011--comptador-dexportacions-i-umami) | P3 | Per estudiar | Definir recompte i font real abans de publicar una xifra |
 
@@ -111,7 +111,7 @@ El cupó del Bages permet consultar els materials per altura. A Montserrat, l’
 
 ### RO-025 — Vegetació mesurada i paisatges històrics
 
-El mode actual continua per defecte. Ja hi ha traçats ferroviaris amb dates de servei i petjades cadastrals actuals amb dates de construcció. Són dos usos diferents: mostrar la xarxa ferroviària d’una data i filtrar els edificis que encara consten al Cadastre. Falta trobar edicions vectorials comparables per a les carreteres i les petjades antigues. Les ortofotos es reserven per a la comprovació. La vegetació mesurada continua ajornada. [Fonts i criteris del pilot](RO-025-CARTOGRAFIA-HISTORICA.md)
+El mode actual continua per defecte. S’han comprovat els traçats ferroviaris amb dates de servei de la UdL i les cobertes de sòl urbanitzat de l’ICGC fora dels pilots. La via de continuació és publicar dades preparades per cobertura i carregar-les per coordenades. Es deixa per més endavant la reconstrucció de carrers i edificis: la xarxa històrica del JRC és regional i l’antiguitat cadastral només permet filtrar les petjades actuals. Les ortofotos es reserven per a la comprovació. La vegetació mesurada continua ajornada. [Fonts i criteris de cobertura](RO-025-CARTOGRAFIA-HISTORICA.md)
 
 La v0.23.9 habilita les dates amb cobertura de tot el retall. Els dos carrilets canvien la capa ferroviària; a Avinyó, els polígons de l’ICGC substitueixen els volums d’edificis. Les altres capes són actuals. Pendent de validació d’usuari.
 

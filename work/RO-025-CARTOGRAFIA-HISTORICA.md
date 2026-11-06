@@ -2,6 +2,34 @@
 
 Objectiu: poder imprimir dues maquetes del mateix lloc i comparar l’evolució del teixit construït i de la xarxa de comunicacions. «Actual» és el valor per defecte. El taller parteix de geometries o punts ja publicats, amb una data o una edició documentada. Les ortofotos serveixen per contrastar resultats.
 
+### Fonts comunes: abast i decisió
+
+El pilot comprova el flux del taller. La generalització s’ha de fer per font i cobertura, sense afegir fitxers poble per poble. Hi ha dues capes amb prou base per continuar: **xarxa ferroviària** i **sòl urbanitzat**. La reconstrucció conjunta de carrers i edificis d’època queda ajornada: no s’ha acreditat una sèrie amb el detall i la cobertura necessaris, ni que la combinació de fonts arribi al 95% dels retalls.
+
+| Capa | Font comuna | Què en podem fer |
+| --- | --- | --- |
+| Ferrocarril | [Railways of Spain GIS, UdL](https://dataverse.csuc.cat/dataset.xhtml?persistentId=doi%3A10.34810%2Fdata917), 1848–2023, CC BY 4.0 | Filtrar els traçats segons les dates de servei. Els tres arxius originals de línies pesen uns 1,5 MB en ZIP i cobreixen Catalunya dins del conjunt estatal. Es poden preparar una sola vegada en un índex espacial estàtic; no cal una descàrrega per any ni per municipi. La sèrie documenta el ferrocarril del seu inventari, no totes les vies urbanes. |
+| Sòl urbanitzat | [Cobertes del sòl de l’ICGC](https://www.icgc.cat/ca/Geoinformacio-i-mapes/Mapes/Mapa-de-cobertes-del-sol-de-Catalunya), CC BY 4.0 | Comparar polígons urbanitzats de tot Catalunya. S’han comprovat 2009, 2018 i 2024. Els anys són edicions: la data d’observació pot variar dins d’una edició, i canvien els llindars de revisió. El [CREAF publica edicions anteriors](https://www.mcsc.creaf.cat/descriptiu.htm), amb cobertura incompleta el 2000–2002 i llegendes diferents; cal comprovar la reutilització i l’equivalència de classes abans d’incorporar-les. |
+| Carreteres | [Xarxa principal històrica europea, JRC](https://data.jrc.ec.europa.eu/dataset/jrc-tem-10005), amb sis dates de 1955 a 2012. L’[arxiu de dades](https://dataverse.harvard.edu/api/datasets/:persistentId/?persistentId=doi:10.7910/DVN/INFPSE) indica CC0 1.0; cal atribuir la font i verificar el significat dels codis abans d’incorporar-los. | Possible capa d’autopistes i eixos interurbans per a maquetes regionals. La geobase descarregada té un sol conjunt de línies amb camps de classe per any, inclosos codis negatius sense explicació a la fitxa del JRC. No permet donar per documentats els carrers ni els canvis locals de traçat. La [BTN25 de 2016](https://centrodedescargas.cnig.es/CentroDescargas/novedades?codSerie=02101) és una pista: l’IGN en va publicar la cobertura completa, però no s’ha verificat un arxiu de versions antigues recuperables de manera sistemàtica al [catàleg actual](https://centrodedescargas.cnig.es/CentroDescargas/btn). |
+| Edificis individuals | [Cadastre INSPIRE](https://www.catastro.hacienda.gob.es/webinspire/index.html) i [HISDAC-ES](https://essd.copernicus.org/articles/15/4713/2023/) | El Cadastre té un model de dades comú per a Catalunya; el problema és temporal. Permet filtrar petjades actuals per antiguitat. HISDAC-ES homogeneïtza el Cadastre i publica centroides i agregats, sense recuperar els edificis enderrocats ni la seva planta antiga. L’antiguitat és un ús separat, no un substitut d’una edició topogràfica. |
+
+**Control de l’ICGC fora del pilot.** Amb la mateixa consulta per coordenades, s’han extret polígons de les edicions 2009, 2018 i 2024 a Lleida (334/320/280), Girona (222/221/209) i la Seu d’Urgell (123/125/136). Són recomptes de polígons seleccionats, no d’edificis ni una mesura de creixement. En aquests retalls d’uns 3–4 km s’han transferit aproximadament 1,8–16,4 MB per edició en 9–15 peticions parcials. Els tres fitxers tenen índex espacial, però l’host no ha retornat la capçalera CORS: GitHub Pages no els pot llegir directament des del navegador. Els arxius sencers pesen 1,56–1,61 GB cadascun; cal preparar una capa que contingui només les classes urbanitzades, dividida en tessel·les o en un arxiu amb índex. Cal mesurar-ne la mida abans d’escollir on publicar-la.
+
+**Control ferroviari fora del pilot.** El mateix filtre geogràfic i temporal ha recuperat dos trams de la línia Barcelona–Sant Joan de les Abadesses el 1900 i el 1960. Al mateix retall, no hi figura cap tram en servei el 1980, el 2000 ni el 2023.
+
+Els scripts de preparació tenen un mode de consulta que no escriu al catàleg:
+
+```sh
+node scripts/prepare-historical-railways.mjs --probe 2.270 42.219 2.299 42.245
+node scripts/prepare-historical-urban.mjs --probe 0.615 41.604 0.655 41.637
+node scripts/prepare-historical-urban.mjs --probe 2.803 41.963 2.844 41.994
+node scripts/prepare-historical-urban.mjs --probe 1.430 42.332 1.470 42.363
+```
+
+**Control de les carreteres.** La geobase del JRC es pot descarregar i llegir. Retallant les línies a quatre finestres d’uns 2 km, el fitxer dona 0 trams als retalls del centre de Girona i Avinyó, 2 a Manresa i 6 a Lleida, comptant totes les dates del fitxer. Els zeros no indiquen absència històrica de carreteres. Per reproduir el control, cal llegir `European_Network_No_Planarized` (EPSG:3034), reprojectar a WGS 84 i comptar les interseccions de longitud positiva amb els retalls: Avinyó `1.961 41.854 1.985 41.872`; Girona `2.810 41.973 2.834 41.991`; Manresa `1.812 41.715 1.836 41.733`; Lleida `0.611 41.609 0.635 41.627`.
+
+**Següent increment.** Provar primer un índex comú de ferrocarrils, incloent retalls que creuen límits de tessel·la i retalls amb cobertura però sense cap via en servei. Mesurar després una capa urbanitzada estàtica filtrada de l’ICGC en retalls dispersos i a dues escales. La disponibilitat l’ha de determinar la cobertura de cada font, no el recompte d’entitats. El selector ha d’indicar quina capa modifica i conservar «Actual» com a valor per defecte. No s’amplia el catàleg amb excepcions locals mentre es prepara aquesta via.
+
 ### Pilot al taller (v0.23.9)
 
 A **Territori → Llocs amb dades històriques** es pot centrar el mapa a la Vall d’Aro, a la Garrotxa o a Avinyó. El control **Any de la cartografia** admet només edicions documentades quan tot el retall està cobert per una font amb almenys dues dates. El mode és Model complet; la font i la data queden a les metadades d’exportació i la tria es conserva als projectes desats.
@@ -33,10 +61,10 @@ El [full 0335-1 de Palafrugell](https://centrodedescargas.cnig.es/CentroDescarga
 
 Les peticions petites d’Overpass amb data (2014 i 2024) no han retornat geometries en aquesta sessió: HTTP 406 o temps d’espera exhaurit en una instància i limitació de peticions o temps d’espera en l’altra. És una prova de disponibilitat, no de cobertura. Per això el pilot inicial proposa fitxers preparats i verificats, sense dependre d’aquestes consultes quan un alumne obri l’aplicació.
 
-### Pilot proposat
+### Criteris del pilot inicial
 
 1. Provar el ferrocarril amb dues dates en un mateix retall. El [fitxer d’ample estret](https://dataverse.csuc.cat/api/access/datafile/60282) confirma que el carrilet de Sant Feliu de Guíxols a Girona figura obert el 1892 i tancat el 1969: permet comparar, per exemple, 1960 i 1980. Per als edificis, provar a Palafrugell un filtre separat d’**antiguitat dels edificis actuals**. Per comparar l’expansió urbanitzada, provar dues edicions de cobertes del sòl. La reconstrucció de cada edifici i carretera en dues dates queda pendent d’un parell d’edicions vectorials comparables. Els primers fitxers es poden preparar en GeoJSON estàtic, amb la font, la data i la llicència corresponents.
 2. Comparar al visor i a l’exportació amb el mateix retall, mida, escala, gir i relleu de referència. Revisar mostres de carrers i edificis sobre la font original. Si hi ha prou dades, comparar superfície ocupada per les petjades i longitud de vies per classe, retallades al mateix perímetre. Això mesura superfície construïda en planta, no el nombre d’habitatges.
-3. Quan la font estigui validada, oferir **Època** amb una tria comuna per a edificis i vies i dates independents dins de cada capa. Mostrar només les dates disponibles per a aquell retall i etiquetar-ne la font, la data i el significat. Si una capa històrica falla, mostrar-ho o conservar l’últim model vàlid; substituir-la per dades actuals requereix una acció explícita.
+3. Mostrar només les dates disponibles per a la capa i el retall triats i etiquetar-ne la font, la data i el significat. Una època comuna per a diverses capes només té sentit si les fonts en documenten la mateixa data. Si una capa històrica falla, mostrar-ho o conservar l’últim model vàlid; substituir-la per dades actuals requereix una acció explícita.
 
 El motor pot reutilitzar el relleu carregat i aplicar-hi altres capes. Cal carregar de la mateixa època els trams de connexió de ponts i vies, i desactivar les reconstruccions específiques modernes si no se n’ha acreditat la data. El relleu i les altres capes actuals s’han d’identificar com a referència: una mateixa base facilita la comparació, però no reconstrueix canvis del terreny o de la costa.
