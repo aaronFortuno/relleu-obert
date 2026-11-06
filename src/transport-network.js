@@ -9,7 +9,7 @@ const text=value=>typeof value==='string'||typeof value==='number'?String(value)
 const nameOf=value=>text(value).toLocaleLowerCase('ca');
 const classOf=properties=>{
   const value=text(properties.class);
-  return (value==='motorway'||value==='trunk')&&[true,1,'1'].includes(properties.ramp)?value+'_link':value;
+  return (value==='motorway'||value==='trunk'||value==='primary')&&[true,1,'1','yes'].includes(properties.ramp)?value+'_link':value;
 };
 const refs=value=>text(value).toUpperCase().split(/[;,]/).map(v=>v.trim().replace(/\s+/g,'')).filter(Boolean).sort();
 const shares=(a,b)=>a.some(value=>b.includes(value));

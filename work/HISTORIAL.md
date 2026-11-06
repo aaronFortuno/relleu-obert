@@ -2,9 +2,11 @@
 
 Actualitzat: 2026-11-06. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
-## v0.23.14 — Zoom i desplaçament de Territori
+## v0.23.14 — Zoom de Territori i enllaços de ponts
 
 La cerca i el mapa queden fixats sota la capçalera de Territori a escriptori. La roda fa zoom damunt del mapa i desplaça els ajustos al seu panell. El canvi de pas conserva el retall i deixa tot l’espai als altres apartats. Comprovat localment a 1280 × 720, 1100 × 680 i en el canvi a format mòbil.
+
+En el segon retall de l’Hospitalet, els extrems sense enllaç dels taulers cartografiats de vies principals passen de 24 a 5. Les sis malles superen l’auditoria de tancament. Els pics de pendent dels trams mostrejats es mantenen i RO-051 continua obert. [Mesures](RO-052-CONTINUITAT.md#segon-retall-de-lhospitalet-v02314)
 
 ## v0.23.13 — Territori, pilot històric i ponts de vies principals
 

@@ -327,6 +327,7 @@ export function generateProceduralBridgeItems(features,elevationAt,{scale=.1,min
       sourceWidthMetres,
       roadClass:axis.props.class,
       ramp:axis.props.ramp,
+      layer:axis.props.layer,
       ref:axis.props.ref,
       name:axis.props.name,
       oneway:axis.props.oneway,

@@ -7,6 +7,7 @@ const WIDTHS=new Map([
 ]);
 const isLink=p=>p.ramp===1||p.ramp==='1'||p.ramp===true||String(p.class??'').endsWith('_link');
 const MAIN_ROADS=new Set(['motorway','trunk','primary']);
+export const isPrincipalRoad=(properties={})=>MAIN_ROADS.has(properties.class)&&!isLink(properties)&&properties.ramp!=='yes';
 const SECONDARY_ROADS=new Set(['secondary','tertiary']);
 const TRAIL_WIDTHS=new Map([['path',1],['footway',1.5],['steps',1.5]]);
 const trailClass=({class:roadClass,subclass})=>roadClass==='path'&&['cycleway','bridleway'].includes(subclass)?null:

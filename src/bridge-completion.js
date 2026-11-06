@@ -80,7 +80,7 @@ function approachNormals(samples){
 
 // Geometry is an explicitly estimated PRINT adaptation. The surveyed deck
 // surface is unchanged; connections follow mapped roads, with C1 Hermite Z.
-export function planApproaches({axis,points,faces,containsDeck,roads,ground,roadRise=0,widthMM,heightMM,roadWidth=.44,scale=.1,destinationSurface=null,destinationBreaks=null,forceConnections=false,terminalRoads=null,maxGrade=null}){
+export function planApproaches({axis,points,faces,containsDeck,roads,ground,roadRise=0,widthMM,heightMM,roadWidth=.44,scale=.1,destinationSurface=null,destinationBreaks=null,forceConnections=false,terminalRoads=null,maxGrade=null,clipApproach=null,dryApproach=null}){
   const top=topSampler(points,faces),plans=[],missed=[],maxLength=Math.max(40,400*scale);
   for(const reverse of [false,true]){
     const terminalRoad=terminalRoads?.[Number(reverse)];
@@ -112,10 +112,10 @@ export function planApproaches({axis,points,faces,containsDeck,roads,ground,road
     const inward=[start[0]-dir[0]*tangentStep,start[1]-dir[1]*tangentStep],innerZ=top(...inward),grade=innerZ==null?0:(startZ-innerZ)/dist(start,inward);
     // Keep the mapped endpoint: dropping it shortcuts the first bend of a join.
     const route=[start,...continuationPath],samples=[];
-    let clippedByCrop=false;
+    let outsideSample=null;
     for(const sample of resample(route,.2,maxLength)){
       const [x,y]=sample.p;
-      if(x<0||y<0||x>widthMM||y>heightMM){clippedByCrop=true;break;}
+      if(x<0||y<0||x>widthMM||y>heightMM){outsideSample=sample;break;}
       samples.push(sample);
     }
     const lineAt=sample=>continuationPath.segments?.[sample.segment-1]?.line;
@@ -162,9 +162,16 @@ export function planApproaches({axis,points,faces,containsDeck,roads,ground,road
       }else if(delta<0&&(s<minimum||Math.abs(delta)/s>=.15))continue;
       end=i;break;
     }
-    if(end<0){const last=samples.at(-1);missed.push({reason:'no gentle join',clippedByCrop,gap,grade,minimum,available:last?.s??0,finalDelta:last?landing(last)+roadRise-(startZ+grade*last.s):null});continue;}
-    const selected=samples.slice(0,end+1),last=selected.at(-1),before=selected.at(-2),length=last.s,endZ=landing(last)+roadRise;
-    let endGrade=targetGrade??(landing(last)-landing(before))/(last.s-before.s);
+    // A mapped route that leaves the plate a few millimetres from the deck
+    // can continue at the deck tangent to the cut. There is no landing in
+    // the printed model. Never extrapolate across another mapped structure.
+    const extendToCut=end<0&&clipApproach&&outsideSample&&outsideSample.s<Math.max(width*2,2)&&
+      lineAt(outsideSample)&&!lineAt(outsideSample).brunnel&&samples.every(sample=>
+        !lineAt(sample)?.brunnel&&dryApproach?.(...sample.p));
+    if(end<0&&!extendToCut){const last=samples.at(-1);missed.push({reason:'no gentle join',clippedByCrop:!!outsideSample,gap,grade,minimum,available:last?.s??0,finalDelta:last?landing(last)+roadRise-(startZ+grade*last.s):null});continue;}
+    const selected=extendToCut?[...samples,outsideSample]:samples.slice(0,end+1),last=selected.at(-1),before=selected.at(-2),length=last.s;
+    const endZ=extendToCut?startZ+grade*length:landing(last)+roadRise;
+    let endGrade=extendToCut?grade:targetGrade??(landing(last)-landing(before))/(last.s-before.s);
     if(!terminalRoad&&/^(motorway|trunk|primary)(_link)?$/.test(axis.roadClass)){
       const average=(endZ-startZ)/length;
       // Keep the landing height and the deck tangent. A short terrain
@@ -179,7 +186,7 @@ export function planApproaches({axis,points,faces,containsDeck,roads,ground,road
     const terminal=continuationPath.segments?.[last.segment-1],endWidth=terminal?.line.width??roadWidth;
     const startDirection=unit(selected[0].p,selected[1].p),endDirection=unit(before.p,last.p);
     const fractions=crossSectionFractions({centre:start,normal:[-startDirection[1],startDirection[0]],widthMM:width},{points,faces});
-    if(destinationBreaks)fractions.push(...destinationBreaks({centre:last.p,normal:[-endDirection[1],endDirection[0]],widthMM:endWidth,line:terminal?.line}));
+    if(destinationBreaks&&!extendToCut)fractions.push(...destinationBreaks({centre:last.p,normal:[-endDirection[1],endDirection[0]],widthMM:endWidth,line:terminal?.line}));
     const normalized=fractions.map(v=>Math.abs(v)<1e-9?0:Math.abs(v-.5)<1e-9?.5:Math.abs(v+.5)<1e-9?-.5:v);
     // A breakpoint next to an edge or the centre can round onto that same
     // column in the output mesh. Preserve the three anchors and keep the
@@ -196,14 +203,18 @@ export function planApproaches({axis,points,faces,containsDeck,roads,ground,road
       const widthAt=width+(endWidth-width)*(t*t*(3-2*t));
       const across=acrossFractions.map(f=>{
         const q=[p[0]+n[0]*widthAt*f,p[1]+n[1]*widthAt*f,z],own=top(q[0],q[1]);
-        q[2]+=(own==null?0:own-startZ)*(1-t)**3+(landing(selected[i],q[0],q[1])-landing(selected[i]))*t**3;return q;
+        q[2]+=(own==null?0:own-startZ)*(1-t)**3;
+        if(!extendToCut)q[2]+=(landing(selected[i],q[0],q[1])-landing(selected[i]))*t**3;
+        return q;
       });
       return {left:across[0],right:across.at(-1),centre:across[acrossFractions.indexOf(0)],across};
     });
-    if(sections.some(s=>[s.left,s.right].some(([x,y])=>x<0||y<0||x>widthMM||y>heightMM))){missed.push('approach outside crop');continue;}
+    const crossesCut=sections.some(s=>[s.left,s.right].some(([x,y])=>x<0||y<0||x>widthMM||y>heightMM));
+    if(crossesCut&&!clipApproach){missed.push('approach outside crop');continue;}
     const routingRepairs=continuationPath.segments?.slice(0,last.segment).filter(e=>e.estimatedRepair).map(e=>({from:e.from,to:e.to,sourceFeatureIds:e.line.sourceFeatureIds}))||[];
-    const mesh=stripSolid(sections,.6+roadRise);
-    plans.push({sections,mesh,footprint:footprint(sections),length,grade,endGrade,startZ,endZ,startWidthMM:width,endWidthMM:endWidth,targetFeatureIds:terminal?.line.sourceFeatureIds,routingRepairs,estimated:true});
+    const thickness=.6+roadRise,slab=stripSolid(sections,thickness),mesh=crossesCut?clipApproach(slab,thickness):slab;
+    if(!mesh.faces.length){missed.push('approach outside crop');continue;}
+    plans.push({sections,mesh,footprint:footprint(sections),length,grade,endGrade,startZ,endZ,startWidthMM:width,endWidthMM:endWidth,targetFeatureIds:terminal?.line.sourceFeatureIds,routingRepairs,estimated:true,...(crossesCut?{clippedByCrop:true}:{})});
     }catch(error){missed.push({reason:'invalid approach pavement',error:error.message});}
   }
   return {plans,missed};

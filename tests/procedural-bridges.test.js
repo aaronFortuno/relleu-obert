@@ -2,9 +2,27 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {generateProceduralBridgeItems} from '../src/procedural-bridges.js';
 import {roadWidthMM} from '../src/transport-width.js';
+import {buildModel,makeProjection} from '../src/geometry.js';
+import {physicalBBox} from '../src/selection.js';
+import {auditPart} from '../src/solid-audit.js';
 
 const bridge=(coords,props={},id)=>({type:'Feature',id,properties:{sourceLayer:'transportation',brunnel:'bridge',class:'primary',...props},geometry:{type:'LineString',coordinates:coords}});
 const flat=()=>100;
+
+test('a mapped main-road landing a short distance beyond the cut leaves a closed approach at the model edge',()=>{
+  const bbox=physicalBBox([0,0],1,1),{unproject}=makeProjection(bbox,100);
+  const road=(left,right,id,brunnel)=>bridge([[left,.3],[right,.3]].map(unproject),
+    {class:'motorway',oneway:1,brunnel,layer:brunnel?1:undefined},id);
+  const features=[road(-5,.7,'west'),road(.7,30,'deck','bridge'),road(30,70,'east')];
+  const dem=[{z:0,x:0,y:0,size:2,elev:new Float32Array(4).fill(2)}];
+  const model=buildModel({meta:{bbox},features,dem},{size:100,resolution:10,trees:false});
+  const deck=model.context.bridges[0],west=deck.approaches.plans.find(p=>p.targetFeatureIds.includes('west'));
+  assert(west?.clippedByCrop,JSON.stringify(deck.approaches.missed));
+  assert.equal(west.startZ,west.endZ);
+  assert(west.mesh.vertices.some((value,i)=>i%3===0&&value===0));
+  assert(west.mesh.vertices.every((value,i)=>i%3===2||value>=0));
+  assert.deepEqual(auditPart(west.mesh).errors,[]);
+});
 
 test('linear profile by accumulated distance between the two DEM endpoints; a valley does not pull the deck down',()=>{
   const f=bridge([[0,0],[0.001,0],[0.002,0]],{},'v');

@@ -30,7 +30,7 @@ import {bridgeCrossesWater,fitWaterBridge,fitMainWaterBridge} from './bridge-wat
 import {generateProceduralTunnelVoids} from './procedural-tunnels.js';
 import {carveAvailableTunnels} from './tunnel-operations.js';
 import {generateMajorRoadItems,reserveProfileEnds} from './major-roads.js';
-import {roadWidthMM,MIN_ROAD_WIDTH_MM} from './transport-width.js';
+import {roadWidthMM,MIN_ROAD_WIDTH_MM,isPrincipalRoad} from './transport-width.js';
 import {transportIdentity,compatibleTransport,continuationRoute} from './transport-network.js';
 import {crossSectionFractions} from './transport-sections.js';
 import {fitMajorRoadItem,knownBridgeClearance,openedTunnelClearance} from './major-road-fit.js';
@@ -223,10 +223,15 @@ function append(target,mesh){const offset=target.vertices.length/3;for(const v o
 // open shells IFCCLOSEDSHELL. Preserve those Z values and give each clipped
 // surface a documented printable thickness; do not invent engineering piers.
 export function deckSurfaceSolid(item,proj,verticalReference,exaggeration,thickness=.6,lift=0){
-  const points=projectInfrastructurePath(item.coordinates,proj,verticalReference,exaggeration).map(([x,y,z])=>[x,y,z+lift]),surface=new Surface(),rect=box(proj.width,proj.height);
+  const points=projectInfrastructurePath(item.coordinates,proj,verticalReference,exaggeration).map(([x,y,z])=>[x,y,z+lift]);
   if(!Array.isArray(item.faces)||item.faces.length%3||item.faces.some(i=>!Number.isSafeInteger(i)||i<0||i>=points.length)||!Number.isFinite(thickness)||thickness<=0)throw Error('Superfície de pont invàlida.');
-  for(let i=0;i<item.faces.length;i+=3){
-    const p=item.faces.slice(i,i+3).map(j=>points[j]);let [a,b,c]=p;
+  return clippedDeckSlab(points,item.faces,proj,thickness);
+}
+
+function clippedDeckSlab(points,faces,proj,thickness){
+  const surface=new Surface(),rect=box(proj.width,proj.height);
+  for(let i=0;i<faces.length;i+=3){
+    const p=faces.slice(i,i+3).map(j=>points[j]);let [a,b,c]=p;
     const det=(b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]);if(Math.abs(det)<1e-12)continue;
     if(det<0){[b,c]=[c,b];p[1]=b;p[2]=c;}
     if(p.every(([x,y])=>x>=0&&y>=0&&x<=proj.width&&y<=proj.height)){surface.tri(...p);continue;}
@@ -235,6 +240,21 @@ export function deckSurfaceSolid(item,proj,verticalReference,exaggeration,thickn
     for(const poly of clipped)surface.polygon(poly,dz);
   }
   return surface.solid((x,y,z)=>z-thickness);
+}
+
+function slabTopMesh(mesh){
+  const points=Array.from({length:mesh.vertices.length/3},(_,i)=>Array.from(mesh.vertices.slice(i*3,i*3+3)));
+  const faces=[];
+  for(let i=0;i<mesh.faces.length;i+=3){
+    const triangle=mesh.faces.slice(i,i+3),[a,b,c]=Array.from(triangle,id=>points[id]);
+    if((b[0]-a[0])*(c[1]-a[1])>(b[1]-a[1])*(c[0]-a[0]))faces.push(...triangle);
+  }
+  return {points,faces};
+}
+
+function clipApproachSlab(mesh,proj,thickness){
+  const {points,faces}=slabTopMesh(mesh);
+  return clippedDeckSlab(points,faces,proj,thickness);
 }
 export function treeMesh({x,y,ground,rx,ry,rz,rotation=0,phase=0,crownTaper=0}){
   const surf=new Surface(),rings=6,segments=8,embed=Math.min(.3,rz*.35),z=ground+rz-embed;
@@ -982,7 +1002,7 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
         item={...item,coordinates:item.coordinates.map(([lon,lat],i)=>[lon,lat,originMeters+(waterFit.heights[i>>1]-verticalReference.minimumSurfaceMM)/zScale]),
           elevationMethod:'estimated-short-water-crossing'};
         points=points.map(([x,y],i)=>[x,y,waterFit.heights[i>>1]]);
-      }else if(!railway&&['motorway','trunk','primary'].includes(item.roadClass)&&![true,1,'1','yes'].includes(item.ramp)){
+      }else if(!railway&&isPrincipalRoad({class:item.roadClass,ramp:item.ramp})){
         waterFit=fitMainWaterBridge(axis,rows,ground,terrain.waterAt,{maxGrade:.12*exaggeration,inModel:inside});
         if(waterFit){
           axis=waterFit.axis;
@@ -999,8 +1019,9 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
     points=points.map(([x,y,z])=>[x,y,z+lift]);
     const top=topSampler(points,item.faces);
     if(!axis){const center=points.reduce((a,p)=>[a[0]+p[0]/points.length,a[1]+p[1]/points.length],[0,0]),xx=points.reduce((n,p)=>n+(p[0]-center[0])**2,0),yy=points.reduce((n,p)=>n+(p[1]-center[1])**2,0),xy=points.reduce((n,p)=>n+(p[0]-center[0])*(p[1]-center[1]),0),angle=Math.atan2(2*xy,xx-yy)/2,d=[Math.cos(angle),Math.sin(angle)],positions=points.map(p=>(p[0]-center[0])*d[0]+(p[1]-center[1])*d[1]);axis=[Math.min(...positions),Math.max(...positions)].map(s=>[center[0]+s*d[0],center[1]+s*d[1]]);}
-    axis=axis.slice();axis.roadClass=item.roadClass||matches[0]?.t.class;
-    const identity=!item.sourceFeatureIds?.length&&matches[0]?.score>0?{...matches[0].t.identity}:transportIdentity({class:item.roadClass,ref:item.ref,name:item.name,oneway:item.oneway,layer:item.layer,railway},null);
+    axis=axis.slice();
+    const identity=!item.sourceFeatureIds?.length&&matches[0]?.score>0?{...matches[0].t.identity}:transportIdentity({class:item.roadClass,ramp:item.ramp,ref:item.ref,name:item.name,oneway:item.oneway,layer:item.layer,railway},null);
+    axis.roadClass=identity.class||matches[0]?.t.class;
     if(item.sourceFeatureIds?.length)identity.sourceFeatureIds=item.sourceFeatureIds;
     const roadWidth=item.mainRoad?item.widthMetres*scale:matches[0]?.t.width||.44;
     const layout=data.infrastructure?.layouts?.items?.[item.id],pierAxis=layout?.start==='south'&&proj.unproject(axis[0])[1]>proj.unproject(axis.at(-1))[1]?axis.slice().reverse():axis;
@@ -1116,21 +1137,47 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
     for(let i=0;i<rows.length-1;i++)for(let j=0;j<n-1;j++){const a=i*n+j;faces.push(a,a+1,a+n,a+1,a+n+1,a+n);}
     return {top:topSampler(points,faces),points,faces,identity:t.roadIdentity||transportIdentity(data.features.find((f,i)=>t.sourceFeatureIds.includes(f.id??i))?.properties),sourceFeatureIds:t.sourceFeatureIds,railway:t.pavementCategory==='railways'};
   });
+  const apronTargets=new Map();
+  for(const bridge of majorDecks)for(const plan of bridge.approaches.plans){
+    const ids=plan.targetFeatureIds;
+    if(!ids?.length)continue;
+    const {points,faces}=slabTopMesh(plan.mesh),target={points,faces,top:topSampler(points,faces),identity:bridge.identity};
+    for(const id of ids.map(String)){
+      if(!apronTargets.has(id))apronTargets.set(id,[]);
+      apronTargets.get(id).push(target);
+    }
+  }
+  const apronsByLine=new WeakMap();
+  const landingAprons=line=>{
+    if(!line)return [];
+    if(!apronsByLine.has(line)){
+      const targets=[...new Set((line.sourceFeatureIds||[]).flatMap(id=>apronTargets.get(String(id))||[]))];
+      apronsByLine.set(line,targets.filter(target=>compatibleTransport(line,target.identity)));
+    }
+    return apronsByLine.get(line);
+  };
   for(const [index,bridge] of bridges.entries()){
     preview?.stage('transport','Calculant els enllaços dels ponts…',index+1,bridges.length);
     if(bridge.terminalApproaches)continue;
     try{
     const destination=(x,y,line)=>{
       for(const floor of floorTargets)if(floor.railway===bridge.railway&&matchesLine(floor,line)&&compatibleTransport(bridge.identity,floor.identity)){const z=floor.top(x,y);if(z!=null)return z-bridge.surfaceRise;}
+      // When the continuation already has a smoothed approach, use the
+      // actual pavement as the landing instead of the DEM under that ramp.
+      for(const apron of landingAprons(line)){const z=apron.top(x,y);if(z!=null)return z-bridge.surfaceRise;}
       return exteriorSurface(x,y,bridge.railway,bridge.identity,line,bridge.id)-bridge.surfaceRise;
     };
     const own=new Set(bridge.sourceFeatureIds||bridge.identity.sourceFeatureIds),lines=transport.filter(t=>t.railway===bridge.railway&&!t.sourceFeatureIds?.some(id=>own.has(id))&&(t.brunnel!=='tunnel'||floorTargets.some(f=>matchesLine(f,t))));
     const destinationBreaks=section=>{
       const fractions=exteriorBreaks(section);
       for(const floor of floorTargets)if(matchesLine(floor,section.line))fractions.push(...crossSectionFractions(section,{points:floor.points,faces:floor.faces}));
+      for(const apron of landingAprons(section.line))fractions.push(...crossSectionFractions(section,apron));
       return fractions;
     };
-    bridge.approaches=planApproaches({axis:bridge.axis,points:bridge.points,faces:bridge.sourceFaces,containsDeck:bridge.contains,roads:lines,ground,destinationSurface:destination,destinationBreaks,forceConnections:true,roadRise:bridge.surfaceRise,scale,widthMM:width,heightMM:height,roadWidth:bridge.roadWidth,maxGrade:bridge.waterClearanceMM ? .3 : null});
+    const mainAtEdge=bridge.estimated&&!bridge.railway&&isPrincipalRoad(bridge.identity);
+    bridge.approaches=planApproaches({axis:bridge.axis,points:bridge.points,faces:bridge.sourceFaces,containsDeck:bridge.contains,roads:lines,ground,destinationSurface:destination,destinationBreaks,forceConnections:true,roadRise:bridge.surfaceRise,scale,widthMM:width,heightMM:height,roadWidth:bridge.roadWidth,maxGrade:bridge.waterClearanceMM ? .3 : null,
+      clipApproach:mainAtEdge?(mesh,thickness)=>clipApproachSlab(mesh,proj,thickness):null,
+      dryApproach:mainAtEdge?(x,y)=>terrain.waterAt(x,y)===null:null});
     }catch(error){bridge.approaches.missed.push({reason:'invalid approach pavement',error:error.message});}
   }
   warnings.push('Els arbres són una representació procedimental dins de zones verdes, no posicions d’arbres mesurades.');

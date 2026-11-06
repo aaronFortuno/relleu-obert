@@ -1,5 +1,17 @@
 # RO-052 — Continuïtat i amplada de la calçada
 
+## Segon retall de l’Hospitalet, v0.23.14
+
+`hospitalet2.json` correspon a un altre enllaç del Llobregat, centrat a `41.349390, 2.057431`. Retall de 999,68 × 999,68 m, peça de 200 × 200 mm, detall 64, exageració ×1,5, MET5 i edificis ICGC. Les comparacions locals parteixen de les mateixes dades i es fan sense arbres. La v0.23.13 construeix 27 perfils principals i 34 fragments de paviment regional. Els controls del primer retall de l’Hospitalet es mantenen separats.
+
+Al segon retall hi ha trams que tornen al relleu quan un perfil no pot acreditar la cota d’un ferrocarril, un pont o la volta d’un túnel. També hi ha extrems d’autopista que queden massa a prop del cantell per acabar una transició, o que es descarten perquè una vora de la calçada surt de la peça. Alguns ramals apareixen amb la classe del tronc i queden sense un candidat compatible.
+
+El motor conserva la classe del ramal per buscar continuacions cartogràfiques compatibles. Si la continuació seca d’una via principal surt de la peça a tocar del tauler, pot seguir la tangent fins al cantell i tancar-hi el sòlid. Les unions que arriben a una rampa suavitzada prenen la cota de la seva malla. Quan falta la cota d’un creuament protegit, cal separar el tram afectat de la resta de la via per conservar la rasant on hi ha dades suficients.
+
+Als 21 taulers cartografiats de vies principals, els enllaços passen de 18 a 37 i els extrems sense connexió de 24 a 5. Els dos taulers del cantell oest recuperen un enllaç cadascun. A la continuació `501496602`, l’enllaç acaba a 9,203 mm, a la cota de la rampa suavitzada. Abans acabava a 8,698 mm, al nivell del terreny. Les sis malles per material superen l’auditoria de tancament. Temps de generació local de 91,6 a 88,0 s.
+
+Els pendents màxims mostrejats dels trams `501496602`, `961983332`, `961985742` i `5544604652` es mantenen al 67,0%, 22,5%, 20,0% i 20,3%, respectivament. La prova amb un mostreig més espaiat del paviment de retorn tampoc els va reduir. Queden pendents els canvis bruscos de rasant, la inspecció de components separats i la prova amb vegetació i laminat.
+
 ## Hospitalet i el Prat, v0.23.13
 
 Retall d’`hospitalet.json` centrat a `41.340975, 2.093828`, 1.200 × 1.200 m, peça de 240 × 240 mm a 1:5.000, detall 64, relleu Mapterhorn i edificis ICGC. S’han comparat el model anterior i el corregit amb els arbres desactivats en ambdós. El pressupost inicial de paviment comptava 5.256 fragments de totes les tessel·les. Comptant les petjades que poden tocar la peça, la prova aplica 5 trams complets i 27 de parcials.

@@ -3,6 +3,7 @@
 ## v0.23.14 — 2026-11-06
 
 - A escriptori, la cerca i el mapa es mantenen sota la capçalera de Territori. La roda torna a fer zoom al mapa i desplaça els ajustos quan hi passa per sobre.
+- Els enllaços dels ponts distingeixen els ramals, segueixen la rasant de les rampes ja calculades i poden arribar fins al cantell si hi continua la mateixa carretera.
 
 ## v0.23.13 — 2026-11-06
 
