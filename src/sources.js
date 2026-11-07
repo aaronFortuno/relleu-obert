@@ -8,6 +8,7 @@ import {regionTileCount,MAX_REGION_TILES} from './region-limits.js';
 import {loadBuildingsRecoverably} from './building-recovery.js';
 import {recommendedPlace} from './recommended-places.js';
 import {loadInfrastructureOverrides} from './infrastructure-registry.js';
+import {createLandmarkLoader} from './landmarks.js';
 import {fetchOSMBuildings} from './roof-sources.js';
 import {loadReliefWaterways,RELIEF_WATERWAY_SOURCE} from './relief-waterways.js';
 import {isFlowingWater,isMarineWater,isStandingWater} from './standing-water.js';
@@ -33,6 +34,8 @@ async function get(url){const r=await fetch(url,{signal:AbortSignal.timeout(2500
 const infrastructureJSON=async name=>(await get((import.meta.env?.BASE_URL||'./')+'data/'+name)).json();
 const vectorCatalog='https://tiles.openfreemap.org/planet';
 const vectorTemplate=async()=> (await(await get(vectorCatalog)).json()).tiles[0];
+const singularCatalogue='https://raw.githubusercontent.com/aaronFortuno/open-place-models/main/catalog.geojson';
+const loadSingularModels=createLandmarkLoader(singularCatalogue,(...args)=>fetch(...args));
 const waterPolygonOps=polygonOps();
 
 export function mergeStandingWaterFragments(lakes){
@@ -248,6 +251,7 @@ export async function loadRegion({sample=true,bbox,buildingSource,decodeElevatio
   if(typeof sample==='string'&&!recommendedPlace(sample))throw Error('Exemple desconegut.');
   let meta=sample?await time('source.catalog',async()=>(await get(base+(recommendedPlace(sample)?.file||'tamariu.json'))).json(),{provider:'sample'}):{name:'Regió seleccionada',bbox,tiles:tileList(bbox),date:new Date().toISOString()};
   if(sample&&bbox)meta={...meta,bbox};
+  const singulars=localBuildings?null:time('source.singular-buildings',()=>loadSingularModels(meta.bbox));
   let template;
   if(!sample)template=await time('source.catalog',vectorTemplate,{provider:'OpenFreeMap'});
   let features=[],dem=[],terrainRaster,bridgeDem=[],bridgeFeatures=[],incompleteBridgeIds=[],terrainWarnings=[...(meta.sourceWarnings||[])];
@@ -296,7 +300,9 @@ export async function loadRegion({sample=true,bbox,buildingSource,decodeElevatio
   let infrastructure=null;
   try{infrastructure=await time('source.infrastructure',()=>loadInfrastructureOverrides(meta.bbox,infrastructureJSON));}
   catch(error){terrainWarnings.push('No s’han pogut carregar els detalls específics dels ponts; s’ha omès aquesta millora. '+error.message);}
-  const region={meta,features,vectorFeatures:features,terrainWarnings,dem,terrainRaster,bridgeDem,bridgeFeatures,incompleteBridgeIds,localDEM,infrastructure};
+  const {models:singularModels,warnings:singularWarnings}=(await singulars)??{models:[],warnings:[]};
+  terrainWarnings.push(...singularWarnings);
+  const region={meta,features,vectorFeatures:features,terrainWarnings,dem,terrainRaster,bridgeDem,bridgeFeatures,incompleteBridgeIds,localDEM,infrastructure,singularModels};
   const layer=await loadBuildingsRecoverably(source=>time('source.buildings',()=>loadBuildingLayer(region,{source,localBuildings},progress),{provider:localBuildings?'local':source}),buildingSource||defaultBuildingSource(meta.bbox),localBuildings?[]:buildingFallbacks);
   if(layer.recovery){region.recovery=layer.recovery;region.meta={...region.meta,buildingRecovery:layer.recovery};}
   return applyBuildingLayer(region,layer);

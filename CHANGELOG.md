@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.23.27 — 2026-11-07
+
+- La Torre Glòries s’incorpora automàticament des d’un catàleg de malles georeferenciades. Substitueix el volum d’ICGC, Catastre o OpenStreetMap quan entra al retall i respecta el límit d’altura i l’opció d’amagar els edificis.
+
 ## v0.23.26 — 2026-11-07
 
 - La cerca de llocs s’inicia després de dos segons de pausa. Retorn i el botó de cerca continuen disponibles per fer-la immediatament.

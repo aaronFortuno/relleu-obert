@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-07. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.23.27 — Pilot de la Torre Glòries
+
+RO-032 integra la Torre Glòries des del repositori independent Open Place Models. Prova local amb el catàleg publicat, el MET5 i les tres fonts d’edificis a dues escales. Els dos 3MF contenen la malla del catàleg i la seva atribució. Queden pendents la revisió de l’usuari al visor i el laminat. [Retalls i comprovacions](RO-032-INTEGRACIO.md#pilot-de-la-torre-glòries--v02327)
+
 ## 2026-11-07 — Catàleg independent de llocs singulars
 
 S’aparca GlobalBuildingAtlas i es prioritzen les malles singulars. RO-032 recull la proposta de repositori separat amb índex GeoJSON, models GLB en metres, referència geogràfica i llicència per model. Queden pendents el repositori i la prova d’integració. [Proposta de catàleg](RO-032-INTEGRACIO.md#proposta-de-catàleg-independent)

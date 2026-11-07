@@ -120,4 +120,17 @@ Per als models originals, CC BY 4.0 és una opció si volem que el crèdit viatg
 - Carregar la malla amb un identificador i una revisió fixats i registrar-los, amb l’atribució, a la procedència de l’exportació. Substituir només les petjades associades un cop validat el sòlid i el seu encaix. Si la malla falla o queda parcialment fora del retall sense poder-se tancar, es conserva la representació de la font general.
 - El mateix índex admet llocs naturals. Un cupó de roca o una bauma necessita un perfil d’encaix propi, amb referència vertical i contorn d’unió al relleu. Aquest perfil s’especificarà a partir del pilot RO-035. [Relleu rocós](RELLEU-ROCOS.md)
 
-El format és una proposta. Queden pendents el repositori independent, la primera malla i la prova del carregador amb dos retalls.
+## Pilot de la Torre Glòries · v0.23.27
+
+El catàleg estàtic Open Place Models publica l’índex GeoJSON i la malla GLB per revisió. Relleu Obert carrega l’índex i només demana les malles que intersecten el retall de Model complet. El primer GLB té 2.310 triangles i ocupa 28.492 bytes. Representa l’oval i la cúpula amb una aproximació paramètrica. [Fitxa, fonts i llicències](https://github.com/aaronFortuno/open-place-models/tree/main/models/torre-glories/r1) · [Guia per investigar candidats i fer malles](https://github.com/aaronFortuno/open-place-models/blob/main/CONTRIBUTING.md)
+
+El motor col·loca la malla amb l’àncora WGS84, la posa a la cota superior del terreny sota la petjada i encasta la base. La mateixa projecció de la maqueta aplica l’escala i el gir. Un cop el sòlid supera l’auditoria, se substitueixen els volums del mateix edifici identificats per solapament o per un identificador verificat amb solapament. En cas de fallada es conserven els volums de la font triada. «Altura limitada» aplica la mateixa coberta plana que a la resta d’edificis. En amagar els edificis s’elimina també la torre.
+
+| Peça | Centre en latitud, longitud | Escala | Gir | Terreny |
+| --- | --- | --- | --- | --- |
+| 10 × 10 cm | 41.403515, 2.189521 | 1:1.500 | 0° | ICGC MET5 |
+| 10 × 10 cm | 41.40388, 2.18988 | 1:4.000 | 37° | ICGC MET5 |
+
+Amb exageració ×1,5, les dues maquetes conserven els 2.310 triangles de la torre amb OSM, ICGC i Catastre. La cota de la cúpula sobre el terreny a l’àncora és de 96,95 mm i 36,54 mm, respectivament. El 3MF registra la revisió i els crèdits. Les proves de regressió també cobreixen el tall a vora de peça i una malla invàlida.
+
+Al visor local s’ha comprovat la silueta amb la font per defecte, una peça de 10 × 10 cm i el centre de la torre a 1:2.000 sense gir i a 1:5.000 amb 15°. Queden pendents la revisió de l’usuari i el laminat.

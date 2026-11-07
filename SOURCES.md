@@ -17,6 +17,8 @@ El quadre **Sobre el projecte · V4V** reuneix les fonts de les maquetes per cap
 
 L’atribut `altura` de les construccions RTT s’expressa en metres: [especificacions de l’ICGC, annex A, construccions](https://datacloud.ide.cat/especificacions/topografia-territorial-v1r0-esp-06ca-20230524.pdf). S’utilitza com a altura de volum, no com a forma de coberta. La consulta actual descarta les coordenades Z i no incorpora malles reals de teulades. Els modes limitats i de petjades són simplificacions explícites per a representació educativa.
 
+Les geometries singulars es carreguen d’Open Place Models quan intersecten el retall. L’autoria, les fonts i les llicències es registren per revisió i a les metadades del 3MF. Per a la Torre Glòries, la malla original és CC BY 4.0 i la petjada i l’àncora deriven d’OpenStreetMap sota ODbL. [Catàleg i crèdits](https://github.com/aaronFortuno/open-place-models)
+
 ## Elevacions
 
 - Mapterhorn, https://mapterhorn.com/data-access/ . Tessel·les Terrarium WebP de 512 píxels. Fórmula: `R*256 + G + B/256 - 32768` metres.
