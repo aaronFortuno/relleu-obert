@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-07. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.23.32 — Montserrat torna al relleu general
+
+L’usuari observa menys fluïdesa al visor i una qualitat similar o inferior amb els dos sectors actius. El control de Model complet passa de 176.298 a 331.310 triangles amb els sectors. Es desactiva la càrrega normal dels GeoTIFF i es conserva l’obertura singular de la Foradada. El pilot queda disponible per a proves locals. [Comparativa](RELLEU-ROCOS.md#comparativa-amb-el-relleu-general--v02332)
+
 ## v0.23.31 — Montserrat per sectors
 
 RO-023 i RO-035 connecten el catàleg de Montserrat al motor. Dos retalls girats, un per mode, baixen els GeoTIFF de la Foradada nord i les Agulles nord. Les 193 cotes de la unió coincideixen i el pas i la volta de la Foradada es conserven en la malla. Pendent de contrast al visor. [Mesures i reproducció](RELLEU-ROCOS.md#pilot-del-massís-de-montserrat)

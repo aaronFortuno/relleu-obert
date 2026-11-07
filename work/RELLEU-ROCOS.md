@@ -74,6 +74,21 @@ La vista general del catàleg cobreix 9,6 × 6,4 km. Relleu Obert combina el rel
 
 Els dos controls de 10 × 10 cm estan centrats a **41,6122626 N, 1,7871346 E**. El Model complet fa servir 1:2.000 i +24°. El Relleu pur fa servir 1:10.000 i −19°. En tots dos casos es carreguen `foradada-nord` i `agulles-nord`, amb 299.992 bytes en total. Les 193 cotes de la vora coincideixen exactament. En el Model complet, la diferència màxima entre les mostres a 1 mm real a cada banda de la vora és de 0,003 mm a la maqueta. Dotze raigs travessen la Foradada sense tocar la malla i la volta es conserva en tots dos controls. Pendent de revisar al visor.
 
+### Comparativa amb el relleu general · v0.23.32
+
+La revisió al visor detecta menys fluïdesa i cap millora visual clara en activar els sectors. La versió normal torna a fer servir el relleu general amb la Foradada r2. El catàleg i el control local conserven els dos sectors.
+
+El mateix retall de Model complet a 1:2.000 s’ha generat amb MET5 en dos processos locals separats. Els temps són de construcció de la malla, amb les dades ja carregades. La memòria de la malla suma els buffers que s’envien al visor. El pic de memòria correspon al procés Node fins al final de la generació.
+
+| Mesura | Relleu general i Foradada | Amb dos sectors |
+| --- | ---: | ---: |
+| Triangles del visor | 176.298 | 331.310 |
+| Buffers de malla | 3,67 MB | 6,92 MB |
+| Construcció | 1,45 s | 1,78 s |
+| Pic de memòria resident | 298 MB | 354 MB |
+
+Tots dos models conserven les dues boques i la volta. El control amb relleu general també confirma que la càrrega normal fa zero peticions dels GeoTIFF del pilot. La fluïdesa al navegador correspon a l’observació de l’usuari.
+
 ## Reproducció local
 
 ```powershell
@@ -81,6 +96,7 @@ node --max-old-space-size=512 scripts/compare-cavall-bernat.mjs
 node --max-old-space-size=512 scripts/pilot-cavall-detail.mjs
 node --max-old-space-size=512 scripts/pilot-degotalls.mjs
 node --max-old-space-size=512 scripts/check-foradada.mjs montserrat
+node --max-old-space-size=512 scripts/check-foradada.mjs montserrat --relleu-general
 node --max-old-space-size=512 scripts/check-foradada.mjs montserrat-relleu
 ```
 

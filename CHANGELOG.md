@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.23.32 — 2026-11-07
+
+- Montserrat torna a fer servir el relleu general en tots dos modes. La Roca Foradada conserva el tractament singular i la cavitat de la r2.
+
 ## v0.23.31 — 2026-11-07
 
 - Montserrat incorpora sectors d’elevació de 2 m a Model complet i Relleu pur. Es descarreguen només els sectors que toca el retall i el relleu general s’hi uneix pel perímetre exterior. La Foradada conserva la cavitat del model singular.

@@ -15,6 +15,7 @@ import {splitModel} from '../src/mesh-tiles.js';
 import {threeMF,bambuPlateProject} from '../src/export.js';
 
 const args=process.argv.slice(2),local=args.find(arg=>arg.startsWith('file:')),export3MF=args.includes('--3mf');
+const generalTerrain=args.includes('--relleu-general');
 const catalogue=local&&new URL(local),nativeFetch=globalThis.fetch;
 const tileRequests=[];
 if(catalogue)globalThis.fetch=async (url,options)=>{
@@ -101,7 +102,14 @@ function checkSeam(region,model,project){
 await mkdir(out,{recursive:true});
 for(const test of cases.filter(({name})=>!args.some(arg=>cases.some(entry=>entry.name===arg))||args.includes(name))){
   const {name,size,scale,rotation,resolution,pureRelief}=test,width=size,height=size,pose=selectionPose(scaledBBox(test.center??center,width,height,scale),rotation);
-  const region=await loadRegion({sample:false,bbox:pose.bbox,selectionCorners:pose.corners,pureRelief,buildingSource:'osm',decodeElevation});
+  const detailSectors=name.startsWith('montserrat')&&!generalTerrain;
+  tileRequests.length=0;
+  const region=await loadRegion({sample:false,bbox:pose.bbox,selectionCorners:pose.corners,
+    ...(detailSectors?{detailSectors}:{}),pureRelief,buildingSource:'osm',decodeElevation});
+  if(!detailSectors){
+    assert.equal(tileRequests.length,0,'La càrrega normal ha d’ometre els GeoTIFF del pilot.');
+    assert.equal(region.meta.detailTerrain,undefined);
+  }
   const terrainControl=name==='complet-obert';
   // Keep the wider Full Model control focused on the resolution gate. The
   // close Full Model control exercises the same cavity with all layers active.
@@ -111,13 +119,18 @@ for(const test of cases.filter(({name})=>!args.some(arg=>cases.some(entry=>entry
   const allLayers=name==='complet';
   const request=structuredClone(buildRequest(region,{size:width,widthMM:width,heightMM:height,selectionPose:pose,resolution,
     pureRelief,exaggeration:1,trees:allLayers,buildingMode:'source',majorRoads:allLayers,surfaceRoads:allLayers?'regional':undefined}));
+  const started=performance.now();
   const model=buildModel(request.region,request.options,undefined,api);
+  const modelBuildMS=performance.now()-started,processPeakRSSBytes=process.resourceUsage().maxRSS*1024;
+  const previewTriangles=model.categories.reduce((sum,part)=>sum+part.faces.length/3,0);
+  const previewBytes=model.categories.reduce((sum,part)=>sum+part.vertices.byteLength+part.faces.byteLength,0);
   const {project}=makeProjection(region.meta.bbox,width,request.options);
   const audit=model.parts.map(auditPart).map(({id,errors,triangles})=>({id,errors,triangles}));
-  const bytes=export3MF?threeMF(model,{bambu:true}):null,basename=`${out}/roca-foradada-r2-${name}`;
-  const report={...test,terrainControl,terrain:region.meta.terrain.provider,source:model.provenance.catalogueLandforms,
+  const bytes=export3MF?threeMF(model,{bambu:true}):null,basename=`${out}/roca-foradada-r2-${name}${generalTerrain?'-relleu-general':''}`;
+  const report={...test,terrainControl,detailSectors,modelBuildMS,processPeakRSSBytes,previewTriangles,previewBytes,
+    terrain:region.meta.terrain.provider,source:model.provenance.catalogueLandforms,
     omissions:model.provenance.catalogueLandformOmissions,warnings:model.warnings.filter(w=>w.includes('Foradada')),audit,...checkPassage(bytes?exportedParts(bytes):model.parts,source,model,project)};
-  if(name.startsWith('montserrat'))report.seam=checkSeam(region,model,project);
+  if(detailSectors)report.seam=checkSeam(region,model,project);
   console.log(JSON.stringify(report));
   assert(report.source?.some(entry=>entry.id===source.id&&entry.revision==='r2'));
   assert(audit.every(part=>!part.errors.length));

@@ -175,7 +175,9 @@ function reliefBounds(bbox,panoramic){
   return {wide:panoramic||Math.max(width,height)>50*Math.SQRT2+.1};
 }
 
-export async function loadRegion({sample=true,bbox,selectionCorners,buildingSource,decodeElevation=decodeDEM,localDEM,localBuildings,buildingFallbacks=[],onTiming,pureRelief=false,panoramic=false},progress=()=>{}){
+// Catalogue sectors are opt-in for controlled comparisons. Keep the normal
+// workshop on the general elevation source and the individual landforms.
+export async function loadRegion({sample=true,bbox,selectionCorners,detailSectors=false,buildingSource,decodeElevation=decodeDEM,localDEM,localBuildings,buildingFallbacks=[],onTiming,pureRelief=false,panoramic=false},progress=()=>{}){
   async function time(phase,run,details={}){
     if(!onTiming)return run();
     const start=performance.now();
@@ -193,7 +195,9 @@ export async function loadRegion({sample=true,bbox,selectionCorners,buildingSour
     const bounds=reliefBounds(bbox,panoramic);
     if(!bounds)throw Error(panoramic?'Retall fora dels límits del format panoràmic.':'Retall fora dels límits de Relleu pur.');
     const {wide}=bounds;
-    const singulars=time('source.singular-terrain',()=>loadSingularModels(bbox,wide?['terrain-overview']:['landform','terrain-overview'],selectionCorners));
+    const kinds=wide?[]:['landform'];
+    if(detailSectors)kinds.push('terrain-overview');
+    const singulars=kinds.length?time('source.singular-terrain',()=>loadSingularModels(bbox,kinds,selectionCorners)):null;
     const [w,s,e,n]=RELIEF_LAKE_SOURCE.bounds;
     const insidePilot=bbox[0]>=w&&bbox[1]>=s&&bbox[2]<=e&&bbox[3]<=n;
     let vectorsPromise,oceanProof;
@@ -258,7 +262,10 @@ export async function loadRegion({sample=true,bbox,selectionCorners,buildingSour
   if(sample&&bbox)meta={...meta,bbox};
   const kinds=[];
   if(!localBuildings)kinds.push('building','bridge');
-  if(!localDEM)kinds.push('landform','terrain-overview');
+  if(!localDEM){
+    kinds.push('landform');
+    if(detailSectors)kinds.push('terrain-overview');
+  }
   const singulars=kinds.length?time('source.singular-models',()=>loadSingularModels(meta.bbox,kinds,selectionCorners)):null;
   let template;
   if(!sample)template=await time('source.catalog',vectorTemplate,{provider:'OpenFreeMap'});
