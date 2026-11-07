@@ -211,9 +211,9 @@ export async function loadRegion({sample=true,bbox,buildingSource,decodeElevatio
       coverage=await time('source.relief-coverage',()=>loadReliefCoverage(bbox));
       if(coverage.length){
         warnings.push('ESA WorldCover 2021: gris per sòl nu o amb vegetació escassa i blanc per neu o gel cartografiat.');
-        const [w,s,e,n]=coverage[0].bbox;
-        if(bbox[0]<w||bbox[1]<s||bbox[2]>e||bbox[3]>n)warnings.push('El color de sòl nu i neu o gel només cobreix el retall cartografiat de l’Aneto.');
-      }else warnings.push('Aquest retall és fora de la cobertura de sòl nu i neu o gel del pilot de l’Aneto.');
+        if(!coverage.some(({bbox:[w,s,e,n]})=>bbox[0]>=w&&bbox[1]>=s&&bbox[2]<=e&&bbox[3]<=n))
+          warnings.push('El color de sòl nu i neu o gel només cobreix part del retall.');
+      }else warnings.push('Aquest retall és fora de la cobertura de sòl nu i neu o gel disponible.');
     }catch{warnings.push('No s’ha pogut carregar la cobertura de sòl nu i neu o gel.');}
     if(insidePilot){
       try{
@@ -235,7 +235,8 @@ export async function loadRegion({sample=true,bbox,buildingSource,decodeElevatio
       if(failures<tileCount&&zoom<14)warnings.push(`La cartografia ${vectorLabel} d’aquest retall ampli pot ometre els elements més petits.`);
     }catch{warnings.push(vectorUnavailable);}
     const meta={bbox,name:'Relleu pur',date:new Date().toISOString(),terrain:terrain.metadata,tiles:terrain.tiles.map(({z,x,y})=>({z,x,y})),
-      coverage:{...RELIEF_COVERAGE_SOURCE,available:!!coverage.length,tiles:coverage.map(t=>t.tile)},
+      coverage:{...RELIEF_COVERAGE_SOURCE,available:!!coverage.length,tiles:coverage.map(t=>t.tile),
+        rasters:coverage.map(({tile,bbox,width,height})=>({tile,bbox,width,height}))},
       lakes:{count:lakes.length,...(lakes.length?(insidePilot?RELIEF_LAKE_SOURCE:vectorCoverage):{})},
       waterways:{count:waterways.length,areaCount:waterAreas.length,...(waterways.length||waterAreas.length?(insidePilot?RELIEF_WATERWAY_SOURCE:vectorCoverage):{})},
       oceans:{count:oceans.length,...vectorCoverage},

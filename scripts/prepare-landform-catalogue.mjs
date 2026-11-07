@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {mkdir,readFile,writeFile} from 'node:fs/promises';
 import {createRequire} from 'node:module';
 import {serialize,deserialize} from 'node:v8';
+import Module from 'manifold-3d';
 import decodeWebp,{init} from '@jsquash/webp/decode.js';
 import encodeWebp,{init as initEncoder} from '@jsquash/webp/encode.js';
 import {encode} from 'fast-png';
@@ -25,21 +26,23 @@ const cases={
   'ebre-meandres':{name:'Meandres de l’Ebre · Riba-roja i Flix',center:[41.244,.525],size:[240,160],scale:40000,river:true}
 };
 const [id,stage='model']=process.argv.slice(2);
-const example=CURATED_EXAMPLES.find(example=>example.id===id&&example.pureRelief!==false);
+const example=CURATED_EXAMPLES.find(example=>example.id===id);
 const published=stage==='miniatura'||stage==='fonts'&&!Object.hasOwn(cases,id);
 assert(published?example:Object.hasOwn(cases,id)&&['fonts','model'].includes(stage),
   'Ús: prepare-landform-catalogue.mjs <id> [fonts|model|miniatura]');
 const chosen=published?{...cases[id],...example,name:example.title,size:[example.width,example.height]}:cases[id];
-const {name,center,size:[widthMM,heightMM],scale,rotation=0,coastal,river}=chosen;
+const {name,center,size:[widthMM,heightMM],scale,rotation=0,coastal,river,pureRelief=true}=chosen;
 const panoramic=isPanoramicSize(widthMM,heightMM);
-const pose=selectionPose(scaledBBox(center,widthMM,heightMM,scale,panoramic?PANORAMIC_SCALE_RANGE:PURE_SCALE_RANGE),rotation);
+const range=panoramic?PANORAMIC_SCALE_RANGE:pureRelief?PURE_SCALE_RANGE:[100,20000];
+const pose=selectionPose(scaledBBox(center,widthMM,heightMM,scale,range),rotation);
 const directory=new URL('../output/cataleg-relleu/',import.meta.url);
 await mkdir(directory,{recursive:true});
 const cache=new URL(`${id}.v8`,directory);
 let data;
 try{
   const cached=deserialize(await readFile(cache));
-  if(pose.bbox.every((value,index)=>value===cached.meta.bbox[index]))data=cached;
+  const matchingSource=!chosen.buildingSource||chosen.buildingSource===cached.meta.buildingSource;
+  if(matchingSource&&pureRelief===!!cached.meta.pureRelief&&pose.bbox.every((value,index)=>value===cached.meta.bbox[index]))data=cached;
 }
 catch(error){
   if(error.code!=='ENOENT')throw error;
@@ -54,24 +57,30 @@ if(!data){
     });
   };
   await init(await WebAssembly.compile(await readFile(new URL('../node_modules/@jsquash/webp/codec/dec/webp_dec.wasm',import.meta.url))));
-  data=await loadRegion({sample:false,bbox:pose.bbox,pureRelief:true,panoramic,
+  data=await loadRegion({sample:false,bbox:pose.bbox,pureRelief,panoramic,buildingSource:chosen.buildingSource,
     decodeElevation:async(blob,tile)=>decodeDEMTile(await blob.arrayBuffer(),tile,decodeWebp)},message=>console.log(id,message));
   await writeFile(cache,serialize(data));
 }
 console.log(id,'fonts',data.meta.terrain?.provider,'mar',data.oceans?.length,'aigua fluvial',data.waterAreas?.length);
 if(stage==='fonts')process.exit(0);
 
-const options={pureRelief:true,selectionPose:pose,targetScale:scale,widthMM,heightMM,size:Math.max(widthMM,heightMM),
+const options={pureRelief,selectionPose:pose,targetScale:scale,widthMM,heightMM,size:Math.max(widthMM,heightMM),
   resolution:panoramic?240:192,exaggeration:1.5,baseThickness:5,streams:true,streamWidth:1,trees:false};
-if(published)Object.assign(options,{resolution:PURE_RELIEF_RESOLUTIONS[example.detail??36],
+const resolutions=pureRelief?PURE_RELIEF_RESOLUTIONS:{24:36,36:64,56:96};
+if(published)Object.assign(options,{resolution:resolutions[example.detail??36],
   exaggeration:example.exaggeration??1.5,streamWidth:example.streamWidth??1,trees:example.trees??true,
   vegetationHeight:.8,vegetationNoise:45});
 const started=performance.now();
-// The whole range uses mapped water surfaces. Widening every minor stream
-// to one nozzle pass would crowd this overview and obscure the terrain.
-if(panoramic)options.streamWidth=0;
-const region=panoramic&&!options.trees?{...data,forests:[]}:data;
-const model=buildModel({...region,meta:{...region.meta,name}},options,message=>console.log(id,message));
+// Keep the original two-material panoramic specimen reproducible.
+if(!published&&panoramic)options.streamWidth=0;
+const region=!published&&panoramic?{...data,forests:[]}:data;
+const api=pureRelief?null:await Module();
+if(api){
+  api.setup();
+  Object.assign(options,{surfaceRoads:'regional',roadRise:0,railRise:0,trailWidth:1,estimatedTunnels:true,
+    majorRoads:true,smoothProfiles:true,buildingMode:'limited',maxBuildingHeight:5});
+}
+const model=buildModel({...region,meta:{...region.meta,name}},options,message=>console.log(id,message),api);
 const plan=tilePlan(widthMM,heightMM),split=plan.tiles.length>1;
 if(stage==='miniatura'){
   const requireWebp=createRequire(import.meta.resolve('@jsquash/webp/encode.js'));

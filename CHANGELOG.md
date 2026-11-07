@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.23.23 — 2026-11-07
+
+- S’apliquen els retalls revisats de Gibraltar, O Vao, Zumaia, Flix, Tremp i els Pirineus panoràmics. O Vao i Zumaia passen a Model complet.
+- El panoràmic dels Pirineus distingeix el sòl nu en gris i la neu o el gel en blanc amb una cobertura ampliada d’ESA WorldCover 2021. El Markdown del catàleg separa l’estat de cada fitxa dels apunts de revisió.
+
 ## v0.23.22 — 2026-11-07
 
 - El mont Fuji i Geirangerfjord tenen una exageració vertical de ×1,25. El fiord s’obre amb el retall revisat a 1:200.000.

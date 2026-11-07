@@ -961,6 +961,20 @@ function selectCuratedExample(example){
   if(pureRelief){
     const count=example.materialCount??6;
     reliefMaterials={count,assignments:defaultReliefAssignments(count)};
+  }else{
+    if(example.materialCount!==undefined){
+      const count=example.materialCount;
+      landscapeMaterials={count,assignments:defaultAssignments(count)};
+    }
+    if(example.buildingSource){
+      const source=$('#building-source');
+      buildingSourceDirty||=source.value!==example.buildingSource;
+      source.value=example.buildingSource;
+      buildingSourceExplicit=false;
+      $('#building-mode').value='limited';
+      $('#building-height').value=$('#building-height').defaultValue;
+      buildingControls();
+    }
   }
   syncExaggerationLabel();
   syncPrintSettings();

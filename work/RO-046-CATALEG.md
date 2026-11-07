@@ -1,81 +1,83 @@
 # Catàleg inicial de llocs per a maquetes
 
-RO-046 recull **37 enquadraments**, 25 de **Relleu pur** i 12 de **Model complet**. Els primers permeten reconèixer formes del terreny o del contorn de l’aigua. Els segons relacionen el traçat urbà i les infraestructures amb el lloc on es troben.
+RO-046 recull **37 enquadraments**, 23 de **Relleu pur** i 14 de **Model complet**. Els primers permeten reconèixer formes del terreny o del contorn de l’aigua. Els segons relacionen el traçat urbà i les infraestructures amb el lloc on es troben.
 
 ## Revisió per a maquetes d’aula
 
-La cua comença per la revisió inicial i les sis incorporacions. Després agrupa els retalls que es poden comparar a l’aula. Obre cada retall amb els seus ajustos, comprova la forma en vista zenital i obliqua i registra el resultat del laminat. Apunta si cal canviar l’enquadrament, el gir, l’escala o l’exageració. La validació física es registra a part.
+La cua comença per la revisió inicial i les sis incorporacions. Després agrupa els retalls que es poden comparar a l’aula. Obre cada retall amb els seus ajustos, comprova la forma en vista zenital i obliqua i registra el resultat del laminat. Apunta si cal canviar l’enquadrament, el gir, l’escala o l’exageració. Un **ajust incorporat** queda pendent de tornar a comprovar. La validació física es registra a part.
 
 ### Revisió inicial
 
-| Fitxa | Què cal comprovar | Apunt de la primera revisió | Estat |
+| Fitxa | Estat | Què cal comprovar | Ajust o observació |
 | --- | --- | --- | --- |
-| Cap de Creus | La punta queda sencera i destaca del contorn general de la península. | | Validat |
-| Ordesa i Mont Perdut | El fons i les parets deixen llegir la secció en U de la vall. | Afegir gir per encabir tot el parc natural. Detall a `galeria-ordesa.json`. | Ajust incorporat · tornar a comprovar |
-| Estany de Sant Maurici | Es distingeixen la làmina d’aigua i el relleu que tanca la capçalera. | Canviar la posició per incloure més llacs del sistema i reduir l’exageració vertical. Detall a `galeria-estany.json`. | Ajust incorporat · tornar a comprovar |
-| Montserrat | Les agulles destaquen de la carena a la mida impresa. | Afegir gir per incloure tot el parc natural. Detall a `galeria-montserrat.json`. | Ajust incorporat · tornar a comprovar |
-| Illes Cíes | La barra de Rodas i l’aigua de cada banda es distingeixen. | Girar el retall per excloure el sòl peninsular i mostrar l’arxipèlag. Detall a `galeria-cies.json`. | Ajust incorporat · tornar a comprovar |
-| Delta de l’Ebre | Les llacunes i les barres estretes es llegeixen en una sola peça. | Canviar les mides per passar de quatre peces a una. Detall a `galeria-ebre.json`. | Ajust incorporat · tornar a comprovar |
+| Cap de Creus | **Validat** | La punta queda sencera i destaca del contorn general de la península. | — |
+| Ordesa i Mont Perdut | **Ajust incorporat** | El fons i les parets deixen llegir la secció en U de la vall. | Afegir gir per encabir tot el parc natural. Detall a `galeria-ordesa.json`. |
+| Estany de Sant Maurici | **Ajust incorporat** | Es distingeixen la làmina d’aigua i el relleu que tanca la capçalera. | Canviar la posició per incloure més llacs del sistema i reduir l’exageració vertical. Detall a `galeria-estany.json`. |
+| Montserrat | **Ajust incorporat** | Les agulles destaquen de la carena a la mida impresa. | Afegir gir per incloure tot el parc natural. Detall a `galeria-montserrat.json`. |
+| Illes Cíes | **Ajust incorporat** | La barra de Rodas i l’aigua de cada banda es distingeixen. | Girar el retall per excloure el sòl peninsular i mostrar l’arxipèlag. Detall a `galeria-cies.json`. |
+| Delta de l’Ebre | **Ajust incorporat** | Les llacunes i les barres estretes es llegeixen en una sola peça. | Canviar les mides per passar de quatre peces a una. Detall a `galeria-ebre.json`. |
 
 ### Prioritat de revisió per a les noves fitxes
 
-Les sis fitxes s’incorporen a la galeria en aquesta iteració. Els enquadraments, les fonts i les comprovacions locals consten al [document de proves de relleu](RO-046-PROVES-RELLEU.md).
+Les sis fitxes ja són a la galeria. Els enquadraments inicials, les fonts i les comprovacions locals consten al [document de proves de relleu](RO-046-PROVES-RELLEU.md).
 
-| Fitxa | Què cal comprovar | Revisió |
-| --- | --- | --- |
-| Estret de Gibraltar | Les dues ribes es distingeixen i el canal es manté obert entre Tarifa i Punta Cires. | Pendent |
-| Istme d’O Vao · A Lanzada | El cordó de dunes uneix O Grove amb el continent i separa el mar obert de la zona intermareal. | Pendent |
-| Penya-segats de Zumaia | El perfil entre Pikote, Algorri i Itzurun es distingeix de la plataforma litoral. | Pendent |
-| Meandres de l’Ebre · Riba-roja i Flix | Els dos revolts són llegibles i el riu envolta la llengua de terra de Flix sense interrompre’s. | Pendent |
-| Conca de Tremp i Montsec | El fons de la conca es distingeix de les carenes que el delimiten, amb el Montsec al sud. | Pendent |
-| Pirineus panoràmics | Les quatre peces mantenen l’eix de la serralada continu i mostren mar a tots dos extrems. | Pendent |
+| Fitxa | Estat | Què cal comprovar | Ajust o observació |
+| --- | --- | --- | --- |
+| Estret de Gibraltar | **Ajust incorporat** | Les dues ribes es distingeixen i el canal es manté obert entre Tarifa i Punta Cires. | Nou centre i peça de 25 × 20 cm a 1:400.000. Detall a `galeria-gibraltar.json`. |
+| Istme d’O Vao · A Lanzada | **Ajust incorporat** | El cordó de dunes uneix O Grove amb el continent i separa el mar obert de la zona intermareal. | Model complet, nou centre i escala 1:20.000. Detall a `galeria-istme.json`. |
+| Penya-segats de Zumaia | **Ajust incorporat** | El perfil entre Pikote, Algorri i Itzurun es distingeix de la plataforma litoral. | Model complet, nou centre i peça de 20 × 10 cm a 1:15.000. Detall a `galeria-zumaia.json`. |
+| Meandres de l’Ebre · Riba-roja i Flix | **Ajust incorporat** | Els dos revolts són llegibles i el riu envolta la llengua de terra de Flix sense interrompre’s. | Retall de 12 × 8 km en la mateixa peça de 24 × 16 cm, amb gir de +15°, detall alt i exageració ×1,25. Detall a `galeria-flix.json`. |
+| Conca de Tremp i Montsec | **Ajust incorporat** | El fons de la conca es distingeix de les carenes que el delimiten, amb el Montsec al sud. | Nou centre, escala 1:150.000, detall alt i exageració ×1,75. Detall a `galeria-tremp.json`. |
+| Pirineus panoràmics | **Ajust incorporat** | Les quatre peces mantenen l’eix de la serralada continu i mostren mar a tots dos extrems. Comprova si es distingeixen el sòl nu i la neu. | Nou centre, escala 1:500.000, detall equilibrat, exageració ×2 i cinc materials. Detall a `galeria-panoramica.json`. |
+
+A la prova inicial dels Pirineus només es distingien l’aigua i el relleu marró. La cobertura WorldCover 2021 del retall complet representa en gris el sòl nu o amb poca vegetació i en blanc la neu o el gel. Els colors descriuen la cobertura del sòl.
 
 ### Comparacions de relleu proper
 
-| Fitxa | Què cal comprovar | Revisió |
-| --- | --- | --- |
-| Badia de Roses | La badia queda oberta entre Roses i el Montgrí i es distingeix la plana litoral. | Gir de −82° de `galeria-roses.json` incorporat · tornar a comprovar |
-| Badia de Tamariu | La cala, la platja i els penya-segats es llegeixen entre les cases. El mar arriba fins a la base. | Validat a 1:10.000. El selector ja permet comparar amb 1:15.000. |
-| Volcans del Croscat i Santa Margarida | Es distingeixen el tall lateral del Croscat i el cràter tancat de Santa Margarida. | Centre i exageració ×1,25 de `galeria-croscat.json` incorporats · tornar a comprovar |
-| Pirineus · sector de l’Aneto | Els massissos del Posets i la Maladeta destaquen sobre les valls i el retall inclou tot el parc natural. | Retall de `galeria-aneto.json` adaptat a 1:150.000 · tornar a comprovar |
-| Llacs glacials de l’Aneto | Les làmines d’aigua de Cregüeña i de Corones són planes i es distingeixen dels circs i les crestes. | Exageració ×1,25 incorporada · tornar a comprovar |
+| Fitxa | Estat | Què cal comprovar | Ajust o observació |
+| --- | --- | --- | --- |
+| Badia de Roses | **Ajust incorporat** | La badia queda oberta entre Roses i el Montgrí i es distingeix la plana litoral. | Gir de −82° de `galeria-roses.json`. |
+| Badia de Tamariu | **Validat** | La cala, la platja i els penya-segats es llegeixen entre les cases. El mar arriba fins a la base. | Validat a 1:10.000. El selector ja inclou el salt a 1:15.000 per comparar. |
+| Volcans del Croscat i Santa Margarida | **Ajust incorporat** | Es distingeixen el tall lateral del Croscat i el cràter tancat de Santa Margarida. | Centre i exageració ×1,25 de `galeria-croscat.json`. |
+| Pirineus · sector de l’Aneto | **Ajust incorporat** | Els massissos del Posets i la Maladeta destaquen sobre les valls i el retall inclou tot el parc natural. | Retall de `galeria-aneto.json` adaptat a 1:150.000. |
+| Llacs glacials de l’Aneto | **Ajust incorporat** | Les làmines d’aigua de Cregüeña i de Corones són planes i es distingeixen dels circs i les crestes. | Exageració vertical ×1,25. |
 
 El retall de l’Aneto fa 25 × 20 cm per mantenir el nord a dalt i encabir tot el parc en una placa. El centre es desplaça uns 660 m a ponent respecte al JSON. Queden uns 620 m de marge a ponent i a llevant segons el polígon oficial, excloent la zona perifèrica de protecció. [Límits dels espais naturals d’Aragó](https://opendata.aragon.es/datos/catalogo/dataset/espacios-naturales-protegidos-en-aragon_rednat_enp)
 
 ### Grans formes del relleu
 
-| Fitxa | Què cal comprovar | Revisió |
-| --- | --- | --- |
-| Tenerife | Teno, Anaga i la punta de la Rasca queden dins del retall. El tall entre peces coincideix i conserva la forma de l’illa. | Validat |
-| Teide i Las Cañadas | Els cons del Teide i de Pico Viejo es distingeixen dins el contorn de la caldera. | Centre i gir de −20° de `galeria-teide.json` incorporats · tornar a comprovar |
-| Santorini | Thera i Therasia emmarquen la caldera marina i els illots Kameni queden separats. | Validat |
-| Mont Fuji | El con i els vessants radials es llegeixen des de diversos angles. Comprova si es distingeix el cràter. | Exageració vertical ×1,25 incorporada · tornar a comprovar |
-| Geirangerfjord | El braç de mar arriba fins a Geiranger i queda encaixat entre vessants escarpats. | Centre, escala 1:200.000 i exageració vertical ×1,25 de `galeria-geiranger.json` incorporats · tornar a comprovar |
-| Bardenas Reales · Bardena Blanca | Els barrancs de les Cortinas i el turó del Castildetierra es distingeixen de la plana. | Pendent |
-| Gran Canó del Colorado | El Colorado es llegeix al fons del canó entre les dues vores de l’altiplà i les valls laterals. | Pendent |
-| Tre Cime di Lavaredo | Les tres torres rocoses conserven una silueta diferenciada sobre el replà. | Pendent |
-| Table Mountain | El cim tabular es distingeix de Lion’s Head i la base manté el gruix previst. | Pendent |
+| Fitxa | Estat | Què cal comprovar | Ajust o observació |
+| --- | --- | --- | --- |
+| Tenerife | **Validat** | Teno, Anaga i la punta de la Rasca queden dins del retall. El tall entre peces coincideix i conserva la forma de l’illa. | — |
+| Teide i Las Cañadas | **Ajust incorporat** | Els cons del Teide i de Pico Viejo es distingeixen dins el contorn de la caldera. | Centre i gir de −20° de `galeria-teide.json`. |
+| Santorini | **Validat** | Thera i Therasia emmarquen la caldera marina i els illots Kameni queden separats. | — |
+| Mont Fuji | **Ajust incorporat** | El con i els vessants radials es llegeixen des de diversos angles. Comprova si es distingeix el cràter. | Exageració vertical ×1,25. |
+| Geirangerfjord | **Ajust incorporat** | El braç de mar arriba fins a Geiranger i queda encaixat entre vessants escarpats. | Centre, escala 1:200.000 i exageració vertical ×1,25 de `galeria-geiranger.json`. |
+| Bardenas Reales · Bardena Blanca | Pendent | Els barrancs de les Cortinas i el turó del Castildetierra es distingeixen de la plana. | — |
+| Gran Canó del Colorado | Pendent | El Colorado es llegeix al fons del canó entre les dues vores de l’altiplà i les valls laterals. | — |
+| Tre Cime di Lavaredo | Pendent | Les tres torres rocoses conserven una silueta diferenciada sobre el replà. | — |
+| Table Mountain | Pendent | El cim tabular es distingeix de Lion’s Head i la base manté el gruix previst. | — |
 
 ### Trames urbanes i pendents
 
-| Fitxa | Què cal comprovar | Revisió |
+| Fitxa | Estat | Què cal comprovar |
 | --- | --- | --- |
-| Barcelona · Eixample de Cerdà | La quadrícula i els xamfrans es llegeixen en relació amb la Diagonal i el passeig de Gràcia. | Pendent |
-| Girona · Barri Vell i Onyar | Els ponts uneixen les dues ribes i es distingeix la pujada del Barri Vell cap a la catedral i la muralla. | Pendent |
-| Cardona · Castell, vila i Vall Salina | El turó fortificat, la vila i la Vall Salina es distingeixen a la mateixa peça. | Pendent |
-| Granada · Alhambra i Albaicín | El Darro separa els dos vessants i els recintes i patis es llegeixen en les petjades disponibles. | Pendent |
-| Lisboa · Alfama i Baixa | Els carrers irregulars d’Alfama contrasten amb la quadrícula de la Baixa i el pendent arriba fins al Tajo. | Pendent |
-| Cusco · Plaça d’Armes | La plaça i els carrers del centre es llegeixen sobre el pendent, amb continuïtat entre les petjades urbanes. | Pendent |
+| Barcelona · Eixample de Cerdà | Pendent | La quadrícula i els xamfrans es llegeixen en relació amb la Diagonal i el passeig de Gràcia. |
+| Girona · Barri Vell i Onyar | Pendent | Els ponts uneixen les dues ribes i es distingeix la pujada del Barri Vell cap a la catedral i la muralla. |
+| Cardona · Castell, vila i Vall Salina | Pendent | El turó fortificat, la vila i la Vall Salina es distingeixen a la mateixa peça. |
+| Granada · Alhambra i Albaicín | Pendent | El Darro separa els dos vessants i els recintes i patis es llegeixen en les petjades disponibles. |
+| Lisboa · Alfama i Baixa | Pendent | Els carrers irregulars d’Alfama contrasten amb la quadrícula de la Baixa i el pendent arriba fins al Tajo. |
+| Cusco · Plaça d’Armes | Pendent | La plaça i els carrers del centre es llegeixen sobre el pendent, amb continuïtat entre les petjades urbanes. |
 
 ### Aigua i passos urbans
 
-| Fitxa | Què cal comprovar | Revisió |
+| Fitxa | Estat | Què cal comprovar |
 | --- | --- | --- |
-| Bilbao · Ria i Abandoibarra | El revolt de la ria i els passeigs es distingeixen, i els ponts hi enllacen a tots dos costats. | Pendent |
-| Ronda · Tajo i Pont Nou | El congost separa els dos sectors urbans i el Pont Nou els connecta sense omplir el pas inferior. | Pendent |
-| Amsterdam · Singelgracht | Els canals concèntrics conserven el traçat i els ponts hi deixen pas visible a l’escala de la maqueta. | Pendent |
-| Venècia · Gran Canal | El Gran Canal separa els fronts edificats i els canals menors no queden tapats per les petjades. | Pendent |
-| Chicago · Riu i Loop | El riu i els ponts es distingeixen de la quadrícula urbana. Les alçades disponibles permeten contrastar la silueta. | Pendent |
+| Bilbao · Ria i Abandoibarra | Pendent | El revolt de la ria i els passeigs es distingeixen, i els ponts hi enllacen a tots dos costats. |
+| Ronda · Tajo i Pont Nou | Pendent | El congost separa els dos sectors urbans i el Pont Nou els connecta sense omplir el pas inferior. |
+| Amsterdam · Singelgracht | Pendent | Els canals concèntrics conserven el traçat i els ponts hi deixen pas visible a l’escala de la maqueta. |
+| Venècia · Gran Canal | Pendent | El Gran Canal separa els fronts edificats i els canals menors no queden tapats per les petjades. |
+| Chicago · Riu i Loop | Pendent | El riu i els ponts es distingeixen de la quadrícula urbana. Les alçades disponibles permeten contrastar la silueta. |
 
 ## Primera tria per a les mostres
 

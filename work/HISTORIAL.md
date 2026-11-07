@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-07. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.23.23 — Sis enquadraments revisats i cobertes dels Pirineus
+
+RO-046 incorpora els sis JSON de revisió. L’istme d’O Vao i Zumaia passen a Model complet. El panoràmic incorpora un retall de 500 × 100 km i una màscara WorldCover de sòl nu i neu o gel. La columna «Estat» identifica els ajustos incorporats, els pendents i les validacions de l’usuari. [Cua de revisió](RO-046-CATALEG.md#revisió-per-a-maquetes-daula)
+
 ## v0.23.22 — Mont Fuji i Geirangerfjord
 
 RO-046 aplica l’exageració ×1,25 als dos retalls i el nou centre i escala de Geirangerfjord. Es recuperen els estats i enquadraments de la revisió anterior al Markdown. [Cua de revisió](RO-046-CATALEG.md#grans-formes-del-relleu)

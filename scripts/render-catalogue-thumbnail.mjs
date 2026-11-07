@@ -1,12 +1,16 @@
-import {defaultReliefAssignments,reliefMaterialId,RELIEF_MATERIALS,RELIEF_PALETTES} from '../src/materials.js';
+import {CATEGORIES,defaultAssignments,defaultReliefAssignments,PALETTES,reliefMaterialId,RELIEF_MATERIALS,RELIEF_PALETTES} from '../src/materials.js';
 
-export function catalogueThumbnail(model,plan,materialCount=6){
+export function catalogueThumbnail(model,plan,materialCount){
   const width=720,height=450;
   const pixels=new Uint8ClampedArray(width*height*4);
   const depth=new Float32Array(width*height).fill(-Infinity);
   for(let i=0;i<pixels.length;i+=4)pixels.set([245,246,238,255],i);
 
-  const assignments=defaultReliefAssignments(materialCount);
+  const pureRelief=model.provenance.options.pureRelief;
+  const count=materialCount??(pureRelief?6:4);
+  const palette=(pureRelief?RELIEF_PALETTES:PALETTES)[count];
+  const materials=pureRelief?RELIEF_MATERIALS:CATEGORIES;
+  const assignments=pureRelief?defaultReliefAssignments(count):defaultAssignments(count);
   const cosAz=.993,sinAz=.118,cosElev=.83,sinElev=Math.sqrt(1-cosElev**2);
   const project=(x,y,z)=>{
     const forward=-x*sinAz+y*cosAz;
@@ -25,8 +29,9 @@ export function catalogueThumbnail(model,plan,materialCount=6){
   };
 
   for(const {id,vertices,faces} of model.categories){
-    const index=RELIEF_MATERIALS.findIndex(material=>material.id===reliefMaterialId(id));
-    const color=RELIEF_PALETTES[materialCount][assignments[index]];
+    const category=pureRelief?reliefMaterialId(id):id;
+    const index=materials.findIndex(material=>material.id===category);
+    const color=palette[assignments[index]];
     const rgb=[1,3,5].map(i=>Number.parseInt(color.slice(i,i+2),16));
     const projected=new Float32Array(vertices.length);
     for(let i=0;i<vertices.length;i+=3)projected.set(pixelPoint(vertices[i],vertices[i+1],vertices[i+2]),i);
@@ -52,14 +57,16 @@ export function catalogueThumbnail(model,plan,materialCount=6){
     }
   }
 
-  const {resolution,rows=resolution,heights}=model.reliefGrid;
-  for(const cut of plan.xCuts){
-    const column=Math.round(cut/model.width*resolution);
-    for(let row=0;row<=rows;row++){
-      if(row%8>=4)continue;
-      const [x,y,z]=pixelPoint(cut,row*model.height/rows,heights[row*(resolution+1)+column]);
-      const pixel=(height-1-Math.floor(y))*width+Math.floor(x);
-      if(z+1.5>=depth[pixel])pixels.set([73,88,76],4*pixel);
+  if(model.reliefGrid){
+    const {resolution,rows=resolution,heights}=model.reliefGrid;
+    for(const cut of plan.xCuts){
+      const column=Math.round(cut/model.width*resolution);
+      for(let row=0;row<=rows;row++){
+        if(row%8>=4)continue;
+        const [x,y,z]=pixelPoint(cut,row*model.height/rows,heights[row*(resolution+1)+column]);
+        const pixel=(height-1-Math.floor(y))*width+Math.floor(x);
+        if(z+1.5>=depth[pixel])pixels.set([73,88,76],4*pixel);
+      }
     }
   }
   return {width,height,data:pixels};

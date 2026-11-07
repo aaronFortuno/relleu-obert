@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-07 · v0.23.22**. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-07 · v0.23.23**. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -8,7 +8,7 @@ Actualitzat el **2026-11-07 · v0.23.22**. [Historial](HISTORIAL.md).
 | --- | --- | --- |
 | **Temps de generació** | RO-053 | Primera optimització d’edificis mesurada amb la mateixa malla. Tornar a mesurar Amsterdam complet i aïllar la integració de les vies principals. [Mesures](RO-053-TEMPS.md) |
 | **Ajustos d’impressió** | RO-056 | Validar els tiradors del plànol i laminar dues peces contigües de mides diferents. Després, estudiar els perfils d’impressora i la mida de cada placa. |
-| **Catàleg de relleu** | RO-046 | Continuar el bloc de grans formes del relleu i tornar a comprovar els retalls ajustats. [Cua de revisió](RO-046-CATALEG.md#revisió-per-a-maquetes-daula) |
+| **Catàleg de relleu** | RO-046 | Tornar a comprovar les sis fitxes ajustades i continuar els blocs pendents. [Cua de revisió](RO-046-CATALEG.md#revisió-per-a-maquetes-daula) |
 | **Paviment de superfície** | RO-051, RO-052 | El retall girat mostra millora al laminador i es dona per bo de moment. La impressió física i els enllaços pendents queden en seguiment. [Control de l’Hospitalet](RO-052-CONTINUITAT.md#talls-locals-sota-els-taulers-v02319) |
 | **Seguiment de les estructures** | RO-033, RO-034, RO-050 | Registrar noves incidències amb retall i escala. A Sant Salvador, dos perfils segueixen el terreny pel pendent dels enllaços. El túnel a 1:20.000 té les dues boques comprovades al 3MF. El pas de Montgròs es conserva al cupó laminat. [Controls de vies](RO-051-PERFILS-VIARIS.md#transicions-pendents-a-la-v0220) · [Montgròs](RO-033-CONTROLS-PROCEDIMENTALS.md#laminat-del-cupó-de-montgròs) |
 | **Validació en paral·lel** | RO-024, RO-033, RO-046, RO-054, RO-055 | Revisar Tamariu 40 × 45 cm i Amsterdam amb totes les capes al laminador. També queden la recuperació d’un projecte girat i els talls dels Rasos–Gallina Pelada. |
@@ -145,9 +145,9 @@ A escriptori, la cerca i el mapa queden sota la capçalera de Territori i els aj
 
 ### RO-046 — Catàleg de llocs recomanats
 
-El [catàleg](RO-046-CATALEG.md) inclou 37 retalls, amb 25 fitxes de Relleu pur i 12 de Model complet. El carrusel inicial barreja l’ordre i reparteix els modes al llarg del bucle. «Galeria de maquetes» a la capçalera obre una graella amb el focus a la cerca i filtres per mode, mida i tipus de paisatge. «La teva maqueta» mostra el resum del lloc mentre el visor mostra el model corresponent. Queda revisar l’enquadrament, la llegibilitat i els temps de generació en ús, i comprovar el gruix de la base a les fitxes costaneres.
+El [catàleg](RO-046-CATALEG.md) inclou 37 retalls, amb 23 fitxes de Relleu pur i 14 de Model complet. El carrusel inicial barreja l’ordre i reparteix els modes al llarg del bucle. «Galeria de maquetes» a la capçalera obre una graella amb el focus a la cerca i filtres per mode, mida i tipus de paisatge. «La teva maqueta» mostra el resum del lloc mentre el visor mostra el model corresponent. Queda revisar l’enquadrament, la llegibilitat i els temps de generació en ús, i comprovar el gruix de la base a les fitxes costaneres.
 
-Cap de Creus, Tamariu, Tenerife i Santorini validats. Al bloc de grans formes ja s’han incorporat els ajustos del Teide, el mont Fuji i Geirangerfjord. Queda tornar a comprovar els retalls ajustats. [Cua de revisió](RO-046-CATALEG.md#revisió-per-a-maquetes-daula) · [Retalls de prova](RO-046-PROVES-RELLEU.md)
+Cap de Creus, Tamariu, Tenerife i Santorini validats. Les sis incorporacions ja tenen els ajustos dels JSON de revisió. El panoràmic dels Pirineus amplia la cobertura de sòl nu i neu o gel. [Cua de revisió](RO-046-CATALEG.md#revisió-per-a-maquetes-daula) · [Retalls de prova inicials](RO-046-PROVES-RELLEU.md)
 
 ### RO-047 — Precàrrega opcional de fonts alternatives
 
