@@ -47,7 +47,10 @@ export function prepareCatalogueLandforms(models,proj){
     }
     const extent=bounds(world),{lo,hi}=extent;
     if(hi[0]<=0||hi[1]<=0||lo[0]>=proj.width||lo[1]>=proj.height)return [];
-    return [{model,world,extent,grid,lon,lat,k}];
+    const half=(grid.side-1)*grid.step/2;
+    const corners=[[-half,-half],[-half,half],[half,-half],[half,half]].map(([x,y])=>toMap(x,y));
+    const surfaceExtent={lo:[0,1].map(axis=>Math.min(...corners.map(p=>p[axis]))),hi:[0,1].map(axis=>Math.max(...corners.map(p=>p[axis])))};
+    return [{model,world,extent,surfaceExtent,grid,lon,lat,k}];
   });
 }
 

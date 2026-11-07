@@ -54,16 +54,43 @@ function interpolateHeight({z,size},tileAt,lon,lat){
   return weighted/total;
 }
 
-export function createTerrainField({width,height,resolution,at}){
-  const n=resolution,values=new Float64Array((n+1)*(n+1));
-  for(let y=0;y<=n;y++)for(let x=0;x<=n;x++){
-    const z=at(x*width/n,y*height/n);
+export function focusedTerrainGrid(width,height,resolution,bands){
+  function axis(length,axis){
+    const lines=Array.from({length:resolution+1},(_,i)=>i*length/resolution);
+    for(const {lo,hi,step} of bands){
+      const first=Math.max(0,lo[axis]),last=Math.min(length,hi[axis]);
+      if(first>=last)continue;
+      const count=Math.ceil((last-first)/step),spacing=(last-first)/count;
+      for(let i=0;i<=count;i++){
+        const value=first+i*spacing;
+        if(!lines.some(line=>Math.abs(line-value)<spacing/5))lines.push(value);
+      }
+    }
+    return lines.sort((a,b)=>a-b);
+  }
+  function locate(lines){
+    return value=>{
+      let left=0,right=lines.length-1;
+      while(right-left>1){const middle=(right+left)>>1;if(value<lines[middle])right=middle;else left=middle;}
+      return left+(value-lines[left])/(lines[right]-lines[left]);
+    };
+  }
+  const x=axis(width,0),y=axis(height,1);
+  return {x,y,indexX:locate(x),indexY:locate(y)};
+}
+
+export function createTerrainField({width,height,resolution,grid,at}){
+  const nx=grid?grid.x.length-1:resolution,ny=grid?grid.y.length-1:resolution,stride=nx+1;
+  const values=new Float64Array(stride*(ny+1));
+  for(let y=0;y<=ny;y++)for(let x=0;x<=nx;x++){
+    const z=at(grid?grid.x[x]:x*width/nx,grid?grid.y[y]:y*height/ny);
     if(!Number.isFinite(z))throw Error('El relleu conté una altitud invàlida.');
-    values[y*(n+1)+x]=z;
+    values[y*stride+x]=z;
   }
   const sample=(x,y)=>{
-    const gx=Math.max(0,Math.min(n,x/width*n)),gy=Math.max(0,Math.min(n,y/height*n)),ix=Math.min(n-1,Math.floor(gx)),iy=Math.min(n-1,Math.floor(gy)),u=gx-ix,v=gy-iy;
-    const z00=values[iy*(n+1)+ix],z10=values[iy*(n+1)+ix+1],z01=values[(iy+1)*(n+1)+ix],z11=values[(iy+1)*(n+1)+ix+1];
+    const gx=Math.max(0,Math.min(nx,grid?grid.indexX(x):x/width*nx)),gy=Math.max(0,Math.min(ny,grid?grid.indexY(y):y/height*ny));
+    const ix=Math.min(nx-1,Math.floor(gx)),iy=Math.min(ny-1,Math.floor(gy)),u=gx-ix,v=gy-iy;
+    const z00=values[iy*stride+ix],z10=values[iy*stride+ix+1],z01=values[(iy+1)*stride+ix],z11=values[(iy+1)*stride+ix+1];
     // Same bottom-left/top-right diagonal used to generate the actual mesh.
     return u>=v?z00+(z10-z00)*u+(z11-z10)*v:z00+(z11-z01)*u+(z01-z00)*v;
   };

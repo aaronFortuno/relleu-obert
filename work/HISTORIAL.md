@@ -2,9 +2,13 @@
 
 Actualitzat: 2026-11-07. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.23.30 — Sortida de la Roca Foradada
+
+La revisió de l’usuari ha detectat una paret després del final de la prova axial de la r1. La r2 amplia el pedaç d’elevacions i comprova el pas des de fora de la roca. El Model complet refina localment el terreny al voltant de la cavitat. A Open Place Models, la branca `montserrat-pilot` prepara una vista general i dos sectors de detall de Montserrat. [Controls](RELLEU-ROCOS.md#correcció-de-la-sortida--v02330)
+
 ## v0.23.29 — Pilot de la Roca Foradada
 
-RO-035 integra un pedaç de carena i una obertura aproximada d’Open Place Models. Els 3MF de Model complet a 1:2.000 i Relleu pur a 1:10.000 passen l’auditoria i conserven el pas i la volta. El segon manté el forat després de canviar l’exageració i el gruix de la base i en dividir el model en dues plaques. Pendent de laminar. [Controls](RELLEU-ROCOS.md#roca-foradada--control-dobertura-passant)
+RO-035 integra un pedaç de carena i una cavitat aproximada d’Open Place Models. Els 3MF de Model complet a 1:2.000 i Relleu pur a 1:10.000 passen l’auditoria de malla. La revisió posterior ha confirmat que la prova inicial acabava dins del buit i no detectava la paret del fons. [Control inicial](RELLEU-ROCOS.md#roca-foradada--control-dobertura-passant)
 
 ## v0.23.28 — Viaducte singular de Millau
 

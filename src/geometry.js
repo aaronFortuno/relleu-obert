@@ -8,7 +8,7 @@ import {reliefVegetationHeightRange,reliefVegetationTexture} from './relief-vege
 import {waterwayPolygons} from './waterways.js';
 import {polygonOps} from './polygon-ops.js';
 import earcut from 'earcut';
-import {sampleHeight,prepareElevationTiles,createTerrainField,createElevationSampler} from './elevation.js';
+import {sampleHeight,prepareElevationTiles,createTerrainField,createElevationSampler,focusedTerrainGrid} from './elevation.js';
 import {CATEGORIES,groupMaterials} from './materials.js';
 import {polygonTester} from './polygon-index.js';
 import {lineBuffer} from './roads.js';
@@ -126,29 +126,31 @@ export class Surface {
     return {vertices:new Float32Array(this.vertices),faces:new Uint32Array(this.faces)};
   }
 }
-function boundaryCells(polys,width,heightMM,res,i0=0,i1=res-1,j0=0,j1=res-1){
-  const boundary=new Uint8Array(res*res);
-  const gridX=x=>x*res/width,gridY=y=>y*res/heightMM;
+function boundaryCells(polys,nx,ny,gridX,gridY,i0=0,i1=nx-1,j0=0,j1=ny-1){
+  const boundary=new Uint8Array(nx*ny);
   for(const polygon of polys)for(const ring of polygon)for(let k=1;k<ring.length;k++){
     const a=ring[k-1],b=ring[k],left=Math.min(gridX(a[0]),gridX(b[0])),right=Math.max(gridX(a[0]),gridX(b[0]));
     const bottom=Math.min(gridY(a[1]),gridY(b[1])),top=Math.max(gridY(a[1]),gridY(b[1]));
     for(let j=Math.max(j0,Math.floor(bottom-1e-7));j<=Math.min(j1,Math.floor(top+1e-7));j++)
-      for(let i=Math.max(i0,Math.floor(left-1e-7));i<=Math.min(i1,Math.floor(right+1e-7));i++)boundary[j*res+i]=1;
+      for(let i=Math.max(i0,Math.floor(left-1e-7));i<=Math.min(i1,Math.floor(right+1e-7));i++)boundary[j*nx+i]=1;
   }
   return boundary;
 }
-function* terrainPatches(polys,width,heightMM,res){
+function* terrainPatches(polys,width,heightMM,res,grid){
   if(!polys.length)return;
+  const nx=grid?grid.x.length-1:res,ny=grid?grid.y.length-1:res;
+  const indexX=grid?.indexX??(x=>x/width*res),indexY=grid?.indexY??(y=>y/heightMM*res);
   let minX=width,minY=heightMM,maxX=0,maxY=0;for(const poly of polys)for(const [x,y]of poly[0]){minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);}
-  const i0=Math.max(0,Math.floor(minX/width*res)),i1=Math.min(res-1,Math.floor(maxX/width*res)),j0=Math.max(0,Math.floor(minY/heightMM*res)),j1=Math.min(res-1,Math.floor(maxY/heightMM*res)),columns=[];
+  const i0=Math.max(0,Math.floor(indexX(minX))),i1=Math.min(nx-1,Math.floor(indexX(maxX))),j0=Math.max(0,Math.floor(indexY(minY))),j1=Math.min(ny-1,Math.floor(indexY(maxY))),columns=[];
   // Only cells crossed by a polygon boundary need clipping. Include both
   // sides of grid-aligned edges and the boundaries of holes.
-  const boundary=boundaryCells(polys,width,heightMM,res,i0,i1,j0,j1);
+  const boundary=boundaryCells(polys,nx,ny,grid?.indexX??(x=>x*res/width),grid?.indexY??(y=>y*res/heightMM),i0,i1,j0,j1);
   let contains;
   for(let j=j0;j<=j1;j++)for(let i=i0;i<=i1;i++){
-    const x=i*width/res,y=j*heightMM/res,x1=(i+1)*width/res,y1=(j+1)*heightMM/res;
+    const x=grid?grid.x[i]:i*width/res,y=grid?grid.y[j]:j*heightMM/res;
+    const x1=grid?grid.x[i+1]:(i+1)*width/res,y1=grid?grid.y[j+1]:(j+1)*heightMM/res;
     const tris=[[[x,y],[x1,y],[x1,y1],[x,y]],[[x,y],[x1,y1],[x,y1],[x,y]]];
-    if(!boundary[j*res+i]){
+    if(!boundary[j*nx+i]){
       contains??=polygonTester(polys);
       if(contains([(x+x1)/2,(y+y1)/2]))for(const tri of tris)yield [tri];
       continue;
@@ -161,7 +163,7 @@ function* terrainPatches(polys,width,heightMM,res){
 }
 function dryFootprints(water,width,height,res){
   if(!water.length)return ()=>true;
-  const wet=boundaryCells(water,width,height,res),contains=polygonTester(water);
+  const wet=boundaryCells(water,res,res,x=>x*res/width,y=>y*res/height),contains=polygonTester(water);
   // With no boundary in a cell, its centre classifies the whole cell.
   // Mark uncertain cells wet so waterfront buildings keep the exact clip.
   for(let j=0;j<res;j++)for(let i=0;i<res;i++){
@@ -184,8 +186,8 @@ function solidPatches(patches,height,bottom){
   const result={vertices:[],faces:[]};for(const poly of patches){const patch=new Surface();patch.polygon(poly,height);append(result,patch.solid(bottom));}
   return {vertices:new Float32Array(result.vertices),faces:new Uint32Array(result.faces)};
 }
-function terrainSolid(polys,height,bottom,width,heightMM,res){
-  return solidPatches(terrainPatches(polys,width,heightMM,res),height,bottom);
+function terrainSolid(polys,height,bottom,width,heightMM,res,grid){
+  return solidPatches(terrainPatches(polys,width,heightMM,res,grid),height,bottom);
 }
 const INLAND_WATER_DEPTH_MM=.65;
 function appendInlandWater(patches,height,water,support){
@@ -206,8 +208,8 @@ function appendInlandWater(patches,height,water,support){
     append(support,bed.solid(()=>0));
   }
 }
-export function levelBuildingSolid(polys,rise,ground,width,height,res,profile){
-  const patches=[...terrainPatches(polys,width,height,res)];let referenceGround=-Infinity;
+export function levelBuildingSolid(polys,rise,ground,width,height,res,profile,grid){
+  const patches=[...terrainPatches(polys,width,height,res,grid)];let referenceGround=-Infinity;
   // Piecewise-planar terrain can peak inside the footprint, not just at its
   // original outline vertices. Reuse the actual terrain cuts to find its maximum.
   for(const poly of patches)for(const ring of poly)for(const [x,y]of ring)referenceGround=Math.max(referenceGround,ground(x,y));
@@ -216,7 +218,7 @@ export function levelBuildingSolid(polys,rise,ground,width,height,res,profile){
   const bottom=baseOffset>0?()=>referenceGround+baseOffset:(x,y)=>ground(x,y)-.3;
   if(profile?.parts){
     const result={vertices:[],faces:[]};
-    for(const ring of profile.parts){const clipped=intersect(polys,[[ring]]);append(result,solidPatches(terrainPatches(clipped,width,height,res),(x,y)=>roof-profile.heightMM+profile.heightMM*profile.factor(x,y),bottom));}
+    for(const ring of profile.parts){const clipped=intersect(polys,[[ring]]);append(result,solidPatches(terrainPatches(clipped,width,height,res,grid),(x,y)=>roof-profile.heightMM+profile.heightMM*profile.factor(x,y),bottom));}
     return {vertices:new Float32Array(result.vertices),faces:new Uint32Array(result.faces),roof,referenceGround,roofShape:profile.shape};
   }
   return {...solidPatches(patches,()=>roof,bottom),roof,referenceGround};
@@ -275,17 +277,16 @@ export function treeMesh({x,y,ground,rx,ry,rz,rotation=0,phase=0,crownTaper=0}){
   return {vertices:surf.vertices,faces:surf.faces};
 }
 function prepareTerrain(data,options,progress,preview,measure){
-  const {size=160,exaggeration=1.5,density=2.5,resolution:requestedResolution=36,baseThickness}=options,proj=makeProjection(data.meta.bbox,size,options),{width,height,project,scale}=proj,rect=box(width,height),warnings=[];
-  if(!Number.isFinite(density)||density<.25||density>5||!Number.isInteger(requestedResolution)||requestedResolution<2||requestedResolution>100||!Number.isFinite(exaggeration)||exaggeration<1||exaggeration>5||!Number.isFinite(size)||size<50||size>MAX_MODEL_SIDE_MM||width>MAX_MODEL_SIDE_MM||height>MAX_MODEL_SIDE_MM)throw Error('Els ajustos de la maqueta són fora del rang admès.');
+  const {size=160,exaggeration=1.5,density=2.5,resolution=36,baseThickness}=options,proj=makeProjection(data.meta.bbox,size,options),{width,height,project,scale}=proj,rect=box(width,height),warnings=[];
+  if(!Number.isFinite(density)||density<.25||density>5||!Number.isInteger(resolution)||resolution<2||resolution>100||!Number.isFinite(exaggeration)||exaggeration<1||exaggeration>5||!Number.isFinite(size)||size<50||size>MAX_MODEL_SIDE_MM||width>MAX_MODEL_SIDE_MM||height>MAX_MODEL_SIDE_MM)throw Error('Els ajustos de la maqueta són fora del rang admès.');
   if(options.targetScale!=null&&Math.abs(1000/scale-validateScale(options.targetScale))>options.targetScale*1e-6)throw Error('El retall no concorda amb l’escala demanada. Torna a seleccionar la regió.');
   preview?.stage('terrain','Revisant les mostres d’altitud…');
   const raster=data.localDEM||data.terrainRaster;
   const prepared=raster?{tiles:[],diagnostics:{invalid:0,spikes:0,repaired:0,source:data.meta.terrain?.provider||'local GeoTIFF'}}:prepareElevationTiles(data.dem);
   const rasterHeight=raster?localRasterSampler(raster):null;
-  const extentMetres=Math.max(width,height)/scale;
-  const refined=Math.min(100,Math.max(requestedResolution,Math.ceil(extentMetres/3)));
-  const landforms=data.localDEM?[]:prepareCatalogueLandforms(data.singularModels,proj).filter(patch=>resolvableLandform(patch,extentMetres/refined));
-  const resolution=landforms.length?refined:requestedResolution;
+  const landforms=data.localDEM?[]:prepareCatalogueLandforms(data.singularModels,proj);
+  const terrainGrid=landforms.length?focusedTerrainGrid(width,height,resolution,landforms.map(({model,surfaceExtent:{lo,hi}})=>
+    ({lo,hi,step:Math.max(Math.min(3,model.landform.minimumWidth/3)*scale,(hi[0]-lo[0])/48,(hi[1]-lo[1])/48)}))):undefined;
   const elevationAt=catalogueTerrain((lon,lat)=>rasterHeight?rasterHeight(lon,lat):sampleHeight(prepared.tiles,lon,lat),landforms);
   if(prepared.diagnostics.repaired)warnings.push(`S’han reconstruït ${prepared.diagnostics.repaired} mostres d’altitud invàlides o pics aïllats a partir dels veïns.`);
   const water=[],ocean=[],stillWater=[],green=[],woods=[],roads=[],rails=[],transport=[],roadPieces=[],railPieces=[];
@@ -386,7 +387,7 @@ function prepareTerrain(data,options,progress,preview,measure){
   const bare=measure('terrain.bare',()=>subtract(subtract(land,roadPoly),forest));
   const oceanPoly=merge(cropped(ocean)),hasOcean=oceanPoly.length>0;
   progress('Calculant el camp d’altures…');
-  const field=createTerrainField({width,height,resolution,at:(x,y)=>{const h=elevationAt(...proj.unproject([x,y]));return hasOcean?Math.max(0,h):h;}});
+  const field=createTerrainField({width,height,resolution,grid:terrainGrid,at:(x,y)=>{const h=elevationAt(...proj.unproject([x,y]));return hasOcean?Math.max(0,h):h;}});
   let originMeters=Infinity,maximumElevation=-Infinity;
   for(const h of field.values){originMeters=Math.min(originMeters,h);maximumElevation=Math.max(maximumElevation,h);}
   if(hasOcean)originMeters=0;
@@ -397,7 +398,7 @@ function prepareTerrain(data,options,progress,preview,measure){
   const inlandWater={vertices:[],faces:[]},inlandSupport={vertices:[],faces:[]},lakeLevels=[];
   const flowingWaterAt=(x,y)=>Math.max(baseThickness,ground(x,y)-.3);
   measure('terrain.inland-water',()=>{
-    const patches=polys=>terrainPatches(polys,width,height,resolution);
+    const patches=polys=>terrainPatches(polys,width,height,resolution,terrainGrid);
     appendInlandWater(patches(subtract(inland,lakes)),flowingWaterAt,inlandWater,inlandSupport);
     for(const polygon of lakes){
       const level=Math.max(baseThickness,shorelineLevel(polygon,ground,width,height)-.3);
@@ -421,7 +422,7 @@ function prepareTerrain(data,options,progress,preview,measure){
     }
     return flowingWaterAt(x,y);
   };
-  const terrain={size,exaggeration,resolution,proj,rect,warnings,landforms,elevationAt:data.terrainRaster?bridgeElevation:elevationAt,cropToElevationWindow:!!data.terrainRaster,deckItems,deckMask,transport,roadPieces,railPieces,maximumElevation,waterAt,
+  const terrain={size,exaggeration,resolution,terrainGrid,proj,rect,warnings,landforms,elevationAt:data.terrainRaster?bridgeElevation:elevationAt,cropToElevationWindow:!!data.terrainRaster,deckItems,deckMask,transport,roadPieces,railPieces,maximumElevation,waterAt,
     roadOnlyPoly,roadPoly,forest,bare,railPoly,waterPoly,land,oceanPoly,inlandSupport:surfacePart(0,inlandSupport),green,cropped,ground,verticalReference,diagnostics:prepared.diagnostics,
     woodsMask:measure('terrain.woods',()=>merge(cropped(woods)),{inputs:woods.length})};
   terrain.surfaces=measure('terrain.surfaces',()=>terrainCover(forest,bare,terrain,progress));
@@ -433,11 +434,11 @@ function prepareTerrain(data,options,progress,preview,measure){
 }
 
 function terrainCover(forest,bare,terrain,progress){
-  const {ground,land,inlandSupport,woodsMask,proj:{width,height},resolution}=terrain;
+  const {ground,land,inlandSupport,woodsMask,proj:{width,height},resolution,terrainGrid}=terrain;
   const base={vertices:[],faces:[]};
   progress('Construint superfícies amb límits vectorials…');
-  append(base,terrainSolid(land,(x,y)=>ground(x,y)-.65,()=>0,width,height,resolution));
-  append(base,terrainSolid(bare,ground,(x,y)=>ground(x,y)-.65,width,height,resolution));
+  append(base,terrainSolid(land,(x,y)=>ground(x,y)-.65,()=>0,width,height,resolution,terrainGrid));
+  append(base,terrainSolid(bare,ground,(x,y)=>ground(x,y)-.65,width,height,resolution,terrainGrid));
   append(base,inlandSupport);
   const forestGround=intersect(forest,woodsMask),grassGround=subtract(forest,forestGround);
   const parts=CATEGORIES.map((_,index)=>surfacePart(index,{vertices:[],faces:[]}));
@@ -454,8 +455,8 @@ function surfacePart(index,{vertices,faces}){
 }
 
 function roadSurface(index,polygons,rise,terrain){
-  const {ground,proj:{width,height},resolution}=terrain;
-  return surfacePart(index,terrainSolid(polygons,(x,y)=>ground(x,y)+rise,(x,y)=>ground(x,y)-.65,width,height,resolution));
+  const {ground,proj:{width,height},resolution,terrainGrid}=terrain;
+  return surfacePart(index,terrainSolid(polygons,(x,y)=>ground(x,y)+rise,(x,y)=>ground(x,y)-.65,width,height,resolution,terrainGrid));
 }
 
 function buildSurfaceRoadPilot(terrain,rise,api,progress,{crossingFallback=false}={}){
@@ -472,7 +473,7 @@ function buildSurfaceRoadPilot(terrain,rise,api,progress,{crossingFallback=false
 
 function* surfaceRoadPatches(route,terrain,rise){
   const {transitionMM,edgeEnds=[false,false]}=route;
-  const {ground,proj:{width,height},resolution}=terrain;
+  const {ground,proj:{width,height},resolution,terrainGrid}=terrain;
   const length=route.profile.stations.at(-1).distanceMM;
   const [startBlend,endBlend]=edgeEnds.map(atEdge=>atEdge?0:transitionMM);
   for(const patch of route.patches){
@@ -488,7 +489,7 @@ function* surfaceRoadPatches(route,terrain,rise){
     };
     // At the ends the new pavement meets the actual terrain triangles, so
     // include their breakpoints before replacing part of the old road.
-    for(const polygon of terrainPatches([patch.polygon],width,height,resolution))
+    for(const polygon of terrainPatches([patch.polygon],width,height,resolution,terrainGrid))
       yield {...patch,polygon,top};
   }
 }
@@ -869,7 +870,7 @@ function phaseTimer(diagnostics){
 function buildTransport(data,options,terrain,progress,infrastructureApi,diagnostics,buildingGeometry,excludedProfiles=new Map(),preview,recoveryPass=0){
   preview?.stage('transport','Calculant les vies…');
   const measure=phaseTimer(diagnostics);
-  const {size,exaggeration,resolution,proj,rect,elevationAt,transport,roadPieces,railPieces,waterPoly,land,green,cropped,ground,verticalReference}=terrain;
+  const {size,exaggeration,resolution,terrainGrid,proj,rect,elevationAt,transport,roadPieces,railPieces,waterPoly,land,green,cropped,ground,verticalReference}=terrain;
   const {width,height,project,scale}=proj,{originMeters,minimumSurfaceMM}=verticalReference;
   const warnings=terrain.warnings.slice(),deckItems=terrain.deckItems.slice();
   let {deckMask,roadOnlyPoly,railPoly,roadPoly,forest,bare}=terrain;
@@ -918,7 +919,7 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
         const ends=item.terminalRoutes?.map(path=>path?.[0]?.join(',')).join('|');
         if(reserveFactor>1&&ends===previous)continue;
         previous=ends;
-        const fit=fitMajorRoadItem(item,{projection:proj,verticalReference,exaggeration,ground,maxLiftMetres:30,patches:polys=>terrainPatches(intersect(polys,land),width,height,resolution)});
+        const fit=fitMajorRoadItem(item,{projection:proj,verticalReference,exaggeration,ground,maxLiftMetres:30,patches:polys=>terrainPatches(intersect(polys,land),width,height,resolution,terrainGrid)});
         if(!fit.accepted){if(fit.present)omission??={reason:fit.reason};break;}
         const tunnelChecks=item.crossingChecks.filter(check=>check.kind==='tunnel');
         const bridgeChecks=item.crossingChecks.filter(check=>check.kind!=='tunnel');
@@ -933,7 +934,7 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
           const containsDeck=polygonTester(intersect(item.outlines.map(r=>[r.map(project)]),rect));
           const terminalRoads=item.terminalRoutes.map(path=>path&&({...identity,points:path,width:Math.max(.44,item.sourceWidthMetres*scale)}));
           terminalApproaches=planApproaches({axis,points,faces:item.faces,containsDeck,roads:[],ground,
-            destinationBreaks:section=>crossSectionFractions(section,{fieldWidth:width,fieldHeight:height,resolution}),
+            destinationBreaks:section=>crossSectionFractions(section,{fieldWidth:width,fieldHeight:height,resolution,grid:terrainGrid}),
             forceConnections:true,roadRise:surfaceRise,scale,widthMM:width,heightMM:height,roadWidth:item.widthMetres*scale,
             terminalRoads,maxGrade:item.maxGrade*exaggeration});
           if(terminalApproaches.missed.length){
@@ -1131,7 +1132,7 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
     return ground(x,y)+roadRise+(railway?railRise:0);
   };
   const exteriorBreaks=section=>{
-    const fractions=crossSectionFractions(section,{fieldWidth:width,fieldHeight:height,resolution});
+    const fractions=crossSectionFractions(section,{fieldWidth:width,fieldHeight:height,resolution,grid:terrainGrid});
     for(const index of bridgeIndices(section.line)){
       const bridge=bridges[index];
       fractions.push(...crossSectionFractions(section,{points:bridge.points,faces:bridge.sourceFaces}));
@@ -1290,7 +1291,7 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
 }
 
 function prepareLandmark(ctx,model,config){
-  const {proj:{project},rect,land,ground,width,height,scale,options:{resolution},infrastructureApi}=ctx;
+  const {proj:{project},rect,land,ground,width,height,scale,options:{resolution},infrastructureApi}=ctx,grid=ctx.terrain?.terrainGrid;
   const footprint=intersect(geoPolys({geometry:model.footprint},project),rect);
   if(!footprint.length)return null;
   if(footprintArea(intersect(footprint,land))<footprintArea(footprint)-1e-5)throw Error('La petjada queda en aigua.');
@@ -1299,11 +1300,11 @@ function prepareLandmark(ctx,model,config){
     Math.abs(original.bbox.max[1]-model.height)>.01)throw Error('La malla original no té una base o altura vàlida.');
   const mode=config.buildingMode,rise=buildingRise(model.height,scale,config);
   let solid;
-  if(mode==='flat')solid=terrainSolid(footprint,(x,y)=>ground(x,y)+rise,(x,y)=>ground(x,y)-.3,width,height,resolution);
-  else if(mode==='limited')solid=levelBuildingSolid(footprint,rise,ground,width,height,resolution);
+  if(mode==='flat')solid=terrainSolid(footprint,(x,y)=>ground(x,y)+rise,(x,y)=>ground(x,y)-.3,width,height,resolution,grid);
+  else if(mode==='limited')solid=levelBuildingSolid(footprint,rise,ground,width,height,resolution,undefined,grid);
   else{
     let floor=Infinity,reference=-Infinity;
-    for(const patch of terrainPatches(footprint,width,height,resolution))for(const ring of patch)for(const [x,y]of ring){
+    for(const patch of terrainPatches(footprint,width,height,resolution,grid))for(const ring of patch)for(const [x,y]of ring){
       const z=ground(x,y);floor=Math.min(floor,z);reference=Math.max(reference,z);
     }
     const [lon,lat]=model.anchor,lonMetres=111320*Math.cos(lat*Math.PI/180);
@@ -1346,7 +1347,7 @@ function coveredByLandmark(poly,id,family,landmarks){
 
 function prepareBuildingGeometry(ctx,config,progress,preview,measure=(_phase,run)=>run()){
   const {buildingMode,maxBuildingHeight}=config;
-  const {width,height,ground,scale,rect,land,waterPoly,options}=ctx,res=options.resolution;
+  const {width,height,ground,scale,rect,land,waterPoly,options}=ctx,res=options.resolution,grid=ctx.terrain?.terrainGrid;
   const mesh={vertices:[],faces:[]},warnings=[],prepared=[],seen=new Set(),volumes=[];
   let buildingCount=0,approximate=0,limited=0,shapedRoofs=0,fallbackRoofs=0,omitted=0,duplicates=0;
   progress('Actualitzant la capa d’edificis…');
@@ -1399,7 +1400,7 @@ function prepareBuildingGeometry(ctx,config,progress,preview,measure=(_phase,run
         const polys=(cover&&ctx.roadPoly.length?subtract(dry,ctx.roadPoly):dry).filter(p=>Math.abs(area(p[0]))>=.04);if(!polys.length)continue;
         const rise=cover ? .3 : buildingRise(valid?h:6,scale,config);
         const profile=!cover&&buildingMode==='source'?roofProfile(p,poly[0],scale,valid?h:6,options.selectionPose?.rotation||0):null;
-        const solid=cover||buildingMode==='flat'?terrainSolid(polys,(x,y)=>ground(x,y)+rise,(x,y)=>ground(x,y)-.3,width,height,res):levelBuildingSolid(polys,rise,ground,width,height,res,profile);
+        const solid=cover||buildingMode==='flat'?terrainSolid(polys,(x,y)=>ground(x,y)+rise,(x,y)=>ground(x,y)-.3,width,height,res,grid):levelBuildingSolid(polys,rise,ground,width,height,res,profile,grid);
         if(!solid.faces.length)continue;
         footprints.push(...polys);fragments.push({solid,profile,count:polys.length});
       }

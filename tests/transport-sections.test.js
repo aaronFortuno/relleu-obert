@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import Module from 'manifold-3d';
 import {crossSectionFractions,stripSectionSolid} from '../src/transport-sections.js';
 import {auditPart} from '../src/solid-audit.js';
+import {createTerrainField,focusedTerrainGrid} from '../src/elevation.js';
 const api=await Module();api.setup();
 const close=(a,b,label)=>assert(Math.abs(a-b)<1e-5,`${label}: ${a} != ${b}`);
 function fractions(actual,expected){assert.equal(actual.length,expected.length);actual.forEach((v,i)=>assert(Math.abs(v-expected[i])<1e-12,`${actual} != ${expected}`));}
@@ -20,6 +21,15 @@ test('cross sections split at actual terrain grid lines and u=v diagonals, alway
   fractions(crossSectionFractions({centre:[3,5],normal:[0,1],widthMM:10},field),[-.5,-.2,0,.3,.5]);
   fractions(crossSectionFractions({centre:[5,5],normal:[1,-1],widthMM:10},field),[-.5,-.25,0,.25,.5]);
   fractions(crossSectionFractions({centre:[5,5],normal:[1,1],widthMM:10},field),[-.5,0,.5]);
+});
+
+test('a local refinement shares its nonuniform grid with the terrain and pavement',()=>{
+  const grid=focusedTerrainGrid(10,10,2,[{lo:[3,3],hi:[7,7],step:2}]);
+  assert.deepEqual(grid.x,[0,3,5,7,10]);
+  const field=createTerrainField({width:10,height:10,resolution:2,grid,at:(x,y)=>x*y});
+  assert.equal(field.sample(4,4),17);
+  fractions(crossSectionFractions({centre:[5,4],normal:[1,0],widthMM:10},
+    {fieldWidth:10,fieldHeight:10,resolution:2,grid}),[-.5,-.35,-.2,-.1,0,.1,.2,.35,.5]);
 });
 
 test('miter normals keep their true extent and the optional mesh adds its own triangle crease',()=>{

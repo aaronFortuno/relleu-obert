@@ -58,7 +58,19 @@ El catàleg lliura un GLB per al visor i un fitxer amb la graella d’altituds i
 | Model complet | 1:2.000 | +35° | Pas axial obert, volta present i quatre capes tancades |
 | Relleu pur | 1:10.000 | −29° | Pas axial obert i volta present. Es conserven amb exageració ×1,25 i base de 6 mm i en el tall per la cavitat |
 
-Les comprovacions fan passar un raig per l’eix del buit a 897 m i comproven que hi ha roca per sobre, a 907 m. Els tres 3MF queden a `output/foradada/`. Falta comprovar al laminador la llum útil del pas i la forma visible de les boques.
+El control inicial feia passar un raig per l’eix del buit a 897 m. L’usuari va detectar que hi quedava una paret al fons. El control només arribava fins a l’estació 20 m. La paret començava a 22 m i acabava prop de 25,7 m als dos 3MF. Els resultats de la taula corresponen al segment interior.
+
+### Correcció de la sortida · v0.23.30
+
+El MDT de 50 cm situa el terreny de la sortida per sota del llindar. El MET5 el situava fins a 27,5 m més amunt al mateix punt i tornava a tancar el pas quan acabava el pedaç de detall. La r2 cobreix 96 × 96 m i estén el tallador fins a l’estació 30 m. El Model complet conserva la graella general i afegeix mostres al voltant de la roca. [Model r2](https://github.com/aaronFortuno/open-place-models/tree/main/models/roca-foradada/r2)
+
+El control torna a llegir els triangles del 3MF i comprova dotze línies de pas, entre les estacions −14 m i +32 m, a quatre alçades i tres distàncies de l’eix. Comprova també que els extrems siguin a l’aire i que quedi roca sobre la cavitat. Els fitxers nous duen `r2` al nom. Queda pendent el laminat.
+
+Els tres controls de 10 × 10 cm passen a 1:2.000 en Model complet amb les capes actives, a 1:10.000 en Model complet amb la geometria de terreny i a 1:10.000 en Relleu pur amb la textura de vegetació desactivada. El control de Relleu pur conserva el pas després de canviar l’exageració i la base i en dividir el sòlid en dues plaques. El retall més ampli de Model complet amb totes les capes ha superat el límit de memòria de la prova local.
+
+### Pilot del massís de Montserrat
+
+La branca local `montserrat-pilot` d’Open Place Models té una vista general de 9,6 × 6,4 km de 1,57 MB. Dos sectors contigus de 384 × 384 m, amb pas de 2 m, tenen GeoTIFF de 150 kB cadascun i 193 mostres idèntiques a la vora compartida. El detall local conserva millor les carenes i els cingles. La càrrega per sectors queda pendent. Les cavitats mantenen volums 3D georeferenciats com el de la Foradada.
 
 ## Reproducció local
 

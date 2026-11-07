@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.23.30 — 2026-11-07
+
+- La Roca Foradada conserva la sortida de llevant amb un pedaç més ampli. El Model complet refina la malla al voltant de la roca quan l’obertura és prou ampla a l’escala triada.
+
 ## v0.23.29 — 2026-11-07
 
 - Pilot de la Roca Foradada de Montserrat. El motor combina el relleu local del catàleg amb la resta del terreny i incorpora l’obertura quan l’escala i el detall la poden representar.

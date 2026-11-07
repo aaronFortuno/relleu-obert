@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-07 · v0.23.29**. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-07 · v0.23.30**. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -12,7 +12,7 @@ Actualitzat el **2026-11-07 · v0.23.29**. [Historial](HISTORIAL.md).
 | **Paviment de superfície** | RO-051, RO-052 | El retall girat mostra millora al laminador i es dona per bo de moment. La impressió física i els enllaços pendents queden en seguiment. [Control de l’Hospitalet](RO-052-CONTINUITAT.md#talls-locals-sota-els-taulers-v02319) |
 | **Seguiment de les estructures** | RO-033, RO-034, RO-050 | Registrar noves incidències amb retall i escala. A Sant Salvador, dos perfils segueixen el terreny pel pendent dels enllaços. El túnel a 1:20.000 té les dues boques comprovades al 3MF. El pas de Montgròs es conserva al cupó laminat. [Controls de vies](RO-051-PERFILS-VIARIS.md#transicions-pendents-a-la-v0220) · [Montgròs](RO-033-CONTROLS-PROCEDIMENTALS.md#laminat-del-cupó-de-montgròs) |
 | **Validació en paral·lel** | RO-024, RO-033, RO-046, RO-054, RO-055 | Revisar Tamariu 40 × 45 cm i Amsterdam amb totes les capes al laminador. També queden la recuperació d’un projecte girat i els talls dels Rasos–Gallina Pelada. |
-| **Pilot de relleu rocós** | RO-023, RO-035 | Laminar la Foradada i contrastar la forma amb les dues boques. Comparar els cupons del Cavall Bernat i recuperar la georeferenciació dels Degotalls. [Resultats](RELLEU-ROCOS.md) |
+| **Pilot de relleu rocós** | RO-023, RO-035 | Tornar a laminar la Foradada r2. Provar la càrrega per sectors del pilot del massís de Montserrat. Comparar els cupons del Cavall Bernat i recuperar la georeferenciació dels Degotalls. [Resultats](RELLEU-ROCOS.md) |
 | **Catàleg de llocs singulars** | RO-032, RO-033 | Torre Glòries validada al visor. Millau verificat a tres retalls. Validar al laminador les llums i els tirants del viaducte. [Controls de Millau](RO-033-CONTROLS-PROCEDIMENTALS.md#pilot-de-millau-al-catàleg--v02328) |
 
 Els encàrrecs independents avancen en paral·lel. Cada bloc validat té el seu commit i es manté una sola prova pesada alhora. Els casos que requereixen inspecció al laminador poden quedar pendents mentre avancen altres línies.
@@ -143,7 +143,7 @@ Obertures estimades amb volta parabòlica i paviment del material de la via. Rev
 
 ### RO-035 — Cavitats i relleus amb voladissos
 
-El cupó local dels Degotalls a 1:200 té bon resultat segons l’usuari. Falta la transformació per integrar-lo al terreny. La Foradada combina una carena mesurada i una cavitat aproximada, amb pas obert i volta comprovats a dues escales, també en un 3MF de dues plaques. Queden el laminat, el contrast visual de les boques i la cerca de la malla fotogramètrica original. [Pilot i fonts](RELLEU-ROCOS.md#roca-foradada--control-dobertura-passant)
+El cupó local dels Degotalls a 1:200 té bon resultat segons l’usuari. Falta la transformació per integrar-lo al terreny. L’usuari ha detectat que la Foradada r1 quedava tapada a la sortida. La r2 amplia el detall i comprova una secció de pas des de fora de les dues boques. Queden el nou laminat, el contrast visual i la cerca de la malla fotogramètrica original. [Pilot i fonts](RELLEU-ROCOS.md#correcció-de-la-sortida--v02330)
 
 ### RO-044 — Catastre per seccions i recuperació de configuracions
 

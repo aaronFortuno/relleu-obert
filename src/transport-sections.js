@@ -19,22 +19,30 @@ export function crossSectionFractions({centre,normal,widthMM}={},options={}){
   // Coalesce only machine-roundoff coincidences, never a geometric tolerance
   // or a quantization of the source coordinates.
   const sorted=()=>values.slice().sort((a,b)=>a-b).filter((v,i,a)=>!i||v-a[i-1]>roundoff);
-  const {fieldWidth,fieldHeight,resolution,points=[],faces=[]}=options;
+  const {fieldWidth,fieldHeight,resolution,grid,points=[],faces=[]}=options;
   if(resolution!==undefined){
     if(!Number.isInteger(resolution)||resolution<1||resolution>100||!Number.isFinite(fieldWidth)||fieldWidth<=0||!Number.isFinite(fieldHeight)||fieldHeight<=0)
       throw Error('Graella del camp de relleu invàlida.');
     const dx=fieldWidth/resolution,dy=fieldHeight/resolution;
-    for(let i=0;i<=resolution;i++){
+    if(grid){
+      if(direction[0]!==0)for(const x of grid.x)add((x-centre[0])/direction[0]);
+      if(direction[1]!==0)for(const y of grid.y)add((y-centre[1])/direction[1]);
+    }else for(let i=0;i<=resolution;i++){
       if(direction[0]!==0)add((i*dx-centre[0])/direction[0]);
       if(direction[1]!==0)add((i*dy-centre[1])/direction[1]);
     }
-    const cuts=sorted(),denominator=direction[0]/dx-direction[1]/dy;
-    if(denominator!==0)for(let i=1;i<cuts.length;i++){
+    const cuts=sorted();
+    for(let i=1;i<cuts.length;i++){
       const before=cuts[i-1],after=cuts[i],middle=(before+after)/2,x=centre[0]+direction[0]*middle,y=centre[1]+direction[1]*middle;
       if(x<0||x>fieldWidth||y<0||y>fieldHeight)continue;
-      const ix=Math.min(resolution-1,Math.floor(x/dx)),iy=Math.min(resolution-1,Math.floor(y/dy));
+      const ix=grid?Math.min(grid.x.length-2,Math.floor(grid.indexX(x))):Math.min(resolution-1,Math.floor(x/dx));
+      const iy=grid?Math.min(grid.y.length-2,Math.floor(grid.indexY(y))):Math.min(resolution-1,Math.floor(y/dy));
+      const cellWidth=grid?grid.x[ix+1]-grid.x[ix]:dx,cellHeight=grid?grid.y[iy+1]-grid.y[iy]:dy;
+      const denominator=direction[0]/cellWidth-direction[1]/cellHeight;
+      if(denominator===0)continue;
       // u=v is the actual diagonal used by createTerrainField.sample.
-      const t=(ix-iy-centre[0]/dx+centre[1]/dy)/denominator;
+      const t=grid?((grid.x[ix]-centre[0])/cellWidth-(grid.y[iy]-centre[1])/cellHeight)/denominator:
+        (ix-iy-centre[0]/dx+centre[1]/dy)/denominator;
       if(t>=before-roundoff&&t<=after+roundoff)add(t);
     }
   }
