@@ -337,11 +337,12 @@ export const CURATED_EXAMPLES = [
     category: 'Fiord',
     landforms: ['coasts'],
     description: 'El braç de mar fins al poble de Geiranger, encaixat entre vessants escarpats.',
-    center: [62.11, 7.075],
+    center: [62.23524520463307, 7.120119931613523],
     width: 240,
     height: 240,
-    scale: 75000,
+    scale: 200000,
     rotation: 0,
+    exaggeration: 1.25,
     image: `${imageBase}geirangerfjord.webp`,
   },
   {
@@ -381,6 +382,7 @@ export const CURATED_EXAMPLES = [
     height: 250,
     scale: 100000,
     rotation: 0,
+    exaggeration: 1.25,
     image: `${imageBase}mont-fuji.webp`,
   },
   {

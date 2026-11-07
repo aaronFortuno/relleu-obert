@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-07. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.23.22 — Mont Fuji i Geirangerfjord
+
+RO-046 aplica l’exageració ×1,25 als dos retalls i el nou centre i escala de Geirangerfjord. Es recuperen els estats i enquadraments de la revisió anterior al Markdown. [Cua de revisió](RO-046-CATALEG.md#grans-formes-del-relleu)
+
 ## v0.23.21 — Accés a la galeria i relleu proper
 
 RO-046 incorpora els ajustos de Roses, el Croscat, els dos retalls de l’Aneto i el Teide. Tamariu, Tenerife i Santorini queden validats. Tamariu es pot tornar a provar a 1:15.000. La galeria queda a la capçalera i selecciona la cerca anterior en obrir-se. [Cua de revisió](RO-046-CATALEG.md#revisió-per-a-maquetes-daula)

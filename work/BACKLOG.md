@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-07 · v0.23.21**. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-07 · v0.23.22**. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -147,7 +147,7 @@ A escriptori, la cerca i el mapa queden sota la capçalera de Territori i els aj
 
 El [catàleg](RO-046-CATALEG.md) inclou 37 retalls, amb 25 fitxes de Relleu pur i 12 de Model complet. El carrusel inicial barreja l’ordre i reparteix els modes al llarg del bucle. «Galeria de maquetes» a la capçalera obre una graella amb el focus a la cerca i filtres per mode, mida i tipus de paisatge. «La teva maqueta» mostra el resum del lloc mentre el visor mostra el model corresponent. Queda revisar l’enquadrament, la llegibilitat i els temps de generació en ús, i comprovar el gruix de la base a les fitxes costaneres.
 
-Cap de Creus, Tamariu, Tenerife i Santorini validats. A la revisió inicial s’hi afegeixen les correccions de Roses, el Croscat, els dos retalls de l’Aneto i el Teide. [Cua de revisió](RO-046-CATALEG.md#revisió-per-a-maquetes-daula) · [Retalls de prova](RO-046-PROVES-RELLEU.md)
+Cap de Creus, Tamariu, Tenerife i Santorini validats. Al bloc de grans formes ja s’han incorporat els ajustos del Teide, el mont Fuji i Geirangerfjord. Queda tornar a comprovar els retalls ajustats. [Cua de revisió](RO-046-CATALEG.md#revisió-per-a-maquetes-daula) · [Retalls de prova](RO-046-PROVES-RELLEU.md)
 
 ### RO-047 — Precàrrega opcional de fonts alternatives
 

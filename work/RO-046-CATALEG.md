@@ -49,8 +49,8 @@ El retall de l’Aneto fa 25 × 20 cm per mantenir el nord a dalt i encabir tot 
 | Tenerife | Teno, Anaga i la punta de la Rasca queden dins del retall. El tall entre peces coincideix i conserva la forma de l’illa. | Validat |
 | Teide i Las Cañadas | Els cons del Teide i de Pico Viejo es distingeixen dins el contorn de la caldera. | Centre i gir de −20° de `galeria-teide.json` incorporats · tornar a comprovar |
 | Santorini | Thera i Therasia emmarquen la caldera marina i els illots Kameni queden separats. | Validat |
-| Mont Fuji | El con i els vessants radials es llegeixen des de diversos angles. Comprova si es distingeix el cràter. | Reduir exageració vertical a 1,25  |
-| Geirangerfjord | El braç de mar arriba fins a Geiranger i queda encaixat entre vessants escarpats. | Pendent |
+| Mont Fuji | El con i els vessants radials es llegeixen des de diversos angles. Comprova si es distingeix el cràter. | Exageració vertical ×1,25 incorporada · tornar a comprovar |
+| Geirangerfjord | El braç de mar arriba fins a Geiranger i queda encaixat entre vessants escarpats. | Centre, escala 1:200.000 i exageració vertical ×1,25 de `galeria-geiranger.json` incorporats · tornar a comprovar |
 | Bardenas Reales · Bardena Blanca | Els barrancs de les Cortinas i el turó del Castildetierra es distingeixen de la plana. | Pendent |
 | Gran Canó del Colorado | El Colorado es llegeix al fons del canó entre les dues vores de l’altiplà i les valls laterals. | Pendent |
 | Tre Cime di Lavaredo | Les tres torres rocoses conserven una silueta diferenciada sobre el replà. | Pendent |
@@ -172,7 +172,7 @@ El **Model complet** admet fins a 1:20.000, amb un límit addicional per superf�
 
 | Què representa | Lloc | Centre del retall | Extensió real | Maqueta i escala | Què s’hi hauria de llegir |
 | --- | --- | --- | --- | --- | --- |
-| Fiord | Geirangerfjord (Noruega) | `62.1100,7.0750` [Mapa](https://www.openstreetmap.org/?mlat=62.1100&mlon=7.0750#map=11/62.1100/7.0750) | 18 × 18 km | 24 × 24 cm · 1:75.000 | El braç de mar fins al poble de Geiranger i el contrast amb les parets escarpades. [UNESCO](https://whc.unesco.org/en/list/1195/maps/) |
+| Fiord | Geirangerfjord (Noruega) | `62.2352452,7.1201199` [Mapa](https://www.openstreetmap.org/?mlat=62.2352452&mlon=7.1201199#map=10/62.2352452/7.1201199) | 48 × 48 km | 24 × 24 cm · 1:200.000 · ×1,25 | El braç de mar fins al poble de Geiranger i el contrast amb les parets escarpades. [UNESCO](https://whc.unesco.org/en/list/1195/maps/) |
 | Caldera marina | Santorini (Grècia) | `36.4070,25.4070` [Mapa](https://www.openstreetmap.org/?mlat=36.4070&mlon=25.4070#map=11/36.4070/25.4070) | 20 × 20 km | 20 × 20 cm · 1:100.000 | El contorn emergit de Thera i Therasia i els illots Kameni dins la caldera. [Smithsonian GVP](https://volcano.si.edu/volcano.cfm?vn=212040) |
 | Torres rocoses alpines | Tre Cime di Lavaredo, Dolomites (Itàlia) | `46.6180,12.3020` [Mapa](https://www.openstreetmap.org/?mlat=46.6180&mlon=12.3020#map=12/46.6180/12.3020) | 10 × 10 km | 20 × 20 cm · 1:50.000 | Les torres i el replà del massís. Cal comprovar si el model d’elevacions separa les tres puntes. [Parc Natural](https://parchi-naturali.provincia.bz.it/it/parco-naturale-tre-cime) |
 
@@ -180,7 +180,7 @@ El **Model complet** admet fins a 1:20.000, amb un límit addicional per superf�
 
 | Què representa | Lloc | Centre del retall | Extensió real | Maqueta i escala | Què s’hi hauria de llegir |
 | --- | --- | --- | --- | --- | --- |
-| Estratovolcà | Mont Fuji (Japó) | `35.3610,138.7280` [Mapa](https://www.openstreetmap.org/?mlat=35.3610&mlon=138.7280#map=10/35.3610/138.7280) | 25 × 25 km | 25 × 25 cm · 1:100.000 | El con central i els vessants radials. El cràter és un detall per contrastar amb la resolució disponible. [Smithsonian GVP](https://volcano.si.edu/volcano.cfm?vn=283030) |
+| Estratovolcà | Mont Fuji (Japó) | `35.3610,138.7280` [Mapa](https://www.openstreetmap.org/?mlat=35.3610&mlon=138.7280#map=10/35.3610/138.7280) | 25 × 25 km | 25 × 25 cm · 1:100.000 · ×1,25 | El con central i els vessants radials. El cràter és un detall per contrastar amb la resolució disponible. [Smithsonian GVP](https://volcano.si.edu/volcano.cfm?vn=283030) |
 | Canó fluvial | Gran Canó del Colorado, sector de Grand Canyon Village (EUA) | `36.1180,-112.1000` [Mapa](https://www.openstreetmap.org/?mlat=36.1180&mlon=-112.1000#map=10/36.1180/-112.1000) | 25 × 25 km | 25 × 25 cm · 1:100.000 | El Colorado encaixat entre dues vores d’altiplà i els barrancs laterals. [National Park Service](https://www.nps.gov/grca/learn/nature/grca-geology.htm) |
 | Muntanya tabular | Table Mountain (Sud-àfrica) | `-33.9600,18.4180` [Mapa](https://www.openstreetmap.org/?mlat=-33.9600&mlon=18.4180#map=11/-33.9600/18.4180) | 12 × 12 km | 24 × 24 cm · 1:50.000 | El cim pla, els vessants abruptes, Lion’s Head i la costa de Camps Bay. [SANParks](https://www.sanparks.org/wp-content/uploads/2024/02/tmnp-visitors-map.pdf) |
 

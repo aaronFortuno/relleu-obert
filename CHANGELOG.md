@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.23.22 — 2026-11-07
+
+- El mont Fuji i Geirangerfjord tenen una exageració vertical de ×1,25. El fiord s’obre amb el retall revisat a 1:200.000.
+
 ## v0.23.21 — 2026-11-07
 
 - La galeria obre amb el focus a la cerca i selecciona el text existent. A mòbil, la capçalera en mostra només la icona. L’accés de Territori es retira.
