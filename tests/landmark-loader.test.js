@@ -108,6 +108,28 @@ test('bridge metadata is required and future model types do not affect buildings
   assert.equal(warnings.length,1);
 });
 
+test('pure terrain loads only the intersecting landform sidecar and rejects an unsafe cutter',async()=>{
+  const data='models/arch/r1/terrain.json',url=new URL(data,catalogue).href,requests=[];
+  const arch=tower({id:'arch',properties:{kind:'landform',landform:{data,verticalDatum:'EGM08D595',minimumWidth:10}}});
+  const grid={side:5,step:5,elevations:Array(25).fill(900)};
+  const cutter={vertices:vertices.map((v,i)=>i%3===1?v+890:v),faces};
+  const load=createLandmarkLoader(catalogue,target=>{
+    requests.push(target);
+    return target===catalogue?collection(tower(),arch):Response.json({grid,void:cutter});
+  });
+  const first=await load(crop,['landform']);
+  assert.deepEqual(first.models.map(m=>m.id),['arch']);
+  assert.deepEqual(first.warnings,[]);
+  assert.deepEqual(first.models[0].cutter.faces,Uint32Array.from(cutter.faces));
+  assert.deepEqual(requests,[catalogue,url]);
+
+  const invalid=createLandmarkLoader(catalogue,target=>target===catalogue?collection(arch):
+    Response.json({grid,void:{...cutter,faces:[...cutter.faces.slice(0,-1),99]}}));
+  const rejected=await invalid(crop,['landform']);
+  assert.deepEqual(rejected.models,[]);
+  assert.equal(rejected.warnings.length,1);
+});
+
 test('invalid entries cannot request unapproved URLs or carry replacement IDs of another type',async()=>{
   const requests=[];
   const load=createLandmarkLoader(catalogue,url=>{

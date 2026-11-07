@@ -47,12 +47,26 @@ La Diputació de Barcelona inventaria una obertura triangular d’uns 12 × 14,5
 
 La figura 14 d’un treball de la UPC i l’ICGC mostra una reconstrucció tridimensional de la Foradada amb la volta. No s’ha localitzat una descàrrega de la malla amb condicions de reutilització. [Estudi i figura 14](https://doi.org/10.3390/geosciences12100370)
 
+### Pilot de catàleg · v0.23.29
+
+El model utilitza un retall de 64 × 64 m del MDT de 50 cm de l’ICGC, mostrejat cada metre. La cavitat és una reconstrucció aproximada a partir de la topografia de camp de Jordi Navarro i Montse Mañosa. El perfil oest fa uns 10,2 × 13 m, amb un eix de 74°. La boca oest s’ha ajustat a la carena del MDT, prop de 41,61223 N, 1,78670 E i a 892,8 m. [Fitxa i fonts del model](https://github.com/aaronFortuno/open-place-models/tree/main/models/roca-foradada/r1)
+
+El catàleg lliura un GLB per al visor i un fitxer amb la graella d’altituds i el volum que cal restar per obrir la roca. Relleu Obert barreja el detall amb el terreny del retall als últims 8 m del pedaç i talla les capes de superfície abans d’afegir-hi vegetació. El pas requereix 0,8 mm d’amplada nominal a la maqueta i una graella amb un pas de com a màxim la meitat de l’amplada real. El relleu de base continua disponible quan el detall resulta insuficient.
+
+| Mode | Escala | Gir | Control |
+| --- | --- | --- | --- |
+| Model complet | 1:2.000 | +35° | Pas axial obert, volta present i quatre capes tancades |
+| Relleu pur | 1:10.000 | −29° | Pas axial obert i volta present. Es conserven amb exageració ×1,25 i base de 6 mm i en el tall per la cavitat |
+
+Les comprovacions fan passar un raig per l’eix del buit a 897 m i comproven que hi ha roca per sobre, a 907 m. Els tres 3MF queden a `output/foradada/`. Falta comprovar al laminador la llum útil del pas i la forma visible de les boques.
+
 ## Reproducció local
 
 ```powershell
 node --max-old-space-size=512 scripts/compare-cavall-bernat.mjs
 node --max-old-space-size=512 scripts/pilot-cavall-detail.mjs
 node --max-old-space-size=512 scripts/pilot-degotalls.mjs
+node --max-old-space-size=512 scripts/check-foradada.mjs
 ```
 
 El primer script escriu quatre 3MF, les seccions SVG i les mesures a `output/cavall-bernat/`. El pilot de detall escriu tres 3MF i les mesures a `output/cavall-bernat-detall/`. El script dels Degotalls baixa en flux l’escaneig original, en comprova l’empremta i desa el cupó i l’auditoria a `output/`.

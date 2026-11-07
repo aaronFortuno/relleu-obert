@@ -1,4 +1,5 @@
 import {validBridgeProfile} from './catalogue-bridges.js';
+import {decodeLandform,validLandformProfile} from './catalogue-landforms.js';
 
 const catalogueLimit=512*1024,meshLimit=4*1024*1024;
 const catalogueWarning='No s’ha pogut carregar el catàleg de models singulars.';
@@ -30,6 +31,13 @@ function validFootprint(geometry,bbox){
       ring[0][0]===ring.at(-1)[0]&&ring[0][1]===ring.at(-1)[1]));
 }
 
+function assetURL(path,directory,extension){
+  check(label(path)&&path===path.trim()&&!/^(?:[a-z][a-z+.-]*:|[\\/])/i.test(path));
+  const url=new URL(path,directory);
+  check(url.href.startsWith(directory.href)&&!url.search&&!url.hash&&url.pathname.endsWith(extension));
+  return url.href;
+}
+
 function readCatalogue(data,directory){
   check(data?.type==='FeatureCollection'&&data.schemaVersion===1&&Array.isArray(data.features));
   const entries=[],ids=new Set();
@@ -37,19 +45,19 @@ function readCatalogue(data,directory){
   for(const feature of data.features){
     try{
       const {type,id,bbox,geometry:footprint,properties}=feature;
-      const {name,revision,anchor,mesh,height,attribution,license,sources,spatialDataLicense,replacement,bridge,kind='building'}=properties;
-      if(kind!=='building'&&kind!=='bridge')continue;
+      const {name,revision,anchor,mesh,height,attribution,license,sources,spatialDataLicense,replacement,bridge,landform,kind='building'}=properties;
+      if(!['building','bridge','landform'].includes(kind))continue;
       check(type==='Feature'&&label(id)&&!ids.has(id)&&validBounds(bbox)&&inside(bbox,anchor)&&validFootprint(footprint,bbox));
       check([name,revision,mesh,attribution,license].every(label)&&Number.isFinite(height)&&height>0&&height<=1200&&
         Array.isArray(sources)&&sources.every(label)&&(spatialDataLicense===undefined||label(spatialDataLicense)));
       check(replacement===undefined||replacement&&typeof replacement==='object'&&!Array.isArray(replacement)&&
         optionalIds(replacement.featureIds)&&optionalIds(replacement.families));
-      check(kind==='building'||validBridgeProfile(bridge)&&footprint.type==='Polygon');
-      const url=new URL(mesh,directory);
-      check(mesh===mesh.trim()&&!/^(?:[a-z][a-z+.-]*:|[\\/])/i.test(mesh)&&url.href.startsWith(directory.href)&&
-        !url.search&&!url.hash&&url.pathname.endsWith('.glb'));
+      if(kind==='bridge')check(validBridgeProfile(bridge)&&footprint.type==='Polygon');
+      if(kind==='landform')check(validLandformProfile(landform));
+      const glb=assetURL(mesh,directory,'.glb');
+      const url=kind==='landform'?assetURL(landform.data,directory,'.json'):glb;
       ids.add(id);
-      entries.push({id,name,revision,bbox,anchor,footprint,height,attribution,license,sources,spatialDataLicense,replacement,kind,bridge,url:url.href});
+      entries.push({id,name,revision,bbox,anchor,footprint,height,attribution,license,sources,spatialDataLicense,replacement,kind,bridge,landform,url});
     }catch{
       incomplete=true;
     }
@@ -141,19 +149,21 @@ function decodeGLB(bytes){
 
 export function createLandmarkLoader(catalogueURL,fetcher=fetch){
   const catalogue=new URL(catalogueURL,globalThis.location?.href),directory=new URL('.',catalogue);
-  const meshes=new Map();
+  const assets=new Map();
   let catalogueRequest;
-  function meshRequest(url){
-    if(meshes.has(url))return meshes.get(url);
-    const request=fetchBytes(fetcher,url,meshLimit).then(decodeGLB).catch(error=>{
-      if(meshes.get(url)===request)meshes.delete(url);
+  function assetRequest(url,kind){
+    if(assets.has(url))return assets.get(url);
+    const terrain=kind==='landform';
+    const request=fetchBytes(fetcher,url,terrain?256*1024:meshLimit).then(bytes=>terrain?
+      decodeLandform(JSON.parse(decoder.decode(bytes))):decodeGLB(bytes)).catch(error=>{
+      if(assets.get(url)===request)assets.delete(url);
       throw error;
     });
-    meshes.set(url,request);
-    if(meshes.size>16)meshes.delete(meshes.keys().next().value);
+    assets.set(url,request);
+    if(assets.size>16)assets.delete(assets.keys().next().value);
     return request;
   }
-  return async function load(bbox){
+  return async function load(bbox,kinds){
     const models=[],warnings=[];
     if(!validBounds(bbox))return {models,warnings};
     catalogueRequest??=fetchBytes(fetcher,catalogue.href,catalogueLimit)
@@ -162,8 +172,8 @@ export function createLandmarkLoader(catalogueURL,fetcher=fetch){
     let catalogueData;
     try{catalogueData=await catalogueRequest;}
     catch{return {models,warnings:[catalogueWarning]};}
-    const candidates=catalogueData.entries.filter(entry=>intersects(entry.bbox,bbox));
-    const results=await Promise.allSettled(candidates.slice(0,8).map(async ({url,...entry})=>({...entry,...await meshRequest(url)})));
+    const candidates=catalogueData.entries.filter(entry=>(!kinds||kinds.includes(entry.kind))&&intersects(entry.bbox,bbox));
+    const results=await Promise.allSettled(candidates.slice(0,8).map(async ({url,...entry})=>({...entry,...await assetRequest(url,entry.kind)})));
     for(const result of results)if(result.status==='fulfilled')models.push(result.value);
     if(catalogueData.incomplete||models.length<candidates.length)warnings.push(meshWarning);
     return {models,warnings};

@@ -193,6 +193,7 @@ export async function loadRegion({sample=true,bbox,buildingSource,decodeElevatio
     const bounds=reliefBounds(bbox,panoramic);
     if(!bounds)throw Error(panoramic?'Retall fora dels límits del format panoràmic.':'Retall fora dels límits de Relleu pur.');
     const {wide}=bounds;
+    const singulars=!wide?time('source.singular-terrain',()=>loadSingularModels(bbox,['landform'])):null;
     const [w,s,e,n]=RELIEF_LAKE_SOURCE.bounds;
     const insidePilot=bbox[0]>=w&&bbox[1]>=s&&bbox[2]<=e&&bbox[3]<=n;
     let vectorsPromise,oceanProof;
@@ -237,6 +238,8 @@ export async function loadRegion({sample=true,bbox,buildingSource,decodeElevatio
       else if(failures)warnings.push(`Falten algunes tessel·les de cartografia ${vectorLabel}. Es mostren les dades disponibles.`);
       if(failures<tileCount&&zoom<14)warnings.push(`La cartografia ${vectorLabel} d’aquest retall ampli pot ometre els elements més petits.`);
     }catch{warnings.push(vectorUnavailable);}
+    const {models:singularModels,warnings:singularWarnings}=(await singulars)??{models:[],warnings:[]};
+    warnings.push(...singularWarnings);
     const meta={bbox,name:'Relleu pur',date:new Date().toISOString(),terrain:terrain.metadata,tiles:terrain.tiles.map(({z,x,y})=>({z,x,y})),
       coverage:{...RELIEF_COVERAGE_SOURCE,available:!!coverage.length,tiles:coverage.map(t=>t.tile),
         rasters:coverage.map(({tile,bbox,width,height,overview})=>({tile,bbox,width,height,...(overview?{overview:true}:{})}))},
@@ -245,13 +248,13 @@ export async function loadRegion({sample=true,bbox,buildingSource,decodeElevatio
       oceans:{count:oceans.length,...vectorCoverage},
       forests:{count:forests.length,...vectorCoverage},
       buildings:{count:0},buildingSource:null,sourceWarnings:warnings,pureRelief:true,...(panoramic?{panoramic:true}:{})};
-    return {meta,features:[],dem:terrain.tiles,terrainRaster:terrain.raster,coverage,lakes,waterways,waterAreas,forests,oceans,terrainWarnings:warnings};
+    return {meta,features:[],dem:terrain.tiles,terrainRaster:terrain.raster,coverage,lakes,waterways,waterAreas,forests,oceans,terrainWarnings:warnings,singularModels};
   }
   const base=(import.meta.env?.BASE_URL||'./')+'data/';
   if(typeof sample==='string'&&!recommendedPlace(sample))throw Error('Exemple desconegut.');
   let meta=sample?await time('source.catalog',async()=>(await get(base+(recommendedPlace(sample)?.file||'tamariu.json'))).json(),{provider:'sample'}):{name:'Regió seleccionada',bbox,tiles:tileList(bbox),date:new Date().toISOString()};
   if(sample&&bbox)meta={...meta,bbox};
-  const singulars=localBuildings?null:time('source.singular-buildings',()=>loadSingularModels(meta.bbox));
+  const singulars=time('source.singular-models',()=>loadSingularModels(meta.bbox,localBuildings?['landform']:undefined));
   let template;
   if(!sample)template=await time('source.catalog',vectorTemplate,{provider:'OpenFreeMap'});
   let features=[],dem=[],terrainRaster,bridgeDem=[],bridgeFeatures=[],incompleteBridgeIds=[],terrainWarnings=[...(meta.sourceWarnings||[])];

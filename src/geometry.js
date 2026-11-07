@@ -16,6 +16,7 @@ import {isRailway,isInactiveRailway,railwayOptions,railwayWidthMetres} from './r
 import {buildingOptions,buildingRise} from './building-options.js';
 import {splitModel} from './mesh-tiles.js';
 import {catalogueBridgeItem,catalogueBridgeUpper} from './catalogue-bridges.js';
+import {prepareCatalogueLandforms,resolvableLandform,catalogueTerrain,carveCatalogueLandforms,clearOfLandforms,landformWarnings} from './catalogue-landforms.js';
 import {MAX_MODEL_SIDE_MM,validateScale,isPanoramicSize,validPieceDimensions,PURE_SCALE_RANGE,PANORAMIC_SCALE_RANGE} from './selection.js';
 import {localRasterSampler} from './local-raster.js';
 import {treeDimensions,TREE_CROWN_METRES,MIN_TREE_MM} from './tree-scale.js';
@@ -274,14 +275,18 @@ export function treeMesh({x,y,ground,rx,ry,rz,rotation=0,phase=0,crownTaper=0}){
   return {vertices:surf.vertices,faces:surf.faces};
 }
 function prepareTerrain(data,options,progress,preview,measure){
-  const {size=160,exaggeration=1.5,density=2.5,resolution=36,baseThickness}=options,proj=makeProjection(data.meta.bbox,size,options),{width,height,project,scale}=proj,rect=box(width,height),warnings=[];
-  if(!Number.isFinite(density)||density<.25||density>5||!Number.isInteger(resolution)||resolution<2||resolution>100||!Number.isFinite(exaggeration)||exaggeration<1||exaggeration>5||!Number.isFinite(size)||size<50||size>MAX_MODEL_SIDE_MM||width>MAX_MODEL_SIDE_MM||height>MAX_MODEL_SIDE_MM)throw Error('Els ajustos de la maqueta són fora del rang admès.');
+  const {size=160,exaggeration=1.5,density=2.5,resolution:requestedResolution=36,baseThickness}=options,proj=makeProjection(data.meta.bbox,size,options),{width,height,project,scale}=proj,rect=box(width,height),warnings=[];
+  if(!Number.isFinite(density)||density<.25||density>5||!Number.isInteger(requestedResolution)||requestedResolution<2||requestedResolution>100||!Number.isFinite(exaggeration)||exaggeration<1||exaggeration>5||!Number.isFinite(size)||size<50||size>MAX_MODEL_SIDE_MM||width>MAX_MODEL_SIDE_MM||height>MAX_MODEL_SIDE_MM)throw Error('Els ajustos de la maqueta són fora del rang admès.');
   if(options.targetScale!=null&&Math.abs(1000/scale-validateScale(options.targetScale))>options.targetScale*1e-6)throw Error('El retall no concorda amb l’escala demanada. Torna a seleccionar la regió.');
   preview?.stage('terrain','Revisant les mostres d’altitud…');
   const raster=data.localDEM||data.terrainRaster;
   const prepared=raster?{tiles:[],diagnostics:{invalid:0,spikes:0,repaired:0,source:data.meta.terrain?.provider||'local GeoTIFF'}}:prepareElevationTiles(data.dem);
   const rasterHeight=raster?localRasterSampler(raster):null;
-  const elevationAt=(lon,lat)=>rasterHeight?rasterHeight(lon,lat):sampleHeight(prepared.tiles,lon,lat);
+  const extentMetres=Math.max(width,height)/scale;
+  const refined=Math.min(100,Math.max(requestedResolution,Math.ceil(extentMetres/3)));
+  const landforms=data.localDEM?[]:prepareCatalogueLandforms(data.singularModels,proj).filter(patch=>resolvableLandform(patch,extentMetres/refined));
+  const resolution=landforms.length?refined:requestedResolution;
+  const elevationAt=catalogueTerrain((lon,lat)=>rasterHeight?rasterHeight(lon,lat):sampleHeight(prepared.tiles,lon,lat),landforms);
   if(prepared.diagnostics.repaired)warnings.push(`S’han reconstruït ${prepared.diagnostics.repaired} mostres d’altitud invàlides o pics aïllats a partir dels veïns.`);
   const water=[],ocean=[],stillWater=[],green=[],woods=[],roads=[],rails=[],transport=[],roadPieces=[],railPieces=[];
   const cropped=polys=>polys.map(p=>intersect(p,rect)).filter(p=>p.length);
@@ -416,7 +421,7 @@ function prepareTerrain(data,options,progress,preview,measure){
     }
     return flowingWaterAt(x,y);
   };
-  const terrain={size,exaggeration,resolution,proj,rect,warnings,elevationAt:data.terrainRaster?bridgeElevation:elevationAt,cropToElevationWindow:!!data.terrainRaster,deckItems,deckMask,transport,roadPieces,railPieces,maximumElevation,waterAt,
+  const terrain={size,exaggeration,resolution,proj,rect,warnings,landforms,elevationAt:data.terrainRaster?bridgeElevation:elevationAt,cropToElevationWindow:!!data.terrainRaster,deckItems,deckMask,transport,roadPieces,railPieces,maximumElevation,waterAt,
     roadOnlyPoly,roadPoly,forest,bare,railPoly,waterPoly,land,oceanPoly,inlandSupport:surfacePart(0,inlandSupport),green,cropped,ground,verticalReference,diagnostics:prepared.diagnostics,
     woodsMask:measure('terrain.woods',()=>merge(cropped(woods)),{inputs:woods.length})};
   terrain.surfaces=measure('terrain.surfaces',()=>terrainCover(forest,bare,terrain,progress));
@@ -641,16 +646,16 @@ function assembleSurfaceRoads(terrain,rise,api,progress,plan){
 
 export function buildModel(data,options={},progress=()=>{},infrastructureApi=null,diagnostics=null,preview){
   options={...options,baseThickness:modelBaseThickness(options.baseThickness)};
-  if(options.pureRelief)return buildPureRelief(data,options,progress,preview);
+  if(options.pureRelief)return buildPureRelief(data,options,progress,preview,infrastructureApi);
   preview?.stage('terrain','Preparant el relleu…');
   const terrain=prepareTerrain(data,options,progress,preview,phaseTimer(diagnostics));
   preview?.parts('terrain',terrain.surfaces,terrain.proj);
   return buildTransport(data,options,terrain,progress,infrastructureApi,diagnostics,undefined,undefined,preview);
 }
 
-function buildPureRelief(data,options,progress,preview){
+function buildPureRelief(data,options,progress,preview,api){
   const {size=160,exaggeration=1.5,resolution=56,baseThickness}=options;
-  const {width,height,scale,project,unproject}=makeProjection(data.meta.bbox,size,options);
+  const proj=makeProjection(data.meta.bbox,size,options),{width,height,scale,project,unproject}=proj;
   const panoramic=isPanoramicSize(width,height);
   const [minimum,maximum]=panoramic?PANORAMIC_SCALE_RANGE:PURE_SCALE_RANGE;
   if(![width,height,exaggeration].every(Number.isFinite)||Math.min(width,height)<=0||
@@ -660,7 +665,9 @@ function buildPureRelief(data,options,progress,preview){
   const {columns,rows}=reliefGridSize(width,height,resolution,panoramic),stride=columns+1;
   preview?.stage('terrain','Revisant les mostres d’altitud…');
   const prepared=data.terrainRaster?{diagnostics:{invalid:0,spikes:0,repaired:0,source:data.meta.terrain?.provider}}:prepareElevationTiles(data.dem);
-  const sample=data.terrainRaster?localRasterSampler(data.terrainRaster):createElevationSampler(prepared.tiles);
+  const landforms=prepareCatalogueLandforms(data.singularModels,proj)
+    .filter(patch=>resolvableLandform(patch,Math.max(width/columns,height/rows)/scale));
+  const sample=catalogueTerrain(data.terrainRaster?localRasterSampler(data.terrainRaster):createElevationSampler(prepared.tiles),landforms);
   let oceanPolygons=(data.oceans||[]).flatMap(feature=>geoPolys(feature,project));
   if(oceanPolygons.length){
     progress('Delimitant la costa cartografiada…');
@@ -745,7 +752,7 @@ function buildPureRelief(data,options,progress,preview){
   if(coverage.length<sourceCoverage.length)
     warnings.push('S’ha omès la coberta regional perquè els píxels són massa grans per a l’escala de la maqueta.');
   return renderPureRelief({width,height,scale:Math.round(1000/scale),buildingCount:0,reliefGrid,
-    warnings,elevationDiagnostics:prepared.diagnostics,provenance},context,progress,preview);
+    warnings,elevationDiagnostics:prepared.diagnostics,provenance},{...context,landforms,api,sourceWarnings:warnings},progress,preview);
 }
 
 function scaleReliefGrid(grid,metres,scale,exaggeration,baseThickness){
@@ -777,8 +784,15 @@ function renderPureRelief(model,context,progress,preview,texture){
     preview?.stage('terrain','Acabant el relleu i les capes de cada peça',completed,total);
   }):reliefParts(bareGrid);
   const lakePart=ground.find(part=>part.id==='inland-water');
-  const categories=replaceReliefWater(ground,reliefInlandWater(reliefGrid,lakePart,panoramic));
-  return finishReliefVegetation({...model,categories},{...context,lakePart},texture);
+  let categories=replaceReliefWater(ground,reliefInlandWater(reliefGrid,lakePart,panoramic));
+  if(context.landforms.length){
+    const cut=carveCatalogueLandforms(categories,context.landforms,context.api,model.provenance.verticalReference,context.scale*reliefGrid.exaggeration);
+    categories=cut.parts;
+    model={...model,warnings:[...context.sourceWarnings,...landformWarnings(cut)],
+      provenance:{...model.provenance,catalogueLandforms:cut.applied,catalogueLandformOmissions:cut.skipped}};
+  }
+  const activeLandforms=context.landforms.filter(({model:source})=>model.provenance.catalogueLandforms?.some(entry=>entry.id===source.id));
+  return finishReliefVegetation({...model,categories},{...context,lakePart,activeLandforms},texture);
 }
 
 function replaceReliefWater(categories,water){
@@ -812,7 +826,9 @@ export function updatePureRelief(previous,changes={},progress=()=>{}){
   const next={...previous,reliefGrid,provenance};
   if(vertical)return renderPureRelief(next,nextContext,progress,undefined,wide?undefined:grid.vegetationTexture);
   const waterPart=reliefInlandWater(reliefGrid,context.lakePart,isPanoramicSize(grid.width,grid.height));
-  const categories=replaceReliefWater(previous.categories,waterPart);
+  const carvedWater=waterPart&&context.activeLandforms.length?carveCatalogueLandforms([waterPart],context.activeLandforms,context.api,
+    provenance.verticalReference,context.scale*exaggeration).parts[0]:waterPart;
+  const categories=replaceReliefWater(previous.categories,carvedWater);
   if(wide)return finishReliefVegetation({...next,categories:categories.filter(part=>part.id!=='trees')},nextContext);
   return finalizePureRelief({...next,categories},nextContext);
 }
@@ -1235,6 +1251,14 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
   warnings.push('Les tessel·les vectorials estan generalitzades. Aquesta prova no substitueix cartografia topogràfica de precisió.');
   const containsGroundRoad=polygonTester(roadPoly),approachMask=merge(bridges.flatMap(b=>b.approaches.plans.map(p=>intersect(p.footprint,rect))).filter(p=>p.length)),containsApproach=polygonTester(approachMask);
   const context={ground,verticalReference,proj,rect,forest,land,roadPoly,roadOnlyPoly,railPoly,waterPoly,bridges,tunnelMask,infrastructureApi,containsForest:polygonTester(forest),containsLand:polygonTester(land),containsRoad:p=>containsDeck(p)||containsApproach(p)||containsGroundRoad(p),width,height,scale,staticWarnings:warnings,options:{...options,size,exaggeration,resolution,roadRise,railRise},meta:{...data.meta,tunnels:tunnelMetadata,railways:{incrementMM:railRise,surfaceRiseMM:roadRise+railRise,method:'cartographic railway platform; physical millimetres, no vertical exaggeration',groundPresent:railPoly.length>0,bridges:bridges.filter(b=>b.railway).length},infrastructure:deckCount?{...data.infrastructure,provider:knownCount?'Specific overrides and estimated transport platforms':'Estimated transport platforms from OSM/DEM',items:undefined,count:deckCount,knownCount,proceduralCount,deckProfiles:bridges.map(b=>({id:b.id,mainRoad:b.mainRoad,generatedSurfaceAdjustmentMM:b.generatedSurfaceAdjustmentMM,estimated:b.estimated,elevationMethod:b.elevationMethod,widthMetres:b.widthMetres,sourceFeatureIds:b.sourceFeatureIds,railway:b.railway,surfaceRiseMM:b.surfaceRise,printableThicknessMM:b.thickness})),printableThicknessMM:.6+roadRise,railwayPrintableThicknessMM:bridges.some(b=>b.railway)?.6+roadRise+railRise:undefined}:null},diagnostics:terrain.diagnostics,staticBase,terrain,singularModels:data.singularModels,transportSource:{infrastructure:data.infrastructure,features:data.features,singularModels:data.singularModels},buildingGeometry,buildingFeatures:buildingGeometry?.features??data.features};
+  if(terrain.landforms.length){
+    const cut=measure('terrain.singular-openings',()=>carveCatalogueLandforms(staticBase,terrain.landforms,infrastructureApi,verticalReference,scale*exaggeration));
+    context.staticBase=staticBase=cut.parts;
+    context.activeLandforms=terrain.landforms.filter(({model})=>cut.applied.some(entry=>entry.id===model.id));
+    context.meta.catalogueLandforms=cut.applied;
+    context.meta.catalogueLandformOmissions=cut.skipped;
+    warnings.push(...landformWarnings(cut));
+  }
   context.meta.majorRoads=majorMetadata;
   if(regionalMetadata||surfaceRoad)context.meta.surfaceRoads=regionalMetadata??surfaceRoad.metadata;
   context.meta.transportContinuity={widthPolicy:'mapped width, then lanes, then road class; scale-sensitive floor; independent of structural deck and bore',minimumCarriagewayMM:MIN_ROAD_WIDTH_MM,connections:bridges.map(b=>({id:b.id,identity:b.identity,carriagewayWidthMM:b.roadWidth,joins:b.approaches.plans.map(p=>({startWidthMM:p.startWidthMM,endWidthMM:p.endWidthMM,targetFeatureIds:p.targetFeatureIds,routingRepairs:p.routingRepairs})),unconnectedEnds:b.approaches.missed})),portals:openedTunnels.flatMap(t=>t.portalConnections||[])};
@@ -1334,7 +1358,7 @@ function prepareBuildingGeometry(ctx,config,progress,preview,measure=(_phase,run
   const bridgeSupports=new Map();
   for(const bridge of ctx.bridges||[])for(const id of bridge.supportFeatureIds||[])bridgeSupports.set(id,bridge.mask);
   if(buildingMode!=='none'&&!urbanCover)for(const model of ctx.singularModels||[]){
-    if(model.kind==='bridge')continue;
+    if(model.kind&&model.kind!=='building')continue;
     try{
       const landmark=prepareLandmark(ctx,model,config);
       if(!landmark)continue;
@@ -1436,7 +1460,7 @@ export function updateBuildings(previous,layer={},changes={},progress=()=>{},pre
   const old=previous.context,options={...old.options,...changes},config=buildingOptions(options),{buildingMode,maxBuildingHeight}=config;
   const switchingHistory=Object.hasOwn(layer,'historical');
   const historical=switchingHistory?layer.historical??undefined:old.meta.historical;
-  const ctx={...old,options:{...options,...config},meta:{...(layer.meta||old.meta),historical,infrastructure:old.meta.infrastructure,tunnels:old.meta.tunnels,railways:old.meta.railways,majorRoads:old.meta.majorRoads,transportContinuity:old.meta.transportContinuity},buildingFeatures:layer.features||old.buildingFeatures,vegetationCache:null};
+  const ctx={...old,options:{...options,...config},meta:{...(layer.meta||old.meta),historical,infrastructure:old.meta.infrastructure,tunnels:old.meta.tunnels,railways:old.meta.railways,majorRoads:old.meta.majorRoads,transportContinuity:old.meta.transportContinuity,catalogueLandforms:old.meta.catalogueLandforms,catalogueLandformOmissions:old.meta.catalogueLandformOmissions},buildingFeatures:layer.features||old.buildingFeatures,vegetationCache:null};
   const {width,height,ground,scale,rect}=ctx;
   const cached=old.buildingGeometry;
   preview?.stage('buildings','Calculant els edificis…');
@@ -1547,7 +1571,7 @@ export function updateVegetation(previous,changes={},progress=()=>{},preview){
   const make=(x,y,manual=false,random=rand)=>{
     const rx=dimensions.radius*(.85+random()*.3),ry=dimensions.radius*(.85+random()*.3),rz=dimensions.radius*(treeType==='round'?.9+random()*.2:treeType==='tall'?1.35+random()*.25:.95+random()*.5),rotation=random()*Math.PI*2,phase=random()*Math.PI*2,r=Math.max(rx,ry)*1.06,p=[x,y];
     const contains=manual?containsLand:containsForest;
-    if(x<=r||y<=r||x>=width-r||y>=height-r||!contains(p)||containsRoad(p)||containsBuilding(p))return;
+    if(x<=r||y<=r||x>=width-r||y>=height-r||!contains(p)||containsRoad(p)||containsBuilding(p)||!clearOfLandforms(ctx.activeLandforms,x,y,r))return;
     const footprint=Array.from({length:12},(_,i)=>[x+Math.cos(i/12*Math.PI*2)*r,y+Math.sin(i/12*Math.PI*2)*r]);
     if(footprint.every(q=>contains(q)&&!containsBuilding(q)&&!containsRoad(q)))return {x,y,manual,ground:ground(x,y),rx,ry,rz,rotation,phase,crownTaper};
   };

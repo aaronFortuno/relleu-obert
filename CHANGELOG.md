@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.23.29 — 2026-11-07
+
+- Pilot de la Roca Foradada de Montserrat. El motor combina el relleu local del catàleg amb la resta del terreny i incorpora l’obertura quan l’escala i el detall la poden representar.
+
 ## v0.23.28 — 2026-11-07
 
 - El viaducte de Millau es carrega del catàleg de models singulars. Conserva el tauler corbat, la distribució de piles i els pilons. Els tirants s’inclouen quan l’escala de la maqueta els permet representar.

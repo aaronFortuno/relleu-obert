@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-07 · v0.23.28**. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-07 · v0.23.29**. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -12,7 +12,7 @@ Actualitzat el **2026-11-07 · v0.23.28**. [Historial](HISTORIAL.md).
 | **Paviment de superfície** | RO-051, RO-052 | El retall girat mostra millora al laminador i es dona per bo de moment. La impressió física i els enllaços pendents queden en seguiment. [Control de l’Hospitalet](RO-052-CONTINUITAT.md#talls-locals-sota-els-taulers-v02319) |
 | **Seguiment de les estructures** | RO-033, RO-034, RO-050 | Registrar noves incidències amb retall i escala. A Sant Salvador, dos perfils segueixen el terreny pel pendent dels enllaços. El túnel a 1:20.000 té les dues boques comprovades al 3MF. El pas de Montgròs es conserva al cupó laminat. [Controls de vies](RO-051-PERFILS-VIARIS.md#transicions-pendents-a-la-v0220) · [Montgròs](RO-033-CONTROLS-PROCEDIMENTALS.md#laminat-del-cupó-de-montgròs) |
 | **Validació en paral·lel** | RO-024, RO-033, RO-046, RO-054, RO-055 | Revisar Tamariu 40 × 45 cm i Amsterdam amb totes les capes al laminador. També queden la recuperació d’un projecte girat i els talls dels Rasos–Gallina Pelada. |
-| **Pilot de relleu rocós** | RO-023, RO-035 | Contrastar els cupons MET5 i MDT de 50 cm del Cavall Bernat. Per a les cavitats, obtenir una malla reutilitzable de la Foradada o georeferenciar els Degotalls. [Resultats](RELLEU-ROCOS.md#pilot-de-detall-local-amb-el-mdt-de-50-cm) |
+| **Pilot de relleu rocós** | RO-023, RO-035 | Laminar la Foradada i contrastar la forma amb les dues boques. Comparar els cupons del Cavall Bernat i recuperar la georeferenciació dels Degotalls. [Resultats](RELLEU-ROCOS.md) |
 | **Catàleg de llocs singulars** | RO-032, RO-033 | Torre Glòries validada al visor. Millau verificat a tres retalls. Validar al laminador les llums i els tirants del viaducte. [Controls de Millau](RO-033-CONTROLS-PROCEDIMENTALS.md#pilot-de-millau-al-catàleg--v02328) |
 
 Els encàrrecs independents avancen en paral·lel. Cada bloc validat té el seu commit i es manté una sola prova pesada alhora. Els casos que requereixen inspecció al laminador poden quedar pendents mentre avancen altres línies.
@@ -52,7 +52,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 
 | ID | Prioritat | Estat | Abast |
 | -------------------------------------------------------- | --------- | ------------------ | -------------------------------------------------------------- |
-| [RO-035](#ro-035--cavitats-i-relleus-amb-voladissos) | P3 | Dades 3D pendents | Coves, baumes i arcs naturals; un MDT no en descriu l’interior |
+| [RO-035](#ro-035--cavitats-i-relleus-amb-voladissos) | P3 | Pilot al catàleg | La Foradada té una obertura aproximada verificada en malla. Laminar-la i buscar dades 3D per a altres cavitats. |
 | [RO-012](#ro-012--presentació-realista-del-model-imprès) | P3 | Objectiu redefinit | Imatge estàtica fotorealista del model amb entorn escolar |
 | [RO-011](#ro-011--comptador-dexportacions-i-umami) | P3 | Per estudiar | Definir recompte i font real abans de publicar una xifra |
 
@@ -143,7 +143,7 @@ Obertures estimades amb volta parabòlica i paviment del material de la via. Rev
 
 ### RO-035 — Cavitats i relleus amb voladissos
 
-El cupó local dels Degotalls a 1:200 té bon resultat segons l’usuari. Falta la transformació per integrar-lo al terreny. La Roca Foradada serà el control d’obertura passant. Cal trobar dades 3D de les boques i la volta, validar l’encaix i comprovar la llum al laminador. El mateix flux ha de servir en altres retalls amb dades equivalents. [Pilot i fonts](RELLEU-ROCOS.md)
+El cupó local dels Degotalls a 1:200 té bon resultat segons l’usuari. Falta la transformació per integrar-lo al terreny. La Foradada combina una carena mesurada i una cavitat aproximada, amb pas obert i volta comprovats a dues escales, també en un 3MF de dues plaques. Queden el laminat, el contrast visual de les boques i la cerca de la malla fotogramètrica original. [Pilot i fonts](RELLEU-ROCOS.md#roca-foradada--control-dobertura-passant)
 
 ### RO-044 — Catastre per seccions i recuperació de configuracions
 

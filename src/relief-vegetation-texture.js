@@ -1,5 +1,6 @@
 import {sampleReliefMask} from './relief-forest.js';
 import {RELIEF_VEGETATION_DEFAULTS,validVegetationHeight,validVegetationNoise} from './relief-vegetation-options.js';
+import {clearOfLandforms} from './catalogue-landforms.js';
 
 const unit=value=>Math.max(0,Math.min(1,value));
 const smooth=value=>value*value*(3-2*value);
@@ -63,6 +64,7 @@ export function reliefVegetationTexture(grid,context,options={}){
     if(context.waterMask)coverage[index]=Math.min(coverage[index],-2*context.waterMask[index]-1);
     if(oceanWeights)coverage[index]=Math.min(coverage[index],-oceanWeights[index]);
     if(lakeWeights)coverage[index]=Math.min(coverage[index],-lakeWeights[index]);
+    if(context.activeLandforms?.length&&!clearOfLandforms(context.activeLandforms,col*dx,row*dy,feather))coverage[index]=-1;
     // Keep noise defined on both sides, so clipping only feathers the height.
     const variation=amplitude?amplitude*noise(col*dx/wavelength,row*dy/wavelength):0;
     raise[index]=(minimum+variation)*strength[index];

@@ -68,7 +68,8 @@ try{
   }
   if(data.type==='build'||data.type==='vegetation'){
     const observer=data.type==='build'?buildObserver(timing,data.options.pureRelief):null;
-    if(observer&&!data.options.pureRelief&&!api&&(data.options.surfaceRoads||data.options.estimatedTunnels||data.options.majorRoads||data.region.singularModels?.length||data.region.infrastructure?.items?.length||data.region.features?.some(f=>f.properties?.sourceLayer==='transportation'&&f.properties.brunnel==='bridge'))){timing.mark('initialization','Preparant el motor de geometria…');progress('Preparant el motor de geometria…');api=await Module({locateFile:()=>wasmURL});api.setup();}
+    const needsSolidEngine=data.region?.singularModels?.length||!data.options.pureRelief&&(data.options.surfaceRoads||data.options.estimatedTunnels||data.options.majorRoads||data.region?.infrastructure?.items?.length||data.region?.features?.some(f=>f.properties?.sourceLayer==='transportation'&&f.properties.brunnel==='bridge'));
+    if(observer&&!api&&needsSolidEngine){timing.mark('initialization','Preparant el motor de geometria…');progress('Preparant el motor de geometria…');api=await Module({locateFile:()=>wasmURL});api.setup();}
     current=observer?buildModel(data.region,data.options,observer.progress,api,timing.detail,observer):updateVegetation(current,data.options,progress);self.postMessage({type:'model',model:{...current,parts:undefined,reliefGrid:undefined,categories:data.type==='vegetation'?current.categories.filter(p=>p.id==='trees'):current.categories},vegetation:data.type==='vegetation',timing:timing?.finish()});
   }
   if(data.type==='relief'){
@@ -104,7 +105,7 @@ try{
       const pureRelief=current.provenance?.options?.pureRelief;
       let model=pureRelief?current:groupMaterials(current,materialCount,assignments);
       progress('Preparant els talls de les peces…');
-      let pieces=model.reliefGrid&&splitPureRelief(model,plan,progress);
+      let pieces=model.reliefGrid&&!model.provenance.catalogueLandforms?.length&&splitPureRelief(model,plan,progress);
       if(!pieces){
         if(!api){api=await Module({locateFile:()=>wasmURL});api.setup();}
         pieces=splitModel(model,api,plan,progress);

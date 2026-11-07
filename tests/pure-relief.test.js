@@ -94,14 +94,16 @@ test('an inland base uses the lowest remaining elevation after a lake is levelle
 
 test('pure relief survives missing remote hydrography without loading full model layers',async()=>{
   const previous=globalThis.fetch,requests=[];
+  const catalogue='https://raw.githubusercontent.com/aaronFortuno/open-place-models/main/catalog.geojson';
   globalThis.fetch=async url=>{
     requests.push(String(url));
+    if(String(url)===catalogue)return Response.json({type:'FeatureCollection',schemaVersion:1,features:[]});
     return String(url).startsWith('https://tiles.mapterhorn.com/')?new Response(new Uint8Array([1])):new Response(null,{status:503});
   };
   try{
     const data=await loadRegion({bbox,pureRelief:true,decodeElevation:async(_,tile)=>({...tile,size:2,elev:new Float32Array([100,100,100,100])})});
     assert(requests.some(url=>url==='https://tiles.openfreemap.org/planet'));
-    assert(requests.every(url=>url.startsWith('https://tiles.mapterhorn.com/')||url==='https://tiles.openfreemap.org/planet'));
+    assert(requests.every(url=>url.startsWith('https://tiles.mapterhorn.com/')||url==='https://tiles.openfreemap.org/planet'||url===catalogue));
     assert.deepEqual(data.features,[]);
     assert.deepEqual(data.waterways,[]);
     assert.deepEqual(data.forests,[]);

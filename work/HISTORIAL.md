@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-07. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.23.29 — Pilot de la Roca Foradada
+
+RO-035 integra un pedaç de carena i una obertura aproximada d’Open Place Models. Els 3MF de Model complet a 1:2.000 i Relleu pur a 1:10.000 passen l’auditoria i conserven el pas i la volta. El segon manté el forat després de canviar l’exageració i el gruix de la base i en dividir el model en dues plaques. Pendent de laminar. [Controls](RELLEU-ROCOS.md#roca-foradada--control-dobertura-passant)
+
 ## v0.23.28 — Viaducte singular de Millau
 
 RO-033 incorpora Millau des d’Open Place Models. El control conserva set piles de projecte i dos enllaços a l’A75 als dos retalls sencers. Un tercer retall, girat i parcial, conserva tres piles i tanca el tauler als límits. L’usuari valida el laminat del cupó de Tamariu de dues plaques. [Controls de Millau](RO-033-CONTROLS-PROCEDIMENTALS.md#pilot-de-millau-al-catàleg--v02328)
