@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-07. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.23.19 — Talls locals sota les rasants a l’Hospitalet
+
+En repetir el retall dens, el motor conserva 19 perfils suaus i retorna al paviment habitual en un sol tram que falla. Les tres malles per material passen l’auditoria. Els 39 enllaços registrats dels taulers cartografiats es mantenen. El pas de vianants tapat i els 13 extrems sense enllaç continuen pendents. [Control](RO-052-CONTINUITAT.md#talls-locals-sota-els-taulers-v02319)
+
 ## v0.23.18 — Control viari dens a l’Hospitalet
 
 El subretall complet confirma una fallada col·lectiva en assignar el material de 20 perfils viaris. Els dos modes exporten la mateixa geometria. El pilot aïllat genera un ramal sobre dues calçades amb una llum calculada mínima d’1,11 mm i enllaços continus. L’error d’integració i el pas de vianants tapat queden pendents. [Controls](RO-052-CONTINUITAT.md#xarxa-densa-a-lhospitalet-v02318)

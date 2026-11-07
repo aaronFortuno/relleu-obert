@@ -25,3 +25,36 @@ export function carveTransportDecks(surfaceParts,decks,api,limits={},includeRail
     return {parts:surfaceParts,warnings:[`No s’ha pogut assignar el volum dels taulers al material de carretera; es conserva el terreny anterior. ${error.message}`],metadata:{applied:false,count:0,error:error.message}};
   }
 }
+
+// Try the single transaction first. On failure, commit each successful cut
+// on the result of the previous cut. Rejected slabs are returned to the caller
+// so it can restore their ordinary road footprints before rebuilding.
+export function carveIndependentTransportDecks(surfaceParts,decks,api){
+  const limits={floatRoundoff:true},initial=carveTransportDecks(surfaceParts,decks,api,limits);
+  if(initial.metadata.applied||!decks.length)return {...initial,rejected:[]};
+  let parts=surfaceParts,attempts=1,count=0;
+  const rejected=[],warnings=[],removedMM3={};
+  function apply(group,result){
+    if(!result&&attempts<32){
+      attempts++;
+      result=carveTransportDecks(parts,group,api,limits);
+    }
+    if(result?.metadata.applied){
+      parts=result.parts;
+      count+=group.length;
+      warnings.push(...result.warnings);
+      for(const [id,volume] of Object.entries(result.metadata.removedMM3))removedMM3[id]=(removedMM3[id]??0)+volume;
+    }else if(group.length===1||!result){
+      const error=result?.metadata.error??'S’ha esgotat el pressupost de talls locals.';
+      for(const deck of group)rejected.push({id:deck.id,error});
+    }else{
+      const mid=Math.floor(group.length/2);
+      apply(group.slice(0,mid));
+      apply(group.slice(mid));
+    }
+  }
+  apply(decks,initial);
+  if(!count)return {...initial,rejected};
+  return {parts,warnings,rejected,metadata:{applied:true,count,attempts,removedMM3,
+    method:'independent-cuts',initialError:initial.metadata.error}};
+}

@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.23.19 — 2026-11-07
+
+- Si falla el tall conjunt del terreny sota les rasants suaus, el motor prova grups més petits i recupera el paviment habitual només als perfils descartats. Al retall dens de l’Hospitalet es conserven 19 dels 20 perfils preparats.
+
 ## v0.23.18 — 2026-11-07
 
 - Control de la xarxa densa de l’Hospitalet amb dos modes de paviment i un cupó del ramal sobre dues calçades. La prova identifica una fallada en separar els materials que fa retornar tots els perfils suaus del retall al càlcul habitual. Reproducció amb `scripts/check-dense-transport.mjs`.

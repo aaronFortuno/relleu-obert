@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-07 · v0.23.18**. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-07 · v0.23.19**. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -8,7 +8,7 @@ Actualitzat el **2026-11-07 · v0.23.18**. [Historial](HISTORIAL.md).
 | --- | --- | --- |
 | **Temps de generació** | RO-053 | Primera optimització d’edificis mesurada amb la mateixa malla. Tornar a mesurar Amsterdam complet i aïllar la integració de les vies principals. [Mesures](RO-053-TEMPS.md) |
 | **Ajustos d’impressió** | RO-056 | Validar els tiradors del plànol i laminar dues peces contigües de mides diferents. Després, estudiar els perfils d’impressora i la mida de cada placa. |
-| **Paviment de superfície** | RO-051, RO-052 | El control dens de l’Hospitalet reprodueix el retorn col·lectiu de 20 perfils suaus. Aïllar la fallada per grup de taulers i verificar les unions i la llum dels passos amb la xarxa completa. [Control de l’Hospitalet](RO-052-CONTINUITAT.md#xarxa-densa-a-lhospitalet-v02318) |
+| **Paviment de superfície** | RO-051, RO-052 | El retall dens conserva 19 dels 20 perfils suaus amb talls locals. Revisar el 3MF al laminador i resoldre els extrems i el pas de vianants pendents. [Control de l’Hospitalet](RO-052-CONTINUITAT.md#talls-locals-sota-els-taulers-v02319) |
 | **Seguiment de les estructures** | RO-033, RO-034, RO-050 | Registrar noves incidències amb retall i escala. A Sant Salvador, dos perfils segueixen el terreny pel pendent dels enllaços. El túnel a 1:20.000 té les dues boques comprovades al 3MF. El pas de Montgròs es conserva al cupó laminat. [Controls de vies](RO-051-PERFILS-VIARIS.md#transicions-pendents-a-la-v0220) · [Montgròs](RO-033-CONTROLS-PROCEDIMENTALS.md#laminat-del-cupó-de-montgròs) |
 | **Validació en paral·lel** | RO-024, RO-033, RO-046, RO-054, RO-055 | Revisar Tamariu 40 × 45 cm i Amsterdam amb totes les capes al laminador. També queden la recuperació d’un projecte girat i els talls dels Rasos–Gallina Pelada. |
 | **Pilot de relleu rocós** | RO-023, RO-035 | Després dels temps de generació, reprendre el Cavall Bernat i el Pedraforca, i el cupó georeferenciat dels Degotalls per als voladissos. [Resultats](RELLEU-ROCOS.md) |
@@ -27,7 +27,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | [RO-053](#ro-053--flux-de-treball-per-etapes) | P1 | Taller mòbil, canvi de mida i guia de primera maqueta | Validar el taller en telèfons reals, la utilitat de la guia i el contrast de les guies de tall al bosc |
 | [RO-033](#ro-033--ponts-i-viaductes) | P1 | Montgròs validat al cupó. Obertures mesurades a Amsterdam i Empuriabrava | Laminar els ponts curts i comprovar les llums en una placa completa |
 | [RO-034](#ro-034--túnels-imprimibles) | P1 | Dues boques i rasant compartida verificades al cupó 3MF | Validar el cupó i revisar el tram cobert de Sant Salvador al laminador |
-| [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | Retorn de tots els perfils suaus reproduït a la xarxa densa | Aïllar l’error de separació de material i conservar els perfils vàlids |
+| [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | 19 perfils recuperats i un de descartat al retall dens | Validar el 3MF, revisar el tram descartat i comprovar altres retalls |
 | [RO-052](#ro-052--continuïtat-i-amplada-del-traçat-viari) | P1 | Ramal sobre dues calçades verificat al cupó. Interferència amb un camí de vianants en el model complet | Comprovar la llum i els enllaços després d’integrar cada grup de vies |
 | [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió) | P1 | Filament per peça validat a Montserrat. Projecte de quatre plaques obert a Bambu Studio | Contrastar el laminat de les quatre peces de Tamariu |
 | [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts) | P1 | Fonts en estudi | Comparació de parts i petjades en segona zona |
@@ -162,7 +162,7 @@ Al segon retall de l’Hospitalet, les cotes desconegudes d’alguns creuaments 
 
 Els cupons de Mataró i Palamós aïllen l’encaix de la calçada i el tractament dels senders sobre el MET5. L’usuari els valida al 3MF. El pas inferior de Mataró queda obert a 1:3.333 i té una cruïlla seca d’una sola cota a 1:8.000. Queda integrar la decisió de nivell a la xarxa completa i provar encreuaments amb més de dos eixos. [Cupons i mesures](RO-052-CONTINUITAT.md#pas-inferior-i-cruïlla-a-nivell-a-mataró-v02317)
 
-Al subretall dens de l’Hospitalet, la transacció de material torna els 20 perfils preparats al càlcul habitual. El ramal `1647439892` conserva les dues calçades inferiors en un cupó amb les cotes del mateix retall. Queda delimitar el grup que falla dins de la transacció i mantenir les vies correctes fora del grup. [Mesures i reproducció](RO-052-CONTINUITAT.md#xarxa-densa-a-lhospitalet-v02318)
+Al subretall dens de l’Hospitalet, els talls locals aïllen la fallada de la via `5544604682` i conserven 19 perfils suaus que abans es perdien tots. El ramal `1647439892` conserva les dues calçades inferiors en un cupó amb les cotes del mateix retall. Queden pendents el laminat, els extrems que encara segueixen el terreny i els creuaments amb llum insuficient. [Mesures i reproducció](RO-052-CONTINUITAT.md#talls-locals-sota-els-taulers-v02319)
 
 ### RO-052 — Continuïtat i amplada del traçat viari
 

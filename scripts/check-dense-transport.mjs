@@ -16,7 +16,9 @@ import {auditThreeMF} from '../src/three-mf-audit.js';
 const mode=process.argv[2]??'regional';
 assert(['regional','independent'].includes(mode),'Tria regional o independent.');
 if(freemem()/2**30<2.5)throw Error('Calen almenys 2,5 GiB lliures per iniciar el control.');
-const directory=new URL('../output/hospitalet-xarxa/',import.meta.url);
+const label=process.argv[3];
+assert(!label||/^[a-z0-9-]+$/.test(label),'Etiqueta de sortida invàlida.');
+const directory=new URL(`../output/hospitalet-xarxa${label?'-'+label:''}/`,import.meta.url);
 const source=JSON.parse(await readFile(new URL('../output/hospitalet2-repro/region.json',import.meta.url)));
 const tiles=list=>list?.map(({elev,...tile})=>({...tile,elev:Float32Array.from(elev,value=>value??NaN)}));
 const centre=[41.35131,2.05543],sideM=550,sizeMM=110;
@@ -132,7 +134,9 @@ const trials=decks.map(trial).filter(Boolean),completion=infrastructure?.complet
 const report={mode,centre,sideM,sizeMM,scale:1000/proj.scale,settings,milliseconds,counts,
   terrain:region.meta.terrain?.provider,triangles:audit.triangles,parts:audit.parts.map(({name,triangles,closed,errors})=>({name,triangles,closed,errors})),
   pavement:{coverage:surfaceRoads?.coverage,fragments:surfaceRoads?.accepted,omissions:surfaceRoads?.omissionCounts},
-  major:{applied:majorRoads?.count,attempted:majorRoads?.attempted,error:majorRoads?.error,omissions:majorRoads?.omissions},tunnels:tunnels?.profiles?.length??0,
+  major:{applied:majorRoads?.count,attempted:majorRoads?.attempted,error:majorRoads?.error,recoveryPass:majorRoads?.recoveryPass,omissions:majorRoads?.omissions,
+    replacement:majorRoads?.materialReplacement,profiles:majorRoads?.profiles?.map(({id,sourceFeatureIds,maximumGrade})=>({id,sourceFeatureIds,maximumGrade}))},
+  tunnels:tunnels?.profiles?.length??0,
   bridges:{mapped:completion.filter(d=>!d.mainRoad).length,joins:completion.filter(d=>!d.mainRoad).reduce((n,d)=>n+d.approaches.length,0),
     missed:completion.filter(d=>!d.mainRoad).reduce((n,d)=>n+d.unconnectedEnds.length,0),unsupported:completion.filter(d=>d.unsupportedSpans.length).map(d=>d.id)},
   probes:measureProbes(),pilot:trials};
@@ -147,6 +151,7 @@ report.geometryHash=createHash('sha256').update(xml.slice(resources)).digest('he
 await writeFile(new URL(`${mode}.json`,directory),JSON.stringify(report,null,2)+'\n');
 await writeFile(new URL(`${mode}.3mf`,directory),bytes);
 console.log(JSON.stringify({mode,milliseconds,counts,triangles:audit.triangles,pavement:report.pavement,bridges:report.bridges,
+  majorProfiles:report.major.applied,materialReplacement:report.major.replacement,majorError:report.major.error,
   pilot:trials.reduce((out,t)=>({...out,[t.status]:(out[t.status]??0)+1}),{})}));
 
 if(mode==='regional'){

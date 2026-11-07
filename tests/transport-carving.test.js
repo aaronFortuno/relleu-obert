@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import Module from 'manifold-3d';
-import {carveTransportDecks} from '../src/transport-carving.js';
+import {carveIndependentTransportDecks,carveTransportDecks} from '../src/transport-carving.js';
 import {selectSurfaceComponents} from '../src/surface-components.js';
 import {auditPart} from '../src/solid-audit.js';
 const api=await Module();api.setup();
@@ -50,6 +50,22 @@ test('empty deck lists are a no-op; failed geometry or limits roll back every or
     assert.match(result.warnings[0],/taulers.*carretera/);assert.doesNotMatch(result.warnings[0],/túnel/);
   }
   assert.deepEqual(source,before);
+});
+
+test('independent cuts recover the valid roads on both sides of a rejected slab',()=>{
+  const source=box('terrain'),left=box('left',8,30,9.5,10.2,10,15),right=box('right',60,85,9.5,10.2,10,15);
+  const malformed=box('broken',40,50,9.5,10.2,10,15);
+  malformed.faces=malformed.faces.slice(3);
+  const result=carveIndependentTransportDecks([source],[left,malformed,right],api);
+  assert.equal(result.metadata.method,'independent-cuts');
+  assert.equal(result.metadata.count,2);
+  assert.deepEqual(result.rejected.map(part=>part.id),['broken']);
+  assert.deepEqual(auditPart(result.parts[0]).errors,[]);
+  const ground=solid(result.parts[0]);
+  try{
+    const top=x=>ground.rayCast([x,12,12],[x,12,0]).map(hit=>hit.position[2])[0];
+    assert.equal(top(20),9.5);assert.equal(top(45),10);assert.equal(top(75),9.5);
+  }finally{ground.delete();}
 });
 
 test('shared selection restores source ordering and can append a new local material',()=>{

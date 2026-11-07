@@ -1,5 +1,15 @@
 # RO-052 — Continuïtat i amplada de la calçada
 
+## Talls locals sota els taulers, v0.23.19
+
+La calçada amb rasant pròpia ja es construeix com un sòlid. Per preservar l’assignació de materials, es retalla el volum que comparteix amb el substrat i s’hi munten els enllaços i els suports. Abans, si el tall de tots els taulers fallava, es recuperava el paviment sobre el terreny a tot el retall. Ara el motor divideix el tall en grups i conserva els talls vàlids. Si cal descartar un perfil, es tornen a calcular les petjades perquè aquell tram recuperi el paviment habitual sense deixar buits. La recuperació té un pressupost acotat de talls i de repeticions del model.
+
+El mateix subretall de 550 m de l’Hospitalet, a 1:5.000 i amb arbres desactivats, passa de 0 a 19 perfils suaus. El tall que falla és el de `5544604682` (`Not manifold`). Els 19 restants es tallen conjuntament després d’excloure aquest perfil. Entre els recuperats hi ha `501496602`, `428252032` i `354819572`. El temps local passa de 9,6 a 21,1 s. Les tres malles de material passen l’auditoria abans de l’exportació.
+
+Els 26 taulers cartografiats continuen amb 39 enllaços, 13 extrems sense resoldre i cinc taulers amb algun tram sense suport suficient. El pas del ramal `428252022` sobre el camí de vianants `1351597090` continua tapat a la sonda. Aquest control mesura la recuperació de les rasants i deixa la inspecció visual i el laminat pendents.
+
+Reproducció amb `node --max-old-space-size=512 scripts/check-dense-transport.mjs regional talls-locals`. El 3MF i el diagnòstic es desen a `output/hospitalet-xarxa-talls-locals/`, amb l’exportació anterior disponible a `output/hospitalet-xarxa/` per comparar.
+
 ## Xarxa densa a l’Hospitalet, v0.23.18
 
 Subretall de 550 × 550 m centrat a `41.35131, 2.05543`, amb la còpia de `hospitalet2.json`, MET5 i edificis ICGC. Peça de 110 × 110 mm a 1:5.000, detall 36, exageració ×1,5 i arbres desactivats. S’hi compten 31 fragments d’autopista o via ràpida, 30 de ramals, 5 d’altres carreteres, 26 de camins i 15 de ferrocarril.

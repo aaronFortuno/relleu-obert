@@ -34,7 +34,7 @@ import {roadWidthMM,MIN_ROAD_WIDTH_MM,isPrincipalRoad} from './transport-width.j
 import {transportIdentity,compatibleTransport,continuationRoute} from './transport-network.js';
 import {crossSectionFractions} from './transport-sections.js';
 import {fitMajorRoadItem,knownBridgeClearance,openedTunnelClearance} from './major-road-fit.js';
-import {carveTransportDecks} from './transport-carving.js';
+import {carveIndependentTransportDecks,carveTransportDecks} from './transport-carving.js';
 import {subtractVoids} from './solid-voids.js';
 import {planSurfaceRoad} from './surface-road.js';
 import {planClassifiedRoadCoupon,planRegionalSurfaceRoads} from './regional-surface-roads.js';
@@ -837,7 +837,7 @@ function phaseTimer(diagnostics){
   };
 }
 
-function buildTransport(data,options,terrain,progress,infrastructureApi,diagnostics,buildingGeometry,excludedProfiles=new Map(),preview){
+function buildTransport(data,options,terrain,progress,infrastructureApi,diagnostics,buildingGeometry,excludedProfiles=new Map(),preview,recoveryPass=0){
   preview?.stage('transport','Calculant les vies…');
   const measure=phaseTimer(diagnostics);
   const {size,exaggeration,resolution,proj,rect,elevationAt,transport,roadPieces,railPieces,waterPoly,land,green,cropped,ground,verticalReference}=terrain;
@@ -919,7 +919,8 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
       if(omission)majorOmissions.push({sourceFeatureIds:profile.sourceFeatureIds,...omission});
     }catch(error){majorOmissions.push({sourceFeatureIds:profile.sourceFeatureIds,reason:error.message});}
   }
-  let majorMetadata={...majorPlan.metadata,enabled:majorRoadsEnabled,applied:false,count:acceptedMajor.length,omissions:[...(majorPlan.metadata.omissions||[]),...majorOmissions],omitted:(majorPlan.metadata.omitted||0)+majorOmissions.length};
+  let majorMetadata={...majorPlan.metadata,enabled:majorRoadsEnabled,applied:false,count:acceptedMajor.length,
+    ...(recoveryPass?{recoveryPass}:{}),omissions:[...(majorPlan.metadata.omissions||[]),...majorOmissions],omitted:(majorPlan.metadata.omitted||0)+majorOmissions.length};
   warnings.push(...majorPlan.warnings,...majorOmissions.map(p=>'Perfil principal omès: '+p.reason));
   const fallbackMajor=message=>{
     const restored=measure('major.fallback',()=>buildTransport(data,{...options,majorRoads:false},terrain,progress,infrastructureApi,diagnostics,buildingGeometry,undefined,preview),{reason:message});restored.warnings.unshift(message);
@@ -955,11 +956,11 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
   }
   const recoverProfiles=(ids,message)=>{
     const rejected=new Set(ids);
-    if(excludedProfiles.size>=3||acceptedMajor.every(item=>rejected.has(item.id)))return fallbackMajor(message);
+    if(recoveryPass>=4||acceptedMajor.every(item=>rejected.has(item.id)))return fallbackMajor(message);
     const next=new Map(excludedProfiles);
     for(const id of rejected)next.set(id,message);
     if(next.size===excludedProfiles.size)return fallbackMajor(message);
-    return buildTransport(data,options,terrain,progress,infrastructureApi,diagnostics,buildingGeometry,next,preview);
+    return buildTransport(data,options,terrain,progress,infrastructureApi,diagnostics,buildingGeometry,next,preview,recoveryPass+1);
   };
   const independentPavement=options.surfaceRoads==='independent';
   if((options.surfaceRoads==='regional'||independentPavement)&&infrastructureApi){
@@ -1120,8 +1121,13 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
   if(roadRise)warnings.push(`Camins realçats ${roadRise.toLocaleString('ca')} mm sobre el terreny; és un efecte de la maqueta, no una altura real.`);
   const majorDecks=bridges.filter(b=>b.mainRoad);
   if(majorDecks.length){
-    progress('Assignant el paviment de les vies principals…');const carved=measure('major.material-replacement',()=>carveTransportDecks(staticBase,majorDecks,infrastructureApi));
-    if(!carved.metadata.applied)return fallbackMajor(carved.warnings.join(' '));
+    progress('Assignant el paviment de les vies principals…');const carved=measure('major.material-replacement',()=>carveIndependentTransportDecks(staticBase,majorDecks,infrastructureApi));
+    if(!carved.metadata.applied){
+      majorMetadata.materialReplacement={...carved.metadata,rejected:carved.rejected};
+      return fallbackMajor(carved.warnings.join(' '));
+    }
+    if(carved.rejected.length)return recoverProfiles(carved.rejected.map(deck=>deck.id),
+      'No s’ha pogut separar el paviment d’algunes vies del terreny. '+[...new Set(carved.rejected.map(deck=>deck.error))].join('. '));
     warnings.push(...carved.warnings);
     staticBase=carved.parts;majorMetadata={...majorMetadata,applied:true,materialReplacement:carved.metadata,profiles:acceptedMajor.map(({coordinates,faces,outlines,axis,terminalRoutes,terminalApproaches,...p})=>p)};
   }
