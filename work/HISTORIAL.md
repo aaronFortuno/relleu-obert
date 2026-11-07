@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-07. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.23.17 — Pas inferior i cruïlla a nivell a Mataró
+
+L’usuari valida els dos 3MF de superfície de la v0.23.16. El control següent repeteix un pas inferior real a dues escales. El tauler es conserva a 1:3.333 amb almenys 2,19 mm de llum calculada. A 1:8.000 es construeix una cruïlla seca a una sola cota amb els quatre accessos. El 3MF confirma la continuïtat als dos estreps i als quatre braços. El laminat i la integració del pilot a la xarxa completa queden pendents. [Controls](RO-052-CONTINUITAT.md#pas-inferior-i-cruïlla-a-nivell-a-mataró-v02317)
+
 ## v0.23.16 — Carreteres i senders sobre terreny real
 
 Dos cupons de 100 × 100 mm amb MET5 i vies cartografiades. El 3MF de Mataró comprova excavació i reblert sota una calçada d’autopista. El de Palamós comprova una via local en excavació i un sender amb desnivell natural. La secció transversal mesurada varia menys de 0,001 mm en tots dos. Queda pendent el laminat i el control de creuaments. [Mesures i reproducció](RO-052-CONTINUITAT.md#cupons-de-mataró-i-palamós-v02316)

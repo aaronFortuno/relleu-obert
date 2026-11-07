@@ -1,12 +1,11 @@
 import assert from 'node:assert/strict';
-import {mkdir,readFile,writeFile} from 'node:fs/promises';
+import {mkdir,writeFile} from 'node:fs/promises';
 import Module from 'manifold-3d';
 import {XMLParser} from 'fast-xml-parser';
 import {strFromU8,unzipSync} from 'fflate';
 import {buildModel,makeProjection} from '../src/geometry.js';
 import {physicalBBox} from '../src/selection.js';
-import {loadMet5} from '../src/met5.js';
-import {readVector,tileList} from '../src/sources.js';
+import {roadCouponSnapshot} from './road-coupon-sources.mjs';
 import {topSampler} from '../src/bridge-completion.js';
 import {threeMF} from '../src/export.js';
 import {auditThreeMF} from '../src/three-mf-audit.js';
@@ -18,31 +17,6 @@ const cases={
 };
 const directory=new URL('../output/road-class-coupons/',import.meta.url);
 await mkdir(directory,{recursive:true});
-
-async function request(url){
-  const response=await fetch(url,{signal:AbortSignal.timeout(25000)});
-  if(!response.ok)throw Error(`HTTP ${response.status} · ${url}`);
-  return response;
-}
-
-async function snapshot(key,bbox){
-  const file=new URL(`input-${key}.json`,directory);
-  try{return JSON.parse(await readFile(file));}
-  catch(error){if(error.code!=='ENOENT')throw error;}
-  const dem=await loadMet5(bbox);
-  assert(dem,'El retall ha d’estar cobert pel MET5.');
-  const {tiles:[template]}=await (await request('https://tiles.openfreemap.org/planet')).json();
-  const features=[];
-  for(const tile of tileList(bbox)){
-    const url=template.replace('{x}',tile.x).replace('{y}',tile.y).replace('{z}',tile.z);
-    const bytes=await (await request(url)).arrayBuffer();
-    features.push(...readVector(new Uint8Array(bytes),tile,['transportation','water','waterway']));
-  }
-  const data={meta:{bbox,terrain:dem.metadata,vectorTemplate:template},features,
-    terrainRaster:{...dem.raster,values:Array.from(dem.raster.values)}};
-  await writeFile(file,JSON.stringify(data));
-  return data;
-}
 
 const inside=([x,y],margin=0)=>[x,y].every(v=>v>=margin&&v<=sizeMM-margin);
 function visibleLength(line,project){
@@ -82,7 +56,7 @@ for(const key of process.argv.slice(2).length?process.argv.slice(2):Object.keys(
   const config=cases[key];assert(config,`Cupó desconegut: ${key}`);
   const {name,centre,sideM,road,paths,expectFill}=config;
   const bbox=physicalBBox(centre,sideM/1000,sideM/1000);
-  const data=await snapshot(key,bbox);
+  const data=await roadCouponSnapshot(new URL(`input-${key}.json`,directory),bbox);
   const proj=makeProjection(bbox,sizeMM,{widthMM:sizeMM,heightMM:sizeMM});
   const [carriageway]=selectLines(data,road,proj.project);
   const trails=paths.flatMap(id=>selectLines(data,id,proj.project).map(line=>line.feature));

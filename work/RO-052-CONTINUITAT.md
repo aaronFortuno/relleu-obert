@@ -1,5 +1,18 @@
 # RO-052 — Continuïtat i amplada de la calçada
 
+## Pas inferior i cruïlla a nivell a Mataró, v0.23.17
+
+Mateix retall real de 400 × 400 m centrat a `41.52530, 2.41143136`, amb relleu MET5, exageració ×1 i quatre traçats d’OpenStreetMap via OpenFreeMap. El tauler `343867212` connecta `343867222` amb `429180592` i creua l’autopista `3066223302`. La prova aïlla els dos eixos i conserva les dades d’aigua del retall.
+
+| Peça | Escala | Solució | Verificació del 3MF |
+| --- | --- | --- | --- |
+| 120 × 120 mm | ≈1:3.333 | Tauler i pas inferior | Mínim calculat de 2,19 mm a la petjada compartida. Mínim de 2,30 mm a les nou sondes exportades de la intersecció. Graó als estreps inferior a 0,001 mm. |
+| 50 × 50 mm | 1:8.000 | Cruïlla seca a nivell | El tauler queda per sota de la llum mínima del pilot de 0,8 mm. Un únic paviment amb quatre accessos, pendent màxim mostrejat del 10,6% i graó inferior a 0,001 mm. |
+
+El control de llum compara les calçades a tota l’àrea on se superposen. La cruïlla a nivell pren una cota de la via inferior a banda i banda del creuament, fa servir aquesta cota a totes dues calçades i limita els pendents dels quatre braços al 12% a la peça. La simplificació s’aplica a un pas entre dues carreteres seques, amb tauler estimat i dos accessos identificats. El mode `crossing-coupon` treballa amb dos eixos i una sola estructura. La integració al Model complet i la validació al laminador queden pendents.
+
+Executa `node --max-old-space-size=192 scripts/check-road-crossing.mjs` per generar `mataro-pas-inferior-120mm.3mf`, `mataro-cruilla-a-nivell-50mm.3mf` i les mesures a `output/road-class-coupons/`.
+
 ## Cupons de Mataró i Palamós, v0.23.16
 
 Els dos controls aïllen una carretera i un camí o sender cartografiats en subretalls dels diagnòstics `mataro-sud.json` i `palamos.json`. El relleu prové del MET5 de l’ICGC i les vies d’OpenStreetMap via OpenFreeMap. Peça de 100 × 100 mm, base de 5 mm i exageració vertical ×1. Es mantenen les masses d’aigua del retall. La calçada es calcula a partir d’una rasant d’eix suavitzada i preval sobre el relleu dins de la seva amplada. El sender manté la superfície natural. L’opció `classified-coupon` és un control local que admet un o dos eixos de superfície i una capa de senders.

@@ -444,14 +444,16 @@ function roadSurface(index,polygons,rise,terrain){
   return surfacePart(index,terrainSolid(polygons,(x,y)=>ground(x,y)+rise,(x,y)=>ground(x,y)-.65,width,height,resolution));
 }
 
-function buildSurfaceRoadPilot(terrain,rise,api,progress){
-  const roads=terrain.transport;
+function buildSurfaceRoadPilot(terrain,rise,api,progress,{crossingFallback=false}={}){
+  const roads=crossingFallback?terrain.transport.map(road=>({...road,gradeWindow:Math.max(6,30*terrain.proj.scale)})):terrain.transport;
   const overpass=roads.some(road=>road.brunnel==='bridge');
   const underground=roads.some(road=>road.brunnel==='tunnel');
   if(!roads.length||roads.length>(underground?3:8)||roads.some(road=>road.railway)||
       overpass&&underground||!overpass&&terrain.deckItems.length)
     throw Error('La xarxa supera els límits del pilot de paviment.');
-  return assembleSurfaceRoads(terrain,rise,api,progress,planSurfaceRoad(roads,terrain,rise,.65+rise));
+  const plan=planSurfaceRoad(roads,terrain,rise,.65+rise,{crossingFallback});
+  if(plan.crossing)return assembleSupportedRoadPlan(terrain,rise,api,progress,plan,[],'crossing-coupon');
+  return assembleSurfaceRoads(terrain,rise,api,progress,plan);
 }
 
 function* surfaceRoadPatches(route,terrain,rise){
@@ -561,6 +563,10 @@ function assembleRegionalSurfaceRoads(terrain,rise,api,progress,{regions,metadat
 
 function buildClassifiedRoadCoupon(terrain,rise,api,progress){
   const {plan,trailMask}=planClassifiedRoadCoupon(terrain,rise,.65+rise);
+  return assembleSupportedRoadPlan(terrain,rise,api,progress,plan,trailMask,'classified-coupon');
+}
+
+function assembleSupportedRoadPlan(terrain,rise,api,progress,plan,trailMask,mode){
   const profiles=plan.routes.map(route=>route.profile),sourceFeatureIds=profiles.flatMap(profile=>profile.featureIds);
   const metadata={omissionCounts:{},omissions:[]};
   const info={sourceFeatureIds,fragments:sourceFeatureIds.length,junctions:plan.junctionCount,
@@ -568,11 +574,11 @@ function buildClassifiedRoadCoupon(terrain,rise,api,progress){
   const coupon=assembleRegionalSurfaceRoads(terrain,rise,api,progress,
     {metadata,regions:[{mask:plan.mask,replaces:[],routes:plan.routes,info}]},trailMask,[]);
   if(!coupon)throw Error(metadata.omissions[0]?.detail??'El paviment del cupó no s’ha pogut construir.');
-  return {...coupon,metadata:{mode:'classified-coupon',applied:true,profiles}};
+  return {...coupon,metadata:{mode,applied:true,profiles,junctionCount:plan.junctionCount,crossing:plan.crossing}};
 }
 
 function assembleSurfaceRoads(terrain,rise,api,progress,plan){
-  const {mask,fillMask,routes,junctionCount,structure,tunnel}=plan,thickness=.65+rise;
+  const {mask,fillMask,routes,junctionCount,structure,tunnel,crossing}=plan,thickness=.65+rise;
   let sharedPavement;
   const cutters=[];
   const {originMeters,minimumSurfaceMM}=terrain.verticalReference;
@@ -620,7 +626,8 @@ function assembleSurfaceRoads(terrain,rise,api,progress,plan){
   parts[3]=road;
   const featureIds=terrain.transport.flatMap(route=>route.sourceFeatureIds);
   return {parts,mask,forest,sharedPavement,metadata:{applied:true,featureId:featureIds[0],featureIds,junctionCount,widthMM:terrain.transport[0].width,
-    pavementThicknessMM:thickness,profiles:routes.map(route=>route.profile),...(structure?{bridge:structure}:{}),...(tunnel?{tunnel}:{})}};
+    pavementThicknessMM:thickness,profiles:routes.map(route=>route.profile),...(structure?{bridge:structure}:{}),
+    ...(tunnel?{tunnel}:{}),...(crossing?{crossing}:{})}};
 }
 
 export function buildModel(data,options={},progress=()=>{},infrastructureApi=null,diagnostics=null,preview){
@@ -843,13 +850,14 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
   if(![0,.5,1].includes(roadRise))throw Error('Relleu dels camins invàlid.');
   const {railRise}=railwayOptions(options);
   let surfaceRoad=options.surfaceRoads===true?buildSurfaceRoadPilot(terrain,roadRise,infrastructureApi,progress):null;
+  if(options.surfaceRoads==='crossing-coupon')surfaceRoad=buildSurfaceRoadPilot(terrain,roadRise,infrastructureApi,progress,{crossingFallback:true});
   if(options.surfaceRoads==='classified-coupon')surfaceRoad=buildClassifiedRoadCoupon(terrain,roadRise,infrastructureApi,progress);
   let regionalMetadata;
   if(surfaceRoad){
     roadOnlyPoly=surfaceRoad.legacyRoadPoly??surfaceRoad.mask;
     roadPoly=surfaceRoad.roadPoly??surfaceRoad.mask;
     forest=surfaceRoad.forest;
-    if(surfaceRoad.metadata.bridge)deckItems.length=0;
+    if(surfaceRoad.metadata.bridge||surfaceRoad.metadata.crossing)deckItems.length=0;
   }
   const knownItems=data.infrastructure?.items||[];
   const knownCrossingSources=knownItems.filter(item=>!item.estimated).map(item=>({item,contains:polygonTester(item.outlines.map(r=>[r.map(project)]))}));

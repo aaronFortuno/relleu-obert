@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.23.17 — 2026-11-07
+
+- Control del mateix pas inferior de Mataró a dues escales. Quan hi ha prou llum, els accessos enllacen amb el tauler. Per sota del llindar del cupó, es genera una cruïlla a nivell amb els quatre accessos. Reproducció amb `scripts/check-road-crossing.mjs`.
+
 ## v0.23.16 — 2026-11-07
 
 - Dos controls de paviment amb relleu real del MET5 a Mataró i Palamós. Les carreteres tenen seccions transversals planes i els senders segueixen el terreny. La prova es genera amb `scripts/check-road-class-coupons.mjs`.
