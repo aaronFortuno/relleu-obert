@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-07. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.23.21 — Accés a la galeria i relleu proper
+
+RO-046 incorpora els ajustos de Roses, el Croscat, els dos retalls de l’Aneto i el Teide. Tamariu, Tenerife i Santorini queden validats. Tamariu es pot tornar a provar a 1:15.000. La galeria queda a la capçalera i selecciona la cerca anterior en obrir-se. [Cua de revisió](RO-046-CATALEG.md#revisió-per-a-maquetes-daula)
+
 ## v0.23.20 — Sis fitxes noves i revisió per blocs
 
 RO-046 incorpora sis fitxes a la galeria i aplica cinc correccions a partir dels diagnòstics de l’usuari. Cap de Creus queda validat. Els cinc retalls ajustats i les noves incorporacions queden a la [cua de revisió](RO-046-CATALEG.md#revisió-per-a-maquetes-daula) amb la resta de fitxes.

@@ -6,7 +6,7 @@
   <a class="brand" href="./" aria-label="Relleu Obert"><svg viewBox="0 0 38 32" aria-hidden="true"><path d="M3 27 18 3l17 24H3Z"/><path d="m8 23 10-15 11 15H8Zm5-4 5-7 5 7H13Z"/></svg><span>relleu<span class="brand-light">obert</span></span></a>
   <span class="tagline"><span data-i18n="app.tagline">Geografia que pots tocar.</span> <span data-i18n="ui.app.education">Un projecte per a l’aula.</span></span>
   <span class="header-spacer" aria-hidden="true"></span>
-  <button id="projects-open" type="button" class="header-button header-action" aria-haspopup="dialog" aria-controls="projects-dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="6" y="3" width="15" height="15" rx="2"/><path d="M3 8v11a2 2 0 0 0 2 2h11"/><circle cx="11" cy="8" r="1.5"/><path d="m7 15 4-4 3 3 2-2 4 4"/></svg><span class="gallery-label" data-i18n="header.gallery">Galeria de maquetes</span><span class="gallery-label-short" data-i18n="header.galleryShort">Galeria</span></button>
+  <button id="projects-open" type="button" class="header-button header-action" aria-haspopup="dialog" aria-controls="projects-dialog" aria-label="Galeria de maquetes" data-i18n-aria="header.gallery" title="Galeria de maquetes" data-i18n-title="header.gallery"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="6" y="3" width="15" height="15" rx="2"/><path d="M3 8v11a2 2 0 0 0 2 2h11"/><circle cx="11" cy="8" r="1.5"/><path d="m7 15 4-4 3 3 2-2 4 4"/></svg><span class="desktop-copy" data-i18n="header.gallery">Galeria de maquetes</span></button>
   <button id="help-open" type="button" class="header-button header-action" aria-haspopup="dialog" aria-controls="help-dialog" aria-label="Com funciona" data-i18n-aria="header.help" title="Com funciona" data-i18n-title="header.help"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg><span class="desktop-copy" data-i18n="header.help">Com funciona</span></button>
   <details class="language-control" id="language-control">
     <summary id="language-open" class="header-button header-action" aria-label="Idioma" data-i18n-aria="header.language" title="Idioma" data-i18n-title="header.language">
@@ -29,7 +29,6 @@
     <section class="config-section" data-step="place">
       <div class="step-header"><h2 class="config-heading"><button type="button" class="section-toggle" id="step-place" aria-expanded="false" aria-controls="panel-place"><span aria-hidden="true">01</span><span data-i18n="section.place">Territori</span><i aria-hidden="true">+</i></button></h2><button type="button" class="secondary step-action" data-step-action="place" hidden data-i18n="ui.action.generate">Genera el model</button></div>
       <div id="panel-place" class="config-content" role="region" aria-labelledby="step-place" hidden>
-        <button id="examples-open" type="button" class="secondary" aria-haspopup="dialog" aria-controls="projects-dialog" data-i18n="ui.action.examples">Veure exemples</button>
         <div id="place-mode-options">
         <fieldset id="model-mode" class="mode-switch" aria-describedby="model-mode-note">
           <legend data-i18n="ui.mode.label">Mode de maqueta</legend>
@@ -245,18 +244,18 @@
       <path d="m27 9 7-6" stroke="var(--umbrella-accent)" stroke-width="4.5"/>
     </svg><span>ortogra<span class="umbrella-dot">.</span>fi</span>
   </a></p>
-  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer" data-i18n-text="ui.footer.openSource"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions">v0.23.14</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V" data-i18n-aria="ui.footer.about"><span class="desktop-copy" data-i18n="ui.footer.aboutDesktop">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
+  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer" data-i18n-text="ui.footer.openSource"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions">v0.23.21</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V" data-i18n-aria="ui.footer.about"><span class="desktop-copy" data-i18n="ui.footer.aboutDesktop">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
 </footer>
 
 <dialog id="projects-dialog" aria-labelledby="projects-title">
-  <div class="dialog-heading"><h2 id="projects-title" data-i18n="ui.gallery.title">Galeria de maquetes</h2><button data-close aria-label="Tanca" autofocus data-i18n-aria="dialog.close">×</button></div>
+  <div class="dialog-heading"><h2 id="projects-title" data-i18n="ui.gallery.title">Galeria de maquetes</h2><button data-close aria-label="Tanca" data-i18n-aria="dialog.close">×</button></div>
   <div class="dialog-content">
     <div class="gallery-toolbar">
       <div class="gallery-sections" role="group" aria-label="Seccions de la galeria" data-i18n-aria="ui.gallery.sections">
         <button type="button" class="secondary" aria-controls="gallery-examples" aria-pressed="true" data-i18n="ui.gallery.examples">Exemples</button>
         <button type="button" class="secondary" aria-controls="gallery-saved" aria-pressed="false" data-i18n="ui.gallery.saved">Projectes desats</button>
       </div>
-      <div id="gallery-search-field" class="search-field"><label class="sr-only" for="gallery-search" data-i18n="ui.gallery.search">Cerca un exemple</label><input id="gallery-search" type="search" placeholder="Cerca un lloc o tipus de paisatge" autocomplete="off" data-i18n-placeholder="ui.gallery.searchPlaceholder"></div>
+      <div id="gallery-search-field" class="search-field"><label class="sr-only" for="gallery-search" data-i18n="ui.gallery.search">Cerca un exemple</label><input id="gallery-search" type="search" placeholder="Cerca un lloc o tipus de paisatge" autocomplete="off" autofocus data-i18n-placeholder="ui.gallery.searchPlaceholder"></div>
       <div id="gallery-filters">
         <label>
           <span class="sr-only" data-i18n="gallery.filters.mode">Mode</span>

@@ -8,7 +8,6 @@ export default {
   "ui.settings.heading": ["Prepara una maqueta","Prepara una maqueta","Prepara unha maqueta","Prestatu maketa bat","Prepare a model"],
   "ui.action.new": ["Projecte nou","Nuevo proyecto","Novo proxecto","Proiektu berria","New project"],
   "ui.action.generate": ["Genera el model","Genera el modelo","Xera o modelo","Sortu eredua","Generate model"],
-  "ui.action.examples": ["Veure exemples","Ver ejemplos","Ver exemplos","Ikusi adibideak","Browse examples"],
   "ui.mode.label": ["Mode de maqueta","Modo de maqueta","Modo de maqueta","Maketa modua","Model mode"],
   "ui.mode.complete": ["Model complet","Modelo completo","Modelo completo","Eredu osoa","Full model"],
   "ui.mode.relief": ["Relleu pur","Solo relieve","Só relevo","Erliebea soilik","Terrain only"],

@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.23.21 — 2026-11-07
+
+- La galeria obre amb el focus a la cerca i selecciona el text existent. A mòbil, la capçalera en mostra només la icona. L’accés de Territori es retira.
+- S’actualitzen Roses, el Croscat, els dos retalls de l’Aneto i el Teide. El selector guanya els salts d’1:15.000 i d’1:150.000 als modes que els admeten.
+
 ## v0.23.20 — 2026-11-07
 
 - La galeria incorpora Gibraltar, l’istme d’O Vao, Tremp, Zumaia, els Pirineus panoràmics i els meandres de l’Ebre. S’apliquen els cinc retalls revisats i la llista de verificació s’ordena en sis blocs.

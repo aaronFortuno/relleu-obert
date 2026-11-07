@@ -142,11 +142,6 @@
   .lightning-address code {overflow-wrap:anywhere}
 }
 
-@media(max-width:360px) {
-  .gallery-label {display:none}
-  .gallery-label-short {display:inline}
-}
-
 @media(max-width:900px) and (min-height:541px) {
   .app-layout[data-mobile-panel=export]:has(#info-model:not([hidden])) {--mobile-sheet:min(310px,65%)}
   .app-layout[data-mobile-panel=export]:has(#info-print:not([hidden])) {--mobile-sheet:min(460px,56%)}

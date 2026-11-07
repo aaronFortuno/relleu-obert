@@ -42,15 +42,10 @@ const narrowWorkshop=matchMedia('(max-width: 900px)'),layout=$('.app-layout');
 const workshopNav=$('#mobile-workshop'),workshopButtons=[...workshopNav.querySelectorAll('button')];
 const placeLocation=$('#place-location');
 function arrangeTerritory(){
-  const options=$('#place-mode-options'),examples=$('#examples-open'),focused=document.activeElement;
-  if(narrowWorkshop.matches){
-    examples.after(placeLocation);
-    placeLocation.after(options);
-  }else{
-    $('#panel-place').before(placeLocation);
-    examples.after(options);
-  }
-  if(options.contains(focused)||placeLocation.contains(focused))focused.focus({preventScroll:true});
+  const panel=$('#panel-place'),focused=document.activeElement;
+  if(narrowWorkshop.matches)panel.prepend(placeLocation);
+  else panel.before(placeLocation);
+  if(placeLocation.contains(focused))focused.focus({preventScroll:true});
 }
 arrangeTerritory();
 function showWorkshopPanel(panel,{focus=false}={}){
@@ -165,7 +160,7 @@ function lock(value){
   $('#streams').disabled=waterLocked;
   $('#stream-width').disabled=waterLocked||!$('#streams').checked;
   $('#exag').disabled=value&&job==='build'&&pureSelected();
-  for(const id of ['road-rise','rail-rise','trail-width','estimated-tunnels','major-profiles','model-scale','examples-open','new-project'])$('#'+id).disabled=updating;
+  for(const id of ['road-rise','rail-rise','trail-width','estimated-tunnels','major-profiles','model-scale','new-project'])$('#'+id).disabled=updating;
   lockBuildingControls(updating);
   placeMap.setLocked(updating,!narrowWorkshop.matches);
   resizeFields.disabled=workPending||drawing;
@@ -186,7 +181,7 @@ function markDirty(){
   dirty=!!region&&!sameBounds(selection,region.meta.bbox);
   if(dirty||model&&selectedPose.rotation!==model.provenance.options.selectionPose?.rotation)requireBuild(statusMessage('pending.selection'));
 }
-const preferredScaleStops=[500,1000,2000,5000,10000];
+const preferredScaleStops=[500,1000,2000,5000,10000,15000];
 let scaleStops=[...preferredScaleStops,MAX_PROJECT_SCALE];
 const sameBounds=(a,b)=>a&&b&&a.every((value,i)=>Math.abs(value-b[i])<1e-9);
 function syncSelectionInfo(){
@@ -1046,18 +1041,18 @@ const scaleInput=$('#model-scale');
 function showScaleStops(limit){
   const ticks=$('#scale-ticks');
   const panoramic=panoramicSelected(),pure=pureSelected();
-  const preferred=panoramic?[PANORAMIC_SCALE_RANGE[0],100000,200000,300000,400000,450000]:
-    pure?[PURE_SCALE_RANGE[0],20000,30000,50000,100000,200000,300000,400000]:preferredScaleStops;
+  const preferred=panoramic?[PANORAMIC_SCALE_RANGE[0],100000,150000,200000,300000,400000,450000]:
+    pure?[PURE_SCALE_RANGE[0],15000,20000,30000,50000,100000,150000,200000,300000,400000]:preferredScaleStops;
   const next=[...preferred.filter(stop=>stop<limit),limit];
   if(ticks.children.length&&next.join()===scaleStops.join()&&ticks.dataset.locale===getLocale())return;
   scaleStops=next;
   ticks.dataset.locale=getLocale();
   scaleInput.max=scaleStops.length-1;
   ticks.replaceChildren();
-  const endGap=panoramic?2:pure?3:0;
+  const labelledStops=panoramic?[200000,400000]:pure?[30000,100000]:[2000,10000];
   for(const [index,stop] of scaleStops.entries()){
     const mark=document.createElement('span');
-    if(index===0||index===scaleStops.length-1||index%2===0&&index<scaleStops.length-endGap)mark.textContent=formatNumber(stop);
+    if(index===0||index===scaleStops.length-1||labelledStops.includes(stop))mark.textContent=formatNumber(stop);
     ticks.append(mark);
   }
 }
@@ -1454,11 +1449,12 @@ function showGallerySection(active){
   try{renderProjectGallery();}catch(error){feedback('project-feedback',error.message);}
 }
 for(const button of gallerySections)button.onclick=()=>showGallerySection(button);
-for(const id of ['projects-open','examples-open'])$('#'+id).onclick=()=>{
+$('#projects-open').onclick=({currentTarget})=>{
   feedback('gallery-feedback','');
   showGallerySection(gallerySections[0]);
+  currentTarget.focus({preventScroll:true});
   projectDialog.showModal();
-  galleryBody.scrollTop=0;
+  $('#gallery-search').select();
 };
 initExampleGallery(projectDialog,CURATED_EXAMPLES,example=>{
   if(busy||pendingVegetation||drawing||reliefTimer!==null){

@@ -12,7 +12,6 @@
 .header-action:hover,.language-control[open]>#language-open {background:#eef3e7}
 #projects-open {border-color:var(--ui-control-border);background:var(--ui-control-bg);font-weight:600}
 #projects-open:hover {border-color:var(--green)}
-.gallery-label-short {display:none}
 
 .language-control {position:relative;flex:none}
 #language-open {gap:4px;list-style:none;cursor:pointer}
@@ -171,7 +170,6 @@
 .print-base-row {display:flex;align-items:center;gap:8px}
 .print-base-row input {flex:1;min-width:0}
 .print-base-row .secondary {width:auto;flex:none;margin:0;padding:6px 8px}
-#examples-open {margin:0 0 8px}
 .sidebar-left #new-project {flex:none;min-height:30px;margin:12px 0 8px;padding:6px 10px}
 @media(min-width:901px){
   #place-location {flex:none;padding-bottom:8px;margin-bottom:8px;border-bottom:1px solid var(--line)}
