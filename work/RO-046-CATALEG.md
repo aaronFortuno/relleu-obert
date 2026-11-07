@@ -2,6 +2,27 @@
 
 RO-046 recull **31 enquadraments**, agrupats per mode i àmbit. En **Relleu pur**, el punt de partida és una forma que es pugui reconèixer al terreny o al contorn de l’aigua. En **Model complet**, cada retall proposa un patró de carrers, edificis o infraestructures que es pugui llegir en relació amb el lloc.
 
+## Revisió per a maquetes d’aula
+
+La primera passada prioritza una forma principal llegible a la mida final. Per a cada fitxa, cal obrir el retall amb els seus ajustos, comprovar la forma en vista zenital i obliqua, i registrar el resultat del laminat. Apunta si cal canviar l’enquadrament, el gir, l’escala o l’exageració. La validació física es registra a part.
+
+| Fitxa existent | Què cal comprovar | Revisió |
+| --- | --- | --- |
+| Cap de Creus | La punta queda sencera i destaca del contorn general de la península. | Pendent |
+| Ordesa i Mont Perdut | El fons i les parets deixen llegir la secció en U de la vall. | Pendent |
+| Estany de Sant Maurici | Es distingeixen la làmina d’aigua i el relleu que tanca la capçalera. | Pendent |
+| Montserrat | Les agulles destaquen de la carena a la mida impresa. | Pendent |
+| Illes Cíes | La barra de Rodas i l’aigua de cada banda es distingeixen. | Pendent |
+| Delta de l’Ebre | Les llacunes i les barres estretes es llegeixen i els talls coincideixen a les quatre peces. | Pendent |
+
+### Candidats per ampliar la tria
+
+- **Estret de Gibraltar.** Provar un retall que mostri les dues ribes i el pas entre elles. [Institut Espanyol d’Oceanografia](https://www.ieo.es/documents/10640/6094157/NP_031224_estrecho%2BBIODIV.pdf/c8d76885-900f-4d6a-8e14-1aedd3a0b77e)
+- **Istme d’O Vao, a A Lanzada.** Comprovar que la franja de terra uneix O Grove amb el continent a la mida de la peça. [Turismo de Galicia](https://blog.turismo.gal/?p=13000)
+- **Conca de Tremp.** Buscar un enquadrament que inclogui el fons de la conca i prou marge de les serres que la delimiten. [Geoparc Orígens](https://www.geoparcorigens.cat/es/geologia/)
+- **Penya-segats de Zumaia.** Prioritzar el perfil del penya-segat i la relació amb el mar. [Geoparc de la Costa Basca](https://geoparkea.eus/es/ciencia-educacion/geologia)
+- **Serralada dels Pirineus.** Recuperar la proposta panoràmica per veure la continuïtat de l’eix de la serralada i comprovar que els talls no en dificulten la lectura.
+
 ## Primera tria per a les mostres
 
 - **Relleu pur.** Badia de Roses, Cap de Creus i delta de l’Ebre per comparar tres formes del litoral català. Montserrat i el sector de l’Aneto mostren dues formes de massís. Tenerife, Geirangerfjord i el Gran Canó del Colorado amplien la tria amb una illa volcànica, un fiord i un canó fluvial.

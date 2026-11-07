@@ -8,6 +8,8 @@ En repetir el retall dens, el motor conserva 19 perfils suaus i retorna al pavim
 
 La comprovació posterior diferencia els dos fitxers `regional.3mf` per la geometria exportada i afegeix un 3MF de 80 × 80 mm amb retall girat 45°. El fitxer girat conté 16 perfils suaus i passa l’auditoria. [Retall girat](RO-052-CONTINUITAT.md#retall-girat-45)
 
+L’usuari aprecia una millora al laminador i accepta provisionalment el retall girat. Les irregularitats que es vegin a la peça física i els enllaços pendents continuen en seguiment.
+
 ## v0.23.18 — Control viari dens a l’Hospitalet
 
 El subretall complet confirma una fallada col·lectiva en assignar el material de 20 perfils viaris. Els dos modes exporten la mateixa geometria. El pilot aïllat genera un ramal sobre dues calçades amb una llum calculada mínima d’1,11 mm i enllaços continus. L’error d’integració i el pas de vianants tapat queden pendents. [Controls](RO-052-CONTINUITAT.md#xarxa-densa-a-lhospitalet-v02318)
