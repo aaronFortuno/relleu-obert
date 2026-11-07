@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.23.34 — 2026-11-07
+
+- Els models singulars amb una cota de base documentada poden corregir el relleu sota la petjada. A Guiza, la piràmide s’assenta al paviment sense sumar l’alçada que ja recull el model d’elevacions.
+
 ## v0.23.33 — 2026-11-07
 
 - Retirat el pilot de sectors del massís de Montserrat del catàleg i de Relleu Obert. La Roca Foradada continua entrant com a model singular sobre el relleu general.

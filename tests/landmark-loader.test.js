@@ -45,7 +45,7 @@ function glb({wide=false,edit=()=>{},indices=faces}={}){
 }
 
 test('only intersecting landmarks load and concurrent requests share both caches',async()=>{
-  const entry=tower(),requests=[];
+  const entry=tower({properties:{terrainBaseElevation:59.9}}),requests=[];
   const load=createLandmarkLoader(catalogue,(url,{signal,redirect})=>{
     assert(signal instanceof AbortSignal);
     assert.equal(redirect,'error');
@@ -61,6 +61,7 @@ test('only intersecting landmarks load and concurrent requests share both caches
   assert.equal(model.revision,'r1');
   assert.equal(model.license,'CC-BY-4.0');
   assert.equal(model.spatialDataLicense,'ODbL-1.0');
+  assert.equal(model.terrainBaseElevation,59.9);
   assert.deepEqual(model.replacement,replacement);
   assert.deepEqual(model.footprint,entry.geometry);
   assert.deepEqual(model.vertices,Float32Array.from(vertices));

@@ -276,6 +276,45 @@ export function treeMesh({x,y,ground,rx,ry,rz,rotation=0,phase=0,crownTaper=0}){
   for(let i=0;i<rings;i++)for(let j=0;j<segments;j++){surf.tri(p(i,j),p(i+1,j),p(i+1,j+1));surf.tri(p(i,j),p(i+1,j+1),p(i,j+1));}
   return {vertices:surf.vertices,faces:surf.faces};
 }
+
+function validBuildingMesh(model){
+  const mesh=auditPart(model);
+  return !mesh.empty&&!mesh.errors.length&&mesh.bbox&&Math.abs(mesh.bbox.min[1])<=.001&&Math.abs(mesh.bbox.max[1]-model.height)<=.01;
+}
+
+function buildingTerrainUnderlays(models,proj){
+  // Surface elevation products may already contain a large monument.
+  // Blend from the surveyed ground through roughly one coarse DEM sample.
+  const margin=30*proj.scale;
+  return (models??[]).filter(model=>model.kind==='building'&&Number.isFinite(model.terrainBaseElevation)&&validBuildingMesh(model)).map(model=>{
+    const footprint=geoPolys({geometry:model.footprint},proj.project);
+    const rings=footprint.flat(),points=rings.flat();
+    const lo=[0,1].map(axis=>Math.min(...points.map(point=>point[axis]))-margin);
+    const hi=[0,1].map(axis=>Math.max(...points.map(point=>point[axis]))+margin);
+    const edges=rings.flatMap(ring=>ring.slice(1).map(([x,y],i)=>{
+      const [ax,ay]=ring[i],dx=x-ax,dy=y-ay;
+      return {ax,ay,dx,dy,lengthSquared:dx*dx+dy*dy};
+    })).filter(edge=>edge.lengthSquared>0);
+    return {id:model.id,elevation:model.terrainBaseElevation,lo,hi,margin,contains:polygonTester(footprint),edges};
+  });
+}
+
+function buildingTerrainHeight(height,point,underlays){
+  const [x,y]=point;
+  for(const {elevation,lo,hi,margin,contains,edges} of underlays){
+    if(x<lo[0]||x>hi[0]||y<lo[1]||y>hi[1])continue;
+    if(contains(point))return elevation;
+    let distance=margin;
+    for(const {ax,ay,dx,dy,lengthSquared} of edges){
+      const t=Math.max(0,Math.min(1,((x-ax)*dx+(y-ay)*dy)/lengthSquared));
+      distance=Math.min(distance,Math.hypot(x-ax-t*dx,y-ay-t*dy));
+    }
+    const t=1-distance/margin;
+    height+=(elevation-height)*t*t*(3-2*t);
+  }
+  return height;
+}
+
 function prepareTerrain(data,options,progress,preview,measure){
   const {size=160,exaggeration=1.5,density=2.5,resolution=36,baseThickness}=options,proj=makeProjection(data.meta.bbox,size,options),{width,height,project,scale}=proj,rect=box(width,height),warnings=[];
   if(!Number.isFinite(density)||density<.25||density>5||!Number.isInteger(resolution)||resolution<2||resolution>100||!Number.isFinite(exaggeration)||exaggeration<1||exaggeration>5||!Number.isFinite(size)||size<50||size>MAX_MODEL_SIDE_MM||width>MAX_MODEL_SIDE_MM||height>MAX_MODEL_SIDE_MM)throw Error('Els ajustos de la maqueta són fora del rang admès.');
@@ -285,9 +324,13 @@ function prepareTerrain(data,options,progress,preview,measure){
   const prepared=raster?{tiles:[],diagnostics:{invalid:0,spikes:0,repaired:0,source:data.meta.terrain?.provider||'local GeoTIFF'}}:prepareElevationTiles(data.dem);
   const rasterHeight=raster?localRasterSampler(raster):null;
   const landforms=data.localDEM?[]:prepareCatalogueLandforms(data.singularModels,proj);
-  const terrainGrid=landforms.length?focusedTerrainGrid(width,height,resolution,landforms.map(({model,surfaceExtent:{lo,hi}})=>
-    ({lo,hi,step:Math.max(Math.min(3,model.landform.minimumWidth/3)*scale,(hi[0]-lo[0])/48,(hi[1]-lo[1])/48)}))):undefined;
-  const elevationAt=catalogueTerrain((lon,lat)=>rasterHeight?rasterHeight(lon,lat):sampleHeight(prepared.tiles,lon,lat),landforms);
+  const underlays=data.localDEM?[]:buildingTerrainUnderlays(data.singularModels,proj);
+  const terrainBands=landforms.map(({model,surfaceExtent:{lo,hi}})=>
+    ({lo,hi,step:Math.max(Math.min(3,model.landform.minimumWidth/3)*scale,(hi[0]-lo[0])/48,(hi[1]-lo[1])/48)}));
+  for(const {lo,hi} of underlays)terrainBands.push({lo,hi,step:Math.max(5*scale,(hi[0]-lo[0])/48,(hi[1]-lo[1])/48)});
+  const terrainGrid=terrainBands.length?focusedTerrainGrid(width,height,resolution,terrainBands):undefined;
+  const surfaceAt=catalogueTerrain((lon,lat)=>rasterHeight?rasterHeight(lon,lat):sampleHeight(prepared.tiles,lon,lat),landforms);
+  const elevationAt=underlays.length?(lon,lat)=>buildingTerrainHeight(surfaceAt(lon,lat),project([lon,lat]),underlays):surfaceAt;
   if(prepared.diagnostics.repaired)warnings.push(`S’han reconstruït ${prepared.diagnostics.repaired} mostres d’altitud invàlides o pics aïllats a partir dels veïns.`);
   const water=[],ocean=[],stillWater=[],green=[],woods=[],roads=[],rails=[],transport=[],roadPieces=[],railPieces=[];
   const cropped=polys=>polys.map(p=>intersect(p,rect)).filter(p=>p.length);
@@ -422,7 +465,7 @@ function prepareTerrain(data,options,progress,preview,measure){
     }
     return flowingWaterAt(x,y);
   };
-  const terrain={size,exaggeration,resolution,terrainGrid,proj,rect,warnings,landforms,elevationAt:data.terrainRaster?bridgeElevation:elevationAt,cropToElevationWindow:!!data.terrainRaster,deckItems,deckMask,transport,roadPieces,railPieces,maximumElevation,waterAt,
+  const terrain={size,exaggeration,resolution,terrainGrid,proj,rect,warnings,landforms,terrainBases:new Map(underlays.map(({id,elevation})=>[id,elevation])),elevationAt:data.terrainRaster?bridgeElevation:elevationAt,cropToElevationWindow:!!data.terrainRaster,deckItems,deckMask,transport,roadPieces,railPieces,maximumElevation,waterAt,
     roadOnlyPoly,roadPoly,forest,bare,railPoly,waterPoly,land,oceanPoly,inlandSupport:surfacePart(0,inlandSupport),green,cropped,ground,verticalReference,diagnostics:prepared.diagnostics,
     woodsMask:measure('terrain.woods',()=>merge(cropped(woods)),{inputs:woods.length})};
   terrain.surfaces=measure('terrain.surfaces',()=>terrainCover(forest,bare,terrain,progress));
@@ -1295,10 +1338,9 @@ function prepareLandmark(ctx,model,config){
   const footprint=intersect(geoPolys({geometry:model.footprint},project),rect);
   if(!footprint.length)return null;
   if(footprintArea(intersect(footprint,land))<footprintArea(footprint)-1e-5)throw Error('La petjada queda en aigua.');
-  const original=auditPart(model);
-  if(original.empty||original.errors.length||!original.bbox||Math.abs(original.bbox.min[1])>.001||
-    Math.abs(original.bbox.max[1]-model.height)>.01)throw Error('La malla original no té una base o altura vàlida.');
+  if(!validBuildingMesh(model))throw Error('La malla original no té una base o altura vàlida.');
   const mode=config.buildingMode,rise=buildingRise(model.height,scale,config);
+  const terrainBaseElevation=ctx.terrain?.terrainBases?.get(model.id);
   let solid;
   if(mode==='flat')solid=terrainSolid(footprint,(x,y)=>ground(x,y)+rise,(x,y)=>ground(x,y)-.3,width,height,resolution,grid);
   else if(mode==='limited')solid=levelBuildingSolid(footprint,rise,ground,width,height,resolution,undefined,grid);
@@ -1306,6 +1348,11 @@ function prepareLandmark(ctx,model,config){
     let floor=Infinity,reference=-Infinity;
     for(const patch of terrainPatches(footprint,width,height,resolution,grid))for(const ring of patch)for(const [x,y]of ring){
       const z=ground(x,y);floor=Math.min(floor,z);reference=Math.max(reference,z);
+    }
+    if(terrainBaseElevation!==undefined){
+      const {minimumSurfaceMM,originMeters}=ctx.verticalReference;
+      reference=minimumSurfaceMM+(terrainBaseElevation-originMeters)*scale*ctx.terrain.exaggeration;
+      floor=Math.min(reference,floor);
     }
     const [lon,lat]=model.anchor,lonMetres=111320*Math.cos(lat*Math.PI/180);
     const vertices=new Float32Array(model.vertices.length);
@@ -1329,7 +1376,8 @@ function prepareLandmark(ctx,model,config){
   }
   if(!solid?.faces.length)throw Error('El model no té volum dins del retall.');
   const {id,name,revision,license,spatialDataLicense,attribution,sources,replacement}=model;
-  return {id,h:model.height,valid:true,p:{landmark:{name,revision,license,spatialDataLicense,attribution,sources}},
+  return {id,h:model.height,valid:true,p:{landmark:{name,revision,license,spatialDataLicense,attribution,sources,
+    ...(terrainBaseElevation===undefined?{}:{terrainBaseElevation})}},
     footprints:footprint,fragments:[{solid,count:1}],replacement};
 }
 

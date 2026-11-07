@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-07. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.23.34 — Cota de base dels models singulars
+
+RO-032 admet la cota del paviment quan el model d’elevacions ja inclou part del monument. A Guiza, el relleu general hauria situat el cim a 243,73 m. El model es col·loca sobre el paviment de 59,90 m i arriba a 198,40 m. Les proves amb Mapzen i les dues fonts d’edificis OSM conserven els veïns a 1:2.000 i 1:5.000 i tanquen el retall parcial girat. Queden la revisió al visor i el laminat de l’usuari. [RO-032](BACKLOG.md#ro-032--cobertes-i-volums-singulars)
+
 ## v0.23.33 — Retirada del pilot de sectors de Montserrat
 
 El catàleg actiu retira el model del massís i els fitxers de detall. Relleu Obert elimina el carregador de sectors i conserva el relleu general amb la Foradada com a cavitat del catàleg. La comparativa es manté com a referència de RO-023. [Mesures](RELLEU-ROCOS.md#comparativa-amb-el-relleu-general--v02332)

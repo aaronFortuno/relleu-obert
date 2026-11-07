@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-07 · v0.23.33**. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-07 · v0.23.34**. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -13,7 +13,7 @@ Actualitzat el **2026-11-07 · v0.23.33**. [Historial](HISTORIAL.md).
 | **Seguiment de les estructures** | RO-033, RO-034, RO-050 | Registrar noves incidències amb retall i escala. A Sant Salvador, dos perfils segueixen el terreny pel pendent dels enllaços. El túnel a 1:20.000 té les dues boques comprovades al 3MF. El pas de Montgròs es conserva al cupó laminat. [Controls de vies](RO-051-PERFILS-VIARIS.md#transicions-pendents-a-la-v0220) · [Montgròs](RO-033-CONTROLS-PROCEDIMENTALS.md#laminat-del-cupó-de-montgròs) |
 | **Validació en paral·lel** | RO-024, RO-033, RO-046, RO-054, RO-055 | Revisar Tamariu 40 × 45 cm i Amsterdam amb totes les capes al laminador. També queden la recuperació d’un projecte girat i els talls dels Rasos–Gallina Pelada. |
 | **Pilot de relleu rocós** | RO-023, RO-035 | Revisar la Foradada i el Cavall Bernat i recuperar la georeferenciació dels Degotalls. El pilot de sectors de Montserrat s’ha retirat. [Comparativa](RELLEU-ROCOS.md#comparativa-amb-el-relleu-general--v02332) |
-| **Catàleg de llocs singulars** | RO-032, RO-033 | Torre Glòries validada al visor. Millau verificat a tres retalls. Validar al laminador les llums i els tirants del viaducte. [Controls de Millau](RO-033-CONTROLS-PROCEDIMENTALS.md#pilot-de-millau-al-catàleg--v02328) |
+| **Catàleg de llocs singulars** | RO-032, RO-033 | Torre Glòries validada al visor. Guiza i Millau verificats en retalls locals. Revisar Guiza al visor i les llums i els tirants del viaducte al laminador. [Controls de Millau](RO-033-CONTROLS-PROCEDIMENTALS.md#pilot-de-millau-al-catàleg--v02328) |
 
 Els encàrrecs independents avancen en paral·lel. Cada bloc validat té el seu commit i es manté una sola prova pesada alhora. Els casos que requereixen inspecció al laminador poden quedar pendents mentre avancen altres línies.
 
@@ -32,7 +32,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | [RO-052](#ro-052--continuïtat-i-amplada-del-traçat-viari) | P1 | Ramal sobre dues calçades verificat al cupó. Interferència amb un camí de vianants en el model complet | Comprovar la llum i els enllaços després d’integrar cada grup de vies |
 | [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió) | P1 | Filament per peça validat a Montserrat. Projecte de quatre plaques obert a Bambu Studio | Contrastar el laminat de les quatre peces de Tamariu |
 | [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts) | P1 | ICGC, Catastre i OSM actius. GlobalBuildingAtlas aparcat | Comparar les parts i petjades de les fonts actuals en una segona zona |
-| [RO-032](#ro-032--cobertes-i-volums-singulars) | P1 | Torre Glòries integrada i validada visualment | Comprovar el laminat i els nous models quan arribin |
+| [RO-032](#ro-032--cobertes-i-volums-singulars) | P1 | Torre Glòries validada al visor. Cota de Guiza verificada al motor | Revisar Guiza al visor i comprovar el laminat dels models |
 | [RO-023](#ro-023--relleu-local-i-fonts-vectorials-de-més-precisió) | P2 | MET5 integrat. Cupó local de detall amb MDT de 50 cm | Comparar la silueta del Cavall Bernat i validar la transició al laminador |
 | [RO-055](#ro-055--mode-de-relleu-pur) | P2 | Retalls fins a 1:500.000 en tots els formats de Relleu pur | Laminar Tamariu i un panorama amb textura i comprovar dos talls adjacents |
 | [RO-054](#ro-054--galeria-local-de-projectes) | P2 | Catàleg local amb còpia JSON a v0.23.7 | Validar la recuperació entre dispositius en l’ús habitual |
@@ -128,6 +128,8 @@ Les fonts fora d’Espanya queden documentades per a més endavant. GlobalBuildi
 El motor incorpora cobertes amb dades obertes d’OSM quan els atributs ho permeten i conserva les petjades amb coberta plana si la consulta torna buida. L’RTL de l’ICGC documenta plans LoD2, amb un servei públic de careners en 2D. Resta verificar una font de cobertes 3D consultable des del navegador. [Fonts de cobertes](RO-032-DADES-COBERTES.md#seguiment-del-4-de-novembre) · [Integració](RO-032-INTEGRACIO.md)
 
 La Torre Glòries és el primer edifici d’Open Place Models. En local s’ha verificat la substitució d’ICGC, Catastre i OSM i l’exportació a 1:1.500 i 1:4.000 amb gir. L’usuari confirma que la torre és recognoscible en la maqueta de Barcelona. Queden el laminat i els controls amb altres models. [Pilot i retalls de prova](RO-032-INTEGRACIO.md#pilot-de-la-torre-glòries--v02327)
+
+Guiza corregeix el relleu general sota la petjada a partir de la cota publicada del paviment. El motor ha passat dos controls complets i un retall parcial. La resta d’edificis singulars conserva el seu encaix habitual. [Control de la cota](HISTORIAL.md#v02334--cota-de-base-dels-models-singulars)
 
 Els llocs que substitueixen un fragment del relleu es coordinen amb RO-035. El catàleg documenta el procés per investigar candidats i preparar malles. [Guia de contribució](https://github.com/aaronFortuno/open-place-models/blob/main/CONTRIBUTING.md)
 

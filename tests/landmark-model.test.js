@@ -74,6 +74,17 @@ test('height limit flattens the catalogue roof and hiding buildings removes the 
   assert.equal(updateBuildings(model,{}, {buildingMode:'none'}).buildingCount,0);
 });
 
+test('surveyed base replaces surface elevations locally and anchors the catalogue roof',()=>{
+  const terrainBaseElevation=-10;
+  const model=generate({rotation:37,models:[{...landmark,kind:'building',terrainBaseElevation}]});
+  const {proj,ground,verticalReference:{originMeters,minimumSurfaceMM}}=model.context;
+  const height=z=>originMeters+(z-minimumSurfaceMM)/(proj.scale*1.5);
+  near(height(ground(...proj.project(anchor))),terrainBaseElevation);
+  near(height(ground(...proj.project(geo([70,0])))),0);
+  near(tower(model).roof,ground(...proj.project(anchor))+20*proj.scale);
+  assert.equal(tower(model).landmark.terrainBaseElevation,terrainBaseElevation);
+});
+
 test('rotated boundary closes the mesh and invalid catalogue meshes leave original buildings intact',async()=>{
   const api=await Module();
   api.setup();
@@ -81,7 +92,8 @@ test('rotated boundary closes the mesh and invalid catalogue meshes leave origin
   assert.equal(tower(model)?.roofShape,'catalogue');
   assert.equal(auditPart(buildings(model)).closed,true);
   assert.ok(auditPart(buildings(model)).bbox.min[0]>=-.001);
-  const invalid=generate({models:[{...landmark,faces:landmark.faces.slice(3)}]});
+  const invalid=generate({models:[{...landmark,kind:'building',terrainBaseElevation:-10,faces:landmark.faces.slice(3)}]});
   assert.equal(tower(invalid),undefined);
   assert.equal(invalid.buildingCount,2);
+  near(invalid.context.verticalReference.originMeters,0);
 });
