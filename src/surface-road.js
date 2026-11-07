@@ -95,13 +95,34 @@ function centreline(points,width,pad){
 // Monotone cubic interpolation rounds changes of grade without introducing
 // crests, hollows or extra flats. A constant junction span forces zero slope
 // at both of its transitions.
-function applyGrade(stations,ground,rise,junctionHeight,connection){
+function applyGrade(stations,ground,rise,junctionHeight,connection,gradeWindow){
   const knots=[];
+  const span=stations.at(-1).distanceMM-stations[0].distanceMM;
+  const radius=gradeWindow?Math.min(gradeWindow,span/2):0;
+  const elevations=radius?stations.map(s=>ground(...s.centre)+rise):null;
+  const heightAt=station=>{
+    let low=0,high=stations.length-1;
+    while(high-low>1){
+      const mid=(low+high)>>1;
+      if(stations[mid].distanceMM<=station)low=mid;
+      else high=mid;
+    }
+    const from=stations[low].distanceMM,to=stations[high].distanceMM;
+    return elevations[low]+(elevations[high]-elevations[low])*(station-from)/(to-from);
+  };
   for(const [i,station] of stations.entries()){
     const previous=stations[i-1],next=stations[i+1];
     if(!previous||!next||station.inPad&&(!previous.inPad||!next.inPad)||
-        !station.inPad&&station.distanceMM-knots.at(-1).distanceMM>=2.5){
-      knots.push({distanceMM:station.distanceMM,heightMM:station.inPad?junctionHeight:ground(...station.centre)+rise});
+        !station.inPad&&station.distanceMM-knots.at(-1).distanceMM>=Math.max(2.5,radius/2)){
+      const distanceMM=station.distanceMM;
+      let heightMM=station.inPad?junctionHeight:ground(...station.centre)+rise;
+      // A symmetric filter retains constant grade and the two landing heights.
+      const range=Math.min(radius,distanceMM-stations[0].distanceMM,stations.at(-1).distanceMM-distanceMM);
+      if(!station.inPad&&range>0){
+        heightMM=0;
+        for(let offset=-4;offset<=4;offset++)heightMM+=heightAt(distanceMM+offset*range/4)/9;
+      }
+      knots.push({distanceMM,heightMM});
     }
   }
   if(connection)knots[connection.end?knots.length-1:0].heightMM=connection.height;
@@ -140,7 +161,7 @@ function planarTop([a,b,c],[za,zb,zc]){
   };
 }
 
-function planRoute({points,width,sourceFeatureIds},pad,{rect,ground},rise,structure){
+function planRoute({points,width,sourceFeatureIds,gradeWindow},pad,{rect,ground},rise,structure){
   const stations=centreline(points,width,pad),half=width/2;
   const junctionHeight=pad?ground(...points[pad.index])+rise:null;
   let start=-1,end=-1;
@@ -154,7 +175,7 @@ function planRoute({points,width,sourceFeatureIds},pad,{rect,ground},rise,struct
     applyGrade(stations.slice(0,start+1),ground,rise,junctionHeight,{end:true,height:first,grade});
     applyGrade(stations.slice(end),ground,rise,junctionHeight,{end:false,height:last,grade});
     for(const s of stations.slice(start,end+1))s.heightMM=first+(s.distanceMM-origin)*grade;
-  }else applyGrade(stations,ground,rise,junctionHeight);
+  }else applyGrade(stations,ground,rise,junctionHeight,undefined,gradeWindow);
   const patches=[],padPolygons=[];
   const edge=(station,sign)=>snap(move(station.centre,station.normal,sign*half));
   for(let i=1;i<stations.length;i++){

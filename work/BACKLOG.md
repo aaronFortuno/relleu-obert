@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-06 · v0.23.14**. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-07 · v0.23.15**. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -8,7 +8,7 @@ Actualitzat el **2026-11-06 · v0.23.14**. [Historial](HISTORIAL.md).
 | --- | --- | --- |
 | **Temps de generació** | RO-053 | Primera optimització d’edificis mesurada amb la mateixa malla. Tornar a mesurar Amsterdam complet i aïllar la integració de les vies principals. [Mesures](RO-053-TEMPS.md) |
 | **Ajustos d’impressió** | RO-056 | Validar els tiradors del plànol i laminar dues peces contigües de mides diferents. Després, estudiar els perfils d’impressora i la mida de cada placa. |
-| **Paviment de superfície** | RO-051, RO-052 | Cobertura ampliada al retall de Marganell, amb encaix per tram i secció plana a les vores. Validar visualment i resoldre les unions complexes. [Control de Marganell](RO-051-PERFILS-VIARIS.md#més-cobertura-del-paviment-independent-a-la-v02211) |
+| **Paviment de superfície** | RO-051, RO-052 | Rasant pròpia optativa per a més trams de vies principals. Validar-la visualment i resoldre les transicions dels creuaments protegits. [Control de l’Hospitalet](RO-052-CONTINUITAT.md#prova-de-calçada-amb-rasant-pròpia-v02315) |
 | **Seguiment de les estructures** | RO-033, RO-034, RO-050 | Registrar noves incidències amb retall i escala. A Sant Salvador, dos perfils segueixen el terreny pel pendent dels enllaços. El túnel a 1:20.000 té les dues boques comprovades al 3MF. El pas de Montgròs es conserva al cupó laminat. [Controls de vies](RO-051-PERFILS-VIARIS.md#transicions-pendents-a-la-v0220) · [Montgròs](RO-033-CONTROLS-PROCEDIMENTALS.md#laminat-del-cupó-de-montgròs) |
 | **Validació en paral·lel** | RO-024, RO-033, RO-046, RO-054, RO-055 | Revisar Tamariu 40 × 45 cm i Amsterdam amb totes les capes al laminador. També queden la recuperació d’un projecte girat i els talls dels Rasos–Gallina Pelada. |
 | **Pilot de relleu rocós** | RO-023, RO-035 | Després dels temps de generació, reprendre el Cavall Bernat i el Pedraforca, i el cupó georeferenciat dels Degotalls per als voladissos. [Resultats](RELLEU-ROCOS.md) |
@@ -27,7 +27,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | [RO-053](#ro-053--flux-de-treball-per-etapes) | P1 | Taller mòbil, canvi de mida i guia de primera maqueta | Validar el taller en telèfons reals, la utilitat de la guia i el contrast de les guies de tall al bosc |
 | [RO-033](#ro-033--ponts-i-viaductes) | P1 | Montgròs validat al cupó. Obertures mesurades a Amsterdam i Empuriabrava | Laminar els ponts curts i comprovar les llums en una placa completa |
 | [RO-034](#ro-034--túnels-imprimibles) | P1 | Dues boques i rasant compartida verificades al cupó 3MF | Validar el cupó i revisar el tram cobert de Sant Salvador al laminador |
-| [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | Omissió de perfils reproduïda en creuaments a l’Hospitalet | Conservar una rasant suau als trams fora de cada creuament afectat |
+| [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | Prova optativa de calçada amb rasant pròpia a l’Hospitalet | Mesurar graons a les unions i confirmar la cobertura amb un segon retall real |
 | [RO-052](#ro-052--continuïtat-i-amplada-del-traçat-viari) | P1 | Enllaços al cantell i continuacions de ramals | Revisar l’encreuament complet amb arbres i comprovar els trams elevats al laminador |
 | [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió) | P1 | Filament per peça validat a Montserrat. Projecte de quatre plaques obert a Bambu Studio | Contrastar el laminat de les quatre peces de Tamariu |
 | [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts) | P1 | Fonts en estudi | Comparació de parts i petjades en segona zona |
@@ -158,7 +158,7 @@ Realç i material ferroviari diferenciats, comprovats localment. Pendent de cont
 
 Les vies ràpides i el ferrocarril han de conservar una rasant contínua. Validar perfils, connexions i omissions a diverses escales. Els cupons de paviment amb secció transversal plana, excavació i reblert cobreixen corbes, una cruïlla en T, ponts i túnels. La v0.22.11 amplia el paviment independent als trams interiors i als talls de la peça, i munta cada tram amb el seu suport. Les cruïlles complexes i els trams que encara no passen les comprovacions conserven el càlcul habitual. [Perfils i controls](RO-051-PERFILS-VIARIS.md) · [Mesures](RO-051-RENDIMENT.md)
 
-Al segon retall de l’Hospitalet, les cotes desconegudes d’alguns creuaments amb pont, túnel o ferrocarril fan que trams principals tornin al paviment de relleu. Cal limitar el retorn al tram que afecta el creuament, enllaçar-lo amb la rasant dels dos costats i comprovar el pendent i la llum dels passos. [Segon retall de l’Hospitalet](RO-052-CONTINUITAT.md#segon-retall-de-lhospitalet-v02314)
+Al segon retall de l’Hospitalet, les cotes desconegudes d’alguns creuaments amb pont, túnel o ferrocarril fan que trams principals tornin al paviment de relleu. Amb `?paviment=rasant` s’amplia la calçada independent fora d’aquests creuaments. Queda pendent que les transicions i els ramals connectin amb la rasant dels dos costats sense graons. [Segon retall de l’Hospitalet](RO-052-CONTINUITAT.md#prova-de-calçada-amb-rasant-pròpia-v02315)
 
 ### RO-052 — Continuïtat i amplada del traçat viari
 

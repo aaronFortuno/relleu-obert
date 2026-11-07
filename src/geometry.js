@@ -939,12 +939,14 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
     if(next.size===excludedProfiles.size)return fallbackMajor(message);
     return buildTransport(data,options,terrain,progress,infrastructureApi,diagnostics,buildingGeometry,next,preview);
   };
-  if(options.surfaceRoads==='regional'&&infrastructureApi){
+  const independentPavement=options.surfaceRoads==='independent';
+  if((options.surfaceRoads==='regional'||independentPavement)&&infrastructureApi){
     try{
       progress('Comprovant on es pot aplicar el paviment nou…');
       const blockedIds=new Set(acceptedMajor.flatMap(item=>item.sourceFeatureIds));
       const blockedMask=merge([deckMask,railPoly].filter(p=>p.length));
-      const plan=measure('surface-road.regional-plan',()=>planRegionalSurfaceRoads(terrain,{rise:roadRise,thickness:.65+roadRise,blockedMask,blockedIds}));
+      const plan=measure('surface-road.regional-plan',()=>planRegionalSurfaceRoads(terrain,{rise:roadRise,thickness:.65+roadRise,
+        blockedMask,blockedIds,principalPavement:independentPavement&&options.majorRoads===true&&options.smoothProfiles===true}));
       regionalMetadata=plan.metadata;
       if(plan.regions.length){
         const built=measure('surface-road.regional-mesh',()=>assembleRegionalSurfaceRoads(terrain,roadRise,infrastructureApi,progress,plan,roadOnlyPoly,railPoly));

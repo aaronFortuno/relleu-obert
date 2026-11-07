@@ -1,5 +1,15 @@
 # RO-052 — Continuïtat i amplada de la calçada
 
+## Prova de calçada amb rasant pròpia, v0.23.15
+
+En Model complet, `?paviment=rasant` activa la variant amb «Perfils suaus» marcat. La calçada principal surt d’una rasant suavitzada a partir de les cotes de l’eix i de seccions planes d’amplada constant. La malla retalla el terreny dins de la calçada i omple amb terreny fins a la seva cara inferior. Una via menor al mateix nivell pot arribar a la calçada principal sense interrompre-la. Es reserven l’aigua, els traçats ferroviaris, els passos a altres nivells i les zones d’accés a estructures de la mateixa via. En aquests punts es mantenen els controls i els motors de ponts i túnels.
+
+Al mateix retall de `hospitalet2.json`, amb arbres desactivats, la variant construeix set trams amb rasant pròpia que sumen 151 mm sobre la peça. La superfície de paviment regional passa del 26,7% al 30,1%, repartida entre 31 fragments en comptes de 34. Els 21 taulers principals cartografiats mantenen els 37 enllaços. Les sis malles per material passen l’auditoria de tancament. Temps local de 88,0 a 90,9 s.
+
+A l’eix del tram `5544604652`, el pendent P95 ponderat pel recorregut baixa del 10,6% al 9,0% i la longitud mostrejada per sobre del 12% baixa d’1,48 a 0,73 mm sobre la peça. El pendent màxim mostrejat es manté, igual que els pics dels altres tres trams de control. En un encreuament a diferents nivells la sonda pot seleccionar una altra superfície, de manera que els pics requereixen verificació per traçat. Al control sintètic en vessant, la diferència transversal és inferior a 0,001 mm, també en creuar la via menor, i el ferrocarril conserva el seu corredor. Continuen pendents la geometria dels enllaços als creuaments, els components aïllats i el laminat de la maqueta amb vegetació.
+
+En el diagnòstic anterior, el túnel ferroviari `426024682` s’envia a la comprovació de taulers XYZ perquè es classifica primer com a ferrocarril. Cal verificar-lo com a túnel i comprovar la volta excavada abans d’acceptar la calçada que hi passa per sobre.
+
 ## Segon retall de l’Hospitalet, v0.23.14
 
 `hospitalet2.json` correspon a un altre enllaç del Llobregat, centrat a `41.349390, 2.057431`. Retall de 999,68 × 999,68 m, peça de 200 × 200 mm, detall 64, exageració ×1,5, MET5 i edificis ICGC. Les comparacions locals parteixen de les mateixes dades i es fan sense arbres. La v0.23.13 construeix 27 perfils principals i 34 fragments de paviment regional. Els controls del primer retall de l’Hospitalet es mantenen separats.

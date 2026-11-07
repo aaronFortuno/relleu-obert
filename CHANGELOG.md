@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.23.15 — 2026-11-07
+
+- Prova amb `?paviment=rasant` i «Perfils suaus» actiu. Les vies principals guanyen trams de calçada amb seccions planes i rasant pròpia. El paviment pot excavar el vessant o recolzar-se sobre un reblert. Es reserven els creuaments amb estructures i ferrocarrils.
+
 ## v0.23.14 — 2026-11-06
 
 - A escriptori, la cerca i el mapa es mantenen sota la capçalera de Territori. La roda torna a fer zoom al mapa i desplaça els ajustos quan hi passa per sobre.

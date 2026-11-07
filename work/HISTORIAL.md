@@ -1,6 +1,10 @@
 # Historial i validacions de Relleu Obert
 
-Actualitzat: 2026-11-06. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
+Actualitzat: 2026-11-07. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
+
+## v0.23.15 — Prova de calçada amb rasant pròpia
+
+La variant optativa afegeix set trams de rasant independent al segon retall de l’Hospitalet. Al cupó, la via principal conserva la secció plana quan hi arriba una via menor i deixa espai al ferrocarril. L’auditoria local del retall passa. Els pics de pendent als punts de transició es mantenen i queda pendent revisar el visor i el laminat. [Mesures](RO-052-CONTINUITAT.md#prova-de-calçada-amb-rasant-pròpia-v02315)
 
 ## v0.23.14 — Zoom de Territori i enllaços de ponts
 

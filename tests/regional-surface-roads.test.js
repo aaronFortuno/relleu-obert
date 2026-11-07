@@ -8,7 +8,7 @@ import {auditPart} from '../src/solid-audit.js';
 const api=await Module();api.setup();
 const extent=.002,side=11;
 const toGeo=points=>points.map(p=>p.map(v=>v*extent/100));
-const road=(id,points,ref)=>({id,properties:{sourceLayer:'transportation',class:'secondary',width:12,ref},
+const road=(id,points,ref,roadClass='secondary')=>({id,properties:{sourceLayer:'transportation',class:roadClass,width:12,ref},
   geometry:{type:'LineString',coordinates:toGeo(points)}});
 const fixture={
   meta:{bbox:[0,0,extent,extent]},
@@ -69,4 +69,36 @@ test('roads outside the plate do not exhaust the regional paving budget',()=>{
     {...options,surfaceRoads:'regional'},()=>{},api);
   assert.equal(model.provenance.surfaceRoads.omissionCounts['source-budget'],undefined);
   assert.equal(model.provenance.surfaceRoads.fullAccepted,3);
+});
+
+test('a principal pavement crosses an ordinary road with its own level sections while reserving the railway crossing',()=>{
+  const count=51;
+  const features=[
+    road('main',[[0,50],[100,50]],'A-1','motorway'),
+    road('minor',[[30,20],[30,72]],'B-1'),
+    road('rail',[[75,14],[75,86]],'','rail')
+  ];
+  const data={...fixture,features,localDEM:{...fixture.localDEM,width:count,height:count,
+    affine:[extent/(count-1),0,0,0,extent/(count-1),0],values:Float32Array.from({length:count**2},(_,i)=>{
+      const x=2*(i%count),y=2*Math.floor(i/count);
+      return 100+x*.07+y+1.5*Math.cos(x*Math.PI/4);
+    })}};
+  const settings={...options,resolution:48};
+  const before=buildModel(data,settings,()=>{},api);
+  const model=buildModel(data,{...settings,surfaceRoads:'independent',majorRoads:true,smoothProfiles:true},()=>{},api);
+  const {partialGroups}=model.provenance.surfaceRoads;
+  const principal=partialGroups.filter(group=>group.independentGrade&&group.sourceFeatureIds.includes('main'));
+  assert(principal.some(group=>group.ends[0][0]<30&&group.ends[1][0]>30));
+  assert(!principal.some(group=>group.ends[0][0]<75&&group.ends[1][0]>75));
+  const legacy=roadTop(before),top=roadTop(model);
+  let legacyGrade=0;
+  for(let x=22;x<=44;x++){
+    assert(Math.abs(top(x,49)-top(x,51))<.001,`Crossfall at ${x}`);
+    assert(Math.abs(top(x+1,50)-top(x,50))<.08,`Grade change at ${x}`);
+    legacyGrade=Math.max(legacyGrade,Math.abs(legacy(x+1,50)-legacy(x,50)));
+  }
+  assert(legacyGrade>.14);
+  assert(Math.abs(model.context.ground(30,49)-model.context.ground(30,51))>.6);
+  assert(model.categories.find(part=>part.id==='railways').faces.length);
+  for(const part of model.categories)assert.deepEqual(auditPart(part).errors,[]);
 });

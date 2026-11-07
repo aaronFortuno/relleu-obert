@@ -3,6 +3,7 @@ import {polygonTester} from './polygon-index.js';
 import {lineBuffer} from './roads.js';
 import {planSurfaceRoad} from './surface-road.js';
 import {compatibleTransport} from './transport-network.js';
+import {isPrincipalRoad} from './transport-width.js';
 
 const pc=polygonOps(),epsilon=1e-5,portalMarginMM=8;
 const limits={sources:1000,candidates:256,groupSize:16,groupAttempts:24,stations:3900,groupStations:2000,overlapChecks:4000,
@@ -164,7 +165,7 @@ function clearWindows(entry,points,box,insideLand,blockers){
 
 // Candidate planning only. The caller keeps legacy roads until both the
 // replacement pavements and their common terrain interface have been built.
-export function planRegionalSurfaceRoads(terrain,{rise,thickness,blockedMask=[],blockedIds=new Set()}={}){
+export function planRegionalSurfaceRoads(terrain,{rise,thickness,blockedMask=[],blockedIds=new Set(),principalPavement=false}={}){
   const result={regions:[],metadata:{mode:'regional',applied:false,
     eligible:0,accepted:0,fullAccepted:0,partialAccepted:0,partialLengthMM:0,groups:[],partialGroups:[],
     omissions:[],omissionCounts:{},junctionCount:0,stations:0,limits}};
@@ -174,7 +175,9 @@ export function planRegionalSurfaceRoads(terrain,{rise,thickness,blockedMask=[],
     metadata.omissionCounts[reason]=(metadata.omissionCounts[reason]||0)+count;
     if(metadata.omissions.length<64)metadata.omissions.push({reason,sourceFeatureIds:ids,detail,count});
   };
-  const {transport,roadPieces,rect,proj:{width,height}}=terrain,box=[0,0,width,height];
+  const {transport,roadPieces,rect,proj:{width,height,scale}}=terrain,box=[0,0,width,height];
+  const isPrincipal=route=>principalPavement&&isPrincipalRoad(route.properties??route);
+  const gradeWindow=Math.max(10,40*scale);
 
   // Vector tiles may assign one ID to several unrelated lines in a
   // MultiLineString. Each source footprint belongs to one projected line.
@@ -214,13 +217,16 @@ export function planRegionalSurfaceRoads(terrain,{rise,thickness,blockedMask=[],
     eligible.push(entry);
   }
   metadata.eligible=eligible.length;
-  eligible.sort((a,b)=>b.length-a.length||a.key-b.key);
+  eligible.sort((a,b)=>Number(isPrincipal(b.route))-Number(isPrincipal(a.route))||b.length-a.length||a.key-b.key);
   const candidates=eligible.slice(0,limits.candidates);
   for(const entry of eligible.slice(limits.candidates))omit('candidate-budget',[entry.id],'S’ha assolit el límit de candidats.');
 
   const sourceMask=entry=>entry.mask??=(entry.polys.length>2048?null:pc.intersection(pc.union(entry.polys),rect));
-  const structureMask=entry=>entry.mask??=(entry.route.points.length>128?null:
-    pc.intersection(pc.union(lineBuffer(entry.route.points,entry.radius,[width,height])),rect));
+  const structureMask=(entry,margin=portalMarginMM)=>{
+    const key=margin===portalMarginMM?'mask':'crossingMask';
+    return entry[key]??=(entry.route.points.length>128?null:pc.intersection(
+      pc.union(lineBuffer(entry.route.points,entry.radius-portalMarginMM+margin,[width,height])),rect));
+  };
   let overlapChecks=0;
   const collides=(a,b)=>{
     if(!a||!b)return true;
@@ -268,7 +274,7 @@ export function planRegionalSurfaceRoads(terrain,{rise,thickness,blockedMask=[],
       if(protectedOverlap(oldMask,oldBox)||externalOverlap(oldMask,oldBox)){
         omit('protected-overlap',ids,'El traçat original toca vies, taulers o portals amb tractament propi.');continue;
       }
-      const plan=planSurfaceRoad(axes,terrain,rise,thickness),newBox=bounds(plan.mask.flat(2));
+      const plan=planSurfaceRoad(axes.map(axis=>isPrincipal(axis)?{...axis,gradeWindow}:axis),terrain,rise,thickness),newBox=bounds(plan.mask.flat(2));
       if((axes.length===2&&plan.junctionCount!==1)||protectedOverlap(plan.mask,newBox)||externalOverlap(plan.mask,newBox)||
           collides(plan.mask,plannedMask)){
         omit('unsafe-replacement',ids,'La calçada nova no queda aïllada de la resta de vies.');continue;
@@ -289,15 +295,21 @@ export function planRegionalSurfaceRoads(terrain,{rise,thickness,blockedMask=[],
   const insideLand=polygonTester(terrain.land),windows=[];
   for(const entry of candidates.filter(entry=>!replacedPieces.has(entry.key)).slice(0,limits.partialCandidates)){
     const boxAlongAxis=expand(bounds(entry.paths.flat()),entry.route.width*1.5+.5);
+    const priority=isPrincipal(entry.route);
     try{
       const blockers=[blockedMask,plannedMask,
-        ...visible.filter(other=>other!==entry&&!replacedPieces.has(other.key)&&overlapsBox(other.box,boxAlongAxis)).map(sourceMask),
-        ...structures.filter(other=>overlapsBox(other.box,boxAlongAxis)).map(structureMask)];
+        ...visible.filter(other=>other!==entry&&!replacedPieces.has(other.key)&&overlapsBox(other.box,boxAlongAxis)&&
+          (!priority||!other.route||other.route.brunnel||isPrincipal(other.route)||(other.route.layer??0)!==(entry.route.layer??0))).map(sourceMask),
+        ...structures.filter(other=>overlapsBox(other.box,boxAlongAxis)).map(other=>
+          // Keep room for actual connections. An unrelated crossing only
+          // needs a local reserve in addition to the exact deck/rail mask.
+          structureMask(other,priority&&!compatibleTransport(other.route,entry.route)?1:portalMarginMM))];
       if(blockers.some(mask=>!mask))continue;
       for(const points of entry.paths)windows.push(...clearWindows(entry,points,box,insideLand,blockers));
     }catch(error){omit('partial-analysis',[entry.id],error.message);}
   }
-  windows.sort((a,b)=>Number(b.edgeEnds.some(Boolean))-Number(a.edgeEnds.some(Boolean))||
+  windows.sort((a,b)=>Number(isPrincipal(b.entry.route))-Number(isPrincipal(a.entry.route))||
+    Number(b.edgeEnds.some(Boolean))-Number(a.edgeEnds.some(Boolean))||
     b.length-a.length||a.entry.key-b.entry.key||a.from-b.from);
   const partialSources=new Map();
   let partialAttempts=0,partialStations=0;
@@ -308,18 +320,19 @@ export function planRegionalSurfaceRoads(terrain,{rise,thickness,blockedMask=[],
         partialStations>=limits.partialStations||overlapChecks>=limits.overlapChecks)break;
     partialAttempts++;
     try{
-      const plan=planSurfaceRoad([{...entry.route,points}],terrain,rise,thickness);
+      const independentGrade=isPrincipal(entry.route);
+      const plan=planSurfaceRoad([{...entry.route,points,gradeWindow:independentGrade?gradeWindow:undefined}],terrain,rise,thickness);
       if(blockers.some(mask=>collides(plan.mask,mask))||collides(plan.mask,plannedMask))continue;
       const [route]=plan.routes,stations=route.profile.stations.length;
       if(plannedStations+stations>limits.stations||partialStations+stations>limits.partialStations)continue;
       plannedMask=pc.union(plannedMask,plan.mask);
-      const transitionMM=Math.min(3,length/4);
+      const transitionMM=independentGrade?0:Math.min(3,length/4);
       partialSources.set(entry.key,count+1);
       plannedStations+=stations;partialStations+=stations;
       const ends=[route.profile.stations[0].centre,route.profile.stations.at(-1).centre];
       regions.push({mask:plan.mask,replaces:plan.mask,routes:[{...route,transitionMM,edgeEnds}],partial:true,
         info:{sourceFeatureIds:entry.route.sourceFeatureIds,sourcePiece:entry.key,
-          fromMM:from,toMM:to,lengthMM:length,ends,transitionMM,edgeEnds,stations}});
+          fromMM:from,toMM:to,lengthMM:length,ends,transitionMM,edgeEnds,stations,independentGrade}});
     }catch(error){omit('partial-rejected',[entry.id],error.message);}
   }
   metadata.overlapChecks=overlapChecks;
