@@ -3,7 +3,7 @@ import {polygonTester} from './polygon-index.js';
 import {lineBuffer} from './roads.js';
 import {planSurfaceRoad} from './surface-road.js';
 import {compatibleTransport} from './transport-network.js';
-import {isPrincipalRoad} from './transport-width.js';
+import {followsTerrain,isPrincipalRoad} from './transport-width.js';
 
 const pc=polygonOps(),epsilon=1e-5,portalMarginMM=8;
 const limits={sources:1000,candidates:256,groupSize:16,groupAttempts:24,stations:3900,groupStations:2000,overlapChecks:4000,
@@ -90,6 +90,23 @@ function sourceFragments(routes,box){
     }
   }
   return [...fragments.values()];
+}
+
+export function planClassifiedRoadCoupon(terrain,rise,thickness){
+  const {transport,roadPieces,land,proj:{width,height,scale}}=terrain;
+  if(transport.some(route=>route.railway||route.brunnel))throw Error('Aquest cupó és de vies de superfície.');
+  const paths=[],roads=[];
+  for(const route of transport){
+    if(followsTerrain(route.properties))paths.push(...(roadPieces[route.roadPiece]?.polys??[]));
+    else roads.push(route);
+  }
+  const axes=stitchGroup(sourceFragments(roads,[0,0,width,height]));
+  if(!axes.length||axes.length>2||!paths.length)throw Error('El cupó requereix un o dos eixos de carretera i algun sender.');
+  const plan=planSurfaceRoad(axes.map(axis=>({...axis,
+    gradeWindow:isPrincipalRoad(axis.properties)?Math.max(10,40*scale):Math.max(6,24*scale)})),terrain,rise,thickness);
+  const trailMask=pc.intersection(pc.union(...paths.map(p=>[p])),land);
+  if(!pc.difference(trailMask,plan.mask).length)throw Error('Falta un sender visible al cupó.');
+  return {plan,trailMask};
 }
 
 function axisSampler(points){

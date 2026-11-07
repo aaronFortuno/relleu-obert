@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-07. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.23.16 — Carreteres i senders sobre terreny real
+
+Dos cupons de 100 × 100 mm amb MET5 i vies cartografiades. El 3MF de Mataró comprova excavació i reblert sota una calçada d’autopista. El de Palamós comprova una via local en excavació i un sender amb desnivell natural. La secció transversal mesurada varia menys de 0,001 mm en tots dos. Queda pendent el laminat i el control de creuaments. [Mesures i reproducció](RO-052-CONTINUITAT.md#cupons-de-mataró-i-palamós-v02316)
+
 ## v0.23.15 — Prova de calçada amb rasant pròpia
 
 La variant optativa afegeix set trams de rasant independent al segon retall de l’Hospitalet. Al cupó, la via principal conserva la secció plana quan hi arriba una via menor i deixa espai al ferrocarril. L’auditoria local del retall passa. Els pics de pendent als punts de transició es mantenen i queda pendent revisar el visor i el laminat. [Mesures](RO-052-CONTINUITAT.md#prova-de-calçada-amb-rasant-pròpia-v02315)

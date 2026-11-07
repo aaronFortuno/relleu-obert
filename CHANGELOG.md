@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.23.16 — 2026-11-07
+
+- Dos controls de paviment amb relleu real del MET5 a Mataró i Palamós. Les carreteres tenen seccions transversals planes i els senders segueixen el terreny. La prova es genera amb `scripts/check-road-class-coupons.mjs`.
+
 ## v0.23.15 — 2026-11-07
 
 - Prova amb `?paviment=rasant` i «Perfils suaus» actiu. Les vies principals guanyen trams de calçada amb seccions planes i rasant pròpia. El paviment pot excavar el vessant o recolzar-se sobre un reblert. Es reserven els creuaments amb estructures i ferrocarrils.

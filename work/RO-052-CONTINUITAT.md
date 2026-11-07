@@ -1,5 +1,18 @@
 # RO-052 — Continuïtat i amplada de la calçada
 
+## Cupons de Mataró i Palamós, v0.23.16
+
+Els dos controls aïllen una carretera i un camí o sender cartografiats en subretalls dels diagnòstics `mataro-sud.json` i `palamos.json`. El relleu prové del MET5 de l’ICGC i les vies d’OpenStreetMap via OpenFreeMap. Peça de 100 × 100 mm, base de 5 mm i exageració vertical ×1. Es mantenen les masses d’aigua del retall. La calçada es calcula a partir d’una rasant d’eix suavitzada i preval sobre el relleu dins de la seva amplada. El sender manté la superfície natural. L’opció `classified-coupon` és un control local que admet un o dos eixos de superfície i una capa de senders.
+
+| Cupó | Centre (latitud, longitud) | Extensió i escala | Traçats | Excavació màxima | Reblert sota la calçada |
+| --- | --- | --- | --- | ---: | ---: |
+| Mataró sud | 41,526890 · 2,410780 | 230 m · 1:2.300 | Autopista `284829752` i camí `612760890` | 1,29 mm | 1,21 mm |
+| Palamós | 41,85444845 · 3,11919635 | 100 m · 1:1.000 | Via local `827880792` i sender `14762580822` | 0,23 mm | — |
+
+S’han mesurat 182 seccions a Mataró i 72 a Palamós, a més dels punts intermedis. La variació transversal màxima és inferior a 0,001 mm. A les mostres, el reblert i el fons de la calçada comparteixen cota i els senders segueixen el relleu amb un error inferior a 0,001 mm. Les malles exportades són tancades i tenen un filament per peça. Queden pendents el laminat i els creuaments de carreteres a nivell o amb pas inferior.
+
+Per reproduir els controls, executa `node --max-old-space-size=512 scripts/check-road-class-coupons.mjs`. El guió desa els 3MF de Bambu, les mesures i les fonts descarregades a `output/road-class-coupons/` i reutilitza les fonts desades en les següents execucions.
+
 ## Prova de calçada amb rasant pròpia, v0.23.15
 
 En Model complet, `?paviment=rasant` activa la variant amb «Perfils suaus» marcat. La calçada principal surt d’una rasant suavitzada a partir de les cotes de l’eix i de seccions planes d’amplada constant. La malla retalla el terreny dins de la calçada i omple amb terreny fins a la seva cara inferior. Una via menor al mateix nivell pot arribar a la calçada principal sense interrompre-la. Es reserven l’aigua, els traçats ferroviaris, els passos a altres nivells i les zones d’accés a estructures de la mateixa via. En aquests punts es mantenen els controls i els motors de ponts i túnels.

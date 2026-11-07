@@ -37,7 +37,7 @@ import {fitMajorRoadItem,knownBridgeClearance,openedTunnelClearance} from './maj
 import {carveTransportDecks} from './transport-carving.js';
 import {subtractVoids} from './solid-voids.js';
 import {planSurfaceRoad} from './surface-road.js';
-import {planRegionalSurfaceRoads} from './regional-surface-roads.js';
+import {planClassifiedRoadCoupon,planRegionalSurfaceRoads} from './regional-surface-roads.js';
 import {removeCollapsedSurfaceComponents} from './surface-components.js';
 import {isFlowingWater,isMarineWater,isStandingWater,shorelineLevel} from './standing-water.js';
 import {DEFAULT_BASE_THICKNESS_MM,validBaseThickness} from './print-settings.js';
@@ -559,6 +559,18 @@ function assembleRegionalSurfaceRoads(terrain,rise,api,progress,{regions,metadat
   return {parts,forest,mask,legacyRoadPoly,roadPoly};
 }
 
+function buildClassifiedRoadCoupon(terrain,rise,api,progress){
+  const {plan,trailMask}=planClassifiedRoadCoupon(terrain,rise,.65+rise);
+  const profiles=plan.routes.map(route=>route.profile),sourceFeatureIds=profiles.flatMap(profile=>profile.featureIds);
+  const metadata={omissionCounts:{},omissions:[]};
+  const info={sourceFeatureIds,fragments:sourceFeatureIds.length,junctions:plan.junctionCount,
+    stations:profiles.reduce((sum,profile)=>sum+profile.stations.length,0)};
+  const coupon=assembleRegionalSurfaceRoads(terrain,rise,api,progress,
+    {metadata,regions:[{mask:plan.mask,replaces:[],routes:plan.routes,info}]},trailMask,[]);
+  if(!coupon)throw Error(metadata.omissions[0]?.detail??'El paviment del cupó no s’ha pogut construir.');
+  return {...coupon,metadata:{mode:'classified-coupon',applied:true,profiles}};
+}
+
 function assembleSurfaceRoads(terrain,rise,api,progress,plan){
   const {mask,fillMask,routes,junctionCount,structure,tunnel}=plan,thickness=.65+rise;
   let sharedPavement;
@@ -831,9 +843,11 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
   if(![0,.5,1].includes(roadRise))throw Error('Relleu dels camins invàlid.');
   const {railRise}=railwayOptions(options);
   let surfaceRoad=options.surfaceRoads===true?buildSurfaceRoadPilot(terrain,roadRise,infrastructureApi,progress):null;
+  if(options.surfaceRoads==='classified-coupon')surfaceRoad=buildClassifiedRoadCoupon(terrain,roadRise,infrastructureApi,progress);
   let regionalMetadata;
   if(surfaceRoad){
-    roadOnlyPoly=roadPoly=surfaceRoad.mask;
+    roadOnlyPoly=surfaceRoad.legacyRoadPoly??surfaceRoad.mask;
+    roadPoly=surfaceRoad.roadPoly??surfaceRoad.mask;
     forest=surfaceRoad.forest;
     if(surfaceRoad.metadata.bridge)deckItems.length=0;
   }

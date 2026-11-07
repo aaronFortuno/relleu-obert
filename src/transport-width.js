@@ -10,6 +10,8 @@ const MAIN_ROADS=new Set(['motorway','trunk','primary']);
 export const isPrincipalRoad=(properties={})=>MAIN_ROADS.has(properties.class)&&!isLink(properties)&&properties.ramp!=='yes';
 const SECONDARY_ROADS=new Set(['secondary','tertiary']);
 const TRAIL_WIDTHS=new Map([['path',1],['footway',1.5],['steps',1.5]]);
+const TERRAIN_PATHS=new Set([...TRAIL_WIDTHS.keys(),'pedestrian','track','cycleway','bridleway']);
+export const followsTerrain=(properties={})=>TERRAIN_PATHS.has(properties.class);
 const trailClass=({class:roadClass,subclass})=>roadClass==='path'&&['cycleway','bridleway'].includes(subclass)?null:
   roadClass==='path'&&TRAIL_WIDTHS.has(subclass)?subclass:roadClass;
 const DETAIL_FLOOR_MM=.44;
