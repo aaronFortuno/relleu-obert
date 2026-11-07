@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-07. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.23.18 — Control viari dens a l’Hospitalet
+
+El subretall complet confirma una fallada col·lectiva en assignar el material de 20 perfils viaris. Els dos modes exporten la mateixa geometria. El pilot aïllat genera un ramal sobre dues calçades amb una llum calculada mínima d’1,11 mm i enllaços continus. L’error d’integració i el pas de vianants tapat queden pendents. [Controls](RO-052-CONTINUITAT.md#xarxa-densa-a-lhospitalet-v02318)
+
 ## v0.23.17 — Pas inferior i cruïlla a nivell a Mataró
 
 L’usuari valida els dos 3MF de superfície de la v0.23.16. El control següent repeteix un pas inferior real a dues escales. El tauler es conserva a 1:3.333 amb almenys 2,19 mm de llum calculada. A 1:8.000 es construeix una cruïlla seca a una sola cota amb els quatre accessos. El 3MF confirma la continuïtat als dos estreps i als quatre braços. El laminat i la integració del pilot a la xarxa completa queden pendents. [Controls](RO-052-CONTINUITAT.md#pas-inferior-i-cruïlla-a-nivell-a-mataró-v02317)

@@ -1,5 +1,23 @@
 # RO-052 — Continuïtat i amplada de la calçada
 
+## Xarxa densa a l’Hospitalet, v0.23.18
+
+Subretall de 550 × 550 m centrat a `41.35131, 2.05543`, amb la còpia de `hospitalet2.json`, MET5 i edificis ICGC. Peça de 110 × 110 mm a 1:5.000, detall 36, exageració ×1,5 i arbres desactivats. S’hi compten 31 fragments d’autopista o via ràpida, 30 de ramals, 5 d’altres carreteres, 26 de camins i 15 de ferrocarril.
+
+`regional` i `independent` donen la mateixa geometria exportada, verificada amb un hash dels recursos del 3MF. Es preparen 20 perfils suaus. La separació entre taulers i materials del terreny falla amb `Not manifold`, i el motor recupera el càlcul habitual per a tots. El paviment regional cobreix el 19,2% de la petjada original de carreteres. El model conserva 26 taulers cartografiats amb 39 enllaços, 13 extrems sense resoldre i 5 taulers amb algun tram sense suport suficient. Les malles de material superen l’auditoria abans d’exportar.
+
+| Punt del retall | Resultat observat |
+| --- | --- |
+| Ramal `428252022` sobre el camí `1351597090` | El fons del tauler entra 0,51 mm al paviment inferior a la sonda. Un extrem queda sense enllaç suau. |
+| Ramal `1647439892` sobre `3586195772` i `6782699972` | El model complet conserva els dos enllaços. A la sonda sobre `3586195772` hi ha 1,32 mm de llum. El generador marca un tram amb suport insuficient. |
+| Final de tauler `501496622` | L’enllaç selecciona `961983332`. La sortida `1649512752`, més estreta, comparteix l’extrem cartografiat. L’altre extrem del tauler queda condicionat pel cantell del retall. |
+
+S’ha provat el planificador dels cupons per separat en 17 taulers amb creuaments interiors detectats. En 13 es reserva el veí perquè és un camí o una estructura amb tractament propi. Tres passen la comprovació de llum local. En un quart, `1647439902`, la llum és inferior a 0,8 mm i la simplificació de Mataró queda fora d’abast perquè a sota hi ha dues calçades. El recompte és del control local i depèn de les línies i l’escala del retall.
+
+El cupó `ramal-dues-calcades.3mf` aïlla `1647439892`, els dos accessos i totes dues calçades inferiors. La llum calculada mínima a la petjada compartida és d’1,11 mm. A les dues sondes és d’1,28 i 1,14 mm, i el graó als estreps és inferior a 0,001 mm. El 3MF passa l’auditoria. El laminat i la integració del pilot al Model complet queden pendents.
+
+Amb la còpia `output/hospitalet2-repro/region.json`, executa `node --max-old-space-size=512 scripts/check-dense-transport.mjs regional` i després repeteix amb `independent`. Els 3MF i els informes JSON es desen a `output/hospitalet-xarxa/`.
+
 ## Pas inferior i cruïlla a nivell a Mataró, v0.23.17
 
 Mateix retall real de 400 × 400 m centrat a `41.52530, 2.41143136`, amb relleu MET5, exageració ×1 i quatre traçats d’OpenStreetMap via OpenFreeMap. El tauler `343867212` connecta `343867222` amb `429180592` i creua l’autopista `3066223302`. La prova aïlla els dos eixos i conserva les dades d’aigua del retall.

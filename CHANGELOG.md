@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.23.18 — 2026-11-07
+
+- Control de la xarxa densa de l’Hospitalet amb dos modes de paviment i un cupó del ramal sobre dues calçades. La prova identifica una fallada en separar els materials que fa retornar tots els perfils suaus del retall al càlcul habitual. Reproducció amb `scripts/check-dense-transport.mjs`.
+
 ## v0.23.17 — 2026-11-07
 
 - Control del mateix pas inferior de Mataró a dues escales. Quan hi ha prou llum, els accessos enllacen amb el tauler. Per sota del llindar del cupó, es genera una cruïlla a nivell amb els quatre accessos. Reproducció amb `scripts/check-road-crossing.mjs`.
