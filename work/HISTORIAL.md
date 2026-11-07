@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-07. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.23.28 — Viaducte singular de Millau
+
+RO-033 incorpora Millau des d’Open Place Models. El control conserva set piles de projecte i dos enllaços a l’A75 als dos retalls sencers. Un tercer retall, girat i parcial, conserva tres piles i tanca el tauler als límits. L’usuari valida el laminat del cupó de Tamariu de dues plaques. [Controls de Millau](RO-033-CONTROLS-PROCEDIMENTALS.md#pilot-de-millau-al-catàleg--v02328)
+
 ## 2026-11-07 — Controls d’Amsterdam i del relleu de Montserrat
 
 Al centre d’Amsterdam, l’usuari només detecta tres ponts absents en la revisió visual. El control local de 10 × 10 cm a 1:10.000 es completa en 32,16 s, amb 10,09 s fins al primer relleu i 83 taulers procedimentals. El muntatge del paviment regional ocupa 14,02 s. La maqueta de 25 × 25 cm s’atura durant vies en els tres intents per memòria. [Informe i reproducció](RO-053-TEMPS.md#amsterdam-amb-totes-les-capes--v02327)

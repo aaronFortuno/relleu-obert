@@ -1,6 +1,8 @@
+import {validBridgeProfile} from './catalogue-bridges.js';
+
 const catalogueLimit=512*1024,meshLimit=4*1024*1024;
 const catalogueWarning='No s’ha pogut carregar el catàleg de models singulars.';
-const meshWarning='No s’ha pogut carregar algun model singular. Es conserva la geometria de la font d’edificis.';
+const meshWarning='No s’ha pogut carregar algun model singular. Es conserva la geometria de la cartografia general.';
 const decoder=new TextDecoder('utf-8',{fatal:true});
 const integer=(value,min,max)=>Number.isInteger(value)&&value>=min&&value<=max;
 const label=value=>typeof value==='string'&&value.trim().length>0&&value.length<=1000;
@@ -35,17 +37,19 @@ function readCatalogue(data,directory){
   for(const feature of data.features){
     try{
       const {type,id,bbox,geometry:footprint,properties}=feature;
-      const {name,revision,anchor,mesh,height,attribution,license,sources,spatialDataLicense,replacement}=properties;
+      const {name,revision,anchor,mesh,height,attribution,license,sources,spatialDataLicense,replacement,bridge,kind='building'}=properties;
+      if(kind!=='building'&&kind!=='bridge')continue;
       check(type==='Feature'&&label(id)&&!ids.has(id)&&validBounds(bbox)&&inside(bbox,anchor)&&validFootprint(footprint,bbox));
       check([name,revision,mesh,attribution,license].every(label)&&Number.isFinite(height)&&height>0&&height<=1200&&
         Array.isArray(sources)&&sources.every(label)&&(spatialDataLicense===undefined||label(spatialDataLicense)));
       check(replacement===undefined||replacement&&typeof replacement==='object'&&!Array.isArray(replacement)&&
         optionalIds(replacement.featureIds)&&optionalIds(replacement.families));
+      check(kind==='building'||validBridgeProfile(bridge)&&footprint.type==='Polygon');
       const url=new URL(mesh,directory);
       check(mesh===mesh.trim()&&!/^(?:[a-z][a-z+.-]*:|[\\/])/i.test(mesh)&&url.href.startsWith(directory.href)&&
         !url.search&&!url.hash&&url.pathname.endsWith('.glb'));
       ids.add(id);
-      entries.push({id,name,revision,bbox,anchor,footprint,height,attribution,license,sources,spatialDataLicense,replacement,url:url.href});
+      entries.push({id,name,revision,bbox,anchor,footprint,height,attribution,license,sources,spatialDataLicense,replacement,kind,bridge,url:url.href});
     }catch{
       incomplete=true;
     }

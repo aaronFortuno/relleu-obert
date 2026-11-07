@@ -1,19 +1,19 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-07 · v0.23.27**. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-07 · v0.23.28**. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
 | Lot | Línies | Resultat que permet avançar |
 | --- | --- | --- |
 | **Temps de generació** | RO-053 | Amsterdam 10 × 10 cm complet en 32,16 s. Aïllar el muntatge del paviment regional i repetir el retall de 25 × 25 cm, aturat a la fase de vies. [Mesures](RO-053-TEMPS.md#amsterdam-amb-totes-les-capes--v02327) |
-| **Ajustos d’impressió** | RO-056 | Laminar el cupó de Tamariu de dues plaques amb talls desiguals. Després, validar els perfils d’impressora i la mida de cada placa. |
+| **Ajustos d’impressió** | RO-056 | Cupó de Tamariu de dues plaques amb talls desiguals validat al laminador. Continuar amb els perfils d’impressora i la mida de cada placa. |
 | **Catàleg de relleu** | RO-046 | Amsterdam té una primera revisió visual del centre. Continuar amb l’Eixample, Girona i Venècia, i reprendre els controls pendents de les Bardenas, Colorado i Lavaredo. [Cua de revisió](RO-046-CATALEG.md#revisió-per-a-maquetes-daula) |
 | **Paviment de superfície** | RO-051, RO-052 | El retall girat mostra millora al laminador i es dona per bo de moment. La impressió física i els enllaços pendents queden en seguiment. [Control de l’Hospitalet](RO-052-CONTINUITAT.md#talls-locals-sota-els-taulers-v02319) |
 | **Seguiment de les estructures** | RO-033, RO-034, RO-050 | Registrar noves incidències amb retall i escala. A Sant Salvador, dos perfils segueixen el terreny pel pendent dels enllaços. El túnel a 1:20.000 té les dues boques comprovades al 3MF. El pas de Montgròs es conserva al cupó laminat. [Controls de vies](RO-051-PERFILS-VIARIS.md#transicions-pendents-a-la-v0220) · [Montgròs](RO-033-CONTROLS-PROCEDIMENTALS.md#laminat-del-cupó-de-montgròs) |
 | **Validació en paral·lel** | RO-024, RO-033, RO-046, RO-054, RO-055 | Revisar Tamariu 40 × 45 cm i Amsterdam amb totes les capes al laminador. També queden la recuperació d’un projecte girat i els talls dels Rasos–Gallina Pelada. |
 | **Pilot de relleu rocós** | RO-023, RO-035 | Contrastar els cupons MET5 i MDT de 50 cm del Cavall Bernat. Per a les cavitats, obtenir una malla reutilitzable de la Foradada o georeferenciar els Degotalls. [Resultats](RELLEU-ROCOS.md#pilot-de-detall-local-amb-el-mdt-de-50-cm) |
-| **Catàleg de llocs singulars** | RO-032 | Torre Glòries validada visualment per l’usuari. Provar altres edificis quan estiguin disponibles i validar al laminador. [Pilot](RO-032-INTEGRACIO.md#pilot-de-la-torre-glòries--v02327) |
+| **Catàleg de llocs singulars** | RO-032, RO-033 | Torre Glòries validada al visor. Millau verificat a tres retalls. Validar al laminador les llums i els tirants del viaducte. [Controls de Millau](RO-033-CONTROLS-PROCEDIMENTALS.md#pilot-de-millau-al-catàleg--v02328) |
 
 Els encàrrecs independents avancen en paral·lel. Cada bloc validat té el seu commit i es manté una sola prova pesada alhora. Els casos que requereixen inspecció al laminador poden quedar pendents mentre avancen altres línies.
 
@@ -215,7 +215,7 @@ Validar les quatre peces dels Rasos–Gallina Pelada al laminador, sobretot les 
 
 A la v0.23.24, un doble clic o la tecla Supr sobre un tirador restableixen només aquell tall, respectant l’espai mínim entre peces.
 
-Cupó de Tamariu a 1:10.000, peça de 10 × 10 cm, centre 41,918 N, 3,2075 E, detall equilibrat, base de 5 mm i tall a 40 mm des del sud. El 3MF conté dues plaques de 100 × 60 i 100 × 40 mm. Les malles dels quatre filaments són tancades, el mar arriba a la base en totes dues peces i la diferència d’àrea de la secció compartida per filament és inferior a 0,000001 mm². Queda pendent obrir les plaques i comprovar el laminat. Fitxer local `output/tamariu-cupo-dues-plaques-10x10.3mf`.
+Cupó de Tamariu a 1:10.000, peça de 10 × 10 cm, centre 41,918 N, 3,2075 E, detall equilibrat, base de 5 mm i tall a 40 mm des del sud. El 3MF conté dues plaques de 100 × 60 i 100 × 40 mm. Les malles dels quatre filaments són tancades, el mar arriba a la base en totes dues peces i la diferència d’àrea de la secció compartida per filament és inferior a 0,000001 mm². L’usuari confirma que el laminat és correcte. Fitxer local `output/tamariu-cupo-dues-plaques-10x10.3mf`.
 
 El format panoràmic admet de 51 a 100 cm de costat llarg i de 10 a 20 cm de costat curt, en Relleu pur. A la vista inicial, les peces que superen conjuntament els 60 cm es disposen en dues files a la mateixa escala que la taula. La malla rectangular segueix un pas físic similar als dos eixos i comparteix mostres i cota de base als talls.
 

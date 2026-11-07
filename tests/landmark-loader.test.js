@@ -92,6 +92,22 @@ test('catalogue and model failures can be retried while usable models remain ava
   assert.deepEqual([catalogueCalls,meshCalls,otherCalls],[2,2,1]);
 });
 
+test('bridge metadata is required and future model types do not affect buildings',async()=>{
+  const axis=[[2.189,41.403,600],[2.189,41.405,607]];
+  const deckRows=axis.map(([lon,lat,z])=>[[lon-.0001,lat,z],[lon+.0001,lat,z]]);
+  const bridge={anchorElevation:603,verticalDatum:'NGF-IGN69',ref:'A75',roadClass:'motorway',sourceFeatureIds:['1','2'],
+    width:32,depth:4.2,length:200,spans:[100,100],axis,deckRows,pylonIndexCount:3,upperIndexCount:6,
+    stayDiameter:4.5,pierSection:{along:9,across:16}};
+  const load=createLandmarkLoader(catalogue,url=>url!==catalogue?glb():collection(
+    tower(),tower({id:'bridge',properties:{kind:'bridge',bridge}}),
+    tower({id:'incomplete',properties:{kind:'bridge',bridge:{...bridge,spans:[100,90]}}}),
+    tower({id:'terrain',properties:{kind:'terrain',mesh:'ignored.glb'}})));
+  const {models,warnings}=await load(crop);
+  assert.deepEqual(models.map(m=>m.kind),['building','bridge']);
+  assert.deepEqual(models[1].bridge,bridge);
+  assert.equal(warnings.length,1);
+});
+
 test('invalid entries cannot request unapproved URLs or carry replacement IDs of another type',async()=>{
   const requests=[];
   const load=createLandmarkLoader(catalogue,url=>{

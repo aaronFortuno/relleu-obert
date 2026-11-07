@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.23.28 — 2026-11-07
+
+- El viaducte de Millau es carrega del catàleg de models singulars. Conserva el tauler corbat, la distribució de piles i els pilons. Els tirants s’inclouen quan l’escala de la maqueta els permet representar.
+
 ## v0.23.27 — 2026-11-07
 
 - La Torre Glòries s’incorpora automàticament des d’un catàleg de malles georeferenciades. Substitueix el volum d’ICGC, Catastre o OpenStreetMap quan entra al retall i respecta el límit d’altura i l’opció d’amagar els edificis.

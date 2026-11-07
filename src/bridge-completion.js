@@ -13,8 +13,8 @@ export function topSampler(points,faces){
 
 // Walk the actual continuation network. A tunnel is deliberately not a surface
 // approach; at branches prefer the same road class and the smoothest turn.
-export function continuation(end,outward,lines,roadClass,maxLength,identity=null){
-  if(identity){const route=continuationRoute(end,outward,lines,identity,maxLength,{allowStructures:true});const points=route.points;Object.defineProperty(points,'segments',{value:route.segments});return points;}
+export function continuation(end,outward,lines,roadClass,maxLength,identity=null,maxStartDistanceMM){
+  if(identity){const route=continuationRoute(end,outward,lines,identity,maxLength,{allowStructures:true,maxStartDistanceMM});const points=route.points;Object.defineProperty(points,'segments',{value:route.segments});return points;}
   const nodes=new Map();for(const line of lines)if(!line.brunnel)for(let i=1;i<line.points.length;i++)for(const [a,b]of [[line.points[i-1],line.points[i]],[line.points[i],line.points[i-1]]]){
     const k=key(a);if(!nodes.has(k))nodes.set(k,[]);nodes.get(k).push({from:a,to:b,class:line.class});
   }
@@ -80,16 +80,20 @@ function approachNormals(samples){
 
 // Geometry is an explicitly estimated PRINT adaptation. The surveyed deck
 // surface is unchanged; connections follow mapped roads, with C1 Hermite Z.
-export function planApproaches({axis,points,faces,containsDeck,roads,ground,roadRise=0,widthMM,heightMM,roadWidth=.44,scale=.1,destinationSurface=null,destinationBreaks=null,forceConnections=false,terminalRoads=null,maxGrade=null,clipApproach=null,dryApproach=null}){
+export function planApproaches({axis,points,faces,containsDeck,roads,ground,roadRise=0,widthMM,heightMM,roadWidth=.44,scale=.1,destinationSurface=null,destinationBreaks=null,forceConnections=false,terminalRoads=null,maxGrade=null,clipApproach=null,dryApproach=null,maxStartDistanceMM,markClippedEnds=false}){
   const top=topSampler(points,faces),plans=[],missed=[],maxLength=Math.max(40,400*scale);
   for(const reverse of [false,true]){
     const terminalRoad=terminalRoads?.[Number(reverse)];
     if(terminalRoads&&!terminalRoad)continue;
     try{
     const path=reverse?axis.slice().reverse():axis,dir=unit(path[1],path[0]);
+    const [endX,endY]=path[0];
+    if(markClippedEnds&&(endX<0||endX>widthMM||endY<0||endY>heightMM)){
+      missed.push({reason:'deck end outside crop',clippedByCrop:true});continue;
+    }
     let inside=null;for(const {p}of resample(path,.05,Math.max(widthMM,heightMM)*2))if(containsDeck(p)){inside=p;break;}
     if(!inside){missed.push('no interior');continue;}
-    const continuationPath=continuation(path[0],dir,terminalRoad?[terminalRoad]:roads,axis.roadClass,maxLength,axis.identity);if(continuationPath.length<2){missed.push('no compatible mapped road');continue;}
+    const continuationPath=continuation(path[0],dir,terminalRoad?[terminalRoad]:roads,axis.roadClass,maxLength,axis.identity,maxStartDistanceMM);if(continuationPath.length<2){missed.push('no compatible mapped road');continue;}
     // Move from the mapped endpoint into the measured deck until a full width
     // transverse section exists, then overlap it by a small distance.
     let start=null,width=0,startZ=0;
@@ -233,7 +237,7 @@ function bounds(ring){
   return {left,bottom,right,top};
 }
 
-export function planPiers({axis,top,containsDeck,ground,blocked=[],scale,widthMM,heightMM,layout,minimumClearanceMM=.8}){
+export function planPiers({axis,top,containsDeck,ground,blocked=[],scale,widthMM,heightMM,layout,preserveSpans=false,minimumClearanceMM=.8}){
   if(!Number.isFinite(minimumClearanceMM)||minimumClearanceMM<.25||minimumClearanceMM>.8)throw Error('Separació mínima de suport invàlida.');
   // A physical spacing ceiling is independent of map zoom. It is a modelling
   // heuristic, not a promise that a particular printer can bridge this span.
@@ -252,7 +256,10 @@ export function planPiers({axis,top,containsDeck,ground,blocked=[],scale,widthMM
     });
   };
   function place(station,sourceMetres,auxiliary=false){
-    const maxShift=layout&&!auxiliary?(layout.maxLongitudinalAdjustmentMetres??3)*scale:2,offsets=layout&&!auxiliary?[0,.25,-.25,.5,-.5,1,-1].map(v=>v*maxShift):[0,.5,-.5,1,-1,1.5,-1.5,2,-2];
+    const maxShift=layout&&!auxiliary?(layout.maxLongitudinalAdjustmentMetres??3)*scale:2;
+    const offsets=layout&&!auxiliary
+      ?(preserveSpans?[0,.125,-.125,.25,-.25,.375,-.375,.5,-.5,.625,-.625,.75,-.75,.875,-.875,1,-1]:[0,.25,-.25,.5,-.5,1,-1]).map(v=>v*maxShift)
+      :[0,.5,-.5,1,-1,1.5,-1.5,2,-2];
     for(const offset of offsets)for(const lateral of [0,.15,-.15,.3,-.3,.45,-.45,.6,-.6,.8,-.8,1,-1]){
       if(station+offset<0||station+offset>length)continue;
       const candidate=atStation(samples,station+offset),index=candidate.index,direction=unit(samples[Math.max(0,index-1)].p,samples[Math.min(samples.length-1,index+1)].p),x=candidate.p[0]-direction[1]*lateral,y=candidate.p[1]+direction[0]*lateral,z=top(x,y);if(z==null||z-ground(x,y)<minimumClearanceMM||piers.some(p=>dist(p.center,[x,y])<diameter*2))continue;
@@ -286,7 +293,7 @@ export function planPiers({axis,top,containsDeck,ground,blocked=[],scale,widthMM
   };
   // Fill long remaining gaps, including a surveyed layout whose real spans
   // become too long in a large print. Never move or replace its safe piers.
-  for(const gap of unsupported())if(gap.lengthMM>maxSpanMM){
+  if(!preserveSpans)for(const gap of unsupported())if(gap.lengthMM>maxSpanMM){
     const count=Math.ceil(gap.lengthMM/maxSpanMM)-1;
     for(let i=1;i<=count;i++)if(!place(gap.start+gap.lengthMM*i/(count+1),undefined,true))omitted++;
   }

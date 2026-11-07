@@ -1,5 +1,21 @@
 # RO-033 / RO-052 — Controls de ponts procedimentals
 
+## Pilot de Millau al catàleg · v0.23.28
+
+El perfil singular segueix un arc de 2.460 m i radi de 20 km, amb una rasant del 3,025 %. Les dues calçades 3D de la BD TOPO de l’IGN fixen la posició i la cota del tauler, de 600,26 m al nord i 674,68 m al sud en NGF–IGN69. Els enllaços i els fonaments s’ajusten al terreny del retall. Les piles segueixen les estacions de projecte de 204, 546, 888, 1.230, 1.572, 1.914 i 2.256 m. [Xifres del concessionari](https://www.leviaducdemillau.com/sites/viaducdemillau/accueil-viaduc-de-millau/le-viaduc/les-chiffres-cles.html) · [BD TOPO](https://www.data.gouv.fr/datasets/bd-topo-r)
+
+El GLB aporta els pilons i els tirants. Els tirants del model tenen un diàmetre de 4,5 m i s’ometen per sota de 0,42 mm a la maqueta. El motor substitueix les dues calçades, el contorn del pont i les petjades duplicades de les piles identificades a l’índex quan solapen amb el tauler. Les altres vies i els edificis continuen actuant com a obstacles. La regla de catàleg és independent del lloc, del gir i de l’escala. Els trams de projecte es mantenen sense suports auxiliars automàtics. [Fitxa del model](https://github.com/aaronFortuno/open-place-models/tree/main/models/millau-viaduct/r1)
+
+| Retall centrat a 44,07991 N, 3,02244 E | Gir | Piles | Enllaços | Tirants |
+| --- | ---: | ---: | ---: | --- |
+| 250 × 250 mm a 1:10.000 | 26° | 7 | 2 | Sí |
+| 180 × 180 mm a 1:18.000 | 34° | 7 | 2 | Omesos per gruix |
+| 130 × 130 mm a 1:8.500, parcial | −28° | 3 | Extrems fora del retall | Sí |
+
+Els tres controls de relleu, aigua i autopista passen l’auditoria de tancament i cadascun té una sola component per al viaducte i els seus enllaços. Els dos retalls sencers mantenen els enllaços amb l’A75 i cap control duplica el tauler. El fitxer d’1:10.000 conserva una llum sense suport d’uns 33 mm. S’ha de contrastar al laminador. `node --max-old-space-size=512 scripts/check-millau-catalogue.mjs` reprodueix els controls des del catàleg publicat.
+
+El retall de 250 × 250 mm també s’ha verificat amb totes les capes, inclosos edificis, vegetació, paviment regional i perfils suaus. Se’n conserven les set piles, els dos enllaços i una sola component de malla. Les petjades de les piles cartografiades com a edificis quedaven superposades i s’han incorporat a les referències de substitució. Els ajustos de les piles extremes deixen espai als vials de servei i als túnels. Afegir `complet --totes-les-capes` al comandament per repetir el control complet.
+
 ## Ponts curts sobre canals
 
 **v0.22.43.** L’informe d’Amsterdam a 1:10.000 comptava 192 taulers procedimentals i 299 eixos descartats pel pressupost de 200. Els avisos de pendent afectaven els perfils viaris principals. El problema als canals era la cota del tauler, interpolada a partir del DEM dels extrems, respecte de l’aigua modelada.
