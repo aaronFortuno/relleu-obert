@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-07. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## 2026-11-07 — Estudi de GlobalBuildingAtlas
+
+RO-026 registra les llicències separades, el límit de detall LoD1 i la comprovació HTTP 206 amb CORS a Source Cooperative. Les estimacions de lectura de 7,1 MB a Tamariu i 10,2 MB a Glòries es basen en metadades de GeoParquet. La comparació d’edificis i la integració queden pendents. [Estudi de viabilitat](RO-026-FONTS-EDIFICIS.md#globalbuildingatlas--estudi-de-viabilitat)
+
 ## v0.23.26 — Cerca automàtica i estudi de malles singulars
 
 La cerca de llocs espera dos segons de pausa i conserva l’acció immediata amb Retorn. «Projecte nou» passa a la capçalera, al costat de la galeria. RO-032 documenta el pes i la topologia de dues malles de la Torre Eiffel, el CAD 3D de Barcelona i el primer control per retall de 3DBAG. [Fonts i criteris del cupó](RO-032-INTEGRACIO.md#catàleg-de-geometries-singulars--v02326)

@@ -69,3 +69,22 @@ Consultes de la capa `BDTOPO_V3:batiment` amb WFS 2.0, `bbox` en `CRS:84`, sorti
 La mateixa capa retorna zero elements en un retall d’Andorra la Vella. Els temps només mesuren la consulta i varien segons la xarxa. A França, `hauteur` es refereix a l’altura sobre el costat baix del terreny. Cal tenir en compte les cotes de sòl quan la maqueta situa la coberta sobre el costat alt. La cota màxima de coberta tampoc determina per si sola la forma d’una teulada. [Especificació BD TOPO 3.5](https://geoservices.ign.fr/sites/default/files/2025-08/DC_BDTOPO_3-5.pdf#page=79)
 
 El primer pilot seria oferir l’IGN com a font opcional als retalls amb cobertura francesa i comparar-lo amb OSM a Perpinyà i Tolosa. L’adaptador consultaria només el retall, amb paginació limitada, i reutilitzaria el resultat quan es modifiquin els ajustos d’edificis. Cal verificar un retall de frontera abans de substituir cap capa automàticament. Si el servei falla o no té cobertura, el model ha de poder continuar amb OSM.
+
+## GlobalBuildingAtlas · estudi de viabilitat
+
+GBA.LoD1 assigna una altura estimada a cada petjada i en permet l’extrusió com a volum. Combina contorns de diverses fonts. Les altures provenen d’un model basat principalment en imatges de satèl·lit de 2019. El camp `var` indica la variació entre prediccions del model. L’estudi publica errors d’altura (RMSE) d’entre 1,5 i 8,9 m als conjunts de validació, segons la regió. És una font candidata per completar edificis corrents amb petjades o altures escasses. Una sola cota per petjada deixa les cobertes complexes i la silueta dels monuments a RO-032. [Article, §4.4.3–4.5 i §5](https://essd.copernicus.org/articles/17/6647/2025/) · [Malles singulars](RO-032-INTEGRACIO.md#catàleg-de-geometries-singulars--v02326)
+
+Els autors separen les petjades ODbL de les dades LoD1 i d’altura sota CC BY-NC 4.0. El visor i el seu WFS es destinen a consulta interactiva. Per a una integració cal usar els fitxers publicats i aclarir les condicions d’atribució i redistribució abans de barrejar les capes. El canvi de format d’un mirall conserva la necessitat de comprovar aquestes condicions. [Accés i llicències de GBA](https://github.com/zhu-xlab/GlobalBuildingAtlas#access-to-the-data)
+
+### Lectura parcial des del navegador
+
+La distribució original s’organitza en blocs de 5° × 5°. El JSON d’atributs LoD1 del bloc de Tamariu i Barcelona pesa 756 MB abans d’afegir-hi els polígons. La còpia GeoParquet del mateix bloc pesa 826.918.541 bytes. He verificat que serveix intervals amb HTTP 206, CORS permissiu i capçaleres de rang exposades. He llegit 894 kB de metadades per inspeccionar els 587 grups de files, amb estadístiques de les quatre vores de les petjades. [Blocs originals](https://huggingface.co/datasets/zhu-xlab/GBA.LoD1/tree/main/LoD1/europe) · [GeoParquet de Taylor Geospatial](https://source.coop/tge-labs/globalbuildingatlas-lod1/e000_n45_e005_n40.parquet)
+
+| Retall WGS84 (oest, sud, est, nord) | Grups de files candidats | Mida estimada de lectura |
+| --- | --- | --- |
+| Tamariu (3,2015 · 41,9135 · 3,2135 · 41,9225) | 4, amb 65.536 files | 7,1 MB |
+| Glòries (2,1879 · 41,4015 · 2,1919 · 41,4042) | 5, amb 81.920 files | 10,2 MB |
+
+L’estimació suma les metadades i les columnes comprimides de geometria, límits, altura, variància, identificador i font dels grups candidats. La prova ha llegit les metadades. Queda pendent descarregar i filtrar les files per comptar edificis i mesurar la transferència real. La piràmide de walkthru.earth també admet rangs i CORS. Conserva els edificis individuals repartits entre nivells i quadrants amb fitxers grans, de manera que un retall complet encara exigeix combinar nivells i filtrar grups de files. [Piràmide de walkthru.earth](https://source.coop/walkthru-earth/indices/building/globalbuildingatlas) · [Metadades](https://data.source.coop/walkthru-earth/indices/building/globalbuildingatlas/_metadata.json)
+
+El pilot proposat és preparar un retall petit i comparar-lo amb OSM i Catastre a Tamariu, mesurant quants edificis correctes afegeix, quants duplica i com difereixen les altures disponibles. Si hi ha millora, provar un segon retall amb OSM incomplet i una referència local independent. L’ús candidat és complementar petjades o altures absents amb procedència marcada. Encara no és una font del selector.
