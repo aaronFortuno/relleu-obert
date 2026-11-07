@@ -971,10 +971,10 @@ function selectCuratedExample(example){
       buildingSourceDirty||=source.value!==example.buildingSource;
       source.value=example.buildingSource;
       buildingSourceExplicit=false;
-      $('#building-mode').value='limited';
-      $('#building-height').value=$('#building-height').defaultValue;
-      buildingControls();
     }
+    $('#building-mode').value=$('#building-mode option[selected]').value;
+    $('#building-height').value=$('#building-height').defaultValue;
+    buildingControls();
   }
   syncExaggerationLabel();
   syncPrintSettings();

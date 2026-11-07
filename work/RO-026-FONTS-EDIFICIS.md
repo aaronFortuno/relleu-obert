@@ -44,3 +44,28 @@ Comparar el bloc 1074761 de la Perica, una casa aïllada i un cas amb pati de Ta
 Amb aquesta evidència es podrà decidir font principal, complements i substitució, i construir un primer adaptador. Si el servei no admet accés directe des del navegador, estudiar importació de fitxers o preparació de mostres estàtiques obertes. El resultat continuarà sent publicable a GitHub Pages sense backend propi.
 
 **Actualització posterior a v0.7.0:** obtingudes i comparades les geometries cadastrals del primer retall de la Perica; resposta amb CORS permissiu, parts i famílies distingides. Falta la segona zona, contrastar discrepàncies, provar l’accés dins d’un adaptador de navegador, decidir la política i integrar-la. L’estudi no valida un futur model ni tanca RO-002.
+
+## Fonts fora d’Espanya · v0.23.25
+
+Els projectes nous i les fitxes de la galeria utilitzen «Altura i coberta de les dades». Quan falten cotes, es conserva l’estimació del motor. El límit de 5 m continua disponible i els projectes desats recuperen la representació que tenien.
+
+| Àmbit | Font i prova | Encaix amb GitHub Pages |
+| --- | --- | --- |
+| França | La BD TOPO de l’IGN publica geometria, altura en metres, nombre de plantes i cotes de sòl i sostre. Té llicència oberta Etalab 2.0. | La consulta WFS per retall ha respost en GeoJSON i amb `Access-Control-Allow-Origin: *`. És la primera candidata per a un adaptador sense dades al repositori. [Fitxa i llicència](https://www.data.gouv.fr/datasets/bd-topo-r) · [API WFS](https://cartes.gouv.fr/aide/fr/guides-utilisateur/utiliser-les-services-de-la-geoplateforme/diffusion/wfs/) |
+| Andorra | La cartografia topogràfica 3D de 2019 a 1:500 i 1:1.000 documenta façanes i cotes d’edificis. Cobreix zones urbanes i fons de vall. | El GeoPackage es distribueix en un ZIP d’uns 363 MB. El servei de descàrrega no ha retornat CORS i l’IDE documenta un WFS del nomenclàtor. Falta confirmar la reutilització i trobar un servei per retall o preparar una capa reduïda amb permís de redistribució. [Cartografia 3D](https://www.cartografia.ad/cartografia-home/43-cartografia/259-cartografia-topografica-d-andorra-1-500-i-1-1000) · [Serveis IDE](https://www.cartografia.ad/serveis-ogc) |
+| Portugal | CartTop defineix `alturaEdificio` i `numeroTotalPisos`. La llista de col·leccions obertes de la DGT inclou el Cadastro Predial, que és de parcel·les. El GeoJSON municipal de Lisboa retorna polígons i no inclou altures ni plantes. | Lisboa respon a retalls amb CORS permissiu i pot servir per comparar petjades. Encara no s’ha verificat un servei nacional consultable amb cotes d’edifici. [Esquema CartTop](https://www.dgterritorio.gov.pt/recart/CONSTRU%C3%87%C3%95ES/Edificio.html) · [Dades obertes DGT](https://www.dgterritorio.gov.pt/dados-abertos) · [Edificado de Lisboa](https://dados.cm-lisboa.pt/dataset/edificado-e-vias) |
+
+Per a Portugal, el DBSM del JRC publica alçades harmonitzades a escala europea. El paquet nacional pesa uns 2,9 GiB i el catàleg l’ofereix com a fitxer. Caldria preparar una capa per retalls i identificar l’altura com a derivada. [Fitxa del JRC](https://data.jrc.ec.europa.eu/dataset/a601a4a8-9289-4fc4-983a-25d54f957f3a) · [Paquets per país](https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/DBSM/DBSM_Europe_R2025/per-country/)
+
+### Prova de la Géoplateforme
+
+Consultes de la capa `BDTOPO_V3:batiment` amb WFS 2.0, `bbox` en `CRS:84`, sortida GeoJSON, camps seleccionats i ordre estable per `cleabs`. El servidor comprimeix les respostes. Les mides de la taula corresponen al JSON descomprimit. [Documentació WFS](https://cartes.gouv.fr/aide/fr/guides-utilisateur/utiliser-les-services-de-la-geoplateforme/diffusion/wfs/)
+
+| Retall WGS84 (oest, sud, est, nord) | Edificis examinats amb altura positiva | Mida del JSON | Temps de recepció |
+| --- | --- | --- | --- |
+| Perpinyà (2.890, 42.694, 2.897, 42.700) | 497 de 500, en dues pàgines de 250 | 147 i 145 kB | 206 i 177 ms |
+| Tolosa (1.439, 43.599, 1.450, 43.608) | 999 de 1.000 | 727 kB | 243 ms |
+
+La mateixa capa retorna zero elements en un retall d’Andorra la Vella. Els temps només mesuren la consulta i varien segons la xarxa. A França, `hauteur` es refereix a l’altura sobre el costat baix del terreny. Cal tenir en compte les cotes de sòl quan la maqueta situa la coberta sobre el costat alt. La cota màxima de coberta tampoc determina per si sola la forma d’una teulada. [Especificació BD TOPO 3.5](https://geoservices.ign.fr/sites/default/files/2025-08/DC_BDTOPO_3-5.pdf#page=79)
+
+El primer pilot seria oferir l’IGN com a font opcional als retalls amb cobertura francesa i comparar-lo amb OSM a Perpinyà i Tolosa. L’adaptador consultaria només el retall, amb paginació limitada, i reutilitzaria el resultat quan es modifiquin els ajustos d’edificis. Cal verificar un retall de frontera abans de substituir cap capa automàticament. Si el servei falla o no té cobertura, el model ha de poder continuar amb OSM.

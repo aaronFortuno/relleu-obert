@@ -81,7 +81,7 @@ const api=pureRelief?null:await Module();
 if(api){
   api.setup();
   Object.assign(options,{surfaceRoads:'regional',roadRise:0,railRise:0,trailWidth:1,estimatedTunnels:true,
-    majorRoads:true,smoothProfiles:true,buildingMode:'limited',maxBuildingHeight:5});
+    majorRoads:true,smoothProfiles:true,buildingMode:'source'});
 }
 const model=buildModel({...region,meta:{...region.meta,name}},options,message=>console.log(id,message),api);
 const plan=tilePlan(widthMM,heightMM),split=plan.tiles.length>1;

@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-07. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.23.25 — Altures d’edificis i fonts fora d’Espanya
+
+Els projectes nous i les fitxes de la galeria utilitzen l’altura disponible de la font. El límit de 5 m queda com a ajust voluntari. S’ha comprovat el selector en un projecte nou i en obrir Zumaia després d’activar el límit. RO-026 documenta les proves WFS de l’IGN a Perpinyà i Tolosa i la disponibilitat de dades d’Andorra i Portugal. La primera integració internacional queda pendent. [Fonts i mesures](RO-026-FONTS-EDIFICIS.md#fonts-fora-despanya--v02325)
+
 ## v0.23.24 — Detall automàtic, cobertes de muntanya i talls individuals
 
 RO-046 i RO-055 passen totes les fitxes a detall alt, incorporen les cobertes WorldCover dels Alps, Lavaredo, el Fuji i Geiranger i ajusten les Bardenas i el Colorado. El control de les Bardenas conserva les 21.025 cotes i elimina la capa grisa del mosaic regional. S’han regenerat les miniatures dels cinc retalls ajustats i del panoràmic. Al navegador, un canvi de detall regenera Tamariu i el botó d’exportació torna a estar disponible en acabar. El panoràmic en detall alt genera 5.005.740 triangles en quatre peces a 1:500.000. El visor mostra mar als dos extrems i habilita l’exportació.

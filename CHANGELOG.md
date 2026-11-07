@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.23.25 — 2026-11-07
+
+- Els projectes nous i les maquetes de la galeria fan servir l’altura i la coberta de les dades per defecte. El límit de 5 m queda disponible a «Edificis» quan es tria «Altura limitada».
+
 ## v0.23.24 — 2026-11-07
 
 - Canviar el detall inicia el recàlcul automàticament. Totes les maquetes de la galeria s’obren amb detall alt, inclòs el panoràmic dels Pirineus.

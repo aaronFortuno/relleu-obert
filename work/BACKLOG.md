@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-07 · v0.23.24**. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-07 · v0.23.25**. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -31,7 +31,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | Retall girat acceptat provisionalment després de revisar-lo al laminador | Valorar quines irregularitats es distingeixen en la impressió física |
 | [RO-052](#ro-052--continuïtat-i-amplada-del-traçat-viari) | P1 | Ramal sobre dues calçades verificat al cupó. Interferència amb un camí de vianants en el model complet | Comprovar la llum i els enllaços després d’integrar cada grup de vies |
 | [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió) | P1 | Filament per peça validat a Montserrat. Projecte de quatre plaques obert a Bambu Studio | Contrastar el laminat de les quatre peces de Tamariu |
-| [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts) | P1 | Fonts en estudi | Comparació de parts i petjades en segona zona |
+| [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts) | P1 | Peticions reals de la BD TOPO francesa verificades | Pilot IGN a Perpinyà i Tolosa i comparació de parts i petjades |
 | [RO-032](#ro-032--cobertes-i-volums-singulars) | P1 | Consulta opcional d’OSM amb retorn a petjades planes si és buida | Verificar una font de cobertes 3D consultable de l’ICGC |
 | [RO-023](#ro-023--relleu-local-i-fonts-vectorials-de-més-precisió) | P2 | MET5 integrat i auditat al Pedraforca | Contrast visual i refinament de malla |
 | [RO-055](#ro-055--mode-de-relleu-pur) | P2 | Retalls fins a 1:500.000 en tots els formats de Relleu pur | Laminar Tamariu i un panorama amb textura i comprovar dos talls adjacents |
@@ -116,6 +116,8 @@ El pilot històric queda ajornat. La revisió d’usuari a Cardona i Cornellà h
 ### RO-026 — Fidelitat dels edificis i selecció de fonts
 
 Comparar petjades i parts d’edificis d’ICGC, Catastre i OSM en una segona zona. Cal preservar els edificis independents quan la font els distingeix. [Comparativa de fonts](RO-026-FONTS-EDIFICIS.md)
+
+L’IGN francès és candidat a una primera integració sense backend. Andorra disposa de cartografia 3D en descàrrega i a Portugal cal localitzar una capa consultable amb cotes. [Proves per país](RO-026-FONTS-EDIFICIS.md#fonts-fora-despanya--v02325)
 
 ### RO-032 — Cobertes i volums singulars
 
