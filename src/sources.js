@@ -8,7 +8,7 @@ import {regionTileCount,MAX_REGION_TILES} from './region-limits.js';
 import {loadBuildingsRecoverably} from './building-recovery.js';
 import {recommendedPlace} from './recommended-places.js';
 import {loadInfrastructureOverrides} from './infrastructure-registry.js';
-import {createLandmarkLoader,terrainTileSources} from './landmarks.js';
+import {createLandmarkLoader} from './landmarks.js';
 import {fetchOSMBuildings} from './roof-sources.js';
 import {loadReliefWaterways,RELIEF_WATERWAY_SOURCE} from './relief-waterways.js';
 import {isFlowingWater,isMarineWater,isStandingWater} from './standing-water.js';
@@ -175,9 +175,7 @@ function reliefBounds(bbox,panoramic){
   return {wide:panoramic||Math.max(width,height)>50*Math.SQRT2+.1};
 }
 
-// Catalogue sectors are opt-in for controlled comparisons. Keep the normal
-// workshop on the general elevation source and the individual landforms.
-export async function loadRegion({sample=true,bbox,selectionCorners,detailSectors=false,buildingSource,decodeElevation=decodeDEM,localDEM,localBuildings,buildingFallbacks=[],onTiming,pureRelief=false,panoramic=false},progress=()=>{}){
+export async function loadRegion({sample=true,bbox,buildingSource,decodeElevation=decodeDEM,localDEM,localBuildings,buildingFallbacks=[],onTiming,pureRelief=false,panoramic=false},progress=()=>{}){
   async function time(phase,run,details={}){
     if(!onTiming)return run();
     const start=performance.now();
@@ -195,9 +193,7 @@ export async function loadRegion({sample=true,bbox,selectionCorners,detailSector
     const bounds=reliefBounds(bbox,panoramic);
     if(!bounds)throw Error(panoramic?'Retall fora dels límits del format panoràmic.':'Retall fora dels límits de Relleu pur.');
     const {wide}=bounds;
-    const kinds=wide?[]:['landform'];
-    if(detailSectors)kinds.push('terrain-overview');
-    const singulars=kinds.length?time('source.singular-terrain',()=>loadSingularModels(bbox,kinds,selectionCorners)):null;
+    const singulars=!wide?time('source.singular-terrain',()=>loadSingularModels(bbox,['landform'])):null;
     const [w,s,e,n]=RELIEF_LAKE_SOURCE.bounds;
     const insidePilot=bbox[0]>=w&&bbox[1]>=s&&bbox[2]<=e&&bbox[3]<=n;
     let vectorsPromise,oceanProof;
@@ -244,9 +240,7 @@ export async function loadRegion({sample=true,bbox,selectionCorners,detailSector
     }catch{warnings.push(vectorUnavailable);}
     const {models:singularModels,warnings:singularWarnings}=(await singulars)??{models:[],warnings:[]};
     warnings.push(...singularWarnings);
-    const detailTerrain=terrainTileSources(singularModels);
     const meta={bbox,name:'Relleu pur',date:new Date().toISOString(),terrain:terrain.metadata,tiles:terrain.tiles.map(({z,x,y})=>({z,x,y})),
-      ...(detailTerrain.length?{detailTerrain}:{}),
       coverage:{...RELIEF_COVERAGE_SOURCE,available:!!coverage.length,tiles:coverage.map(t=>t.tile),
         rasters:coverage.map(({tile,bbox,width,height,overview})=>({tile,bbox,width,height,...(overview?{overview:true}:{})}))},
       lakes:{count:lakes.length,...(lakes.length?(insidePilot?RELIEF_LAKE_SOURCE:vectorCoverage):{})},
@@ -260,13 +254,7 @@ export async function loadRegion({sample=true,bbox,selectionCorners,detailSector
   if(typeof sample==='string'&&!recommendedPlace(sample))throw Error('Exemple desconegut.');
   let meta=sample?await time('source.catalog',async()=>(await get(base+(recommendedPlace(sample)?.file||'tamariu.json'))).json(),{provider:'sample'}):{name:'Regió seleccionada',bbox,tiles:tileList(bbox),date:new Date().toISOString()};
   if(sample&&bbox)meta={...meta,bbox};
-  const kinds=[];
-  if(!localBuildings)kinds.push('building','bridge');
-  if(!localDEM){
-    kinds.push('landform');
-    if(detailSectors)kinds.push('terrain-overview');
-  }
-  const singulars=kinds.length?time('source.singular-models',()=>loadSingularModels(meta.bbox,kinds,selectionCorners)):null;
+  const singulars=time('source.singular-models',()=>loadSingularModels(meta.bbox,localBuildings?['landform']:undefined));
   let template;
   if(!sample)template=await time('source.catalog',vectorTemplate,{provider:'OpenFreeMap'});
   let features=[],dem=[],terrainRaster,bridgeDem=[],bridgeFeatures=[],incompleteBridgeIds=[],terrainWarnings=[...(meta.sourceWarnings||[])];
@@ -316,8 +304,6 @@ export async function loadRegion({sample=true,bbox,selectionCorners,detailSector
   try{infrastructure=await time('source.infrastructure',()=>loadInfrastructureOverrides(meta.bbox,infrastructureJSON));}
   catch(error){terrainWarnings.push('No s’han pogut carregar els detalls específics dels ponts; s’ha omès aquesta millora. '+error.message);}
   const {models:singularModels,warnings:singularWarnings}=(await singulars)??{models:[],warnings:[]};
-  const detailTerrain=terrainTileSources(singularModels);
-  if(detailTerrain.length)meta.detailTerrain=detailTerrain;
   terrainWarnings.push(...singularWarnings);
   const region={meta,features,vectorFeatures:features,terrainWarnings,dem,terrainRaster,bridgeDem,bridgeFeatures,incompleteBridgeIds,localDEM,infrastructure,singularModels};
   const layer=await loadBuildingsRecoverably(source=>time('source.buildings',()=>loadBuildingLayer(region,{source,localBuildings},progress),{provider:localBuildings?'local':source}),buildingSource||defaultBuildingSource(meta.bbox),localBuildings?[]:buildingFallbacks);

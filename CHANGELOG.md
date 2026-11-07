@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.23.33 — 2026-11-07
+
+- Retirat el pilot de sectors del massís de Montserrat del catàleg i de Relleu Obert. La Roca Foradada continua entrant com a model singular sobre el relleu general.
+
 ## v0.23.32 — 2026-11-07
 
 - Montserrat torna a fer servir el relleu general en tots dos modes. La Roca Foradada conserva el tractament singular i la cavitat de la r2.

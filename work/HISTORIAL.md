@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-07. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.23.33 — Retirada del pilot de sectors de Montserrat
+
+El catàleg actiu retira el model del massís i els fitxers de detall. Relleu Obert elimina el carregador de sectors i conserva el relleu general amb la Foradada com a cavitat del catàleg. La comparativa es manté com a referència de RO-023. [Mesures](RELLEU-ROCOS.md#comparativa-amb-el-relleu-general--v02332)
+
 ## v0.23.32 — Montserrat torna al relleu general
 
 L’usuari observa menys fluïdesa al visor i una qualitat similar o inferior amb els dos sectors actius. El control de Model complet passa de 176.298 a 331.310 triangles amb els sectors. Es desactiva la càrrega normal dels GeoTIFF i es conserva l’obertura singular de la Foradada. El pilot queda disponible per a proves locals. [Comparativa](RELLEU-ROCOS.md#comparativa-amb-el-relleu-general--v02332)

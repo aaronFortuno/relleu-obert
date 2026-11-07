@@ -27,7 +27,7 @@ Als 20 m al voltant del centre del control, el màxim mostrejat és de 1.109,92 
 
 Open Place Models pot compartir l’índex per coordenades, la memòria cau, els identificadors i la procedència entre edificis i formes singulars. El perfil actual de l’edifici encaixa el sòlid sobre el terreny. Un pedaç d’elevació s’aplica abans de generar la superfície. Una malla 3D amb una obertura substitueix un volum de terreny i necessita àncora horitzontal, origen i datum vertical, contorn d’unió i un retall que conservi la cavitat. Si l’encaix no dona un sòlid tancat, cal conservar el MDT general. Els lectors d’edificis actuals han de continuar llegint l’índex v1. El cupó encara és local i no està connectat al catàleg.
 
-Un model del massís de Montserrat pot combinar un relleu base i pedaços locals. L’escala física i la informació disponible governen la selecció de detall. Cal comprovar la transició al terreny, el retall i el gir, la unió de materials, la base i les obertures al laminador abans de publicar cada recurs. Riglos és un segon control de la mateixa estratègia quan es confirmi la cobertura dels espadats. El núvol NPC02 d’Aragó és un punt de partida per a la superfície. [PNOA-LiDAR](https://pnoa.ign.es/pnoa-lidar/tercera-cobertura)
+L’escala física i la informació disponible governen la selecció de detall. Cal comprovar la transició al terreny, el retall i el gir, la unió de materials, la base i les obertures al laminador. Riglos és un altre cas per explorar quan es confirmi la cobertura dels espadats. El núvol NPC02 d’Aragó és un punt de partida per a la superfície. [PNOA-LiDAR](https://pnoa.ign.es/pnoa-lidar/tercera-cobertura)
 
 Millau encaixa en un perfil d’infraestructura amb extrems d’ancoratge, l’eix i la rasant compartits amb l’A75. La geometria preparada pot incloure la curvatura, les piles i els pilons. Els tirants requereixen una variant imprimible segons l’escala. L’absència del recurs o una unió inviable deixen actiu el motor procedimental. [Dades oficials del viaducte](https://www.leviaducdemillau.com/sites/viaducdemillau/accueil-viaduc-de-millau/le-viaduc/les-chiffres-cles.html)
 
@@ -70,13 +70,11 @@ Els tres controls de 10 × 10 cm passen a 1:2.000 en Model complet amb les capes
 
 ### Pilot del massís de Montserrat
 
-La vista general del catàleg cobreix 9,6 × 6,4 km. Relleu Obert combina el relleu general amb dos sectors inicials de 384 × 384 m i pas de 2 m. El gir del retall intervé en la selecció dels fitxers. Les cotes es barregen amb el relleu general als últims 12 m del perímetre exterior de la cobertura i es conserva el detall a la vora compartida. Si falla un sector, es manté la cobertura disponible i es fa la transició al relleu general. [Fitxa del model](https://github.com/aaronFortuno/open-place-models/tree/main/models/montserrat/r1)
-
-Els dos controls de 10 × 10 cm estan centrats a **41,6122626 N, 1,7871346 E**. El Model complet fa servir 1:2.000 i +24°. El Relleu pur fa servir 1:10.000 i −19°. En tots dos casos es carreguen `foradada-nord` i `agulles-nord`, amb 299.992 bytes en total. Les 193 cotes de la vora coincideixen exactament. En el Model complet, la diferència màxima entre les mostres a 1 mm real a cada banda de la vora és de 0,003 mm a la maqueta. Dotze raigs travessen la Foradada sense tocar la malla i la volta es conserva en tots dos controls. Pendent de revisar al visor.
+El pilot de la v0.23.31 combinava el relleu general amb dos sectors de 384 × 384 m i pas de 2 m. Les 193 cotes de la vora comuna coincidien. Els dos sectors sumaven 299.992 bytes. El control de Model complet a 1:2.000 mesurava 0,003 mm de diferència entre mostres a 1 mm real a banda i banda de la vora. La Foradada mantenia les dues boques i la volta al control de malla dels dos modes. [Fitxa històrica del model](https://github.com/aaronFortuno/open-place-models/tree/1ef40e7/models/montserrat/r1)
 
 ### Comparativa amb el relleu general · v0.23.32
 
-La revisió al visor detecta menys fluïdesa i cap millora visual clara en activar els sectors. La versió normal torna a fer servir el relleu general amb la Foradada r2. El catàleg i el control local conserven els dos sectors.
+La revisió al visor va detectar menys fluïdesa i cap millora visual clara amb els sectors. La v0.23.32 va tornar al relleu general amb la Foradada r2. La v0.23.33 retira el carregador de sectors i els fitxers del model del massís de la branca activa del catàleg.
 
 El mateix retall de Model complet a 1:2.000 s’ha generat amb MET5 en dos processos locals separats. Els temps són de construcció de la malla, amb les dades ja carregades. La memòria de la malla suma els buffers que s’envien al visor. El pic de memòria correspon al procés Node fins al final de la generació.
 
@@ -95,9 +93,8 @@ Tots dos models conserven les dues boques i la volta. El control amb relleu gene
 node --max-old-space-size=512 scripts/compare-cavall-bernat.mjs
 node --max-old-space-size=512 scripts/pilot-cavall-detail.mjs
 node --max-old-space-size=512 scripts/pilot-degotalls.mjs
-node --max-old-space-size=512 scripts/check-foradada.mjs montserrat
-node --max-old-space-size=512 scripts/check-foradada.mjs montserrat --relleu-general
-node --max-old-space-size=512 scripts/check-foradada.mjs montserrat-relleu
+node --max-old-space-size=512 scripts/check-foradada.mjs complet
+node --max-old-space-size=512 scripts/check-foradada.mjs relleu
 ```
 
-El primer script escriu quatre 3MF, les seccions SVG i les mesures a `output/cavall-bernat/`. El pilot de detall escriu tres 3MF i les mesures a `output/cavall-bernat-detall/`. El script dels Degotalls baixa en flux l’escaneig original, en comprova l’empremta i desa el cupó i l’auditoria a `output/`.
+El primer script escriu quatre 3MF, les seccions SVG i les mesures a `output/cavall-bernat/`. El pilot de detall escriu tres 3MF i les mesures a `output/cavall-bernat-detall/`. El script dels Degotalls baixa en flux l’escaneig original, en comprova l’empremta i desa el cupó i l’auditoria a `output/`. Els controls de la Foradada comproven la malla i només exporten 3MF amb `--3mf`.
