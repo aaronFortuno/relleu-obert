@@ -6,6 +6,8 @@ Actualitzat: 2026-11-07. Les entrades validades surten del [backlog actiu](BACKL
 
 En repetir el retall dens, el motor conserva 19 perfils suaus i retorna al paviment habitual en un sol tram que falla. Les tres malles per material passen l’auditoria. Els 39 enllaços registrats dels taulers cartografiats es mantenen. El pas de vianants tapat i els 13 extrems sense enllaç continuen pendents. [Control](RO-052-CONTINUITAT.md#talls-locals-sota-els-taulers-v02319)
 
+La comprovació posterior diferencia els dos fitxers `regional.3mf` per la geometria exportada i afegeix un 3MF de 80 × 80 mm amb retall girat 45°. El fitxer girat conté 16 perfils suaus i passa l’auditoria. [Retall girat](RO-052-CONTINUITAT.md#retall-girat-45)
+
 ## v0.23.18 — Control viari dens a l’Hospitalet
 
 El subretall complet confirma una fallada col·lectiva en assignar el material de 20 perfils viaris. Els dos modes exporten la mateixa geometria. El pilot aïllat genera un ramal sobre dues calçades amb una llum calculada mínima d’1,11 mm i enllaços continus. L’error d’integració i el pas de vianants tapat queden pendents. [Controls](RO-052-CONTINUITAT.md#xarxa-densa-a-lhospitalet-v02318)

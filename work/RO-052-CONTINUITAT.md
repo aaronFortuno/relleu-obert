@@ -10,6 +10,14 @@ Els 26 taulers cartografiats continuen amb 39 enllaços, 13 extrems sense resold
 
 Reproducció amb `node --max-old-space-size=512 scripts/check-dense-transport.mjs regional talls-locals`. El 3MF i el diagnòstic es desen a `output/hospitalet-xarxa-talls-locals/`, amb l’exportació anterior disponible a `output/hospitalet-xarxa/` per comparar.
 
+### Retall girat 45°
+
+Els dos `regional.3mf` tenen el mateix nom. El bloc de geometria exportada té hashes diferents i conté 160.842 triangles abans del canvi i 174.772 després. L’usuari indica que a la seva vista els dos fitxers es veuen igual.
+
+El control nou talla una peça de 400 × 400 m amb el mateix centre, gir de 45°, mida de 80 × 80 mm, escala 1:5.000 i detall 28. Es recalculen el terreny, les vores i les vies amb el retall girat. Hi ha 94.846 triangles i 16 perfils suaus aplicats. L’auditoria del 3MF verifica les tres malles tancades i l’assignació dels materials. Es mantenen 11 extrems sense enllaç i el pas de vianants continua tapat al punt mostrejat.
+
+Reproducció amb `node --max-old-space-size=256 scripts/check-dense-transport.mjs regional gir45 --gir45`. Fitxer `output/hospitalet-xarxa-gir45/hospitalet-gir45-1-5000-regional.3mf`.
+
 ## Xarxa densa a l’Hospitalet, v0.23.18
 
 Subretall de 550 × 550 m centrat a `41.35131, 2.05543`, amb la còpia de `hospitalet2.json`, MET5 i edificis ICGC. Peça de 110 × 110 mm a 1:5.000, detall 36, exageració ×1,5 i arbres desactivats. S’hi compten 31 fragments d’autopista o via ràpida, 30 de ramals, 5 d’altres carreteres, 26 de camins i 15 de ferrocarril.

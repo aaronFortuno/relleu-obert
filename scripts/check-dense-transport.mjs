@@ -5,7 +5,7 @@ import {createHash} from 'node:crypto';
 import Module from 'manifold-3d';
 import {strFromU8,unzipSync} from 'fflate';
 import {buildModel} from '../src/geometry.js';
-import {physicalBBox} from '../src/selection.js';
+import {physicalBBox,selectionPose} from '../src/selection.js';
 import {compatibleTransport} from '../src/transport-network.js';
 import {followsTerrain} from '../src/transport-width.js';
 import {planSurfaceRoad} from '../src/surface-road.js';
@@ -15,18 +15,27 @@ import {auditThreeMF} from '../src/three-mf-audit.js';
 
 const mode=process.argv[2]??'regional';
 assert(['regional','independent'].includes(mode),'Tria regional o independent.');
-if(freemem()/2**30<2.5)throw Error('Calen almenys 2,5 GiB lliures per iniciar el control.');
 const label=process.argv[3];
 assert(!label||/^[a-z0-9-]+$/.test(label),'Etiqueta de sortida invàlida.');
+const rotationOption=process.argv[4];
+assert(!rotationOption||rotationOption==='--gir45','El control admet --gir45.');
+const rotation=rotationOption?45:0;
+const minimumFreeGiB=rotation?2.2:2.5;
+if(freemem()/2**30<minimumFreeGiB)throw Error(`Calen almenys ${minimumFreeGiB.toLocaleString('ca')} GiB lliures per iniciar el control.`);
+const filename=rotation?`hospitalet-gir45-1-5000-${mode}`:mode;
 const directory=new URL(`../output/hospitalet-xarxa${label?'-'+label:''}/`,import.meta.url);
 const source=JSON.parse(await readFile(new URL('../output/hospitalet2-repro/region.json',import.meta.url)));
 const tiles=list=>list?.map(({elev,...tile})=>({...tile,elev:Float32Array.from(elev,value=>value??NaN)}));
-const centre=[41.35131,2.05543],sideM=550,sizeMM=110;
-const bbox=physicalBBox(centre,sideM/1000,sideM/1000);
+const centre=[41.35131,2.05543],sideM=rotation?400:550,sizeMM=sideM/5;
+const selection=physicalBBox(centre,sideM/1000,sideM/1000);
+const pose=rotation?selectionPose(selection,rotation):undefined;
+const bbox=pose?.bbox??selection;
 assert(bbox[0]>=source.meta.bbox[0]&&bbox[1]>=source.meta.bbox[1]&&bbox[2]<=source.meta.bbox[2]&&bbox[3]<=source.meta.bbox[3]);
-const region={...source,meta:{...source.meta,bbox,name:'L’Hospitalet · xarxa viària'},dem:tiles(source.dem),bridgeDem:tiles(source.bridgeDem),
+const name=rotation?'L’Hospitalet · xarxa viària · gir de 45°':'L’Hospitalet · xarxa viària';
+const region={...source,meta:{...source.meta,bbox,name},dem:tiles(source.dem),bridgeDem:tiles(source.bridgeDem),
   terrainRaster:{...source.terrainRaster,values:Float32Array.from(source.terrainRaster.values,value=>value??NaN)}};
-const settings={size:sizeMM,widthMM:sizeMM,heightMM:sizeMM,resolution:36,exaggeration:1.5,baseThickness:5,
+const settings={size:sizeMM,widthMM:sizeMM,heightMM:sizeMM,resolution:rotation?28:36,exaggeration:1.5,baseThickness:5,
+  ...(pose?{selectionPose:pose}:{}),
   surfaceRoads:mode,streams:true,streamWidth:1,estimatedTunnels:true,majorRoads:true,smoothProfiles:true,
   buildingMode:'limited',maxBuildingHeight:5,trees:false};
 const api=await Module();api.setup();
@@ -131,7 +140,7 @@ for(const route of visible){
   else counts.otherRoads++;
 }
 const trials=decks.map(trial).filter(Boolean),completion=infrastructure?.completion?.details??[];
-const report={mode,centre,sideM,sizeMM,scale:1000/proj.scale,settings,milliseconds,counts,
+const report={mode,centre,sideM,sizeMM,rotation,scale:1000/proj.scale,settings,milliseconds,counts,
   terrain:region.meta.terrain?.provider,triangles:audit.triangles,parts:audit.parts.map(({name,triangles,closed,errors})=>({name,triangles,closed,errors})),
   pavement:{coverage:surfaceRoads?.coverage,fragments:surfaceRoads?.accepted,omissions:surfaceRoads?.omissionCounts},
   major:{applied:majorRoads?.count,attempted:majorRoads?.attempted,error:majorRoads?.error,recoveryPass:majorRoads?.recoveryPass,omissions:majorRoads?.omissions,
@@ -141,20 +150,20 @@ const report={mode,centre,sideM,sizeMM,scale:1000/proj.scale,settings,millisecon
     missed:completion.filter(d=>!d.mainRoad).reduce((n,d)=>n+d.unconnectedEnds.length,0),unsupported:completion.filter(d=>d.unsupportedSpans.length).map(d=>d.id)},
   probes:measureProbes(),pilot:trials};
 await mkdir(directory,{recursive:true});
-if(!audit.valid)await writeFile(new URL(`${mode}.json`,directory),JSON.stringify(report,null,2)+'\n');
+if(!audit.valid)await writeFile(new URL(`${filename}.json`,directory),JSON.stringify(report,null,2)+'\n');
 assert(audit.valid,JSON.stringify(report.parts));
 const bytes=threeMF(model,{bambu:true});
 const xml=strFromU8(unzipSync(bytes)['3D/3dmodel.model']);
 const resources=xml.indexOf('<resources>');
 assert(resources>=0);
 report.geometryHash=createHash('sha256').update(xml.slice(resources)).digest('hex');
-await writeFile(new URL(`${mode}.json`,directory),JSON.stringify(report,null,2)+'\n');
-await writeFile(new URL(`${mode}.3mf`,directory),bytes);
+await writeFile(new URL(`${filename}.json`,directory),JSON.stringify(report,null,2)+'\n');
+await writeFile(new URL(`${filename}.3mf`,directory),bytes);
 console.log(JSON.stringify({mode,milliseconds,counts,triangles:audit.triangles,pavement:report.pavement,bridges:report.bridges,
   majorProfiles:report.major.applied,materialReplacement:report.major.replacement,majorError:report.major.error,
   pilot:trials.reduce((out,t)=>({...out,[t.status]:(out[t.status]??0)+1}),{})}));
 
-if(mode==='regional'){
+if(mode==='regional'&&!rotation){
   const target=trials.find(item=>item.ids.includes(1647439892));
   const {deck,network}=pilotNetworks.get(target?.id)??{};
   assert(network,'El cupó de dues calçades inferiors ha de superar la planificació local.');
