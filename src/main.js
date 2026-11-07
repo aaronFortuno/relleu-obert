@@ -145,6 +145,10 @@ const canPaint=()=>canUpdateVegetation()&&!busy&&!needsBuild&&reliefTimer===null
 const vegetation=()=>({trees:$('#trees').checked,density:2.5,brushDensity:Number($('#density').value),treeType:$('#tree-type').value,strokes,
   ...(pureSelected()?{vegetationHeight:Number($('#vegetation-height').value),vegetationNoise:Number($('#vegetation-noise').value)}:{})});
 let currentStatus='',currentBadge='';
+const placeSearch=$('#place-search'),searchResults=$('#search-results'),searchForm=$('#search-form');
+const searchSubmit=searchForm.querySelector('[type="submit"]');
+const searchPending=baseMessage('status.searching'),searchChoose=baseMessage('status.chooseResult'),searchEmpty=baseMessage('status.noResults');
+let searchTimer,searchRequest;
 const say=(message,error=false)=>{currentStatus=message;$('#status').textContent=messageText(message);$('#status').classList.toggle('error',error);};
 const badge=message=>{currentBadge=message;$('#model-badge').textContent=messageText(message);$('#model-badge').hidden=!message;};
 const workLabels={
@@ -164,6 +168,8 @@ function lock(value){
   for(const id of ['road-rise','rail-rise','trail-width','estimated-tunnels','major-profiles','model-scale','new-project'])$('#'+id).disabled=updating;
   lockBuildingControls(updating);
   placeMap.setLocked(updating,!narrowWorkshop.matches);
+  placeSearch.disabled=searchSubmit.disabled=updating;
+  if(updating)cancelPlaceSearch();
   resizeFields.disabled=workPending||drawing;
   syncPrintSettings(workPending||drawing);
   syncExport(workPending||!model);
@@ -855,7 +861,55 @@ worker.onerror=event=>{
   else{lock(false);say(error.uiMessage,true);}
   settleBuildings(error);
 };
-$('#search-form').onsubmit=async e=>{e.preventDefault();const input=$('#place-search'),text=input.value.trim();if(!text)return;if(narrowWorkshop.matches)input.blur();$('#search-results').replaceChildren();try{say(baseMessage('status.searching'));const results=await placeMap.search(text);if(results===null){say(baseMessage('status.regionChosen'));return;}for(const result of results){const b=document.createElement('button');b.type='button';b.textContent=result.label;b.onclick=()=>{placeMap.choose(result);input.value=result.label;$('#search-results').replaceChildren();say(baseMessage('status.regionChosen'));};$('#search-results').appendChild(b);}say(baseMessage(results.length?'status.chooseResult':'status.noResults'));}catch(error){say(error.messageKey?baseMessage(error.messageKey):error.message,true);}};
+function cancelPlaceSearch(){
+  clearTimeout(searchTimer);
+  searchRequest?.abort();
+  searchRequest=null;
+  searchResults.replaceChildren();
+  if(currentStatus===searchPending||currentStatus===searchChoose||currentStatus===searchEmpty)say('');
+}
+async function searchPlace(){
+  const query=placeSearch.value.trim();
+  if(placeSearch.disabled||!query||searchRequest)return;
+  const request=new AbortController();
+  searchRequest=request;
+  searchResults.replaceChildren();
+  say(searchPending);
+  try{
+    const results=await placeMap.search(query,request.signal);
+    if(request.signal.aborted)return;
+    if(results===null){say(baseMessage('status.regionChosen'));return;}
+    for(const result of results){
+      const button=document.createElement('button');
+      button.type='button';
+      button.textContent=result.label;
+      button.onclick=()=>{
+        placeMap.choose(result);
+        placeSearch.value=result.label;
+        cancelPlaceSearch();
+        say(baseMessage('status.regionChosen'));
+      };
+      searchResults.appendChild(button);
+    }
+    say(results.length?searchChoose:searchEmpty);
+  }catch(error){
+    if(!request.signal.aborted)say(error.messageKey?baseMessage(error.messageKey):error.message,true);
+  }finally{
+    if(searchRequest===request)searchRequest=null;
+  }
+}
+function schedulePlaceSearch(event){
+  cancelPlaceSearch();
+  if(!event.isComposing&&placeSearch.value.trim())searchTimer=setTimeout(searchPlace,2000);
+}
+placeSearch.oninput=placeSearch.oncompositionend=schedulePlaceSearch;
+placeSearch.oncompositionstart=cancelPlaceSearch;
+searchForm.onsubmit=event=>{
+  event.preventDefault();
+  clearTimeout(searchTimer);
+  if(narrowWorkshop.matches)placeSearch.blur();
+  searchPlace();
+};
 const panoramicPilotId='pirineus-eix';
 const legacyReliefPilotId='pirineus-relleu';
 const legacyAnetoIds=[legacyReliefPilotId,'aneto-llacs'];
@@ -907,8 +961,8 @@ function setExampleRegion(id,name,bbox,rotation){
   placeMap.setRotation(rotation);
   exampleSelection={id,bbox:selectionPose(bbox,rotation).bbox,rotation};
   placeName=name;
-  $('#place-search').value='';
-  $('#search-results').replaceChildren();
+  placeSearch.value='';
+  cancelPlaceSearch();
   placeMap.setRegion(bbox);
 }
 function syncWelcomeCopy(){

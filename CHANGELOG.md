@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.23.26 — 2026-11-07
+
+- La cerca de llocs s’inicia després de dos segons de pausa. Retorn i el botó de cerca continuen disponibles per fer-la immediatament.
+- «Projecte nou» passa a la capçalera, al costat de la galeria.
+
 ## v0.23.25 — 2026-11-07
 
 - Els projectes nous i les maquetes de la galeria fan servir l’altura i la coberta de les dades per defecte. El límit de 5 m queda disponible a «Edificis» quan es tria «Altura limitada».

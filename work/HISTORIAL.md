@@ -2,6 +2,12 @@
 
 Actualitzat: 2026-11-07. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.23.26 — Cerca automàtica i estudi de malles singulars
+
+La cerca de llocs espera dos segons de pausa i conserva l’acció immediata amb Retorn. «Projecte nou» passa a la capçalera, al costat de la galeria. RO-032 documenta el pes i la topologia de dues malles de la Torre Eiffel, el CAD 3D de Barcelona i el primer control per retall de 3DBAG. [Fonts i criteris del cupó](RO-032-INTEGRACIO.md#catàleg-de-geometries-singulars--v02326)
+
+Al navegador, la cerca mostra el darrer text introduït després de la pausa i Retorn aplica les coordenades de seguida. Capçalera comprovada a 1.280, 1.024 i 390 px. «Projecte nou» retorna al selector de mides des de la vista mòbil. Compilació i 29 proves acotades correctes.
+
 ## v0.23.25 — Altures d’edificis i fonts fora d’Espanya
 
 Els projectes nous i les fitxes de la galeria utilitzen l’altura disponible de la font. El límit de 5 m queda com a ajust voluntari. S’ha comprovat el selector en un projecte nou i en obrir Zumaia després d’activar el límit. RO-026 documenta les proves WFS de l’IGN a Perpinyà i Tolosa i la disponibilitat de dades d’Andorra i Portugal. La primera integració internacional queda pendent. [Fonts i mesures](RO-026-FONTS-EDIFICIS.md#fonts-fora-despanya--v02325)

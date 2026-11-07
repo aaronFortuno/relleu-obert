@@ -76,3 +76,23 @@ desenvolupament és la que acredita els paràmetres de la cúpula.
 Laminat i impressió física encara requereixen validació. La disponibilitat
 de paràmetres OSM varia segons la regió; aquesta integració no dona per
 resolta la reconstrucció de totes les teulades de Tamariu.
+
+## Catàleg de geometries singulars · v0.23.26
+
+Podem preparar malles en local i servir-les com a fitxers estàtics. El navegador només demanaria les que intersectin el retall. Aquest flux també permet aprofitar dades derivades de LiDAR per tercers. La reconstrucció a demanda a partir d’un núvol de punts és una línia diferent. Com a control de viabilitat, l’API 3DBAG ha retornat CityJSON amb CORS per un retall de 200 × 200 m d’Amsterdam. La primera pàgina, de cinc edificis, feia 64 kB de JSON. Són volums i cobertes precalculats de ciutat, amb menys detall que una malla arquitectònica. [API 3DBAG](https://api.3dbag.nl/api.html) · [Dades i mètode de 3DBAG](https://3d.bk.tudelft.nl/projects/3dbag/)
+
+| Font | Evidència i límits |
+| --- | --- |
+| Torre Eiffel | Open Landmarks distribueix un GLB georeferenciat amb CORS. La versió baixa té 5.791 triangles i pesa 115 kB amb gzip. La detallada té 28.176 triangles i pesa 647 kB. La malla està sota CC BY-SA 3.0 i les dades d’ubicació derivades d’OSM, sota ODbL. L’auditoria confirma vores obertes i no manifold. [Fitxa i llicències](https://open-landmarks.benmaps.fr/landmarks/eiffel-tower/) · [Auditoria del proveïdor](https://open-landmarks.benmaps.fr/assets/eiffel-tower/4e011f6dced3b66b9599894f5e689977b06694c5d678a09872892d7f72e9a7d1/validation.json) |
+| Sagrada Família i Torre Glòries | Barcelona publica CAD 3D per barris i un model tridimensional d’edificacions amb CC BY 4.0. Cal extreure els dos edificis i comprovar quines parts singulars contenen. La mostra d’alta resolució del temple de l’ICGC és un visor. Falta confirmar accés i llicència de la malla. [CAD 3D municipal](https://portaldades.ajuntament.barcelona.cat/mapes/146) · [Model municipal](https://portaldades.ajuntament.barcelona.cat/mapes/145) · [Visor ICGC](https://betaportal.icgc.cat/model-3d-de-la-sagrada-familia-en-alta-resolucio/) |
+| Sant Marc i Pisa | El projecte de Sant Marc documenta un model BIM, amb reutilització de la malla pendent de verificar. Per a Pisa hi ha un núvol de punts de 2,37 GB amb CC BY-NC-SA, que requeriria preparació prèvia. [Projecte de Sant Marc](https://www.unescolab.mantova.polimi.it/elementor-796/) · [Arxiu de Pisa](https://openheritage3d.org/project.php?id=dbg6-x966) |
+
+Com a estimació de pes abans de reparar la malla, les posicions i les cares de la Torre Eiffel ocupen **46 kB** en gzip per a la versió baixa i **219 kB** per a la detallada. La mida final depèn de la reparació, el detall i el format. Una peça paramètrica simple pot cabre en pocs kilobytes. Per a la Sagrada Família cal mesurar la geometria que conservi una silueta reconeixible a l’escala impresa.
+
+### Criteris del primer cupó
+
+1. Preparar una peça singular amb llicència, autoria, data, petjada, àncora geogràfica i unitats en metres. Simplificar per conservar la silueta, les parts reconeixibles i les obertures imprimibles.
+2. Comparar-la amb OSM a dues escales. Verificar el contacte amb el relleu, la rotació i el retall a la vora de la maqueta. La Torre Eiffel permet comprovar les quatre potes i els arcs. Un volum més senzill permet comprovar primer l’encaix al terreny.
+3. Auditar el sòlid i exportar un 3MF de prova amb la mateixa geometria que es veu al visor. Substituir només les petjades corresponents quan la malla preparada s’hagi carregat i validat. La capa OSM queda com a alternativa.
+
+La v0.23.26 deixa les fonts i els criteris documentats. El cupó i el carregador del catàleg queden pendents.

@@ -199,13 +199,15 @@ export function createPlaceMap(container,{onChange,onName,width=150,height=150})
     if(wheelZoom&&!value)map.scrollWheelZoom.enable();
     else map.scrollWheelZoom.disable();
   }
-  return {map,getBBox:selection,getPose:pose,getScaleLimit,setRotation,resizePiece,setSize,setLocked,setPureRelief(value){const previous=baseSelection();pureRelief=value;fit(previous);},setScale(value){fit(scaledBBox(pose().center,...physical,value,pureRelief?reliefScaleRange():undefined));},setRegion:fit,async search(text){
+  return {map,getBBox:selection,getPose:pose,getScaleLimit,setRotation,resizePiece,setSize,setLocked,setPureRelief(value){const previous=baseSelection();pureRelief=value;fit(previous);},setScale(value){fit(scaledBBox(pose().center,...physical,value,pureRelief?reliefScaleRange():undefined));},setRegion:fit,async search(text,signal){
     const coordinate=parseCoordinates(text);if(coordinate){map.setView([coordinate.lat,coordinate.lon],map.getZoom(),{animate:false});onName(text);return null;}
     const cacheKey='relleu-search:'+text.trim().toLowerCase();let cached;try{cached=JSON.parse(sessionStorage.getItem(cacheKey));}catch{}
     if(cached)return cached;
     const url=new URL('https://photon.komoot.io/api/');url.searchParams.set('q',text);url.searchParams.set('limit','5');const c=map.getCenter();url.searchParams.set('lat',c.lat);url.searchParams.set('lon',c.lng);
     let response;
-    try{response=await fetch(url,{signal:AbortSignal.timeout(12000)});}catch{throw Error(t('example.map.searchUnavailable'));}
+    const timeout=AbortSignal.timeout(12000);
+    try{response=await fetch(url,{signal:signal?AbortSignal.any([signal,timeout]):timeout});}
+    catch{signal?.throwIfAborted();throw Error(t('example.map.searchUnavailable'));}
     if(!response.ok)throw Error(t('example.map.searchUnavailable'));
     const data=await response.json(),results=data.features.map(f=>({lat:f.geometry.coordinates[1],lon:f.geometry.coordinates[0],label:[f.properties.name,[f.properties.street,f.properties.housenumber].filter(Boolean).join(' '),f.properties.city||f.properties.county,f.properties.postcode,f.properties.country].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join(', ')}));
     try{sessionStorage.setItem(cacheKey,JSON.stringify(results));}catch{}return results;

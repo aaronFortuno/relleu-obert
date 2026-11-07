@@ -68,14 +68,10 @@
   .sidebar-left .section-toggle[aria-expanded=true] {border-bottom-color:var(--green);color:var(--green)}
   .sidebar-left .section-toggle [aria-hidden] {display:none}
   .sidebar-left .config-content {grid-area:2 / 1 / 3 / -1;min-height:0;padding:8px 0;overflow:auto;overscroll-behavior:contain}
-  .sidebar-left #new-project,.sidebar-left .step-action.is-build {
-    grid-row:3;min-height:44px;margin:4px 0;padding:6px 8px;width:100%;
+  .sidebar-left .step-action.is-build {
+    grid-area:3 / 1 / 4 / -1;min-height:44px;margin:4px 0;padding:6px 8px;width:100%;
   }
-  .sidebar-left #new-project {grid-column:1 / 3}
-  .sidebar-left .step-action.is-build {grid-column:3 / -1}
   .sidebar-left .step-action:not(.is-build) {display:none}
-  .sidebar-left:has(#mode-relief:checked) #new-project {grid-column:1}
-  .sidebar-left:has(#mode-relief:checked) .step-action.is-build {grid-column:2}
 
   .app-layout[data-mobile-panel=export] .sidebar-right {display:flex;overflow:visible}
   .sidebar-right .info-panel:has(#info-data),#material-legend {display:none}
