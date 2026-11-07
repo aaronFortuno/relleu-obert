@@ -2,6 +2,20 @@ import {fractionalBounds,reliefBoundsClipper,sampleBounds} from './relief-bounds
 
 export const RELIEF_SKIN_DEPTH=.65;
 
+// A regional overview is useful on a panorama, but its cells become patches
+// several millimetres across when used for a close-up.
+export function printableReliefCoverage(coverage,project){
+  const maximumPixelMM=2;
+  return coverage.filter(({overview,bbox,width,height})=>{
+    if(!overview)return true;
+    const [west,south,east,north]=bbox;
+    const [x,y]=project([west,south]);
+    const [u,v]=project([west+(east-west)/width,south]);
+    const [p,q]=project([west,south+(north-south)/height]);
+    return Math.max(Math.hypot(u-x,v-y),Math.hypot(p-x,q-y))<=maximumPixelMM;
+  });
+}
+
 // Interpolate class weights on the raster. Each grid vertex receives three
 // scores, with a tiny deterministic bias for exact categorical ties.
 export function sampleCoverage(coverage,lon,lat,out,offset){

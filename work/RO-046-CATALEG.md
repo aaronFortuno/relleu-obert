@@ -6,6 +6,8 @@ RO-046 recull **37 enquadraments**, 23 de **Relleu pur** i 14 de **Model complet
 
 La cua comença per la revisió inicial i les sis incorporacions. Després agrupa els retalls que es poden comparar a l’aula. Obre cada retall amb els seus ajustos, comprova la forma en vista zenital i obliqua i registra el resultat del laminat. Apunta si cal canviar l’enquadrament, el gir, l’escala o l’exageració. Un **ajust incorporat** queda pendent de tornar a comprovar. La validació física es registra a part.
 
+Totes les fitxes s’obren amb detall alt, inclòs el panoràmic dels Pirineus. Les notes de generacions anteriors descriuen els ajustos que es van utilitzar en aquelles proves.
+
 ### Revisió inicial
 
 | Fitxa | Estat | Què cal comprovar | Ajust o observació |
@@ -28,7 +30,7 @@ Les sis fitxes ja són a la galeria. Els enquadraments inicials, les fonts i les
 | Penya-segats de Zumaia | **Ajust incorporat** | El perfil entre Pikote, Algorri i Itzurun es distingeix de la plataforma litoral. | Model complet, nou centre i peça de 20 × 10 cm a 1:15.000. Detall a `galeria-zumaia.json`. |
 | Meandres de l’Ebre · Riba-roja i Flix | **Ajust incorporat** | Els dos revolts són llegibles i el riu envolta la llengua de terra de Flix sense interrompre’s. | Retall de 12 × 8 km en la mateixa peça de 24 × 16 cm, amb gir de +15°, detall alt i exageració ×1,25. Detall a `galeria-flix.json`. |
 | Conca de Tremp i Montsec | **Ajust incorporat** | El fons de la conca es distingeix de les carenes que el delimiten, amb el Montsec al sud. | Nou centre, escala 1:150.000, detall alt i exageració ×1,75. Detall a `galeria-tremp.json`. |
-| Pirineus panoràmics | **Ajust incorporat** | Les quatre peces mantenen l’eix de la serralada continu i mostren mar a tots dos extrems. Comprova si es distingeixen el sòl nu i la neu. | Nou centre, escala 1:500.000, detall equilibrat, exageració ×2 i cinc materials. Detall a `galeria-panoramica.json`. |
+| Pirineus panoràmics | **Ajust incorporat** | Les quatre peces mantenen l’eix de la serralada continu i mostren mar a tots dos extrems. Comprova si es distingeixen el sòl nu i la neu i valora el temps amb detall alt. | Nou centre, escala 1:500.000, detall alt, exageració ×2 i cinc materials. Enquadrament a `galeria-panoramica.json`. |
 
 A la prova inicial dels Pirineus només es distingien l’aigua i el relleu marró. La cobertura WorldCover 2021 del retall complet representa en gris el sòl nu o amb poca vegetació i en blanc la neu o el gel. Els colors descriuen la cobertura del sòl.
 
@@ -53,10 +55,10 @@ El retall de l’Aneto fa 25 × 20 cm per mantenir el nord a dalt i encabir tot 
 | Santorini | **Validat** | Thera i Therasia emmarquen la caldera marina i els illots Kameni queden separats. | — |
 | Mont Fuji | **Ajust incorporat** | El con i els vessants radials es llegeixen des de diversos angles. Comprova si es distingeix el cràter. | Exageració vertical ×1,25. |
 | Geirangerfjord | **Ajust incorporat** | El braç de mar arriba fins a Geiranger i queda encaixat entre vessants escarpats. | Centre, escala 1:200.000 i exageració vertical ×1,25 de `galeria-geiranger.json`. |
-| Bardenas Reales · Bardena Blanca | Pendent | Els barrancs de les Cortinas i el turó del Castildetierra es distingeixen de la plana. | — |
-| Gran Canó del Colorado | Pendent | El Colorado es llegeix al fons del canó entre les dues vores de l’altiplà i les valls laterals. | — |
-| Tre Cime di Lavaredo | Pendent | Les tres torres rocoses conserven una silueta diferenciada sobre el replà. | — |
-| Table Mountain | Pendent | El cim tabular es distingeix de Lion’s Head i la base manté el gruix previst. | — |
+| Bardenas Reales · Bardena Blanca | **Ajust incorporat** | Els barrancs de les Cortinas i el turó del Castildetierra es distingeixen de la plana, sense taques grises de vores rectes. | La coberta regional queda omesa quan un píxel supera 2 mm a la maqueta. La fitxa obre amb tres materials i conserva el retall de 6 × 6 km. |
+| Gran Canó del Colorado | **Ajust incorporat** | El Colorado es llegeix al fons del canó entre les dues vores de l’altiplà i les valls laterals. | Exageració vertical ×2 segons l’apunt de `galeria-colorado.json`, amb l’enquadrament de la fitxa. |
+| Tre Cime di Lavaredo | **Ajust incorporat** | Les tres torres rocoses conserven una silueta diferenciada sobre el replà. | Enquadrament revisat. S’hi afegeix una coberta de detall d’ESA WorldCover amb sòl nu en gris i neu o gel en blanc on hi ha dades. |
+| Table Mountain | Pendent | El cim tabular es distingeix de Lion’s Head i la base manté el gruix previst. | Possible salt entre tessel·les al sud de Table Mountain. La comprovació de les mostres terrestres a les vores nord-sud del retall de la fitxa no ha reproduït el salt. |
 
 ### Trames urbanes i pendents
 

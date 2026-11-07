@@ -14,7 +14,8 @@ import {PURE_RELIEF_RESOLUTIONS,splitPureRelief} from '../src/pure-relief-mesh.j
 import {groupReliefMaterials} from '../src/materials.js';
 import {bambuPlateProject,threeMF} from '../src/export.js';
 import {auditModel} from '../src/solid-audit.js';
-import {CURATED_EXAMPLES} from '../src/curated-examples.js';
+import {CURATED_EXAMPLE_DETAIL,CURATED_EXAMPLES} from '../src/curated-examples.js';
+import {loadReliefCoverage} from '../src/relief-coverage.js';
 import {catalogueThumbnail} from './render-catalogue-thumbnail.mjs';
 
 const cases={
@@ -38,6 +39,13 @@ const pose=selectionPose(scaledBBox(center,widthMM,heightMM,scale,range),rotatio
 const directory=new URL('../output/cataleg-relleu/',import.meta.url);
 await mkdir(directory,{recursive:true});
 const cache=new URL(`${id}.v8`,directory);
+const fetchAsset=url=>readFile(new URL('../public/'+String(url).slice(2),import.meta.url)).then(
+  bytes=>new Response(bytes),
+  error=>{
+    if(error.code!=='ENOENT')throw error;
+    return new Response(null,{status:404});
+  }
+);
 let data;
 try{
   const cached=deserialize(await readFile(cache));
@@ -47,15 +55,10 @@ try{
 catch(error){
   if(error.code!=='ENOENT')throw error;
 }
+if(data&&stage==='miniatura'&&pureRelief)data.coverage=await loadReliefCoverage(pose.bbox,fetchAsset);
 if(!data){
   const networkFetch=globalThis.fetch;
-  globalThis.fetch=(url,options)=>{
-    if(!String(url).startsWith('./'))return networkFetch(url,options);
-    return readFile(new URL('../public/'+String(url).slice(2),import.meta.url)).then(bytes=>new Response(bytes),error=>{
-      if(error.code!=='ENOENT')throw error;
-      return new Response(null,{status:404});
-    });
-  };
+  globalThis.fetch=(url,options)=>String(url).startsWith('./')?fetchAsset(url):networkFetch(url,options);
   await init(await WebAssembly.compile(await readFile(new URL('../node_modules/@jsquash/webp/codec/dec/webp_dec.wasm',import.meta.url))));
   data=await loadRegion({sample:false,bbox:pose.bbox,pureRelief,panoramic,buildingSource:chosen.buildingSource,
     decodeElevation:async(blob,tile)=>decodeDEMTile(await blob.arrayBuffer(),tile,decodeWebp)},message=>console.log(id,message));
@@ -67,7 +70,7 @@ if(stage==='fonts')process.exit(0);
 const options={pureRelief,selectionPose:pose,targetScale:scale,widthMM,heightMM,size:Math.max(widthMM,heightMM),
   resolution:panoramic?240:192,exaggeration:1.5,baseThickness:5,streams:true,streamWidth:1,trees:false};
 const resolutions=pureRelief?PURE_RELIEF_RESOLUTIONS:{24:36,36:64,56:96};
-if(published)Object.assign(options,{resolution:resolutions[example.detail??36],
+if(published)Object.assign(options,{resolution:resolutions[CURATED_EXAMPLE_DETAIL],
   exaggeration:example.exaggeration??1.5,streamWidth:example.streamWidth??1,trees:example.trees??true,
   vegetationHeight:.8,vegetationNoise:45});
 const started=performance.now();

@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-07 · v0.23.23**. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-07 · v0.23.24**. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -8,7 +8,7 @@ Actualitzat el **2026-11-07 · v0.23.23**. [Historial](HISTORIAL.md).
 | --- | --- | --- |
 | **Temps de generació** | RO-053 | Primera optimització d’edificis mesurada amb la mateixa malla. Tornar a mesurar Amsterdam complet i aïllar la integració de les vies principals. [Mesures](RO-053-TEMPS.md) |
 | **Ajustos d’impressió** | RO-056 | Validar els tiradors del plànol i laminar dues peces contigües de mides diferents. Després, estudiar els perfils d’impressora i la mida de cada placa. |
-| **Catàleg de relleu** | RO-046 | Tornar a comprovar les sis fitxes ajustades i continuar els blocs pendents. [Cua de revisió](RO-046-CATALEG.md#revisió-per-a-maquetes-daula) |
+| **Catàleg de relleu** | RO-046 | Revisar els darrers ajustos a les Bardenas, Colorado i Lavaredo i continuar amb les trames urbanes. [Cua de revisió](RO-046-CATALEG.md#revisió-per-a-maquetes-daula) |
 | **Paviment de superfície** | RO-051, RO-052 | El retall girat mostra millora al laminador i es dona per bo de moment. La impressió física i els enllaços pendents queden en seguiment. [Control de l’Hospitalet](RO-052-CONTINUITAT.md#talls-locals-sota-els-taulers-v02319) |
 | **Seguiment de les estructures** | RO-033, RO-034, RO-050 | Registrar noves incidències amb retall i escala. A Sant Salvador, dos perfils segueixen el terreny pel pendent dels enllaços. El túnel a 1:20.000 té les dues boques comprovades al 3MF. El pas de Montgròs es conserva al cupó laminat. [Controls de vies](RO-051-PERFILS-VIARIS.md#transicions-pendents-a-la-v0220) · [Montgròs](RO-033-CONTROLS-PROCEDIMENTALS.md#laminat-del-cupó-de-montgròs) |
 | **Validació en paral·lel** | RO-024, RO-033, RO-046, RO-054, RO-055 | Revisar Tamariu 40 × 45 cm i Amsterdam amb totes les capes al laminador. També queden la recuperació d’un projecte girat i els talls dels Rasos–Gallina Pelada. |
@@ -149,6 +149,8 @@ El [catàleg](RO-046-CATALEG.md) inclou 37 retalls, amb 23 fitxes de Relleu pur 
 
 Cap de Creus, Tamariu, Tenerife i Santorini validats. Les sis incorporacions ja tenen els ajustos dels JSON de revisió. El panoràmic dels Pirineus amplia la cobertura de sòl nu i neu o gel. [Cua de revisió](RO-046-CATALEG.md#revisió-per-a-maquetes-daula) · [Retalls de prova inicials](RO-046-PROVES-RELLEU.md)
 
+A la v0.23.24 totes les fitxes s’obren amb detall alt. El panoràmic dels Pirineus s’ha completat al navegador amb 5.005.740 triangles i quatre peces. Queda validar el rendiment en ús habitual i els darrers ajustos de les Bardenas, Colorado i Lavaredo.
+
 ### RO-047 — Precàrrega opcional de fonts alternatives
 
 Reprendre quan les consultes i la recuperació siguin fiables. Si es prova, la precàrrega ha de ser opcional i acotada.
@@ -189,7 +191,9 @@ Les peces normals abasten d’1:10.000 a 1:500.000. Els retalls amplis fan servi
 
 El mar cartografiat queda a 5 mm de la base, també en canviar l’exageració. A l’interior es pren el mínim un cop anivellats els llacs.
 
-L’exageració vertical, els rius i la textura de vegetació s’apliquen automàticament sobre la maqueta carregada i mantenen la càmera. El canvi de detall, de mida o de retall es confirma amb «Genera el model».
+L’exageració vertical, els rius i la textura de vegetació s’apliquen automàticament sobre la maqueta carregada i mantenen la càmera. El canvi de detall inicia el recàlcul automàticament. Els canvis de mida o de retall es poden confirmar amb «Genera el model».
+
+ESA WorldCover aporta cobertes noves de sòl nu i neu o gel als Alps, Lavaredo, el Fuji i Geiranger. Els mosaics regionals s’ometen si un píxel supera els 2 mm a la maqueta. Queda pendent validar una font remota per ampliar la cobertura a altres serralades.
 
 «Vegetació simulada» activa una textura contínua i editable sobre el bosc. A 1:10.000 l’alçada màxima per defecte és de 0,8 mm, regulable entre 0,2 i 2 mm, i la irregularitat inicial és del 45 %. L’altura varia amb l’escala i se suavitza als límits del bosc. Les vores internes de les tessel·les queden dissoltes, comprovat amb el retall de linies-vegetacio.json. Queda pendent comprovar el laminat i una impressió de prova.
 
@@ -198,6 +202,8 @@ Validar les quatre peces dels Rasos–Gallina Pelada al laminador, sobretot les 
 ### RO-056 — Base, talls i plaques
 
 «Impressió» permet ajustar la base i repartir la maqueta amb mides diferents per columna i fila. Les guies i l’exportació comparteixen els mateixos talls. El 3MF multiplaca actual té una placa de referència de 256 × 256 mm; els talls més grans s’exporten en fitxers separats. Queda comprovar el laminat i, en una fase posterior, verificar els perfils reals d’impressores i avisar si una peça no hi cap.
+
+A la v0.23.24, un doble clic o la tecla Supr sobre un tirador restableixen només aquell tall, respectant l’espai mínim entre peces.
 
 El format panoràmic admet de 51 a 100 cm de costat llarg i de 10 a 20 cm de costat curt, en Relleu pur. A la vista inicial, les peces que superen conjuntament els 60 cm es disposen en dues files a la mateixa escala que la taula. La malla rectangular segueix un pas físic similar als dos eixos i comparteix mostres i cota de base als talls.
 

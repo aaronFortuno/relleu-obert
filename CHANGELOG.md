@@ -1,5 +1,11 @@
 # Canvis
 
+## v0.23.24 — 2026-11-07
+
+- Canviar el detall inicia el recàlcul automàticament. Totes les maquetes de la galeria s’obren amb detall alt, inclòs el panoràmic dels Pirineus.
+- Doble clic o tecla Supr per restablir un tall individual al plànol d’impressió.
+- Noves cobertes de sòl nu i neu o gel als Alps, Lavaredo, el Fuji i Geiranger. A les Bardenas es prescindeix de les taques de la coberta regional i al Gran Canó del Colorado s’ajusta l’exageració vertical a ×2.
+
 ## v0.23.23 — 2026-11-07
 
 - S’apliquen els retalls revisats de Gibraltar, O Vao, Zumaia, Flix, Tremp i els Pirineus panoràmics. O Vao i Zumaia passen a Model complet.

@@ -236,7 +236,7 @@ export async function loadRegion({sample=true,bbox,buildingSource,decodeElevatio
     }catch{warnings.push(vectorUnavailable);}
     const meta={bbox,name:'Relleu pur',date:new Date().toISOString(),terrain:terrain.metadata,tiles:terrain.tiles.map(({z,x,y})=>({z,x,y})),
       coverage:{...RELIEF_COVERAGE_SOURCE,available:!!coverage.length,tiles:coverage.map(t=>t.tile),
-        rasters:coverage.map(({tile,bbox,width,height})=>({tile,bbox,width,height}))},
+        rasters:coverage.map(({tile,bbox,width,height,overview})=>({tile,bbox,width,height,...(overview?{overview:true}:{})}))},
       lakes:{count:lakes.length,...(lakes.length?(insidePilot?RELIEF_LAKE_SOURCE:vectorCoverage):{})},
       waterways:{count:waterways.length,areaCount:waterAreas.length,...(waterways.length||waterAreas.length?(insidePilot?RELIEF_WATERWAY_SOURCE:vectorCoverage):{})},
       oceans:{count:oceans.length,...vectorCoverage},

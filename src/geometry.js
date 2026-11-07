@@ -1,4 +1,4 @@
-import {sampleCoverage} from './relief-contours.js';
+import {printableReliefCoverage,sampleCoverage} from './relief-contours.js';
 import {levelReliefLakes} from './relief-lakes.js';
 import {reliefDiagonals,reliefParts,reliefGridSize,reliefTreesPart,previewReliefPieces,assemblePanoramicRelief,reliefInlandWater,PURE_RELIEF_RESOLUTIONS} from './pure-relief-mesh.js';
 import {reliefStreamStrips} from './relief-streams.js';
@@ -696,7 +696,8 @@ function buildPureRelief(data,options,progress,preview){
       preview.stage('terrain','Previsualització del relleu per peces',piece.index,piece.total);
     });
   }
-  const cells=[0,0],coverage=data.coverage||[];
+  const cells=[0,0],sourceCoverage=data.coverage||[];
+  const coverage=printableReliefCoverage(sourceCoverage,project);
   const scores=coverage.length?new Float32Array(metres.length*3):null;
   progress('Traçant els contorns de sòl nu i neu o gel…');
   if(scores){
@@ -731,8 +732,11 @@ function buildPureRelief(data,options,progress,preview){
     units:'millimeters',reliefSampling:{columns,rows,stepMM:[width/columns,height/rows]},
     coverageCells:{bare:cells[0],snow:cells[1],total:columns*rows},lakeCount:lakes?.count??0,
     streamCount:water.streamCount,flowingWaterAreaCount:water.flowingWaterAreaCount,forestSamples:forest?.cells??0};
+  const warnings=[...(data.meta.sourceWarnings||[])];
+  if(coverage.length<sourceCoverage.length)
+    warnings.push('S’ha omès la coberta regional perquè els píxels són massa grans per a l’escala de la maqueta.');
   return renderPureRelief({width,height,scale:Math.round(1000/scale),buildingCount:0,reliefGrid,
-    warnings:[...(data.meta.sourceWarnings||[])],elevationDiagnostics:prepared.diagnostics,provenance},context,progress,preview);
+    warnings,elevationDiagnostics:prepared.diagnostics,provenance},context,progress,preview);
 }
 
 function scaleReliefGrid(grid,metres,scale,exaggeration,baseThickness){

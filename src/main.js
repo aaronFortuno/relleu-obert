@@ -11,7 +11,7 @@ import {BAMBU_PROJECT_BED_MM,DEFAULT_BASE_THICKNESS_MM,validBaseThickness,fitsBa
 import {bindPrintCutEditor} from './print-cut-editor.js';
 import './print-cut-editor.css';
 import {initPiecePicker,bindPieceDimensions} from './piece-picker.js';
-import {CURATED_EXAMPLES,localizeExample} from './curated-examples.js';
+import {CURATED_EXAMPLES,CURATED_EXAMPLE_DETAIL,localizeExample} from './curated-examples.js';
 import {initExampleCarousel,initExampleGallery} from './example-carousel.js';
 import {readProjects,saveProject,deleteProject,exportProjectLibrary,importProjectLibrary} from './project-library.js';
 import {cutGuideSegments} from './cut-guides.js';
@@ -160,6 +160,7 @@ function lock(value){
   $('#streams').disabled=waterLocked;
   $('#stream-width').disabled=waterLocked||!$('#streams').checked;
   $('#exag').disabled=value&&job==='build'&&pureSelected();
+  $('#detail').disabled=updating||drawing;
   for(const id of ['road-rise','rail-rise','trail-width','estimated-tunnels','major-profiles','model-scale','new-project'])$('#'+id).disabled=updating;
   lockBuildingControls(updating);
   placeMap.setLocked(updating,!narrowWorkshop.matches);
@@ -951,11 +952,10 @@ function selectCuratedExample(example){
   exaggeration.value=example.exaggeration??exaggeration.defaultValue;
   streams.checked=streams.defaultChecked;
   trees.checked=example.trees??trees.defaultChecked;
-  for(const [id,value] of [['detail',example.detail],['stream-width',example.streamWidth]]){
-    const select=$('#'+id);
-    if(value!==undefined)select.value=value;
-    else select.selectedIndex=Math.max(0,[...select.options].findIndex(option=>option.defaultSelected));
-  }
+  $('#detail').value=CURATED_EXAMPLE_DETAIL;
+  const streamWidth=$('#stream-width');
+  if(example.streamWidth!==undefined)streamWidth.value=example.streamWidth;
+  else streamWidth.selectedIndex=Math.max(0,[...streamWidth.options].findIndex(option=>option.defaultSelected));
   baseThickness=DEFAULT_BASE_THICKNESS_MM;
   $('#print-base').value=baseThickness;
   if(pureRelief){
@@ -1135,7 +1135,12 @@ $('#exag').oninput=()=>{
   requestReliefUpdate(statusMessage('pending.relief'));
 };
 $('#detail').onchange=()=>{
+  if(busy||pendingVegetation||drawing)return;
+  if(selection&&selectedSize&&!tooLargeRegion){generate();return;}
   cancelReliefUpdate();
+  clearTimeout(transportTimer);
+  transportTimer=null;
+  scheduler.cancel();
   requireBuild(statusMessage('pending.detail'));
 };
 for(const id of ['road-rise','rail-rise','trail-width','estimated-tunnels','major-profiles'])$('#'+id).onchange=requestTransport;

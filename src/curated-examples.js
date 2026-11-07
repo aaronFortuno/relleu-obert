@@ -2,6 +2,8 @@ import {t} from './i18n.js';
 
 const imageBase = `${import.meta.env?.BASE_URL || './'}examples/`;
 
+export const CURATED_EXAMPLE_DETAIL = 56;
+
 export const CURATED_EXAMPLES = [
   {
     id: 'tamariu',
@@ -232,7 +234,6 @@ export const CURATED_EXAMPLES = [
     height: 200,
     scale: 400000,
     rotation: 0,
-    detail: 24,
     trees: false,
     materialCount: 2,
     image: `${imageBase}gibraltar.webp`,
@@ -249,7 +250,6 @@ export const CURATED_EXAMPLES = [
     scale: 19999.51827384892,
     rotation: 0,
     pureRelief: false,
-    detail: 24,
     trees: false,
     buildingSource: 'osm',
     materialCount: 4,
@@ -267,7 +267,6 @@ export const CURATED_EXAMPLES = [
     scale: 150000,
     rotation: 0,
     exaggeration: 1.75,
-    detail: 56,
     trees: false,
     materialCount: 2,
     image: `${imageBase}tremp.webp`,
@@ -284,7 +283,6 @@ export const CURATED_EXAMPLES = [
     scale: 15000,
     rotation: -25,
     pureRelief: false,
-    detail: 24,
     trees: false,
     buildingSource: 'osm',
     materialCount: 4,
@@ -302,7 +300,6 @@ export const CURATED_EXAMPLES = [
     scale: 500000,
     rotation: 15,
     exaggeration: 2,
-    detail: 36,
     streamWidth: 0,
     trees: false,
     materialCount: 5,
@@ -320,7 +317,6 @@ export const CURATED_EXAMPLES = [
     scale: 50000,
     rotation: 15,
     exaggeration: 1.25,
-    detail: 56,
     trees: false,
     materialCount: 2,
     image: `${imageBase}ebre-meandres.webp`,
@@ -336,6 +332,7 @@ export const CURATED_EXAMPLES = [
     height: 200,
     scale: 30000,
     rotation: 0,
+    materialCount: 3,
     image: `${imageBase}bardenas-reales.webp`,
   },
   {
@@ -403,6 +400,7 @@ export const CURATED_EXAMPLES = [
     height: 250,
     scale: 100000,
     rotation: 0,
+    exaggeration: 2,
     image: `${imageBase}gran-cano-colorado.webp`,
   },
   {

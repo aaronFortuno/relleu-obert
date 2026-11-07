@@ -48,6 +48,18 @@ test('pure relief builds solid coverage colours from mapped classes, independent
   assert.deepEqual(neutral.categories.map(p=>p.id),['terrain']);
 });
 
+test('regional land cover uses only printable raster detail and leaves the relief intact',()=>{
+  const data={meta:{bbox},dem};
+  const regional={bbox,width:2,height:2,overview:true,values:new Uint8Array([60,0,70,0])};
+  const neutral=buildModel(data,options);
+  const filtered=buildModel({...data,coverage:[regional]},options);
+  assert.deepEqual(filtered.categories.map(part=>part.id),['terrain']);
+  assert.deepEqual(filtered.reliefGrid.heights,neutral.reliefGrid.heights);
+  assert.deepEqual(filtered.reliefGrid.diagonals,neutral.reliefGrid.diagonals);
+  const adequate={...regional,width:64,height:64,values:new Uint8Array(64*64).fill(60)};
+  assert(buildModel({...data,coverage:[adequate]},options).categories.some(part=>part.id==='rock'));
+});
+
 test('mapped sea remains 5 mm deep despite bathymetry beyond its footprint',()=>{
   const row=[-2500,-2500,-2500,60,120];
   const terrainRaster=rasterFixture([row,row,row]);

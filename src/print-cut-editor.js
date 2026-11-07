@@ -63,6 +63,15 @@ export function bindPrintCutEditor(fields,{text,formatNumber,onChange}){
     showDimensions();
   }
 
+  function resetPosition(handle){
+    const {axis,index}=handle;
+    if(disabled()||gesture||!layout.cuts[axis])return;
+    const span=axis==='columns'?layout.width:layout.height;
+    activate(handle);
+    // The drag limits keep the other cuts in place if the equal split is blocked.
+    changePosition(handle,(index+1)*span/layout.bands[axis].length);
+  }
+
   function makeHandle(axis,index){
     const element=document.createElement('div'),vertical=axis==='columns';
     const handle={axis,index,element};
@@ -72,6 +81,7 @@ export function bindPrintCutEditor(fields,{text,formatNumber,onChange}){
     element.setAttribute('role','slider');
     element.setAttribute('aria-orientation',vertical?'horizontal':'vertical');
     element.setAttribute('aria-describedby','print-cuts-note');
+    element.setAttribute('aria-keyshortcuts','Delete');
     const grip=document.createElement('span');
     grip.className='print-cut-grip';
     grip.setAttribute('aria-hidden','true');
@@ -103,8 +113,14 @@ export function bindPrintCutEditor(fields,{text,formatNumber,onChange}){
     element.addEventListener('lostpointercapture',event=>{
       if(gesture?.handle===handle&&gesture.id===event.pointerId)gesture=null;
     });
+    element.addEventListener('dblclick',()=>resetPosition(handle));
     element.addEventListener('keydown',event=>{
       if(disabled())return;
+      if(event.key==='Delete'){
+        event.preventDefault();
+        resetPosition(handle);
+        return;
+      }
       const {min,max,position}=printCutLimits(layout.bands[axis],index);
       const step=event.shiftKey?10:1;
       const positions={Home:min,End:max,ArrowLeft:position-step,ArrowDown:position-step,

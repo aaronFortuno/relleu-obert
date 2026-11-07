@@ -2,6 +2,12 @@
 
 Actualitzat: 2026-11-07. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.23.24 — Detall automàtic, cobertes de muntanya i talls individuals
+
+RO-046 i RO-055 passen totes les fitxes a detall alt, incorporen les cobertes WorldCover dels Alps, Lavaredo, el Fuji i Geiranger i ajusten les Bardenas i el Colorado. El control de les Bardenas conserva les 21.025 cotes i elimina la capa grisa del mosaic regional. S’han regenerat les miniatures dels cinc retalls ajustats i del panoràmic. Al navegador, un canvi de detall regenera Tamariu i el botó d’exportació torna a estar disponible en acabar. El panoràmic en detall alt genera 5.005.740 triangles en quatre peces a 1:500.000. El visor mostra mar als dos extrems i habilita l’exportació.
+
+RO-056 permet restablir un tall individual amb doble clic o Supr. Comprovat al navegador amb els dos talls desplaçats en una maqueta de 40 × 40 cm. [Cua de revisió](RO-046-CATALEG.md#revisió-per-a-maquetes-daula)
+
 ## v0.23.23 — Sis enquadraments revisats i cobertes dels Pirineus
 
 RO-046 incorpora els sis JSON de revisió. L’istme d’O Vao i Zumaia passen a Model complet. El panoràmic incorpora un retall de 500 × 100 km i una màscara WorldCover de sòl nu i neu o gel. La columna «Estat» identifica els ajustos incorporats, els pendents i les validacions de l’usuari. [Cua de revisió](RO-046-CATALEG.md#revisió-per-a-maquetes-daula)

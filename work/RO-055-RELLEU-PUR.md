@@ -68,6 +68,8 @@ Retalls centrats a 42,635° N i 0,650° E, escala 1:100.000 i exageració ×1,5.
 
 El retall WorldCover distribuït passa de 512 a 2.048 píxels per costat, amb un pas d’uns 28 × 30 m. La coberta es representa traçant el límit entre les classes interpolades dins de cada triangle. Els contorns conserven el caràcter històric de la font i la seva precisió final també depèn del pas de malla i de la mida d’impressió.
 
+A partir de v0.23.24, el mosaic regional s’aplica si els dos costats del píxel ocupen com a màxim 2 mm a la peça. El retall de les Bardenas (6 × 6 km, 1:30.000) queda sense les taques grises del mosaic pirinenc i conserva totes les altures mostrejades. Els Alps tenen un mosaic regional i Lavaredo, el Fuji i Geiranger tenen cobertes de detall. El control de les fitxes ha generat sòl nu i neu o gel a Lavaredo i Geiranger, i sòl nu al Fuji. [ESA WorldCover](https://esa-worldcover.org/en/data-access)
+
 | Retall | Pas Equilibrat (384) | Pas Alt (540) | Temps Alt |
 | --- | --- | --- | --- |
 | 20 × 20 km | 52 m | 37 m | 3,19 s |
