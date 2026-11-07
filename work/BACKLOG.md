@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-07 · v0.23.30**. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-07 · v0.23.31**. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -12,7 +12,7 @@ Actualitzat el **2026-11-07 · v0.23.30**. [Historial](HISTORIAL.md).
 | **Paviment de superfície** | RO-051, RO-052 | El retall girat mostra millora al laminador i es dona per bo de moment. La impressió física i els enllaços pendents queden en seguiment. [Control de l’Hospitalet](RO-052-CONTINUITAT.md#talls-locals-sota-els-taulers-v02319) |
 | **Seguiment de les estructures** | RO-033, RO-034, RO-050 | Registrar noves incidències amb retall i escala. A Sant Salvador, dos perfils segueixen el terreny pel pendent dels enllaços. El túnel a 1:20.000 té les dues boques comprovades al 3MF. El pas de Montgròs es conserva al cupó laminat. [Controls de vies](RO-051-PERFILS-VIARIS.md#transicions-pendents-a-la-v0220) · [Montgròs](RO-033-CONTROLS-PROCEDIMENTALS.md#laminat-del-cupó-de-montgròs) |
 | **Validació en paral·lel** | RO-024, RO-033, RO-046, RO-054, RO-055 | Revisar Tamariu 40 × 45 cm i Amsterdam amb totes les capes al laminador. També queden la recuperació d’un projecte girat i els talls dels Rasos–Gallina Pelada. |
-| **Pilot de relleu rocós** | RO-023, RO-035 | Tornar a laminar la Foradada r2. Provar la càrrega per sectors del pilot del massís de Montserrat. Comparar els cupons del Cavall Bernat i recuperar la georeferenciació dels Degotalls. [Resultats](RELLEU-ROCOS.md) |
+| **Pilot de relleu rocós** | RO-023, RO-035 | Revisar al visor la unió dels dos sectors de Montserrat i les boques de la Foradada. Comparar els cupons del Cavall Bernat i recuperar la georeferenciació dels Degotalls. [Resultats](RELLEU-ROCOS.md#pilot-del-massís-de-montserrat) |
 | **Catàleg de llocs singulars** | RO-032, RO-033 | Torre Glòries validada al visor. Millau verificat a tres retalls. Validar al laminador les llums i els tirants del viaducte. [Controls de Millau](RO-033-CONTROLS-PROCEDIMENTALS.md#pilot-de-millau-al-catàleg--v02328) |
 
 Els encàrrecs independents avancen en paral·lel. Cada bloc validat té el seu commit i es manté una sola prova pesada alhora. Els casos que requereixen inspecció al laminador poden quedar pendents mentre avancen altres línies.
@@ -106,6 +106,8 @@ Català, castellà, gallec, basc i anglès disponibles al desplegable. S’han l
 Comparar la font actual i un MDT de detall al mateix retall de Montserrat, a dues escales i amb la mateixa exageració. Incloure un retall del Cavall Bernat i un segon cas al Pedraforca o a Riglos. Conservar carenes, colls i agulles amb refinament local de la malla segons el relleu i la mida impresa. Mesurar fidelitat del perfil, triangles i temps. Verificar accés des del navegador i retorn a la font general fora de cobertura. [Fonts i interfície](RO-023-FONTS-UX.md) · [Models d’elevacions ICGC](https://www.icgc.cat/ca/Geoinformacio-i-mapes/Dades-i-productes/Elevacions/Elevacions-territorial/Models-delevacions) · [Productes PNOA-LiDAR](https://pnoa.ign.es/web/portal/pnoa-lidar/productos-a-descarga)
 
 El pilot del Cavall Bernat combina el MET5 amb un retall numèric de l’ICGC a 50 cm, processat fora de línia. Els tres sòlids passen l’auditoria i el pedaç conserva la vora del retall a 0° i 35°. Queden el contrast visual, el laminat i el carregador automàtic. [Cupó de detall](RELLEU-ROCOS.md#pilot-de-detall-local-amb-el-mdt-de-50-cm)
+
+El pilot de Montserrat carrega els dos sectors indexats que intersecten el retall. Les 193 mostres de la vora comuna coincideixen i la Foradada manté les dues boques al control de malla dels dos modes. Pendent de contrast visual al visor. [Retalls de prova](RELLEU-ROCOS.md#pilot-del-massís-de-montserrat)
 
 ### RO-024 — Unió de volums i validació d’impressió
 

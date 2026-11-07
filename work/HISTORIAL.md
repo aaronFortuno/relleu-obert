@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-07. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.23.31 — Montserrat per sectors
+
+RO-023 i RO-035 connecten el catàleg de Montserrat al motor. Dos retalls girats, un per mode, baixen els GeoTIFF de la Foradada nord i les Agulles nord. Les 193 cotes de la unió coincideixen i el pas i la volta de la Foradada es conserven en la malla. Pendent de contrast al visor. [Mesures i reproducció](RELLEU-ROCOS.md#pilot-del-massís-de-montserrat)
+
 ## v0.23.30 — Sortida de la Roca Foradada
 
 La revisió de l’usuari ha detectat una paret després del final de la prova axial de la r1. La r2 amplia el pedaç d’elevacions i comprova el pas des de fora de la roca. El Model complet refina localment el terreny al voltant de la cavitat. A Open Place Models, la branca `montserrat-pilot` prepara una vista general i dos sectors de detall de Montserrat. [Controls](RELLEU-ROCOS.md#correcció-de-la-sortida--v02330)

@@ -70,7 +70,9 @@ Els tres controls de 10 × 10 cm passen a 1:2.000 en Model complet amb les capes
 
 ### Pilot del massís de Montserrat
 
-La branca local `montserrat-pilot` d’Open Place Models té una vista general de 9,6 × 6,4 km de 1,57 MB. Dos sectors contigus de 384 × 384 m, amb pas de 2 m, tenen GeoTIFF de 150 kB cadascun i 193 mostres idèntiques a la vora compartida. El detall local conserva millor les carenes i els cingles. La càrrega per sectors queda pendent. Les cavitats mantenen volums 3D georeferenciats com el de la Foradada.
+La vista general del catàleg cobreix 9,6 × 6,4 km. Relleu Obert combina el relleu general amb dos sectors inicials de 384 × 384 m i pas de 2 m. El gir del retall intervé en la selecció dels fitxers. Les cotes es barregen amb el relleu general als últims 12 m del perímetre exterior de la cobertura i es conserva el detall a la vora compartida. Si falla un sector, es manté la cobertura disponible i es fa la transició al relleu general. [Fitxa del model](https://github.com/aaronFortuno/open-place-models/tree/main/models/montserrat/r1)
+
+Els dos controls de 10 × 10 cm estan centrats a **41,6122626 N, 1,7871346 E**. El Model complet fa servir 1:2.000 i +24°. El Relleu pur fa servir 1:10.000 i −19°. En tots dos casos es carreguen `foradada-nord` i `agulles-nord`, amb 299.992 bytes en total. Les 193 cotes de la vora coincideixen exactament. En el Model complet, la diferència màxima entre les mostres a 1 mm real a cada banda de la vora és de 0,003 mm a la maqueta. Dotze raigs travessen la Foradada sense tocar la malla i la volta es conserva en tots dos controls. Pendent de revisar al visor.
 
 ## Reproducció local
 
@@ -78,7 +80,8 @@ La branca local `montserrat-pilot` d’Open Place Models té una vista general d
 node --max-old-space-size=512 scripts/compare-cavall-bernat.mjs
 node --max-old-space-size=512 scripts/pilot-cavall-detail.mjs
 node --max-old-space-size=512 scripts/pilot-degotalls.mjs
-node --max-old-space-size=512 scripts/check-foradada.mjs
+node --max-old-space-size=512 scripts/check-foradada.mjs montserrat
+node --max-old-space-size=512 scripts/check-foradada.mjs montserrat-relleu
 ```
 
 El primer script escriu quatre 3MF, les seccions SVG i les mesures a `output/cavall-bernat/`. El pilot de detall escriu tres 3MF i les mesures a `output/cavall-bernat-detall/`. El script dels Degotalls baixa en flux l’escaneig original, en comprova l’empremta i desa el cupó i l’auditoria a `output/`.

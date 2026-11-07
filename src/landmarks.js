@@ -4,6 +4,7 @@ import {decodeLandform,validLandformProfile} from './catalogue-landforms.js';
 const catalogueLimit=512*1024,meshLimit=4*1024*1024;
 const catalogueWarning='No s’ha pogut carregar el catàleg de models singulars.';
 const meshWarning='No s’ha pogut carregar algun model singular. Es conserva la geometria de la cartografia general.';
+const maxTerrainTiles=12;
 const decoder=new TextDecoder('utf-8',{fatal:true});
 const integer=(value,min,max)=>Number.isInteger(value)&&value>=min&&value<=max;
 const label=value=>typeof value==='string'&&value.trim().length>0&&value.length<=1000;
@@ -38,6 +39,27 @@ function assetURL(path,directory,extension){
   return url.href;
 }
 
+function readTerrainTiles(index,directory){
+  const {epsg,verticalDatum,tiles}=index??{};
+  check(integer(epsg,1024,32760)&&epsg!==4326&&epsg!==4258&&label(verticalDatum)&&verticalDatum.length<=80&&
+    Array.isArray(tiles)&&integer(tiles.length,1,128));
+  const ids=new Set();
+  return {epsg,verticalDatum,tiles:tiles.map(({id,bounds,step,data,byteLength})=>{
+    check(typeof id==='string'&&/^[-a-z0-9]{1,64}$/.test(id)&&!ids.has(id)&&Array.isArray(bounds)&&
+      bounds.length===4&&bounds.every(Number.isFinite)&&Number.isFinite(step)&&step>=.25&&step<=100&&integer(byteLength,1,2*1024*1024));
+    const [w,s,e,n]=bounds,columns=(e-w)/step+1,rows=(n-s)/step+1;
+    check(integer(columns,2,262144)&&integer(rows,2,262144)&&columns*rows<=262144);
+    ids.add(id);
+    return {id,bounds,step,byteLength,url:assetURL(data,directory,'.tif')};
+  })};
+}
+
+export function terrainTileSources(models){
+  return models.filter(m=>m.kind==='terrain-overview').map(({id,name,revision,attribution,license,spatialDataLicense,sources,terrainTiles,tiles})=>
+    ({id,name,revision,attribution,license,spatialDataLicense,sources,epsg:terrainTiles.epsg,verticalDatum:terrainTiles.verticalDatum,
+      tiles:tiles.map(({id,bounds,step,byteLength})=>({id,bounds,step,byteLength}))}));
+}
+
 function readCatalogue(data,directory){
   check(data?.type==='FeatureCollection'&&data.schemaVersion===1&&Array.isArray(data.features));
   const entries=[],ids=new Set();
@@ -45,10 +67,10 @@ function readCatalogue(data,directory){
   for(const feature of data.features){
     try{
       const {type,id,bbox,geometry:footprint,properties}=feature;
-      const {name,revision,anchor,mesh,height,attribution,license,sources,spatialDataLicense,replacement,bridge,landform,kind='building'}=properties;
-      if(!['building','bridge','landform'].includes(kind))continue;
+      const {name,revision,anchor,mesh,height,attribution,license,sources,spatialDataLicense,replacement,bridge,landform,terrainTiles,kind='building'}=properties;
+      if(!['building','bridge','landform'].includes(kind)&&!(kind==='terrain-overview'&&terrainTiles))continue;
       check(type==='Feature'&&label(id)&&!ids.has(id)&&validBounds(bbox)&&inside(bbox,anchor)&&validFootprint(footprint,bbox));
-      check([name,revision,mesh,attribution,license].every(label)&&Number.isFinite(height)&&height>0&&height<=1200&&
+      check([name,revision,mesh,attribution,license].every(label)&&Number.isFinite(height)&&height>0&&height<=(kind==='terrain-overview'?12000:1200)&&
         Array.isArray(sources)&&sources.every(label)&&(spatialDataLicense===undefined||label(spatialDataLicense)));
       check(replacement===undefined||replacement&&typeof replacement==='object'&&!Array.isArray(replacement)&&
         optionalIds(replacement.featureIds)&&optionalIds(replacement.families));
@@ -56,8 +78,9 @@ function readCatalogue(data,directory){
       if(kind==='landform')check(validLandformProfile(landform));
       const glb=assetURL(mesh,directory,'.glb');
       const url=kind==='landform'?assetURL(landform.data,directory,'.json'):glb;
+      const tileIndex=kind==='terrain-overview'?readTerrainTiles(terrainTiles,directory):undefined;
       ids.add(id);
-      entries.push({id,name,revision,bbox,anchor,footprint,height,attribution,license,sources,spatialDataLicense,replacement,kind,bridge,landform,url});
+      entries.push({id,name,revision,bbox,anchor,footprint,height,attribution,license,sources,spatialDataLicense,replacement,kind,bridge,landform,url,tileIndex});
     }catch{
       incomplete=true;
     }
@@ -151,11 +174,9 @@ export function createLandmarkLoader(catalogueURL,fetcher=fetch){
   const catalogue=new URL(catalogueURL,globalThis.location?.href),directory=new URL('.',catalogue);
   const assets=new Map();
   let catalogueRequest;
-  function assetRequest(url,kind){
+  function assetRequest(url,limit,decode){
     if(assets.has(url))return assets.get(url);
-    const terrain=kind==='landform';
-    const request=fetchBytes(fetcher,url,terrain?256*1024:meshLimit).then(bytes=>terrain?
-      decodeLandform(JSON.parse(decoder.decode(bytes))):decodeGLB(bytes)).catch(error=>{
+    const request=fetchBytes(fetcher,url,limit).then(decode).catch(error=>{
       if(assets.get(url)===request)assets.delete(url);
       throw error;
     });
@@ -163,7 +184,18 @@ export function createLandmarkLoader(catalogueURL,fetcher=fetch){
     if(assets.size>16)assets.delete(assets.keys().next().value);
     return request;
   }
-  return async function load(bbox,kinds){
+  async function terrainRequest({url,tileIndex,...entry},bbox,corners,budget){
+    const {terrainTilesInCrop,decodeTerrainTile}=await import('./catalogue-terrain.js');
+    const matching=terrainTilesInCrop(tileIndex,bbox,corners),selected=matching.slice(0,budget);
+    const results=await Promise.allSettled(selected.map(async ({url,...tile})=>({...tile,raster:await assetRequest(url,tile.byteLength,
+      bytes=>decodeTerrainTile(bytes,tile,tileIndex.epsg))})));
+    const tiles=results.flatMap(result=>result.status==='fulfilled'?[result.value]:[]);
+    const missing=new Set(matching.map(t=>t.id));
+    for(const tile of tiles)missing.delete(tile.id);
+    const coverage=tileIndex.tiles.filter(tile=>!missing.has(tile.id)).map(tile=>tile.bounds);
+    return {reserved:selected.length,missing:missing.size,model:tiles.length?{...entry,terrainTiles:{epsg:tileIndex.epsg,verticalDatum:tileIndex.verticalDatum},tiles,coverage}:null};
+  }
+  return async function load(bbox,kinds,corners){
     const models=[],warnings=[];
     if(!validBounds(bbox))return {models,warnings};
     catalogueRequest??=fetchBytes(fetcher,catalogue.href,catalogueLimit)
@@ -172,10 +204,20 @@ export function createLandmarkLoader(catalogueURL,fetcher=fetch){
     let catalogueData;
     try{catalogueData=await catalogueRequest;}
     catch{return {models,warnings:[catalogueWarning]};}
-    const candidates=catalogueData.entries.filter(entry=>(!kinds||kinds.includes(entry.kind))&&intersects(entry.bbox,bbox));
-    const results=await Promise.allSettled(candidates.slice(0,8).map(async ({url,...entry})=>({...entry,...await assetRequest(url,entry.kind)})));
+    const intersecting=catalogueData.entries.filter(entry=>(!kinds||kinds.includes(entry.kind))&&intersects(entry.bbox,bbox));
+    const candidates=intersecting.filter(entry=>!entry.tileIndex);
+    const results=await Promise.allSettled(candidates.slice(0,8).map(async ({url,tileIndex,...entry})=>({...entry,...await (entry.kind==='landform'?
+      assetRequest(url,256*1024,bytes=>decodeLandform(JSON.parse(decoder.decode(bytes)))):assetRequest(url,meshLimit,decodeGLB))})));
     for(const result of results)if(result.status==='fulfilled')models.push(result.value);
-    if(catalogueData.incomplete||models.length<candidates.length)warnings.push(meshWarning);
+    let incomplete=catalogueData.incomplete||models.length<candidates.length,budget=maxTerrainTiles;
+    for(const overview of intersecting.filter(entry=>entry.tileIndex)){
+      try{
+        const {reserved,missing,model}=await terrainRequest(overview,bbox,corners,budget);
+        budget-=reserved;incomplete||=missing>0;
+        if(model)models.push(model);
+      }catch{incomplete=true;}
+    }
+    if(incomplete)warnings.push(meshWarning);
     return {models,warnings};
   };
 }

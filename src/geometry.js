@@ -17,6 +17,7 @@ import {buildingOptions,buildingRise} from './building-options.js';
 import {splitModel} from './mesh-tiles.js';
 import {catalogueBridgeItem,catalogueBridgeUpper} from './catalogue-bridges.js';
 import {prepareCatalogueLandforms,resolvableLandform,catalogueTerrain,carveCatalogueLandforms,clearOfLandforms,landformWarnings} from './catalogue-landforms.js';
+import {withTerrainTiles,terrainTileBands} from './catalogue-terrain.js';
 import {MAX_MODEL_SIDE_MM,validateScale,isPanoramicSize,validPieceDimensions,PURE_SCALE_RANGE,PANORAMIC_SCALE_RANGE} from './selection.js';
 import {localRasterSampler} from './local-raster.js';
 import {treeDimensions,TREE_CROWN_METRES,MIN_TREE_MM} from './tree-scale.js';
@@ -285,9 +286,11 @@ function prepareTerrain(data,options,progress,preview,measure){
   const prepared=raster?{tiles:[],diagnostics:{invalid:0,spikes:0,repaired:0,source:data.meta.terrain?.provider||'local GeoTIFF'}}:prepareElevationTiles(data.dem);
   const rasterHeight=raster?localRasterSampler(raster):null;
   const landforms=data.localDEM?[]:prepareCatalogueLandforms(data.singularModels,proj);
-  const terrainGrid=landforms.length?focusedTerrainGrid(width,height,resolution,landforms.map(({model,surfaceExtent:{lo,hi}})=>
-    ({lo,hi,step:Math.max(Math.min(3,model.landform.minimumWidth/3)*scale,(hi[0]-lo[0])/48,(hi[1]-lo[1])/48)}))):undefined;
-  const elevationAt=catalogueTerrain((lon,lat)=>rasterHeight?rasterHeight(lon,lat):sampleHeight(prepared.tiles,lon,lat),landforms);
+  const bands=data.localDEM?[]:terrainTileBands(data.singularModels,proj);
+  for(const {model,surfaceExtent:{lo,hi}} of landforms)bands.push({lo,hi,step:Math.max(Math.min(3,model.landform.minimumWidth/3)*scale,(hi[0]-lo[0])/48,(hi[1]-lo[1])/48)});
+  const terrainGrid=bands.length?focusedTerrainGrid(width,height,resolution,bands):undefined;
+  const baseElevation=(lon,lat)=>rasterHeight?rasterHeight(lon,lat):sampleHeight(prepared.tiles,lon,lat);
+  const elevationAt=catalogueTerrain(data.localDEM?baseElevation:withTerrainTiles(baseElevation,data.singularModels),landforms);
   if(prepared.diagnostics.repaired)warnings.push(`S’han reconstruït ${prepared.diagnostics.repaired} mostres d’altitud invàlides o pics aïllats a partir dels veïns.`);
   const water=[],ocean=[],stillWater=[],green=[],woods=[],roads=[],rails=[],transport=[],roadPieces=[],railPieces=[];
   const cropped=polys=>polys.map(p=>intersect(p,rect)).filter(p=>p.length);
@@ -668,7 +671,8 @@ function buildPureRelief(data,options,progress,preview,api){
   const prepared=data.terrainRaster?{diagnostics:{invalid:0,spikes:0,repaired:0,source:data.meta.terrain?.provider}}:prepareElevationTiles(data.dem);
   const landforms=prepareCatalogueLandforms(data.singularModels,proj)
     .filter(patch=>resolvableLandform(patch,Math.max(width/columns,height/rows)/scale));
-  const sample=catalogueTerrain(data.terrainRaster?localRasterSampler(data.terrainRaster):createElevationSampler(prepared.tiles),landforms);
+  const baseSample=data.terrainRaster?localRasterSampler(data.terrainRaster):createElevationSampler(prepared.tiles);
+  const sample=catalogueTerrain(withTerrainTiles(baseSample,data.singularModels),landforms);
   let oceanPolygons=(data.oceans||[]).flatMap(feature=>geoPolys(feature,project));
   if(oceanPolygons.length){
     progress('Delimitant la costa cartografiada…');

@@ -7,10 +7,14 @@ export function coordinateTransform(epsg){
   return proj4(code===4258?'EPSG:4326':'EPSG:'+code,'EPSG:4326');
 }
 export function localRasterSampler(raster){
-  const transform=coordinateTransform(raster.epsg),[a,b,c,d,e,f]=raster.affine,det=a*e-b*d,offset=raster.pixelIsArea?.5:0;
+  const transform=coordinateTransform(raster.epsg),sample=projectedRasterSampler(raster);
+  return (lon,lat)=>sample(...transform.inverse([lon,lat]));
+}
+export function projectedRasterSampler(raster){
+  const [a,b,c,d,e,f]=raster.affine,det=a*e-b*d,offset=raster.pixelIsArea?.5:0;
   if(!Number.isFinite(det)||Math.abs(det)<1e-20)throw Error('GeoTIFF sense una transformació geogràfica vàlida.');
-  return (lon,lat)=>{
-    const [X,Y]=transform.inverse([lon,lat]),dx=X-c,dy=Y-f,gx=(e*dx-b*dy)/det-offset,gy=(-d*dx+a*dy)/det-offset;
+  return (X,Y)=>{
+    const dx=X-c,dy=Y-f,gx=(e*dx-b*dy)/det-offset,gy=(-d*dx+a*dy)/det-offset;
     if(gx<-.50001||gy<-.50001||gx>raster.width-.49999||gy>raster.height-.49999)throw Error('El GeoTIFF no cobreix tot el retall seleccionat.');
     const x=Math.max(0,Math.min(raster.width-1,gx)),y=Math.max(0,Math.min(raster.height-1,gy)),i=Math.floor(x),j=Math.floor(y),u=x-i,v=y-j;let z=0,total=0;
     for(const [ix,iy,w]of [[i,j,(1-u)*(1-v)],[Math.min(i+1,raster.width-1),j,u*(1-v)],[i,Math.min(j+1,raster.height-1),(1-u)*v],[Math.min(i+1,raster.width-1),Math.min(j+1,raster.height-1),u*v]]){

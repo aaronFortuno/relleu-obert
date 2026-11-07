@@ -626,7 +626,7 @@ async function generate(autoTransport=false){
       say(baseMessage('status.loadingTerrain'));
       const source=$('#building-source').value;
       pendingCadastralBuild=!options.pureRelief&&source==='catastre';
-      pendingFullRegion=await loadRegion({sample:useSample,bbox:selection,pureRelief:options.pureRelief,panoramic,buildingSource:pendingCadastralBuild?'osm':source,buildingFallbacks:[lastValidBuildings?.source,defaultBuildingSource(selection),'osm'].filter(Boolean),onTiming:event=>processingRun?.sources.push(event)},say);
+      pendingFullRegion=await loadRegion({sample:useSample,bbox:selection,selectionCorners:selectedPose?.corners,pureRelief:options.pureRelief,panoramic,buildingSource:pendingCadastralBuild?'osm':source,buildingFallbacks:[lastValidBuildings?.source,defaultBuildingSource(selection),'osm'].filter(Boolean),onTiming:event=>processingRun?.sources.push(event)},say);
       pendingFullRegion.meta.name=requestedName;recoveryNotice=pendingFullRegion.recovery?.notice||'';
     }
     if(incremental){job='buildings';lock(true);}
