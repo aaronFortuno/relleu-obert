@@ -13,7 +13,7 @@ Actualitzat el **2026-11-07 · v0.23.26**. [Historial](HISTORIAL.md).
 | **Seguiment de les estructures** | RO-033, RO-034, RO-050 | Registrar noves incidències amb retall i escala. A Sant Salvador, dos perfils segueixen el terreny pel pendent dels enllaços. El túnel a 1:20.000 té les dues boques comprovades al 3MF. El pas de Montgròs es conserva al cupó laminat. [Controls de vies](RO-051-PERFILS-VIARIS.md#transicions-pendents-a-la-v0220) · [Montgròs](RO-033-CONTROLS-PROCEDIMENTALS.md#laminat-del-cupó-de-montgròs) |
 | **Validació en paral·lel** | RO-024, RO-033, RO-046, RO-054, RO-055 | Revisar Tamariu 40 × 45 cm i Amsterdam amb totes les capes al laminador. També queden la recuperació d’un projecte girat i els talls dels Rasos–Gallina Pelada. |
 | **Pilot de relleu rocós** | RO-023, RO-035 | Després dels temps de generació, reprendre el Cavall Bernat i el Pedraforca, i el cupó georeferenciat dels Degotalls per als voladissos. [Resultats](RELLEU-ROCOS.md) |
-| **Cobertes i edificis singulars** | RO-032, RO-026 | Preparar un cupó de malla singular imprimible. Per a la cobertura general, comparar BD TOPO amb OSM i seguir les fonts 3D. |
+| **Catàleg de llocs singulars** | RO-032 | Preparar una primera malla imprimible per a un repositori independent i validar l’encaix amb Relleu Obert. [Proposta de format](RO-032-INTEGRACIO.md#proposta-de-catàleg-independent) |
 
 Els encàrrecs independents avancen en paral·lel. Cada bloc validat té el seu commit i es manté una sola prova pesada alhora. Els casos que requereixen inspecció al laminador poden quedar pendents mentre avancen altres línies.
 
@@ -31,8 +31,8 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | Retall girat acceptat provisionalment després de revisar-lo al laminador | Valorar quines irregularitats es distingeixen en la impressió física |
 | [RO-052](#ro-052--continuïtat-i-amplada-del-traçat-viari) | P1 | Ramal sobre dues calçades verificat al cupó. Interferència amb un camí de vianants en el model complet | Comprovar la llum i els enllaços després d’integrar cada grup de vies |
 | [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió) | P1 | Filament per peça validat a Montserrat. Projecte de quatre plaques obert a Bambu Studio | Contrastar el laminat de les quatre peces de Tamariu |
-| [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts) | P1 | BD TOPO i lectura parcial de GlobalBuildingAtlas verificades | Pilot IGN a Perpinyà i Tolosa. Contrast de GBA amb OSM i Catastre |
-| [RO-032](#ro-032--cobertes-i-volums-singulars) | P1 | Fonts estàtiques contrastades i malla de la Torre Eiffel auditada | Cupó singular en 3MF i comparació amb OSM |
+| [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts) | P1 | ICGC, Catastre i OSM actius. GlobalBuildingAtlas aparcat | Comparar les parts i petjades de les fonts actuals en una segona zona |
+| [RO-032](#ro-032--cobertes-i-volums-singulars) | P1 | Catàleg independent plantejat amb GeoJSON i GLB | Primera malla, encaix i exportació en 3MF a dues escales |
 | [RO-023](#ro-023--relleu-local-i-fonts-vectorials-de-més-precisió) | P2 | MET5 integrat i auditat al Pedraforca | Contrast visual i refinament de malla |
 | [RO-055](#ro-055--mode-de-relleu-pur) | P2 | Retalls fins a 1:500.000 en tots els formats de Relleu pur | Laminar Tamariu i un panorama amb textura i comprovar dos talls adjacents |
 | [RO-054](#ro-054--galeria-local-de-projectes) | P2 | Catàleg local amb còpia JSON a v0.23.7 | Validar la recuperació entre dispositius en l’ús habitual |
@@ -117,15 +117,15 @@ El pilot històric queda ajornat. La revisió d’usuari a Cardona i Cornellà h
 
 Comparar petjades i parts d’edificis d’ICGC, Catastre i OSM en una segona zona. Cal preservar els edificis independents quan la font els distingeix. [Comparativa de fonts](RO-026-FONTS-EDIFICIS.md)
 
-L’IGN francès és candidat a una primera integració sense backend. Andorra disposa de cartografia 3D en descàrrega i a Portugal cal localitzar una capa consultable amb cotes. [Proves per país](RO-026-FONTS-EDIFICIS.md#fonts-fora-despanya--v02325)
-
-GlobalBuildingAtlas és candidat per complementar petjades i altures estimades. La còpia GeoParquet admet rangs i CORS. Queda comparar cobertura, duplicats i cotes en retalls petits abans de considerar-lo com a font. [Estudi de viabilitat](RO-026-FONTS-EDIFICIS.md#globalbuildingatlas--estudi-de-viabilitat)
+Les fonts fora d’Espanya queden documentades per a més endavant. GlobalBuildingAtlas s’aparca perquè el LoD1 conserva la simplificació de cobertes. [Proves per país](RO-026-FONTS-EDIFICIS.md#fonts-fora-despanya--v02325) · [Estudi de GlobalBuildingAtlas](RO-026-FONTS-EDIFICIS.md#globalbuildingatlas--estudi-de-viabilitat)
 
 ### RO-032 — Cobertes i volums singulars
 
 El motor incorpora cobertes amb dades obertes d’OSM quan els atributs ho permeten i conserva les petjades amb coberta plana si la consulta torna buida. L’RTL de l’ICGC documenta plans LoD2, amb un servei públic de careners en 2D. Resta verificar una font de cobertes 3D consultable des del navegador. [Fonts de cobertes](RO-032-DADES-COBERTES.md#seguiment-del-4-de-novembre) · [Integració](RO-032-INTEGRACIO.md)
 
 Open Landmarks ofereix una Torre Eiffel georeferenciada que requereix reparació per imprimir. Barcelona i 3DBAG aporten candidats per provar edificis i cobertes precalculats. El primer cupó ha de comparar el sòlid amb OSM a dues escales i comprovar l’encaix i l’exportació. [Catàleg de geometries singulars](RO-032-INTEGRACIO.md#catàleg-de-geometries-singulars--v02326)
+
+Es planteja publicar les geometries en un repositori independent. La proposta separa l’índex GeoJSON, les malles GLB i la procedència. El primer perfil cobreix edificis. Els llocs que substitueixen un fragment del relleu es coordinen amb RO-035. [Proposta de catàleg](RO-032-INTEGRACIO.md#proposta-de-catàleg-independent)
 
 ### RO-033 — Ponts i viaductes
 

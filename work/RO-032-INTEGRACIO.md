@@ -96,3 +96,28 @@ Com a estimació de pes abans de reparar la malla, les posicions i les cares de 
 3. Auditar el sòlid i exportar un 3MF de prova amb la mateixa geometria que es veu al visor. Substituir només les petjades corresponents quan la malla preparada s’hagi carregat i validat. La capa OSM queda com a alternativa.
 
 La v0.23.26 deixa les fonts i els criteris documentats. El cupó i el carregador del catàleg queden pendents.
+
+## Proposta de catàleg independent
+
+Un repositori propi pot publicar geometria descarregable per a qualsevol projecte. El web estàtic serviria un índex geogràfic i un fitxer per revisió de cada model. Relleu Obert consultaria l’índex i demanaria només els models pertinents al retall. L’índex i les malles es publicarien per HTTPS amb CORS. Per al pilot, GitHub Pages admet un lloc publicat de fins a 1 GB. Si cal més espai, es pot canviar l’allotjament dels fitxers mantenint el format del catàleg. [Límits de GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits)
+
+### Format del primer lliurament
+
+| Element | Convenció proposada |
+| --- | --- |
+| `catalog.geojson` | `FeatureCollection` GeoJSON RFC 7946 amb versió de format, identificador estable per lloc, revisió del model, polígon o multipolígon de l’extensió horitzontal i `bbox`. Totes les coordenades de l’índex són WGS84 en ordre longitud, latitud. |
+| `print.glb` | glTF 2.0 binari autocontingut, en metres locals. X cap a l’est, Y cap amunt i Z cap al sud, amb l’orientació geogràfica aplicada. La posició local (0, 0, 0) correspon a l’àncora declarada al catàleg. El perfil inicial pren l’altitud del terreny a l’àncora com a referència de Y=0. |
+| Procedència | Cada revisió indica autoria, llicència i font de la geometria i de la georeferenciació, així com els canvis i la data de referència si es coneix. Cal conservar els crèdits dins del GLB i a la fitxa. Els identificadors externs, si estan verificats, indiquen quines petjades de la capa general es poden substituir. |
+
+El GLB i el GeoJSON segueixen estàndards existents. Els camps de revisió, encaix i procedència són convencions pròpies que cal publicar amb el catàleg. L’índex pot ser un sol fitxer mentre sigui petit. Convé reutilitzar la convenció d’àncora i eixos d’Open Landmarks perquè els models que compleixin els criteris es puguin adaptar amb pocs canvis. [glTF 2.0](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#coordinate-system-and-units) · [GeoJSON](https://datatracker.ietf.org/doc/html/rfc7946) · [API d’Open Landmarks](https://open-landmarks.benmaps.fr/docs/)
+
+Per als models originals, CC BY 4.0 és una opció si volem que el crèdit viatgi amb cada model. Per a les aportacions externes, el catàleg registra la llicència concreta de cada font i admet només materials que permetin l’adaptació i la redistribució previstes. Una adaptació de material CC BY-SA ha de respectar les seves condicions. La llicència del codi i la dels models es publiquen per separat. [Creative Commons](https://creativecommons.org/cc-licenses/) · [Identificadors SPDX](https://spdx.org/licenses/)
+
+### Integració i criteris d’acceptació
+
+- Començar amb una sola peça d’edifici. El catàleg ha de permetre obrir-la directament i Relleu Obert ha de poder situar-la amb les mateixes dimensions i orientació a dues escales. El visor i el 3MF comparteixen la variant imprimible.
+- La variant imprimible ha de tenir volum tancat, contacte amb el relleu i gruixos adequats a l’escala de prova. El GLB pot tenir una variant de més detall per a altres usos quan aporti valor.
+- Carregar la malla amb un identificador i una revisió fixats i registrar-los, amb l’atribució, a la procedència de l’exportació. Substituir només les petjades associades un cop validat el sòlid i el seu encaix. Si la malla falla o queda parcialment fora del retall sense poder-se tancar, es conserva la representació de la font general.
+- El mateix índex admet llocs naturals. Un cupó de roca o una bauma necessita un perfil d’encaix propi, amb referència vertical i contorn d’unió al relleu. Aquest perfil s’especificarà a partir del pilot RO-035. [Relleu rocós](RELLEU-ROCOS.md)
+
+El format és una proposta. Queden pendents el repositori independent, la primera malla i la prova del carregador amb dos retalls.

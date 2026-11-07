@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-07. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## 2026-11-07 — Catàleg independent de llocs singulars
+
+S’aparca GlobalBuildingAtlas i es prioritzen les malles singulars. RO-032 recull la proposta de repositori separat amb índex GeoJSON, models GLB en metres, referència geogràfica i llicència per model. Queden pendents el repositori i la prova d’integració. [Proposta de catàleg](RO-032-INTEGRACIO.md#proposta-de-catàleg-independent)
+
 ## 2026-11-07 — Estudi de GlobalBuildingAtlas
 
 RO-026 registra les llicències separades, el límit de detall LoD1 i la comprovació HTTP 206 amb CORS a Source Cooperative. Les estimacions de lectura de 7,1 MB a Tamariu i 10,2 MB a Glòries es basen en metadades de GeoParquet. La comparació d’edificis i la integració queden pendents. [Estudi de viabilitat](RO-026-FONTS-EDIFICIS.md#globalbuildingatlas--estudi-de-viabilitat)
