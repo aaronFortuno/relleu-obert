@@ -10,6 +10,8 @@ La comprovació posterior diferencia els dos fitxers `regional.3mf` per la geome
 
 L’usuari aprecia una millora al laminador i accepta provisionalment el retall girat. Les irregularitats que es vegin a la peça física i els enllaços pendents continuen en seguiment.
 
+RO-046 prepara sis maquetes candidates en Relleu pur. Les cinc d’una sola placa i el panoràmic dels Pirineus de quatre plaques passen l’auditoria de malla. El retall de l’Ebre mostra els revolts de Riba-roja i Flix. Queda la revisió al laminador abans d’ampliar la galeria. [Models de prova i fonts](RO-046-PROVES-RELLEU.md)
+
 ## v0.23.18 — Control viari dens a l’Hospitalet
 
 El subretall complet confirma una fallada col·lectiva en assignar el material de 20 perfils viaris. Els dos modes exporten la mateixa geometria. El pilot aïllat genera un ramal sobre dues calçades amb una llum calculada mínima d’1,11 mm i enllaços continus. L’error d’integració i el pas de vianants tapat queden pendents. [Controls](RO-052-CONTINUITAT.md#xarxa-densa-a-lhospitalet-v02318)

@@ -8,7 +8,7 @@ Actualitzat el **2026-11-07 · v0.23.19**. [Historial](HISTORIAL.md).
 | --- | --- | --- |
 | **Temps de generació** | RO-053 | Primera optimització d’edificis mesurada amb la mateixa malla. Tornar a mesurar Amsterdam complet i aïllar la integració de les vies principals. [Mesures](RO-053-TEMPS.md) |
 | **Ajustos d’impressió** | RO-056 | Validar els tiradors del plànol i laminar dues peces contigües de mides diferents. Després, estudiar els perfils d’impressora i la mida de cada placa. |
-| **Catàleg de relleu** | RO-046 | Revisar els exemples un per un, amb una primera tria de formes fàcils d’identificar a la maqueta. [Cua de revisió](RO-046-CATALEG.md#revisió-per-a-maquetes-daula) |
+| **Catàleg de relleu** | RO-046 | Revisar les fitxes existents i els 3MF de formes noves abans d’ampliar la galeria. [Cua de revisió](RO-046-CATALEG.md#revisió-per-a-maquetes-daula) · [Retalls de prova](RO-046-PROVES-RELLEU.md) |
 | **Paviment de superfície** | RO-051, RO-052 | El retall girat mostra millora al laminador i es dona per bo de moment. La impressió física i els enllaços pendents queden en seguiment. [Control de l’Hospitalet](RO-052-CONTINUITAT.md#talls-locals-sota-els-taulers-v02319) |
 | **Seguiment de les estructures** | RO-033, RO-034, RO-050 | Registrar noves incidències amb retall i escala. A Sant Salvador, dos perfils segueixen el terreny pel pendent dels enllaços. El túnel a 1:20.000 té les dues boques comprovades al 3MF. El pas de Montgròs es conserva al cupó laminat. [Controls de vies](RO-051-PERFILS-VIARIS.md#transicions-pendents-a-la-v0220) · [Montgròs](RO-033-CONTROLS-PROCEDIMENTALS.md#laminat-del-cupó-de-montgròs) |
 | **Validació en paral·lel** | RO-024, RO-033, RO-046, RO-054, RO-055 | Revisar Tamariu 40 × 45 cm i Amsterdam amb totes les capes al laminador. També queden la recuperació d’un projecte girat i els talls dels Rasos–Gallina Pelada. |
@@ -147,7 +147,7 @@ A escriptori, la cerca i el mapa queden sota la capçalera de Territori i els aj
 
 El [catàleg](RO-046-CATALEG.md) inclou 31 retalls, amb 19 fitxes de Relleu pur i 12 de Model complet. El carrusel inicial barreja l’ordre i reparteix els modes al llarg del bucle. «Galeria de maquetes» a la capçalera i «Veure exemples» a Territori obren una graella amb descripcions, cerca i filtres per mode, mida i tipus de paisatge. «La teva maqueta» mostra el resum del lloc mentre el visor mostra el model corresponent. Queda revisar l’enquadrament, la llegibilitat i els temps de generació en ús, i comprovar el gruix de la base a les fitxes costaneres.
 
-La revisió comença per sis fitxes existents. L’estret, l’istme, la conca, els penya-segats i la serralada panoràmica queden com a candidats per ampliar la tria. [Cua de revisió](RO-046-CATALEG.md#revisió-per-a-maquetes-daula)
+La revisió comença per sis fitxes existents. Els retalls de prova cobreixen un estret, un istme, una conca, penya-segats, una serralada panoràmica i dos meandres. Queda la validació al laminador abans de triar les fitxes que s’afegeixen a la galeria. [Cua de revisió](RO-046-CATALEG.md#revisió-per-a-maquetes-daula) · [Retalls de prova](RO-046-PROVES-RELLEU.md)
 
 ### RO-047 — Precàrrega opcional de fonts alternatives
 
