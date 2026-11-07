@@ -15,6 +15,22 @@ El MET5 queda integrat al Model complet i a Relleu pur. El motor accepta una gra
 
 Al **Pedraforca**, el retall de 1.500 × 1.500 m centrat a 42,237 N, 1,704 E ha seleccionat MET5 en tots dos modes. Base de 150 mm, exageració ×1,5. El 3MF de Relleu pur té 74.752 triangles i el de Model complet, 92.228. Tots dos passen l’auditoria. Queden pendents el contrast visual amb la font general i el refinament de la malla.
 
+### Pilot de detall local amb el MDT de 50 cm
+
+Control fora de línia de 300 × 300 m a 1:2.000, amb peça de 150 × 150 mm i exageració ×1. Les dues malles es mostregen cada 1,25 m. La primera utilitza només MET5. La segona incorpora les cotes de 50 cm dins de 80 m del centre, amb transició progressiva fins als 115 m. La lectura HTTP parcial demana una finestra de 465 × 465 cel·les del GeoTIFF original en EPSG:25831. La fitxa del conjunt de 50 cm declara altituds ortomètriques EGM08D595 i llicència CC BY 4.0. El proveïdor no ha exposat CORS a la consulta parcial de prova. [Metadades i descàrrega de l’ICGC](https://catalegs.ide.cat/geonetwork/geonetwork/api/records/model-elevacions-terreny-lidar-catalunya-50cm-2021-2023?language=cat)
+
+Per al cupó, la mediana de la diferència entre fonts a l’anell de solapament afegeix 1,07 m al detall. És un ajust local entre superfícies, amb diferències mostrejades de −6,28 a +34,56 m a l’anell. Les dues malles sense gir comparteixen la cota de base. Amb i sense gir de 35°, el pedaç conserva exactament les cotes de les vores exteriors del retall. Els tres 3MF tenen 118.080 triangles i superen l’auditoria de sòlid. La forma i el laminat s’han de contrastar amb els 3MF. L’operació només substitueix elevacions i representa una sola cota per coordenada.
+
+Als 20 m al voltant del centre del control, el màxim mostrejat és de 1.109,92 m al MET5 i de 1.082,50 m amb el pedaç. La diferència d’uns 27 m apareix també abans de convertir el relleu en sòlid. Cal verificar quina font conserva la forma i la cota de l’agulla abans d’activar una substitució automàtica. La resolució nominal i l’auditoria del sòlid permeten comprovar aspectes diferents.
+
+### Catàleg de formes naturals i infraestructures
+
+Open Place Models pot compartir l’índex per coordenades, la memòria cau, els identificadors i la procedència entre edificis i formes singulars. El perfil actual de l’edifici encaixa el sòlid sobre el terreny. Un pedaç d’elevació s’aplica abans de generar la superfície. Una malla 3D amb una obertura substitueix un volum de terreny i necessita àncora horitzontal, origen i datum vertical, contorn d’unió i un retall que conservi la cavitat. Si l’encaix no dona un sòlid tancat, cal conservar el MDT general. Els lectors d’edificis actuals han de continuar llegint l’índex v1. El cupó encara és local i no està connectat al catàleg.
+
+Un model del massís de Montserrat pot combinar un relleu base i pedaços locals. L’escala física i la informació disponible governen la selecció de detall. Cal comprovar la transició al terreny, el retall i el gir, la unió de materials, la base i les obertures al laminador abans de publicar cada recurs. Riglos és un segon control de la mateixa estratègia quan es confirmi la cobertura dels espadats. El núvol NPC02 d’Aragó és un punt de partida per a la superfície. [PNOA-LiDAR](https://pnoa.ign.es/pnoa-lidar/tercera-cobertura)
+
+Millau encaixa en un perfil d’infraestructura amb extrems d’ancoratge, l’eix i la rasant compartits amb l’A75. La geometria preparada pot incloure la curvatura, les piles i els pilons. Els tirants requereixen una variant imprimible segons l’escala. L’absència del recurs o una unió inviable deixen actiu el motor procedimental. [Dades oficials del viaducte](https://www.leviaducdemillau.com/sites/viaducdemillau/accueil-viaduc-de-millau/le-viaduc/les-chiffres-cles.html)
+
 ## Els Degotalls · RO-035
 
 Cupó de la paret del sector est, secció nord, a partir del LiDAR terrestre d’octubre de 2020. En una graella vertical XZ de 0,5 m, la profunditat Y prové dels punts observats. La malla tanca el dors i els costats amb superfícies artificials. La cara mesurada avança fins a 0,97 m cap al punt d’escaneig en un tram de 2 m verticals. El cupó a 1:200 fa 50 × 24,54 × 60 mm, té 2.096 triangles i supera l’auditoria 3MF.
@@ -29,11 +45,14 @@ Amb la v0.21.2, el retall de 800 × 800 m centrat a 41,61107 N, 1,78548 E es gen
 
 La Diputació de Barcelona inventaria una obertura triangular d’uns 12 × 14,5 m. A 1:10.000, la base fa aproximadament 1,2 mm a la maqueta. El MET5 descriu la superfície superior i no conté el buit. Per validar un flux general cal un núvol de punts o una malla amb cobertura de les dues boques i de la volta. Amb mesures parcials es podria preparar un cupó aproximat, identificat com a tal. El control ha de conservar l’obertura de banda a banda en una malla tancada i al laminador. [Inventari de la Diputació](https://patrimonicultural.diba.cat/print/pdf/node/74394)
 
+La figura 14 d’un treball de la UPC i l’ICGC mostra una reconstrucció tridimensional de la Foradada amb la volta. No s’ha localitzat una descàrrega de la malla amb condicions de reutilització. [Estudi i figura 14](https://doi.org/10.3390/geosciences12100370)
+
 ## Reproducció local
 
 ```powershell
 node --max-old-space-size=512 scripts/compare-cavall-bernat.mjs
+node --max-old-space-size=512 scripts/pilot-cavall-detail.mjs
 node --max-old-space-size=512 scripts/pilot-degotalls.mjs
 ```
 
-El primer script escriu quatre 3MF, les seccions SVG i les mesures a `output/cavall-bernat/`. El segon baixa en flux l’escaneig original, en comprova l’empremta i desa el cupó i l’auditoria a `output/`.
+El primer script escriu quatre 3MF, les seccions SVG i les mesures a `output/cavall-bernat/`. El pilot de detall escriu tres 3MF i les mesures a `output/cavall-bernat-detall/`. El script dels Degotalls baixa en flux l’escaneig original, en comprova l’empremta i desa el cupó i l’auditoria a `output/`.

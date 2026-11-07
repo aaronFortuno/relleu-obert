@@ -2,6 +2,14 @@
 
 Actualitzat: 2026-11-07. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## 2026-11-07 — Controls d’Amsterdam i del relleu de Montserrat
+
+Al centre d’Amsterdam, l’usuari només detecta tres ponts absents en la revisió visual. El control local de 10 × 10 cm a 1:10.000 es completa en 32,16 s, amb 10,09 s fins al primer relleu i 83 taulers procedimentals. El muntatge del paviment regional ocupa 14,02 s. La maqueta de 25 × 25 cm s’atura durant vies en els tres intents per memòria. [Informe i reproducció](RO-053-TEMPS.md#amsterdam-amb-totes-les-capes--v02327)
+
+El Cavall Bernat té un primer control de detall a 1:2.000 amb cotes del MDT de 50 cm de l’ICGC i un anell de transició al MET5. Els tres 3MF superen l’auditoria, també amb el retall girat 35°. Es documenta l’ús del catàleg per a futurs pedaços d’elevació, malles amb cavitats i infraestructures. Queden el contrast visual i el laminat del cupó, i la integració automàtica. [Pilot de relleu rocós](RELLEU-ROCOS.md#pilot-de-detall-local-amb-el-mdt-de-50-cm)
+
+Per a RO-056 s’exporta un cupó de Tamariu de 10 × 10 cm amb dues plaques de 100 × 60 i 100 × 40 mm. Els quatre filaments coincideixen al tall dins de la tolerància de l’auditoria i el mar arriba a la base de les dues peces. Pendent de laminar. [Ajustos d’impressió](BACKLOG.md#ro-056--base-talls-i-plaques)
+
 ## v0.23.27 — Pilot de la Torre Glòries
 
 RO-032 integra la Torre Glòries des del repositori independent Open Place Models. Prova local amb el catàleg publicat, el MET5 i les tres fonts d’edificis a dues escales. Els dos 3MF contenen la malla del catàleg i la seva atribució. Queden pendents la revisió de l’usuari al visor i el laminat. [Retalls i comprovacions](RO-032-INTEGRACIO.md#pilot-de-la-torre-glòries--v02327)

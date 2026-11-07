@@ -77,7 +77,7 @@ El retall de l’Aneto fa 25 × 20 cm per mantenir el nord a dalt i encabir tot 
 | --- | --- | --- |
 | Bilbao · Ria i Abandoibarra | Pendent | El revolt de la ria i els passeigs es distingeixen, i els ponts hi enllacen a tots dos costats. |
 | Ronda · Tajo i Pont Nou | Pendent | El congost separa els dos sectors urbans i el Pont Nou els connecta sense omplir el pas inferior. |
-| Amsterdam · Singelgracht | Pendent | Els canals concèntrics conserven el traçat i els ponts hi deixen pas visible a l’escala de la maqueta. |
+| Amsterdam · Singelgracht | Revisió visual parcial | En un render del centre, l’usuari només ha observat tres ponts absents. Queda contrastar el retall exacte de la fitxa i la llum sota els taulers al laminador. |
 | Venècia · Gran Canal | Pendent | El Gran Canal separa els fronts edificats i els canals menors no queden tapats per les petjades. |
 | Chicago · Riu i Loop | Pendent | El riu i els ponts es distingeixen de la quadrícula urbana. Les alçades disponibles permeten contrastar la silueta. |
 

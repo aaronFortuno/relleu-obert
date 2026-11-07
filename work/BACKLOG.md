@@ -6,14 +6,14 @@ Actualitzat el **2026-11-07 · v0.23.27**. [Historial](HISTORIAL.md).
 
 | Lot | Línies | Resultat que permet avançar |
 | --- | --- | --- |
-| **Temps de generació** | RO-053 | Primera optimització d’edificis mesurada amb la mateixa malla. Tornar a mesurar Amsterdam complet i aïllar la integració de les vies principals. [Mesures](RO-053-TEMPS.md) |
-| **Ajustos d’impressió** | RO-056 | Validar els tiradors del plànol i laminar dues peces contigües de mides diferents. Després, estudiar els perfils d’impressora i la mida de cada placa. |
-| **Catàleg de relleu** | RO-046 | Revisar els darrers ajustos a les Bardenas, Colorado i Lavaredo i continuar amb les trames urbanes. [Cua de revisió](RO-046-CATALEG.md#revisió-per-a-maquetes-daula) |
+| **Temps de generació** | RO-053 | Amsterdam 10 × 10 cm complet en 32,16 s. Aïllar el muntatge del paviment regional i repetir el retall de 25 × 25 cm, aturat a la fase de vies. [Mesures](RO-053-TEMPS.md#amsterdam-amb-totes-les-capes--v02327) |
+| **Ajustos d’impressió** | RO-056 | Laminar el cupó de Tamariu de dues plaques amb talls desiguals. Després, validar els perfils d’impressora i la mida de cada placa. |
+| **Catàleg de relleu** | RO-046 | Amsterdam té una primera revisió visual del centre. Continuar amb l’Eixample, Girona i Venècia, i reprendre els controls pendents de les Bardenas, Colorado i Lavaredo. [Cua de revisió](RO-046-CATALEG.md#revisió-per-a-maquetes-daula) |
 | **Paviment de superfície** | RO-051, RO-052 | El retall girat mostra millora al laminador i es dona per bo de moment. La impressió física i els enllaços pendents queden en seguiment. [Control de l’Hospitalet](RO-052-CONTINUITAT.md#talls-locals-sota-els-taulers-v02319) |
 | **Seguiment de les estructures** | RO-033, RO-034, RO-050 | Registrar noves incidències amb retall i escala. A Sant Salvador, dos perfils segueixen el terreny pel pendent dels enllaços. El túnel a 1:20.000 té les dues boques comprovades al 3MF. El pas de Montgròs es conserva al cupó laminat. [Controls de vies](RO-051-PERFILS-VIARIS.md#transicions-pendents-a-la-v0220) · [Montgròs](RO-033-CONTROLS-PROCEDIMENTALS.md#laminat-del-cupó-de-montgròs) |
 | **Validació en paral·lel** | RO-024, RO-033, RO-046, RO-054, RO-055 | Revisar Tamariu 40 × 45 cm i Amsterdam amb totes les capes al laminador. També queden la recuperació d’un projecte girat i els talls dels Rasos–Gallina Pelada. |
-| **Pilot de relleu rocós** | RO-023, RO-035 | Després dels temps de generació, reprendre el Cavall Bernat i el Pedraforca, i el cupó georeferenciat dels Degotalls per als voladissos. [Resultats](RELLEU-ROCOS.md) |
-| **Catàleg de llocs singulars** | RO-032 | Comprovar la Torre Glòries al visor i al laminador a dues escales i amb gir. [Pilot](RO-032-INTEGRACIO.md#pilot-de-la-torre-glòries--v02327) |
+| **Pilot de relleu rocós** | RO-023, RO-035 | Contrastar els cupons MET5 i MDT de 50 cm del Cavall Bernat. Per a les cavitats, obtenir una malla reutilitzable de la Foradada o georeferenciar els Degotalls. [Resultats](RELLEU-ROCOS.md#pilot-de-detall-local-amb-el-mdt-de-50-cm) |
+| **Catàleg de llocs singulars** | RO-032 | Torre Glòries validada visualment per l’usuari. Provar altres edificis quan estiguin disponibles i validar al laminador. [Pilot](RO-032-INTEGRACIO.md#pilot-de-la-torre-glòries--v02327) |
 
 Els encàrrecs independents avancen en paral·lel. Cada bloc validat té el seu commit i es manté una sola prova pesada alhora. Els casos que requereixen inspecció al laminador poden quedar pendents mentre avancen altres línies.
 
@@ -32,8 +32,8 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | [RO-052](#ro-052--continuïtat-i-amplada-del-traçat-viari) | P1 | Ramal sobre dues calçades verificat al cupó. Interferència amb un camí de vianants en el model complet | Comprovar la llum i els enllaços després d’integrar cada grup de vies |
 | [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió) | P1 | Filament per peça validat a Montserrat. Projecte de quatre plaques obert a Bambu Studio | Contrastar el laminat de les quatre peces de Tamariu |
 | [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts) | P1 | ICGC, Catastre i OSM actius. GlobalBuildingAtlas aparcat | Comparar les parts i petjades de les fonts actuals en una segona zona |
-| [RO-032](#ro-032--cobertes-i-volums-singulars) | P1 | Torre Glòries integrada des del catàleg GeoJSON i GLB | Validar els dos retalls al visor i al laminador |
-| [RO-023](#ro-023--relleu-local-i-fonts-vectorials-de-més-precisió) | P2 | MET5 integrat i auditat al Pedraforca | Contrast visual i refinament de malla |
+| [RO-032](#ro-032--cobertes-i-volums-singulars) | P1 | Torre Glòries integrada i validada visualment | Comprovar el laminat i els nous models quan arribin |
+| [RO-023](#ro-023--relleu-local-i-fonts-vectorials-de-més-precisió) | P2 | MET5 integrat. Cupó local de detall amb MDT de 50 cm | Comparar la silueta del Cavall Bernat i validar la transició al laminador |
 | [RO-055](#ro-055--mode-de-relleu-pur) | P2 | Retalls fins a 1:500.000 en tots els formats de Relleu pur | Laminar Tamariu i un panorama amb textura i comprovar dos talls adjacents |
 | [RO-054](#ro-054--galeria-local-de-projectes) | P2 | Catàleg local amb còpia JSON a v0.23.7 | Validar la recuperació entre dispositius en l’ús habitual |
 | [RO-056](#ro-056--base-talls-i-plaques) | P2 | Plànol de talls interactiu a v0.23.10 | Laminar talls asimètrics i definir com comprovar les plaques de cada impressora |
@@ -105,6 +105,8 @@ Català, castellà, gallec, basc i anglès disponibles al desplegable. S’han l
 
 Comparar la font actual i un MDT de detall al mateix retall de Montserrat, a dues escales i amb la mateixa exageració. Incloure un retall del Cavall Bernat i un segon cas al Pedraforca o a Riglos. Conservar carenes, colls i agulles amb refinament local de la malla segons el relleu i la mida impresa. Mesurar fidelitat del perfil, triangles i temps. Verificar accés des del navegador i retorn a la font general fora de cobertura. [Fonts i interfície](RO-023-FONTS-UX.md) · [Models d’elevacions ICGC](https://www.icgc.cat/ca/Geoinformacio-i-mapes/Dades-i-productes/Elevacions/Elevacions-territorial/Models-delevacions) · [Productes PNOA-LiDAR](https://pnoa.ign.es/web/portal/pnoa-lidar/productos-a-descarga)
 
+El pilot del Cavall Bernat combina el MET5 amb un retall numèric de l’ICGC a 50 cm, processat fora de línia. Els tres sòlids passen l’auditoria i el pedaç conserva la vora del retall a 0° i 35°. Queden el contrast visual, el laminat i el carregador automàtic. [Cupó de detall](RELLEU-ROCOS.md#pilot-de-detall-local-amb-el-mdt-de-50-cm)
+
 ### RO-024 — Unió de volums i validació d’impressió
 
 El cupó del Bages permet consultar els materials per altura. A Montserrat, l’usuari valida el filament per peça al laminador. A Tamariu, confirma que el 3MF únic s’obre amb quatre plaques. Queda pendent comprovar al laminador les vores i els materials de Tamariu 40 × 45 cm i dels Rasos–Gallina Pelada, i revisar el pas inferior de Rajadell. Impressió física pendent. [Resultats i controls](RO-024-RESULTATS.md)
@@ -123,13 +125,15 @@ Les fonts fora d’Espanya queden documentades per a més endavant. GlobalBuildi
 
 El motor incorpora cobertes amb dades obertes d’OSM quan els atributs ho permeten i conserva les petjades amb coberta plana si la consulta torna buida. L’RTL de l’ICGC documenta plans LoD2, amb un servei públic de careners en 2D. Resta verificar una font de cobertes 3D consultable des del navegador. [Fonts de cobertes](RO-032-DADES-COBERTES.md#seguiment-del-4-de-novembre) · [Integració](RO-032-INTEGRACIO.md)
 
-La Torre Glòries és el primer edifici d’Open Place Models. En local s’ha verificat la substitució d’ICGC, Catastre i OSM i l’exportació a 1:1.500 i 1:4.000 amb gir. Queda pendent la validació al visor per l’usuari i al laminador. [Pilot i retalls de prova](RO-032-INTEGRACIO.md#pilot-de-la-torre-glòries--v02327)
+La Torre Glòries és el primer edifici d’Open Place Models. En local s’ha verificat la substitució d’ICGC, Catastre i OSM i l’exportació a 1:1.500 i 1:4.000 amb gir. L’usuari confirma que la torre és recognoscible en la maqueta de Barcelona. Queden el laminat i els controls amb altres models. [Pilot i retalls de prova](RO-032-INTEGRACIO.md#pilot-de-la-torre-glòries--v02327)
 
 Els llocs que substitueixen un fragment del relleu es coordinen amb RO-035. El catàleg documenta el procés per investigar candidats i preparar malles. [Guia de contribució](https://github.com/aaronFortuno/open-place-models/blob/main/CONTRIBUTING.md)
 
 ### RO-033 — Ponts i viaductes
 
 Els ponts curts que poden recolzar a totes dues ribes s’ajusten a la cota de l’aigua modelada. El pressupost es reparteix pel retall i prioritza els creuaments. Verificar el model complet d’Amsterdam al visor i laminar les obertures. [Mesures dels canals](RO-033-CONTROLS-PROCEDIMENTALS.md#ponts-curts-sobre-canals)
+
+En un render del centre d’Amsterdam, l’usuari només ha identificat tres ponts absents. El retall precís i els tres identificadors queden per determinar. L’observació visual i el recompte d’eixos del motor es registren per separat.
 
 Pilars i taulers procedimentals, amb dades específiques documentades per a Rajadell. Millau i el cupó del Bages estan validats al visor. La regla general per als fragments continguts recupera el tauler de Montgròs a 1:20.000 i conserva el de la Fessona, amb dues unions a cadascun. L’obertura de 0,27 mm de Montgròs es conserva a la secció mostrejada del cupó laminat amb capes de 0,10 i 0,20 mm. Pendent de comprovar en una placa completa i en una impressió física. [Controls procedimentals](RO-033-CONTROLS-PROCEDIMENTALS.md) · [Suports segons escala](RO-033-SUPORTS-ESCALA.md)
 
@@ -210,6 +214,8 @@ Validar les quatre peces dels Rasos–Gallina Pelada al laminador, sobretot les 
 «Impressió» permet ajustar la base i repartir la maqueta amb mides diferents per columna i fila. Les guies i l’exportació comparteixen els mateixos talls. El 3MF multiplaca actual té una placa de referència de 256 × 256 mm; els talls més grans s’exporten en fitxers separats. Queda comprovar el laminat i, en una fase posterior, verificar els perfils reals d’impressores i avisar si una peça no hi cap.
 
 A la v0.23.24, un doble clic o la tecla Supr sobre un tirador restableixen només aquell tall, respectant l’espai mínim entre peces.
+
+Cupó de Tamariu a 1:10.000, peça de 10 × 10 cm, centre 41,918 N, 3,2075 E, detall equilibrat, base de 5 mm i tall a 40 mm des del sud. El 3MF conté dues plaques de 100 × 60 i 100 × 40 mm. Les malles dels quatre filaments són tancades, el mar arriba a la base en totes dues peces i la diferència d’àrea de la secció compartida per filament és inferior a 0,000001 mm². Queda pendent obrir les plaques i comprovar el laminat. Fitxer local `output/tamariu-cupo-dues-plaques-10x10.3mf`.
 
 El format panoràmic admet de 51 a 100 cm de costat llarg i de 10 a 20 cm de costat curt, en Relleu pur. A la vista inicial, les peces que superen conjuntament els 60 cm es disposen en dues files a la mateixa escala que la taula. La malla rectangular segueix un pas físic similar als dos eixos i comparteix mostres i cota de base als talls.
 
