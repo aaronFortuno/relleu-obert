@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.23.20 — 2026-11-07
+
+- La galeria incorpora Gibraltar, l’istme d’O Vao, Tremp, Zumaia, els Pirineus panoràmics i els meandres de l’Ebre. S’apliquen els cinc retalls revisats i la llista de verificació s’ordena en sis blocs.
+- Els Pirineus panoràmics s’obren amb les superfícies d’aigua cartografiades, una opció que es pot ajustar a Territori.
+
 ## v0.23.19 — 2026-11-07
 
 - Si falla el tall conjunt del terreny sota les rasants suaus, el motor prova grups més petits i recupera el paviment habitual només als perfils descartats. Al retall dens de l’Hospitalet es conserven 19 dels 20 perfils preparats.

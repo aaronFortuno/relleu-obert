@@ -205,11 +205,18 @@ test('pure relief uses the mapped width of a flowing-water polygon without a cen
   const [w,s,e,n]=bbox,at=(x,y)=>[w+(e-w)*x,s+(n-s)*y];
   const waterAreas=[{geometry:{type:'Polygon',
     coordinates:[[at(.15,.35),at(.85,.35),at(.85,.55),at(.15,.55),at(.15,.35)]]}}];
-  const model=buildModel({meta:{bbox},dem,waterAreas},options);
+  const waterways=[{properties:{class:'stream'},geometry:{type:'LineString',
+    coordinates:[at(.15,.75),at(.85,.75)]}}];
+  const model=buildModel({meta:{bbox},dem,waterAreas,waterways},{...options,streamWidth:0});
+  assert.equal(model.provenance.streamCount,0);
+  assert.equal(model.provenance.flowingWaterAreaCount,1);
   const water=auditPart(model.parts.find(part=>part.id==='inland-water'));
   assert.deepEqual(water.errors,[]);
   assert(Math.abs(water.dimensions[1]-20)<.001);
   assert(water.dimensions[2]>.36);
+  const widened=updatePureRelief(model,{streamWidth:1});
+  assert.equal(widened.provenance.streamCount,1);
+  assert.equal(updatePureRelief(widened,{streamWidth:0}).provenance.streamCount,0);
 });
 
 test('mapped forest stays green and its continuous texture scales proportionally',()=>{

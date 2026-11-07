@@ -2,6 +2,10 @@
 
 Actualitzat: 2026-11-07. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.23.20 — Sis fitxes noves i revisió per blocs
+
+RO-046 incorpora sis fitxes a la galeria i aplica cinc correccions a partir dels diagnòstics de l’usuari. Cap de Creus queda validat. Els cinc retalls ajustats i les noves incorporacions queden a la [cua de revisió](RO-046-CATALEG.md#revisió-per-a-maquetes-daula) amb la resta de fitxes.
+
 ## v0.23.19 — Talls locals sota les rasants a l’Hospitalet
 
 En repetir el retall dens, el motor conserva 19 perfils suaus i retorna al paviment habitual en un sol tram que falla. Les tres malles per material passen l’auditoria. Els 39 enllaços registrats dels taulers cartografiats es mantenen. El pas de vianants tapat i els 13 extrems sense enllaç continuen pendents. [Control](RO-052-CONTINUITAT.md#talls-locals-sota-els-taulers-v02319)

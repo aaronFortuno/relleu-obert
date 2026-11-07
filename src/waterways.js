@@ -4,6 +4,7 @@ const nominalWidth={river:8,stream:1,brook:1,canal:4,ditch:.7,drain:.7};
 export const MIN_STREAM_WIDTH_MM=.45;
 
 export function waterwayPolygons(features,project,{width,height,scale,multiplier=1}){
+  if(multiplier===0)return [];
   const polygons=[];
   const minimum=MIN_STREAM_WIDTH_MM*(Number.isFinite(multiplier)?Math.max(1,Math.min(3,multiplier)):1);
   for(const {properties:p={},geometry:g} of features){

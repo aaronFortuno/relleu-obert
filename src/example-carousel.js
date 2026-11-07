@@ -65,7 +65,7 @@ function createCard({expanded = false, gallery = false} = {}) {
   return {button, populate(example) {
     const label = localizeExample(example);
     const mode = t(example.pureRelief === false ? 'example.modeComplete' : 'example.modeRelief');
-    const details = `${mode} · 1:${formatNumber(example.scale)}`;
+    const details = `${mode} · 1:${formatNumber(Math.round(example.scale))}`;
     const summary = `${label.category} · ${formatSize(example)}`;
     const accessibleDescription = `${details}. ${label.description}`;
     button.dataset.example = example.id;

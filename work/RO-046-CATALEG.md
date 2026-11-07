@@ -1,27 +1,79 @@
 # Catàleg inicial de llocs per a maquetes
 
-RO-046 recull **31 enquadraments**, agrupats per mode i àmbit. En **Relleu pur**, el punt de partida és una forma que es pugui reconèixer al terreny o al contorn de l’aigua. En **Model complet**, cada retall proposa un patró de carrers, edificis o infraestructures que es pugui llegir en relació amb el lloc.
+RO-046 recull **37 enquadraments**, 25 de **Relleu pur** i 12 de **Model complet**. Els primers permeten reconèixer formes del terreny o del contorn de l’aigua. Els segons relacionen el traçat urbà i les infraestructures amb el lloc on es troben.
 
 ## Revisió per a maquetes d’aula
 
-La primera passada prioritza una forma principal llegible a la mida final. Per a cada fitxa, cal obrir el retall amb els seus ajustos, comprovar la forma en vista zenital i obliqua, i registrar el resultat del laminat. Apunta si cal canviar l’enquadrament, el gir, l’escala o l’exageració. La validació física es registra a part.
+La cua comença per la revisió inicial i les sis incorporacions. Després agrupa els retalls que es poden comparar a l’aula. Obre cada retall amb els seus ajustos, comprova la forma en vista zenital i obliqua i registra el resultat del laminat. Apunta si cal canviar l’enquadrament, el gir, l’escala o l’exageració. La validació física es registra a part.
 
-| Fitxa existent | Què cal comprovar | Revisió |
+### Revisió inicial
+
+| Fitxa | Què cal comprovar | Apunt de la primera revisió | Estat |
+| --- | --- | --- | --- |
+| Cap de Creus | La punta queda sencera i destaca del contorn general de la península. | | Validat |
+| Ordesa i Mont Perdut | El fons i les parets deixen llegir la secció en U de la vall. | Afegir gir per encabir tot el parc natural. Detall a `galeria-ordesa.json`. | Ajust incorporat · tornar a comprovar |
+| Estany de Sant Maurici | Es distingeixen la làmina d’aigua i el relleu que tanca la capçalera. | Canviar la posició per incloure més llacs del sistema i reduir l’exageració vertical. Detall a `galeria-estany.json`. | Ajust incorporat · tornar a comprovar |
+| Montserrat | Les agulles destaquen de la carena a la mida impresa. | Afegir gir per incloure tot el parc natural. Detall a `galeria-montserrat.json`. | Ajust incorporat · tornar a comprovar |
+| Illes Cíes | La barra de Rodas i l’aigua de cada banda es distingeixen. | Girar el retall per excloure el sòl peninsular i mostrar l’arxipèlag. Detall a `galeria-cies.json`. | Ajust incorporat · tornar a comprovar |
+| Delta de l’Ebre | Les llacunes i les barres estretes es llegeixen en una sola peça. | Canviar les mides per passar de quatre peces a una. Detall a `galeria-ebre.json`. | Ajust incorporat · tornar a comprovar |
+
+### Prioritat de revisió per a les noves fitxes
+
+Les sis fitxes s’incorporen a la galeria en aquesta iteració. Els enquadraments, les fonts i les comprovacions locals consten al [document de proves de relleu](RO-046-PROVES-RELLEU.md).
+
+| Fitxa | Què cal comprovar | Revisió |
 | --- | --- | --- |
-| Cap de Creus | La punta queda sencera i destaca del contorn general de la península. | Pendent |
-| Ordesa i Mont Perdut | El fons i les parets deixen llegir la secció en U de la vall. | Pendent |
-| Estany de Sant Maurici | Es distingeixen la làmina d’aigua i el relleu que tanca la capçalera. | Pendent |
-| Montserrat | Les agulles destaquen de la carena a la mida impresa. | Pendent |
-| Illes Cíes | La barra de Rodas i l’aigua de cada banda es distingeixen. | Pendent |
-| Delta de l’Ebre | Les llacunes i les barres estretes es llegeixen i els talls coincideixen a les quatre peces. | Pendent |
+| Estret de Gibraltar | Les dues ribes es distingeixen i el canal es manté obert entre Tarifa i Punta Cires. | Pendent |
+| Istme d’O Vao · A Lanzada | El cordó de dunes uneix O Grove amb el continent i separa el mar obert de la zona intermareal. | Pendent |
+| Penya-segats de Zumaia | El perfil entre Pikote, Algorri i Itzurun es distingeix de la plataforma litoral. | Pendent |
+| Meandres de l’Ebre · Riba-roja i Flix | Els dos revolts són llegibles i el riu envolta la llengua de terra de Flix sense interrompre’s. | Pendent |
+| Conca de Tremp i Montsec | El fons de la conca es distingeix de les carenes que el delimiten, amb el Montsec al sud. | Pendent |
+| Pirineus panoràmics | Les quatre peces mantenen l’eix de la serralada continu i mostren mar a tots dos extrems. | Pendent |
 
-### Candidats per ampliar la tria
+### Comparacions de relleu proper
 
-- **Estret de Gibraltar.** Provar un retall que mostri les dues ribes i el pas entre elles. [Institut Espanyol d’Oceanografia](https://www.ieo.es/documents/10640/6094157/NP_031224_estrecho%2BBIODIV.pdf/c8d76885-900f-4d6a-8e14-1aedd3a0b77e)
-- **Istme d’O Vao, a A Lanzada.** Comprovar que la franja de terra uneix O Grove amb el continent a la mida de la peça. [Turismo de Galicia](https://blog.turismo.gal/?p=13000)
-- **Conca de Tremp.** Buscar un enquadrament que inclogui el fons de la conca i prou marge de les serres que la delimiten. [Geoparc Orígens](https://www.geoparcorigens.cat/es/geologia/)
-- **Penya-segats de Zumaia.** Prioritzar el perfil del penya-segat i la relació amb el mar. [Geoparc de la Costa Basca](https://geoparkea.eus/es/ciencia-educacion/geologia)
-- **Serralada dels Pirineus.** Recuperar la proposta panoràmica per veure la continuïtat de l’eix de la serralada i comprovar que els talls no en dificulten la lectura.
+| Fitxa | Què cal comprovar | Revisió |
+| --- | --- | --- |
+| Badia de Roses | La badia queda oberta entre Roses i el Montgrí i es distingeix la plana litoral. | Pendent |
+| Badia de Tamariu | La cala, la platja i els penya-segats es llegeixen entre les cases. El mar arriba fins a la base. | Pendent |
+| Volcans del Croscat i Santa Margarida | Es distingeixen el tall lateral del Croscat i el cràter tancat de Santa Margarida. | Pendent |
+| Pirineus · sector de l’Aneto | L’Aneto i el massís de la Maladeta destaquen sobre les valls en vista obliqua. | Pendent |
+| Llacs glacials de l’Aneto | Les làmines d’aigua de Cregüeña i de Corones són planes i es distingeixen dels circs i les crestes. | Pendent |
+
+### Grans formes del relleu
+
+| Fitxa | Què cal comprovar | Revisió |
+| --- | --- | --- |
+| Tenerife | Teno, Anaga i la punta de la Rasca queden dins del retall. El tall entre peces coincideix i conserva la forma de l’illa. | Pendent |
+| Teide i Las Cañadas | Els cons del Teide i de Pico Viejo es distingeixen dins el contorn de la caldera. | Pendent |
+| Santorini | Thera i Therasia emmarquen la caldera marina i els illots Kameni queden separats. | Pendent |
+| Mont Fuji | El con i els vessants radials es llegeixen des de diversos angles. Comprova si es distingeix el cràter. | Pendent |
+| Geirangerfjord | El braç de mar arriba fins a Geiranger i queda encaixat entre vessants escarpats. | Pendent |
+| Bardenas Reales · Bardena Blanca | Els barrancs de les Cortinas i el turó del Castildetierra es distingeixen de la plana. | Pendent |
+| Gran Canó del Colorado | El Colorado es llegeix al fons del canó entre les dues vores de l’altiplà i les valls laterals. | Pendent |
+| Tre Cime di Lavaredo | Les tres torres rocoses conserven una silueta diferenciada sobre el replà. | Pendent |
+| Table Mountain | El cim tabular es distingeix de Lion’s Head i la base manté el gruix previst. | Pendent |
+
+### Trames urbanes i pendents
+
+| Fitxa | Què cal comprovar | Revisió |
+| --- | --- | --- |
+| Barcelona · Eixample de Cerdà | La quadrícula i els xamfrans es llegeixen en relació amb la Diagonal i el passeig de Gràcia. | Pendent |
+| Girona · Barri Vell i Onyar | Els ponts uneixen les dues ribes i es distingeix la pujada del Barri Vell cap a la catedral i la muralla. | Pendent |
+| Cardona · Castell, vila i Vall Salina | El turó fortificat, la vila i la Vall Salina es distingeixen a la mateixa peça. | Pendent |
+| Granada · Alhambra i Albaicín | El Darro separa els dos vessants i els recintes i patis es llegeixen en les petjades disponibles. | Pendent |
+| Lisboa · Alfama i Baixa | Els carrers irregulars d’Alfama contrasten amb la quadrícula de la Baixa i el pendent arriba fins al Tajo. | Pendent |
+| Cusco · Plaça d’Armes | La plaça i els carrers del centre es llegeixen sobre el pendent, amb continuïtat entre les petjades urbanes. | Pendent |
+
+### Aigua i passos urbans
+
+| Fitxa | Què cal comprovar | Revisió |
+| --- | --- | --- |
+| Bilbao · Ria i Abandoibarra | El revolt de la ria i els passeigs es distingeixen, i els ponts hi enllacen a tots dos costats. | Pendent |
+| Ronda · Tajo i Pont Nou | El congost separa els dos sectors urbans i el Pont Nou els connecta sense omplir el pas inferior. | Pendent |
+| Amsterdam · Singelgracht | Els canals concèntrics conserven el traçat i els ponts hi deixen pas visible a l’escala de la maqueta. | Pendent |
+| Venècia · Gran Canal | El Gran Canal separa els fronts edificats i els canals menors no queden tapats per les petjades. | Pendent |
+| Chicago · Riu i Loop | El riu i els ponts es distingeixen de la quadrícula urbana. Les alçades disponibles permeten contrastar la silueta. | Pendent |
 
 ## Primera tria per a les mostres
 
@@ -30,7 +82,7 @@ La primera passada prioritza una forma principal llegible a la mida final. Per a
 
 ## Primer lot al carrusel
 
-La badia de Roses, el Cap de Creus i el delta de l’Ebre tenen una vista obliqua estàtica del model de Relleu pur amb detall equilibrat i exageració ×1,5. Les tres imatges de 720 × 450 píxels ocupen 52 kB en total. Al delta es veuen les guies de les quatre peces. El visor pot generalitzar els cursos d’aigua i les llacunes petites en els retalls més amplis.
+La badia de Roses, el Cap de Creus i el delta de l’Ebre tenen una vista obliqua estàtica del model de Relleu pur amb detall equilibrat i exageració ×1,5. A la v0.23.20 el delta es reajusta a una sola peça de 24 × 24 cm. El visor pot generalitzar els cursos d’aigua i les llacunes petites en els retalls més amplis.
 
 Les noves fitxes s’afegeixen a [la llista d’exemples](../src/curated-examples.js) i les captures es desen a [la carpeta d’imatges](../public/examples/). El carrusel barreja les fitxes cada cop que s’obre i reparteix els dos modes al llarg del bucle segons la proporció disponible. Les fletxes acceleren el moviment i un clic desplaça una fitxa sencera. El moviment es frena quan es consulta una fitxa ampliada. En triar-la, l’aplicació genera la maqueta amb la mida, escala, centre i gir de la fitxa i els ajustos predeterminats. Els ajustos es poden editar a Territori després de la generació.
 
@@ -38,7 +90,7 @@ Cartografia © OpenStreetMap contributors (ODbL), via OpenFreeMap. Elevacions ©
 
 ## Segon lot al carrusel
 
-Montserrat, l’estany de Sant Maurici i els volcans del Croscat i Santa Margarida s’afegeixen després dels tres exemples litorals. Són retalls d’una sola peça i tenen vistes obliqües estàtiques de 720 × 450 píxels. A Sant Maurici, la càmera mira l’estany des del nord per deixar els Encantats al fons.
+Montserrat, l’estany de Sant Maurici i els volcans del Croscat i Santa Margarida s’afegeixen després dels tres exemples litorals. Són retalls d’una sola peça i tenen vistes obliqües estàtiques de 720 × 450 píxels. A la v0.23.20 el retall de Montserrat gira 24° i el de Sant Maurici es desplaça per incloure més estanys amb exageració ×1,25.
 
 Les elevacions de les captures de Montserrat i Sant Maurici són de Mapterhorn. La dels volcans utilitza el MET5 de l’ICGC. L’aigua i el bosc dels tres retalls provenen d’OpenStreetMap via OpenFreeMap. [Atribucions de Mapterhorn](https://mapterhorn.com/attribution/) · [Models d’elevacions de l’ICGC](https://www.icgc.cat/ca/Geoinformacio-i-mapes/Dades-i-productes/Elevacions/Elevacions-territorial/Models-delevacions) · [OpenStreetMap](https://www.openstreetmap.org/copyright)
 
@@ -48,9 +100,9 @@ Barcelona, Girona i Cardona utilitzen els centres de la taula de Catalunya, a 1:
 
 Les tres imatges WebP de 720 × 450 píxels ocupen 168 kB en total. Les captures fan servir el MET5 i els edificis de l’ICGC, amb cartografia d’OpenStreetMap via OpenFreeMap.
 
-## Catàleg complet al carrusel
+## Incorporació dels lots al carrusel
 
-El lot final incorpora els onze retalls de Relleu pur i els vuit de Model complet que faltaven. Amb la incorporació de la badia de Tamariu, el carrusel reparteix 17 fitxes de Relleu pur i 12 de Model complet al llarg del bucle. Els 29 retalls de les taules es poden generar des de la fitxa, amb la mida, el centre, el gir i l’escala documentats.
+El lot final d’aquesta primera ampliació va incorporar onze retalls de Relleu pur i vuit de Model complet. Amb la badia de Tamariu, el carrusel va arribar a 29 fitxes. Els retalls es generen des de la fitxa amb la mida, el centre, el gir i l’escala documentats.
 
 La primera captura de Tenerife mostrava tres peces. A Granada, el visor conserva les vies ordinàries i els edificis quan falla la integració dels perfils suaus. A Amsterdam, la unió dels carrers es recupera amb un ajust de precisió projectada i es conserva el retall. Els models urbans grans poden trigar diversos minuts en l’equip de prova.
 
@@ -83,7 +135,7 @@ El nou retall reprodueix l’enquadrament de `tenerife.json` aportat per l’usu
 
 1. Tria el mode i introdueix la **mida de la maqueta** en l’ordre amplada × alçada. Fes servir la mida personalitzada quan calgui.
 2. Enganxa a la cerca de Territori el **centre del retall** en graus decimals WGS84, amb punt decimal i coma entre latitud i longitud. Els enllaços «Mapa» situen aquest punt.
-3. Mou el selector d’**escala horitzontal** fins al valor indicat. Les fletxes permeten avançar un salt d’escala cada vegada. Orienta el nord a dalt (gir de 0°), amb un gir de +10° al Cap de Creus i de −25° a Tenerife. L’**extensió** és la mida real del retall, calculada a partir de la mida de la maqueta i l’escala.
+3. Mou el selector d’**escala horitzontal** fins al valor indicat. Les fletxes permeten avançar un salt d’escala cada vegada. Orienta el nord a dalt (gir de 0°) si la fitxa no indica cap altre gir. L’**extensió** és la mida real del retall, calculada a partir de la mida de la maqueta i l’escala.
 
 El centre de cada fila és el punt mig de l’enquadrament proposat. Pot caure a l’aigua o fora del topònim. La mida i el gir formen part de l’enquadrament. Si es canvia la proporció de la peça, cal mantenir dins del retall els elements citats a la fitxa.
 
@@ -97,9 +149,9 @@ El **Model complet** admet fins a 1:20.000, amb un límit addicional per superf�
 | --- | --- | --- | --- | --- | --- |
 | Badia | Badia de Roses (Alt Empordà) | `42.1870,3.1670` [Mapa](https://www.openstreetmap.org/?mlat=42.1870&mlon=3.1670#map=10/42.1870/3.1670) | 24 × 22 km | 24 × 22 cm · 1:100.000 | La concavitat entre la costa de Roses i el Montgrí, amb la plana litoral i els Aiguamolls de l’Empordà. [Turisme de Roses](https://visit.roses.cat/ca/descobreix/natura-i-paisatge/paisatge/badia-de-roses.html) |
 | Cap | Cap de Creus (Alt Empordà) | `42.293444,3.212368` [Mapa](https://www.openstreetmap.org/?mlat=42.293444&mlon=3.212368#map=11/42.293444/3.212368) | 20 × 20 km | 20 × 20 cm · 1:100.000 · +10° | La península entre Roses, Cadaqués i el Port de la Selva, amb la punta a llevant. El centre i el gir provenen del retall de l’usuari. [ICGC](https://app1.icgc.cat/bd/mapes/igc_GT1_259q11q21q12_79x21_80x21_79x22_v1g.pdf) |
-| Delta fluvial | Delta de l’Ebre (Baix Ebre i Montsià) | `40.6900,0.7750` [Mapa](https://www.openstreetmap.org/?mlat=40.6900&mlon=0.7750#map=10/40.6900/0.7750) | 34 × 32 km | 34 × 32 cm · 1:100.000 | La desembocadura i l’illa de Buda, el Fangar, el Trabucador i la punta de la Banya. La silueta i les llacunes són el centre de la mostra. [Parc Natural](https://parcsnaturals.gencat.cat/web/.content/Xarxa-de-parcs/delta_de_lebre/el_parc/mapa/planol-ca-es.pdf) |
-| Massís de conglomerats | Montserrat (Bages, Anoia i Baix Llobregat) | `41.6020,1.8160` [Mapa](https://www.openstreetmap.org/?mlat=41.6020&mlon=1.8160#map=12/41.6020/1.8160) | 10 × 6 km | 20 × 12 cm · 1:50.000 | Carena allargada, agulles i contrast amb els vessants. De les Agulles fins al sector del monestir. [Patronat de Montserrat](https://muntanyamontserrat.gencat.cat/ca/el_parc/historia-i-origens/) |
-| Estany glacial | Estany de Sant Maurici i els Encantats (Pallars Sobirà) | `42.5760,1.0100` [Mapa](https://www.openstreetmap.org/?mlat=42.5760&mlon=1.0100#map=12/42.5760/1.0100) | 5 × 5 km | 25 × 25 cm · 1:20.000 | L’estany, els cims dels Encantats i l’amfiteatre que envolta la capçalera de la vall. [Parc Nacional](https://parcsnaturals.gencat.cat/ca/xarxa-de-parcs/aiguestortes/el-parc/patrimoni-natural-i-cultural/paisatge/) |
+| Delta fluvial | Delta de l’Ebre (Baix Ebre i Montsià) | `40.6818484,0.7079899` [Mapa](https://www.openstreetmap.org/?mlat=40.6818484&mlon=0.7079899#map=10/40.6818484/0.7079899) | 34 × 34 km | 24 × 24 cm · 1:141.667 | La desembocadura i l’illa de Buda, el Fangar, el Trabucador i la punta de la Banya. La silueta i les llacunes són el centre de la mostra. [Parc Natural](https://parcsnaturals.gencat.cat/web/.content/Xarxa-de-parcs/delta_de_lebre/el_parc/mapa/planol-ca-es.pdf) |
+| Massís de conglomerats | Montserrat (Bages, Anoia i Baix Llobregat) | `41.6020,1.8160` [Mapa](https://www.openstreetmap.org/?mlat=41.6020&mlon=1.8160#map=12/41.6020/1.8160) | 10 × 6 km | 20 × 12 cm · 1:50.000 · +24° | Carena allargada, agulles i contrast amb els vessants. De les Agulles fins al sector del monestir. [Patronat de Montserrat](https://muntanyamontserrat.gencat.cat/ca/el_parc/historia-i-origens/) |
+| Estany glacial | Estany de Sant Maurici i els Encantats (Pallars Sobirà) | `42.5823309,0.9929055` [Mapa](https://www.openstreetmap.org/?mlat=42.5823309&mlon=0.9929055#map=12/42.5823309/0.9929055) | 5 × 5 km | 25 × 25 cm · 1:20.000 · ×1,25 | L’estany, els cims dels Encantats i l’amfiteatre que envolta la capçalera de la vall. [Parc Nacional](https://parcsnaturals.gencat.cat/ca/xarxa-de-parcs/aiguestortes/el-parc/patrimoni-natural-i-cultural/paisatge/) |
 | Cons volcànics | Croscat i Santa Margarida (Garrotxa) | `42.1500,2.5460` [Mapa](https://www.openstreetmap.org/?mlat=42.1500&mlon=2.5460#map=14/42.1500/2.5460) | 4 × 4 km | 20 × 20 cm · 1:20.000 | El cràter de Santa Margarida al costat del con del Croscat, amb el tall de les antigues extraccions com a detall secundari. [Parc Natural](https://parcsnaturals.gencat.cat/ca/xarxa-de-parcs/garrotxa/el-parc/patrimoni-natural-i-cultural/geologia/) |
 
 ### Resta de l’Estat espanyol
@@ -108,10 +160,10 @@ El **Model complet** admet fins a 1:20.000, amb un límit addicional per superf�
 | --- | --- | --- | --- | --- | --- |
 | Illa volcànica | Tenerife (Canàries) | `28.29697700,-16.47832495` [Mapa](https://www.openstreetmap.org/?mlat=28.29697700&mlon=-16.47832495#map=8/28.29697700/-16.47832495) | 120 × 60 km | 40 × 20 cm · 1:300.000 · −25° | El contorn de l’illa sencera, del Teno a Anaga i a la punta de la Rasca, amb el Teide al centre del relleu insular. Dues peces de 20 × 20 cm. [Cartografia del Cabildo de Tenerife](https://datos.canarias.es/catalogos/general/dataset/limites-municipales-de-tenerife/resource/91c4573e-d737-4c20-9827-758727d08e3a) |
 | Con volcànic i caldera | Teide i Las Cañadas (Tenerife) | `28.2600,-16.6150` [Mapa](https://www.openstreetmap.org/?mlat=28.2600&mlon=-16.6150#map=10/28.2600/-16.6150) | 24 × 20 km | 24 × 20 cm · 1:100.000 | Retall de detall de l’illa per llegir la vora de la caldera i els cons del Teide i Pico Viejo. [IGN](https://www.ign.es/web/catalogo-cartoteca/resources/pdfcards/card031570.pdf) |
-| Vall glacial | Ordesa i Mont Perdut (Aragó) | `42.6300,0.0250` [Mapa](https://www.openstreetmap.org/?mlat=42.6300&mlon=0.0250#map=10/42.6300/0.0250) | 24 × 20 km | 24 × 20 cm · 1:100.000 | La vall d’Ordesa i les seves parets fins al massís del Mont Perdut. Interessant per comparar la secció amb la d’un canó fluvial. [MITECO](https://www.miteco.gob.es/en/parques-nacionales-oapn/red-parques-nacionales/parques-nacionales/ordesa/valores-naturales/geologia.html) |
+| Vall glacial | Ordesa i Mont Perdut (Aragó) | `42.6300,0.0250` [Mapa](https://www.openstreetmap.org/?mlat=42.6300&mlon=0.0250#map=10/42.6300/0.0250) | 24 × 20 km | 24 × 20 cm · 1:100.000 · +29° | La vall d’Ordesa i les seves parets fins al massís del Mont Perdut. Interessant per comparar la secció amb la d’un canó fluvial. [MITECO](https://www.miteco.gob.es/en/parques-nacionales-oapn/red-parques-nacionales/parques-nacionales/ordesa/valores-naturales/geologia.html) |
 | Massís d’alta muntanya | Pirineus · sector de l’Aneto (Aragó) | `42.6350,0.6500` | 24 × 20 km | 24 × 20 cm · 1:100.000 | El massís de la Maladeta, amb el cim de l’Aneto i les valls que l’envolten. |
 | Estanys glacials | Llacs glacials de l’Aneto (Aragó) | `42.6330,0.6380` | 4,8 × 4,8 km | 24 × 24 cm · 1:20.000 | L’estany de Cregüeña i els de Corones entre les crestes i els circs de la Maladeta. |
-| Arxipèlag litoral | Illes Cíes (Galícia) | `42.2170,-8.9070` [Mapa](https://www.openstreetmap.org/?mlat=42.2170&mlon=-8.9070#map=12/42.2170/-8.9070) | 10 × 12,5 km | 20 × 25 cm · 1:50.000 | Les illes principals, els vessants i el pas entre elles. Cal comprovar que la barra de Rodas i l’aigua que tanca siguin llegibles. [IGN](https://www.ign.es/web/catalogo-cartoteca/resources/pdfcards/card020580.pdf) |
+| Arxipèlag litoral | Illes Cíes (Galícia) | `42.2166105,-8.9078598` [Mapa](https://www.openstreetmap.org/?mlat=42.2166105&mlon=-8.9078598#map=12/42.2166105/-8.9078598) | 7,27 × 9,08 km | 20 × 25 cm · 1:36.328 · −24° · ×1,75 | Les illes principals, els vessants i el pas entre elles. Cal comprovar que la barra de Rodas i l’aigua que tanca siguin llegibles. [IGN](https://www.ign.es/web/catalogo-cartoteca/resources/pdfcards/card020580.pdf) |
 | Xarxa de barrancs en terreny argilós | Bardenas Reales · Bardena Blanca (Navarra) | `42.2160,-1.5020` [Mapa](https://www.openstreetmap.org/?mlat=42.2160&mlon=-1.5020#map=12/42.2160/-1.5020) | 6 × 6 km | 20 × 20 cm · 1:30.000 | Els barrancs de les Cortinas i els relleus residuals com el Castildetierra. La xarxa de drenatge és el tret principal del retall. [IGME](https://info.igme.es/ielig/LIGInfo.aspx?codigo=EB021) |
 
 ### Resta d’Europa
@@ -164,12 +216,11 @@ El **Model complet** admet fins a 1:20.000, amb un límit addicional per superf�
 | Quadrícula i riu urbà | Chicago · Riu i Loop (EUA) | `41.8870,-87.6265` [Mapa](https://www.openstreetmap.org/?mlat=41.8870&mlon=-87.6265#map=14/41.8870/-87.6265) | 2,5 × 2,5 km | 25 × 25 cm · 1:10.000 | El riu, els ponts i els carrers en quadrícula. La silueta dels gratacels requereix alçades d’edificis contrastades. [Ajuntament de Chicago](https://chicago.gov/city/en/sites/chicagoriverwalk/home.html.html) |
 | Centre històric andí | Cusco · Plaça d’Armes i entorn (Perú) | `-13.5170,-71.9780` [Mapa](https://www.openstreetmap.org/?mlat=-13.5170&mlon=-71.9780#map=14/-13.5170/-71.9780) | 2,4 × 2,4 km | 24 × 24 cm · 1:10.000 | La plaça, el pendent i la trama formada per la ciutat inca i la colonial. Cal comprovar la continuïtat de les petjades. [UNESCO](https://whc.unesco.org/en/list/273/maps/) |
 
-## Exemples de l’aplicació que es poden aprofitar
+## Exemple d’infraestructura fora de la galeria
 
-- **Serralada · Eix dels Pirineus.** Antic retall panoràmic d’«Altres retalls», amb centre `42.8000,0.7500`. En 100 × 20 cm, a 1:450.000 i amb gir de +15°, abasta 450 × 90 km. Els projectes desats conserven el retall i els seus ajustos.
 - **Infraestructura · Viaducte de l’Eix Diagonal.** Exemple existent amb centre `41.71792,1.78391` i retall quadrat de referència d’1,5 km. Es pot aprofitar com a mostra de Model complet centrada en un viaducte. [Fitxa actual](../src/recommended-places.js)
 
-## Validació abans d’incorporar-los al selector
+## Controls generals de revisió
 
 Els retalls tenen mida, escala i centre definits. La comprovació local cobreix els límits geomètrics i de càrrega de l’aplicació. La primera proposta de Tenerife es va contrastar amb els límits municipals del Cabildo i els contorns insulars de l’ISTAC. [Límits municipals de Tenerife](https://datos.canarias.es/catalogos/general/dataset/limites-municipales-de-tenerife/resource/91c4573e-d737-4c20-9827-758727d08e3a) · [Contorns insulars de l’ISTAC](https://datos.canarias.es/catalogos/general/dataset/islas-canarias-delimitaciones-territoriales-para-fines-estadisticos2)
 

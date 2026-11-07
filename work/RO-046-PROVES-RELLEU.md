@@ -1,6 +1,6 @@
 # Maquetes de prova per al catàleg de relleu
 
-Els retalls de [RO-046](RO-046-CATALEG.md) fan servir **Relleu pur**, exageració vertical ×1,5, base de 5 mm i dos filaments, terra i aigua. La revisió al laminador ajudarà a triar les noves fitxes.
+Les sis fitxes de [RO-046](RO-046-CATALEG.md) fan servir **Relleu pur**, exageració vertical ×1,5, base de 5 mm i dos filaments, terra i aigua. Són a la galeria des de la v0.23.20 i es revisen per blocs.
 
 Les malles per filament passen l’auditoria local i les vistes zenitals confirmen els enquadraments. Als retalls costaners el mar arriba a la cara inferior de la base. El 3MF panoràmic té quatre plaques i mostra mar als dos extrems. En aquest retall, els rius i els llacs segueixen les superfícies d’aigua cartografiades. Els rierols que només tenen traçat lineal s’ometen per mantenir llegible el relleu del conjunt.
 
@@ -13,6 +13,6 @@ Les malles per filament passen l’auditoria local i les vistes zenitals confirm
 | Pirineus panoràmics | `42.8000,0.7500` | 100 × 20 cm · 1:450.000 · +15° | La continuïtat de la serralada entre el Cantàbric i la Mediterrània, en quatre peces de 25 × 20 cm. |
 | Meandres de l’Ebre · Riba-roja i Flix | `41.2440,0.5250` | 24 × 16 cm · 1:40.000 · 0° | Dos revolts connectats pel curs de l’Ebre. A Flix el riu envolta una llengua de terra. [Inventari de zones humides](https://mediambient.gencat.cat/web/.content/home/ambits_dactuacio/patrimoni_natural/sistemes_dinformacio/inventari_zones_humides/documents_fitxes/ebre/fitxers_estatics/19003009_meandre_flix.pdf) |
 
-Per reproduir els fitxers de revisió, executa `node --max-old-space-size=512 scripts/prepare-landform-catalogue.mjs <id>`. Els identificadors són `gibraltar`, `o-vao`, `tremp`, `zumaia`, `pirineus` i `ebre-meandres`. El procés desa el 3MF, la vista zenital i les dades de generació a `output/cataleg-relleu/`.
+Per reproduir els fitxers de revisió, executa `node --max-old-space-size=512 scripts/prepare-landform-catalogue.mjs <id>`. Els identificadors són `gibraltar`, `o-vao`, `tremp`, `zumaia`, `pirineus` i `ebre-meandres`. El procés desa el 3MF, la vista zenital i les dades de generació a `output/cataleg-relleu/`. Amb l’argument `miniatura`, l’script genera el WebP de la fitxa amb els ajustos de la galeria.
 
 Les elevacions provenen de Mapterhorn i la cartografia, d’OpenStreetMap via OpenFreeMap. [Atribucions de Mapterhorn](https://mapterhorn.com/attribution/) · [OpenStreetMap](https://www.openstreetmap.org/copyright)

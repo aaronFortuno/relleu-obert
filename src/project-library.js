@@ -16,7 +16,7 @@ const text=(value,max)=>typeof value==='string'&&value.trim().length>0&&value.le
 const timestamp=value=>typeof value==='string'&&Number.isFinite(Date.parse(value));
 
 const optionRules={
-  detail:oneOf(24,36,56),streams:boolean,streamWidth:oneOf(1,1.5,2,3),
+  detail:oneOf(24,36,56),streams:boolean,streamWidth:oneOf(0,1,1.5,2,3),
   exaggeration:value=>range(value,1,3),roadRise:oneOf(0,.5,1),railRise:oneOf(0,.5,1),trailWidth:oneOf(...TRAIL_WIDTH_MULTIPLIERS),
   estimatedTunnels:boolean,majorRoads:boolean,buildingSource:oneOf('osm','osm3d','icgc','catastre'),
   buildingMode:oneOf('limited','source','flat','none'),maxBuildingHeight:value=>range(value,1,1200),

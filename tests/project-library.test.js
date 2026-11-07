@@ -58,7 +58,7 @@ test('panoramic projects preserve dimensions, mode and scales larger than the re
   const storage=memoryStorage();
   const panoramic={...settings,sizePreset:'100x20',pureRelief:true,
     pose:{...settings.pose,widthM:450000,heightM:90000},
-    options:{...settings.options,split:true},strokes:[]};
+    options:{...settings.options,streamWidth:0,split:true},strokes:[]};
   saveProject(storage,{name:'Serralada',settings:panoramic},firstDate);
   assert.deepEqual(readProjects(storage)[0].settings,panoramic);
   assert.throws(()=>saveProject(storage,{name:'Complet',settings:{...panoramic,pureRelief:false}}),/no és vàlida/);

@@ -1,16 +1,20 @@
 import assert from 'node:assert/strict';
 import {mkdir,readFile,writeFile} from 'node:fs/promises';
+import {createRequire} from 'node:module';
 import {serialize,deserialize} from 'node:v8';
 import decodeWebp,{init} from '@jsquash/webp/decode.js';
+import encodeWebp,{init as initEncoder} from '@jsquash/webp/encode.js';
 import {encode} from 'fast-png';
 import {loadRegion} from '../src/sources.js';
 import {decodeDEMTile} from '../src/dem-decoder.js';
 import {buildModel} from '../src/geometry.js';
 import {scaledBBox,selectionPose,isPanoramicSize,tilePlan,PANORAMIC_SCALE_RANGE,PURE_SCALE_RANGE} from '../src/selection.js';
-import {splitPureRelief} from '../src/pure-relief-mesh.js';
+import {PURE_RELIEF_RESOLUTIONS,splitPureRelief} from '../src/pure-relief-mesh.js';
 import {groupReliefMaterials} from '../src/materials.js';
 import {bambuPlateProject,threeMF} from '../src/export.js';
 import {auditModel} from '../src/solid-audit.js';
+import {CURATED_EXAMPLES} from '../src/curated-examples.js';
+import {catalogueThumbnail} from './render-catalogue-thumbnail.mjs';
 
 const cases={
   gibraltar:{name:'Estret de Gibraltar',center:[35.9985,-5.466],size:[250,250],scale:150000,coastal:true},
@@ -21,9 +25,11 @@ const cases={
   'ebre-meandres':{name:'Meandres de l’Ebre · Riba-roja i Flix',center:[41.244,.525],size:[240,160],scale:40000,river:true}
 };
 const [id,stage='model']=process.argv.slice(2);
-assert(Object.hasOwn(cases,id)&&['fonts','model'].includes(stage),
-  `Ús: prepare-landform-catalogue.mjs <${Object.keys(cases).join('|')}> [fonts|model]`);
-const chosen=cases[id];
+const example=CURATED_EXAMPLES.find(example=>example.id===id&&example.pureRelief!==false);
+const published=stage==='miniatura'||stage==='fonts'&&!Object.hasOwn(cases,id);
+assert(published?example:Object.hasOwn(cases,id)&&['fonts','model'].includes(stage),
+  'Ús: prepare-landform-catalogue.mjs <id> [fonts|model|miniatura]');
+const chosen=published?{...cases[id],...example,name:example.title,size:[example.width,example.height]}:cases[id];
 const {name,center,size:[widthMM,heightMM],scale,rotation=0,coastal,river}=chosen;
 const panoramic=isPanoramicSize(widthMM,heightMM);
 const pose=selectionPose(scaledBBox(center,widthMM,heightMM,scale,panoramic?PANORAMIC_SCALE_RANGE:PURE_SCALE_RANGE),rotation);
@@ -57,12 +63,27 @@ if(stage==='fonts')process.exit(0);
 
 const options={pureRelief:true,selectionPose:pose,targetScale:scale,widthMM,heightMM,size:Math.max(widthMM,heightMM),
   resolution:panoramic?240:192,exaggeration:1.5,baseThickness:5,streams:true,streamWidth:1,trees:false};
+if(published)Object.assign(options,{resolution:PURE_RELIEF_RESOLUTIONS[example.detail??36],
+  exaggeration:example.exaggeration??1.5,streamWidth:example.streamWidth??1,trees:example.trees??true,
+  vegetationHeight:.8,vegetationNoise:45});
 const started=performance.now();
 // The whole range uses mapped water surfaces. Widening every minor stream
 // to one nozzle pass would crowd this overview and obscure the terrain.
-const region=panoramic?{...data,waterways:[],forests:[]}:data;
+if(panoramic)options.streamWidth=0;
+const region=panoramic&&!options.trees?{...data,forests:[]}:data;
 const model=buildModel({...region,meta:{...region.meta,name}},options,message=>console.log(id,message));
 const plan=tilePlan(widthMM,heightMM),split=plan.tiles.length>1;
+if(stage==='miniatura'){
+  const requireWebp=createRequire(import.meta.resolve('@jsquash/webp/encode.js'));
+  const encoder=await requireWebp('wasm-feature-detect').simd()?'webp_enc_simd.wasm':'webp_enc.wasm';
+  await initEncoder(await WebAssembly.compile(await readFile(new URL('../node_modules/@jsquash/webp/codec/enc/'+encoder,import.meta.url))));
+  const thumbnail=catalogueThumbnail(model,plan,example.materialCount);
+  const bytes=await encodeWebp(thumbnail,{quality:88});
+  const filename=example.image.split('/').at(-1);
+  await writeFile(new URL('../public/examples/'+filename,import.meta.url),new Uint8Array(bytes));
+  console.log(id,filename,bytes.byteLength);
+  process.exit(0);
+}
 const rawPieces=split?splitPureRelief(model,plan,message=>console.log(id,message)):[model];
 const pieces=rawPieces.map(piece=>groupReliefMaterials(piece,2));
 const audits=pieces.map(piece=>auditModel(piece));

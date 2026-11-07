@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-07 · v0.23.19**. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-07 · v0.23.20**. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -8,7 +8,7 @@ Actualitzat el **2026-11-07 · v0.23.19**. [Historial](HISTORIAL.md).
 | --- | --- | --- |
 | **Temps de generació** | RO-053 | Primera optimització d’edificis mesurada amb la mateixa malla. Tornar a mesurar Amsterdam complet i aïllar la integració de les vies principals. [Mesures](RO-053-TEMPS.md) |
 | **Ajustos d’impressió** | RO-056 | Validar els tiradors del plànol i laminar dues peces contigües de mides diferents. Després, estudiar els perfils d’impressora i la mida de cada placa. |
-| **Catàleg de relleu** | RO-046 | Revisar les fitxes existents i els 3MF de formes noves abans d’ampliar la galeria. [Cua de revisió](RO-046-CATALEG.md#revisió-per-a-maquetes-daula) · [Retalls de prova](RO-046-PROVES-RELLEU.md) |
+| **Catàleg de relleu** | RO-046 | Revisar per blocs les sis incorporacions, els cinc retalls ajustats i les altres fitxes pendents. [Cua de revisió](RO-046-CATALEG.md#revisió-per-a-maquetes-daula) |
 | **Paviment de superfície** | RO-051, RO-052 | El retall girat mostra millora al laminador i es dona per bo de moment. La impressió física i els enllaços pendents queden en seguiment. [Control de l’Hospitalet](RO-052-CONTINUITAT.md#talls-locals-sota-els-taulers-v02319) |
 | **Seguiment de les estructures** | RO-033, RO-034, RO-050 | Registrar noves incidències amb retall i escala. A Sant Salvador, dos perfils segueixen el terreny pel pendent dels enllaços. El túnel a 1:20.000 té les dues boques comprovades al 3MF. El pas de Montgròs es conserva al cupó laminat. [Controls de vies](RO-051-PERFILS-VIARIS.md#transicions-pendents-a-la-v0220) · [Montgròs](RO-033-CONTROLS-PROCEDIMENTALS.md#laminat-del-cupó-de-montgròs) |
 | **Validació en paral·lel** | RO-024, RO-033, RO-046, RO-054, RO-055 | Revisar Tamariu 40 × 45 cm i Amsterdam amb totes les capes al laminador. També queden la recuperació d’un projecte girat i els talls dels Rasos–Gallina Pelada. |
@@ -43,7 +43,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 | ID | Prioritat | Estat | Què falta |
 | ------------------------------------------------------------------------ | --------- | ------------------------------------ | --------------------------------------------------------------- |
 | [RO-050](#ro-050--ferrocarrils-diferenciats) | P2 | Implementat i comprovat localment | Usuari: realç ferroviari i assignació de material; laminat |
-| [RO-046](#ro-046--catàleg-de-llocs-recomanats) | P2 | 31 retalls i primera cua de revisió per formes del relleu | Revisar els enquadraments al visor i al laminador |
+| [RO-046](#ro-046--catàleg-de-llocs-recomanats) | P2 | 37 fitxes i sis blocs de revisió | Revisar els enquadraments al visor i al laminador |
 | [RO-044](#ro-044--catastre-per-seccions-i-recuperació-de-configuracions) | P1 | Vista progressiva validada a Tamariu | Buit/mixt, subdivisions i recuperació després d’error |
 | [RO-045](#ro-045--coherència-visual-dels-sidebars) | P2 | Mapa fixat a Territori i zoom amb la roda | Validar l’accés als ajustos inferiors amb una maqueta carregada |
 | [RO-019](#ro-019--internacionalització) | P2 | Cinc idiomes disponibles | Revisió lingüística i dels diagnòstics tècnics poc freqüents |
@@ -145,9 +145,9 @@ A escriptori, la cerca i el mapa queden sota la capçalera de Territori i els aj
 
 ### RO-046 — Catàleg de llocs recomanats
 
-El [catàleg](RO-046-CATALEG.md) inclou 31 retalls, amb 19 fitxes de Relleu pur i 12 de Model complet. El carrusel inicial barreja l’ordre i reparteix els modes al llarg del bucle. «Galeria de maquetes» a la capçalera i «Veure exemples» a Territori obren una graella amb descripcions, cerca i filtres per mode, mida i tipus de paisatge. «La teva maqueta» mostra el resum del lloc mentre el visor mostra el model corresponent. Queda revisar l’enquadrament, la llegibilitat i els temps de generació en ús, i comprovar el gruix de la base a les fitxes costaneres.
+El [catàleg](RO-046-CATALEG.md) inclou 37 retalls, amb 25 fitxes de Relleu pur i 12 de Model complet. El carrusel inicial barreja l’ordre i reparteix els modes al llarg del bucle. «Galeria de maquetes» a la capçalera i «Veure exemples» a Territori obren una graella amb descripcions, cerca i filtres per mode, mida i tipus de paisatge. «La teva maqueta» mostra el resum del lloc mentre el visor mostra el model corresponent. Queda revisar l’enquadrament, la llegibilitat i els temps de generació en ús, i comprovar el gruix de la base a les fitxes costaneres.
 
-La revisió comença per sis fitxes existents. Els retalls de prova cobreixen un estret, un istme, una conca, penya-segats, una serralada panoràmica i dos meandres. Queda la validació al laminador abans de triar les fitxes que s’afegeixen a la galeria. [Cua de revisió](RO-046-CATALEG.md#revisió-per-a-maquetes-daula) · [Retalls de prova](RO-046-PROVES-RELLEU.md)
+Cap de Creus validat. Ordesa, Sant Maurici, Montserrat, les Cíes i el delta de l’Ebre incorporen els retalls dels JSON de l’usuari. Les sis noves fitxes ja són a la galeria i queden pendents de la revisió per blocs. [Cua de revisió](RO-046-CATALEG.md#revisió-per-a-maquetes-daula) · [Retalls de prova](RO-046-PROVES-RELLEU.md)
 
 ### RO-047 — Precàrrega opcional de fonts alternatives
 

@@ -784,7 +784,7 @@ export function updatePureRelief(previous,changes={},progress=()=>{}){
   const {exaggeration=before.exaggeration,streams=before.streams,streamWidth=before.streamWidth}=changes;
   const baseThickness=modelBaseThickness(changes.baseThickness===undefined?before.baseThickness:changes.baseThickness);
   if(!Number.isFinite(exaggeration)||exaggeration<1||exaggeration>5||typeof streams!=='boolean'||
-      !Number.isFinite(streamWidth)||streamWidth<1||streamWidth>3)throw Error('Els ajustos de relleu queden fora del rang admès.');
+      (streamWidth!==0&&(!Number.isFinite(streamWidth)||streamWidth<1||streamWidth>3)))throw Error('Els ajustos de relleu queden fora del rang admès.');
   const vertical=exaggeration!==before.exaggeration||baseThickness!==before.baseThickness,wide=streamWidth!==before.streamWidth;
   if(!vertical&&!wide&&streams===before.streams)return previous;
   const grid=previous.reliefGrid;

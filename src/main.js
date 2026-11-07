@@ -952,14 +952,24 @@ function selectCuratedExample(example){
   const range=panoramicSelected()?PANORAMIC_SCALE_RANGE:pureSelected()?PURE_SCALE_RANGE:[100,MAX_PROJECT_SCALE];
   const bbox=scaledBBox(center,width,height,scale,range);
   setExampleRegion(id,localizeExample(example).title,bbox,rotation);
-  const exaggeration=$('#exag'),streams=$('#streams');
-  exaggeration.value=exaggeration.defaultValue;
+  const exaggeration=$('#exag'),streams=$('#streams'),trees=$('#trees');
+  exaggeration.value=example.exaggeration??exaggeration.defaultValue;
   streams.checked=streams.defaultChecked;
-  for(const id of ['detail','stream-width']){
+  trees.checked=example.trees??trees.defaultChecked;
+  for(const [id,value] of [['detail',example.detail],['stream-width',example.streamWidth]]){
     const select=$('#'+id);
-    select.selectedIndex=Math.max(0,[...select.options].findIndex(option=>option.defaultSelected));
+    if(value!==undefined)select.value=value;
+    else select.selectedIndex=Math.max(0,[...select.options].findIndex(option=>option.defaultSelected));
+  }
+  baseThickness=DEFAULT_BASE_THICKNESS_MM;
+  $('#print-base').value=baseThickness;
+  if(pureRelief){
+    const count=example.materialCount??6;
+    reliefMaterials={count,assignments:defaultReliefAssignments(count)};
   }
   syncExaggerationLabel();
+  syncPrintSettings();
+  legend();
   generate();
 }
 initExampleCarousel($('#example-carousel'),CURATED_EXAMPLES,selectCuratedExample);
