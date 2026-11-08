@@ -1,7 +1,6 @@
 import test from 'node:test';import assert from 'node:assert/strict';import Module from 'manifold-3d';
 import {buildModel,updateBuildings,updateVegetation,updateTransport} from '../src/geometry.js';
 import {auditPart} from '../src/solid-audit.js';import {threeMF} from '../src/export.js';import {unzipSync,strFromU8} from 'fflate';
-import {topSampler} from '../src/bridge-completion.js';
 const api=await Module();api.setup();
 function region(roadClass='motorway'){
   const values=new Float32Array(121);for(let y=0;y<11;y++)for(let x=0;x<11;x++)values[y*11+x]=100+4*Math.sin(x*Math.PI/2)+y*.2;
@@ -42,37 +41,18 @@ test('updating transport keeps the MET5 window when the mapped axis extends outs
   assert.equal(updated.provenance.majorRoads.count,1);
   assert.strictEqual(updated.context.ground,initial.context.ground);
 });
-test('smooth rail platforms are applied incrementally in the railway material',()=>{
+test('surface rail platforms remain independent of the major road setting',()=>{
   const data=region('rail');
   const initial=buildModel(data,{...options,majorRoads:false,smoothProfiles:true},()=>{},api);
   const updated=updateTransport(initial,{majorRoads:true});
   assert.equal(updated.context.ground,initial.context.ground);
-  assert.equal(updated.provenance.majorRoads.applied,true);
-  assert.equal(updated.provenance.majorRoads.profiles[0].elevationMethod,'rail-endpoint-grade');
-  assert.equal(updated.provenance.infrastructure.completion.details[0].railway,true);
-  assert(updated.categories.some(part=>part.id==='railways'));
+  assert.equal(updated.provenance.majorRoads.applied,false);
+  assert.equal(updated.provenance.railways.profiles,1);
+  const rail=model=>model.categories.find(part=>part.id==='railways');
+  assert.deepEqual(updated.provenance.railways,initial.provenance.railways);
+  assert.deepEqual(rail(updated).vertices,rail(initial).vertices);
   assert(!updated.categories.some(part=>part.id==='roads'));
   for(const part of updated.categories)assert.deepEqual(auditPart(part).errors,[]);
-  const bridge=updated.context.bridges.find(b=>b.mainRoad);
-  assert.equal(bridge.approaches.plans.length,2);
-  const {vertices,faces}=updated.categories.find(part=>part.id==='railways');
-  const points=Array.from({length:vertices.length/3},(_,i)=>Array.from(vertices.subarray(i*3,i*3+3)));
-  const upwards=[];
-  for(let i=0;i<faces.length;i+=3){
-    const [a,b,c]=Array.from(faces.subarray(i,i+3),j=>points[j]);
-    if((b[0]-a[0])*(c[1]-a[1])>(b[1]-a[1])*(c[0]-a[0]))upwards.push(...faces.subarray(i,i+3));
-  }
-  const top=topSampler(points,upwards);
-  for(const {sections}of bridge.approaches.plans){
-    const [startX,startY,startZ]=sections[0].centre;
-    assert(Math.abs(startZ-bridge.top(startX,startY))<1e-6);
-    const [x,y,z]=sections.at(-1).centre;
-    assert(Math.abs(z-updated.context.ground(x,y))<1e-6);
-    for(const offset of [-.001,.001]){
-      const height=top(x+offset,y);
-      assert(height!=null&&Math.abs(height-z)<.002,'the assembled rail mesh has a step at the landing');
-    }
-  }
 });
 test('upper-envelope platforms retain the exact terrain heights, a level cross-section and supported free spans',()=>{
   const data=region(),before=data.localDEM.values.slice(),raw=buildModel(data,{...options,majorRoads:false},()=>{},api),model=buildModel(data,options,()=>{},api);

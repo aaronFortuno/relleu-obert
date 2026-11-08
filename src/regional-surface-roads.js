@@ -49,7 +49,7 @@ function clippedAxes(points,box){
   return paths;
 }
 
-function stitchGroup(input){
+export function stitchGroup(input){
   const routes=input.slice();
   for(;;){
     const nodes=new Map();
@@ -75,7 +75,7 @@ function stitchGroup(input){
   }
 }
 
-function sourceFragments(routes,box){
+export function sourceFragments(routes,box){
   const fragments=new Map();
   for(const route of routes){
     for(const points of clippedAxes(route.points,expand(box,1.5*route.width))){

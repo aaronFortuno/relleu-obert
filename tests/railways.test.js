@@ -6,6 +6,9 @@ import {isRailway,railwayOptions} from '../src/railways.js';
 import {CATEGORIES,PALETTES,defaultAssignments,normalizeAssignments,groupMaterials} from '../src/materials.js';
 import {threeMF} from '../src/export.js';
 import {unzipSync,strFromU8} from 'fflate';
+import {topSampler} from '../src/bridge-completion.js';
+import {auditPart} from '../src/solid-audit.js';
+import {polygonTester} from '../src/polygon-index.js';
 
 const api=await Module();api.setup();
 const line=(id,coordinates,properties)=>({type:'Feature',id,properties:{sourceLayer:'transportation',...properties},geometry:{type:'LineString',coordinates}});
@@ -41,6 +44,55 @@ test('rail crossings occupy their own ground surface and do not duplicate the ro
  assert(m.context.containsRoad([50,50]));assert(m.context.containsRoad([50,70]));
  // Both category surfaces remain at their own intended level at a crossing.
  near(minmax(part(m,'roads'))[1],5.5);near(minmax(part(m,'railways'))[1],6.5);
+});
+
+function upperSurface(mesh,minimum=-Infinity){
+ const points=Array.from({length:mesh.vertices.length/3},(_,i)=>Array.from(mesh.vertices.subarray(i*3,i*3+3)));
+ const upward=[];
+ for(let i=0;i<mesh.faces.length;i+=3){
+  const face=Array.from(mesh.faces.subarray(i,i+3)),[a,b,c]=face.map(index=>points[index]);
+  if(Math.min(a[2],b[2],c[2])>=minimum&&(b[0]-a[0])*(c[1]-a[1])>(b[1]-a[1])*(c[0]-a[0]))upward.push(...face);
+ }
+ return topSampler(points,upward);
+}
+
+test('railway grade is unchanged by road crossings and cuts or fills a hillside',()=>{
+ const values=new Float32Array(121);
+ for(let y=0;y<11;y++)for(let x=0;x<11;x++)values[y*11+x]=100+y*4+x+[0,-3,-9,-13,4,24,15,-5,-6,-3,0][x];
+ const tracks=[line('west',[[0,.005],[.003,.005]],{class:'rail',width:8}),line('east',[[.003,.005],[.01,.005]],{class:'rail',width:8})];
+ const road=line('crossing',[[.005,0],[.005,.01]],{class:'primary'});
+ const solo=buildModel(data(tracks,values),options),crossed=buildModel(data([...tracks,road],values),options);
+ const rail=part(crossed,'railways'),top=upperSurface(rail),base=upperSurface(part(crossed,'terrain'));
+ const roads=polygonTester(crossed.context.roadOnlyPoly);
+ assert.equal(crossed.provenance.railways.profiles,1,'two adjacent mapped fragments must share one grade');
+ assert.deepEqual(rail.vertices,part(solo,'railways').vertices);
+ assert.deepEqual(rail.faces,part(solo,'railways').faces);
+ assert(roads([50,49])&&!roads([50,50])&&roads([50,51]));
+ assert(top(30,50)>crossed.context.ground(30,50)+.5,'the rail should span the hollow');
+ assert(top(50,50)<crossed.context.ground(50,50)-.5,'the rail should cut through the hill');
+ const start=top(0,50),end=top(100,50);
+ for(const x of [0,15,30,50,75,100]){
+  near(top(x,49.8),top(x,50.2));
+  near(top(x,50),start+(end-start)*x/100);
+  near(base(x,50),top(x,50)-.65);
+ }
+ for(const mesh of crossed.categories)assert.deepEqual(auditPart(mesh).errors,[]);
+ const upgraded=buildModel(data([...tracks,road],values),{...options,surfaceRoads:'independent',majorRoads:true,smoothProfiles:true},()=>{},api);
+ assert.deepEqual(part(upgraded,'railways').vertices,rail.vertices);
+ assert.deepEqual(part(upgraded,'railways').faces,rail.faces);
+ assert(part(upgraded,'roads')?.faces.length);
+});
+
+test('a folded rail axis leaves the terrain and does not remove another railway',()=>{
+ const curve=line('curve',[[.001,.007],[.005,.008],[.009,.007]],{class:'rail'});
+ const invalid=line('fold',[[.002,.002],[.005,.002],[.003,.002]],{class:'rail'});
+ const model=buildModel(data([curve,invalid]),options);
+ const containsRail=polygonTester(model.context.railPoly);
+ assert.equal(model.provenance.railways.profiles,1);
+ assert.deepEqual(model.provenance.railways.omissions.map(o=>o.sourceFeatureIds),[['fold']]);
+ assert(containsRail([50,80])&&!containsRail([40,20]));
+ near(upperSurface(part(model,'terrain'),4.5)(40,20),5);
+ assert.deepEqual(auditPart(part(model,'railways')).errors,[]);
 });
 
 test('a mapped railway tunnel never becomes a raised line over the mountain',()=>{

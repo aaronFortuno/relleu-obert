@@ -282,7 +282,7 @@ export function generateMajorRoadItems(features,elevationAt,options={}){
         const xy=points.map(projection.project);
         crossingObstacles.push({id:f.id??index,feature:f,onlyRail,type:railway?'ferrocarril':p.brunnel==='tunnel'?'túnel':structure?'pont':'carretera',lines:[xy],radius:Math.max(minRoadWidthMM,width*projection.scale)/2});
       }
-      if(structure||railway&&!smooth)continue;
+      if(structure||railway&&(!smooth||options.includeSurfaceRailways===false))continue;
     }
     const c=railway?'rail':classOf(p,smooth),level=String(p.layer??0);
     const sourceWidth=railway?railwayWidthMetres(p):widthOf(p,c);

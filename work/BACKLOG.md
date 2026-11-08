@@ -1,12 +1,13 @@
 # Backlog actiu de Relleu Obert
 
-Revisat el **2026-11-08** amb la v0.23.37. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
+Revisat el **2026-11-08** amb la v0.23.38. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
 
 ## Ordre de treball
 
-1. Preparar les cinc boques del primer lot de coves i balmes. [RO-035](#ro-035--cavitats-i-relleus-amb-voladissos)
-2. Continuar la revisió de la galeria per blocs. [RO-046](#ro-046--catàleg-de-llocs-recomanats)
-3. Contrastar la Foradada r3 al visor i reprendre els controls de relleu rocós. [RO-035](#ro-035--cavitats-i-relleus-amb-voladissos) · [RO-023](#ro-023--relleu-local-i-fonts-vectorials-de-més-precisió)
+1. Validar el perfil ferroviari en un retall amb passos a nivell i en un segon amb un pont o túnel. [RO-050](#ro-050--ferrocarrils-diferenciats)
+2. Preparar les cinc boques del primer lot de coves i balmes. [RO-035](#ro-035--cavitats-i-relleus-amb-voladissos)
+3. Continuar la revisió de la galeria per blocs. [RO-046](#ro-046--catàleg-de-llocs-recomanats)
+4. Contrastar la Foradada r3 al visor i reprendre els controls de relleu rocós. [RO-035](#ro-035--cavitats-i-relleus-amb-voladissos) · [RO-023](#ro-023--relleu-local-i-fonts-vectorials-de-més-precisió)
 
 ## Desenvolupament i proves
 
@@ -31,6 +32,10 @@ Revisat el **2026-11-08** amb la v0.23.37. [Historial i validacions](arxiu/HISTO
 **P1.** Revisar al visor els tres volums de Guiza i l’encaix de Mont-Saint-Michel, i comprovar-ne el laminat. [Proves d’ancoratge](arxiu/HISTORIAL.md#v02336--ancoratge-en-terrenys-en-pendent) Per a les cobertes generals, queda identificar una font de geometria 3D consultable des del navegador. El servei de careners documentat és en 2D. [Integració](RO-032-INTEGRACIO.md) · [Estudi de fonts](arxiu/RO-032-DADES-COBERTES.md)
 
 ## Validació en ús i seguiment
+
+### RO-050 — Ferrocarrils diferenciats
+
+**P1.** La via de superfície té secció transversal plana i una rasant estimada entre extrems, amb tall i reblert. El control de vessant passa amb i sense una carretera transversal i el retall ferroviari del Bages passa la comprovació local de la malla a 400 i 800 m. Queden la validació al visor i al laminador en un pas a nivell i en enllaços amb estructures. [Proves i abast](arxiu/HISTORIAL.md#v02338--rasant-ferroviària-independent)
 
 ### RO-024 — Unió de volums i validació d’impressió
 
@@ -63,10 +68,6 @@ Revisat el **2026-11-08** amb la v0.23.37. [Historial i validacions](arxiu/HISTO
 ### RO-019 — Internacionalització
 
 **P2.** Revisar els cinc idiomes en ús i completar els diagnòstics de fonts que encara apareixen en català. [Guia de manteniment](RO-019-SETUP.md)
-
-### RO-050 — Ferrocarrils diferenciats
-
-**P2.** Comprovar al laminador el realç i l’assignació de material en un retall on la via es distingeixi dels camins. [Controls inicials](arxiu/RO-050-FERROCARRILS.md)
 
 ### RO-054 — Galeria local de projectes
 

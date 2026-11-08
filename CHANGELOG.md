@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.23.38 — 2026-11-08
+
+- Els ferrocarrils de superfície tenen una rasant pròpia, amb seccions planes d’una banda a l’altra. El terreny es retalla o es rebleix sota la via. Els creuaments de superfície donen prioritat a la via ferroviària.
+
 ## v0.23.37 — 2026-11-08
 
 - La Balma de Can Solà incorpora una reconstrucció aproximada del voladís des d’Open Place Models. Les excavacions naturals eliminen els residus coplanars de les juntes de material abans d’obrir el buit.

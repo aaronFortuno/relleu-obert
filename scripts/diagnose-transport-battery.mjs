@@ -30,7 +30,7 @@ const data=await loadRegion({sample:false,bbox,buildingSource:'osm',
 const options={size:150,resolution:36,exaggeration:1.5,trees:false,majorRoads:true,smoothProfiles:true,estimatedTunnels:true};
 const api=await Module();api.setup();
 const built=performance.now(),model=buildModel(data,options,()=>{},api);
-const {majorRoads,tunnels,infrastructure}=model.provenance;
+const {majorRoads,tunnels,infrastructure,railways}=model.provenance;
 const matches=(expected,items)=>expected.map(id=>({id,present:items.some(item=>item.sourceFeatureIds?.includes(id))}));
 const audit=model.categories.map(auditPart).map(({id,errors,triangles})=>({id,errors,triangles}));
 const report={name,center:scenario.center,km,scale:model.scale,bbox,options,terrain:data.meta.terrain,
@@ -43,7 +43,7 @@ const report={name,center:scenario.center,km,scale:model.scale,bbox,options,terr
       bridge.approaches.plans.map(approach=>measureApproach(bridge,approach,model.context.ground,options.exaggeration)))},
   tunnels:{applied:tunnels?.applied,count:tunnels?.count,omissions:tunnels?.omissions,error:tunnels?.error},
   decks:(infrastructure?.deckProfiles||[]).filter(p=>!p.mainRoad),
-  continuity:model.provenance.transportContinuity,
+  railways,continuity:model.provenance.transportContinuity,
   audit,warnings:model.warnings};
 const path='output/transport-battery/'+name+'-'+km;
 await mkdir('output/transport-battery',{recursive:true});
@@ -51,7 +51,7 @@ await writeFile(path+'.json',JSON.stringify(report,null,2)+'\n');
 if(audit.every(part=>!part.errors.length))await writeFile(path+'.3mf',threeMF(model,{bambu:true}));
 else process.exitCode=1;
 console.log(JSON.stringify({name,km,scale:model.scale,checks:report.checks,profiles:report.major.profiles.length,
-  railwayProfiles:report.major.profiles.filter(p=>p.railway).length,omissions:report.major.omissions?.length,timings:report.timings,
+  railwayProfiles:railways?.profiles??0,railwayOmissions:railways?.omissions.length??0,omissions:report.major.omissions?.length,timings:report.timings,
   audit:audit.every(part=>!part.errors.length),path}));
 
 function largestGradeChange({stations,elevations}){

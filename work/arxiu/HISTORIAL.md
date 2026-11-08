@@ -2,6 +2,12 @@
 
 Actualitzat el 2026-11-08. Les entrades validades surten del [backlog actiu](../BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.23.38 — Rasant ferroviària independent
+
+RO-050 uneix els fragments compatibles i estima un pendent constant entre els extrems de cada eix de superfície. El tall i el reblert conserven la secció plana encara que es canviï el perfil de les carreteres. Al pas a nivell el material ferroviari preval a la intersecció. Si la secció ferroviària es plega o el sòlid no passa la comprovació, es conserva el terreny i s’anota el tram omès.
+
+Control de vessant amb clot, ressalt i carretera transversal. Retall de la via del Bages centrat a 41,724° N, 1,788° E, a 400 i 800 m, amb les dades locals, la capa viària filtrada i detall reduït. Els dos retalls generen la via sense omissions i la seva malla passa l’auditoria. Queda comprovar al visor i al laminador els enllaços reals amb ponts i túnels i l’aspecte dels creuaments. [Controls inicials](RO-050-FERROCARRILS.md)
+
 ## v0.23.37 — Balma de Can Solà
 
 RO-035 prova la primera balma oberta al vessant a Open Place Models. La cavitat local es conserva al retall de l’usuari i en dos retalls girats. El motor elimina els residus coplanars de les juntes de material abans d’excavar. L’usuari valida la càrrega i la fidelitat visual de la reconstrucció aproximada. Queda el laminat. Open Place Models documenta un primer lot de cinc cavitats catalanes. [Fonts i controls](../RELLEU-ROCOS.md#balma-de-can-solà) · [Cua de modelatge](https://github.com/aaronFortuno/open-place-models/blob/main/CAVITY-QUEUE.md)
