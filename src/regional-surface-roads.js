@@ -314,15 +314,33 @@ export function planRegionalSurfaceRoads(terrain,{rise,thickness,blockedMask=[],
     const boxAlongAxis=expand(bounds(entry.paths.flat()),entry.route.width*1.5+.5);
     const priority=isPrincipal(entry.route);
     try{
-      const blockers=[blockedMask,plannedMask,
+      const nearby=structures.filter(other=>overlapsBox(other.box,boxAlongAxis));
+      const unrelated=other=>!compatibleTransport(other.route,entry.route);
+      const base=[blockedMask,plannedMask,
         ...visible.filter(other=>other!==entry&&!replacedPieces.has(other.key)&&overlapsBox(other.box,boxAlongAxis)&&
-          (!priority||!other.route||other.route.brunnel||isPrincipal(other.route)||(other.route.layer??0)!==(entry.route.layer??0))).map(sourceMask),
-        ...structures.filter(other=>overlapsBox(other.box,boxAlongAxis)).map(other=>
-          // Keep room for actual connections. An unrelated crossing only
-          // needs a local reserve in addition to the exact deck/rail mask.
-          structureMask(other,priority&&!compatibleTransport(other.route,entry.route)?1:portalMarginMM))];
+          (!priority||!other.route||other.route.brunnel||isPrincipal(other.route)||(other.route.layer??0)!==(entry.route.layer??0))).map(sourceMask)];
+      // Keep room for actual connections. An unrelated crossing only needs
+      // a local reserve in addition to the exact deck/rail mask.
+      const blockers=[...base,...nearby.map(other=>structureMask(other,priority&&unrelated(other)?1:portalMarginMM))];
       if(blockers.some(mask=>!mask))continue;
-      for(const points of entry.paths)windows.push(...clearWindows(entry,points,box,insideLand,blockers));
+      const overpass=other=>other.route.brunnel==='bridge'&&
+        (other.route.layer??1)!==(entry.route.layer??0)&&unrelated(other);
+      const atCrop=([x,y])=>x<=0||x>=width||y<=0||y>=height;
+      const recoverEdge=!priority&&!followsTerrain(entry.route.properties)&&nearby.some(overpass)&&
+        entry.paths.some(points=>points.some(atCrop));
+      // Near a crop edge, the broad approach reserve of an unrelated
+      // overpass can leave the entire visible tail on the terrain mesh.
+      // Keep the actual deck footprint and the reserves of connected roads.
+      const edgeBlockers=recoverEdge?[...base,...nearby.map(other=>structureMask(other,overpass(other)?1:portalMarginMM))]:null;
+      for(const points of entry.paths){
+        const ordinary=clearWindows(entry,points,box,insideLand,blockers);
+        windows.push(...ordinary);
+        if(!edgeBlockers||!points.some(atCrop)||edgeBlockers.some(mask=>!mask))continue;
+        for(const window of clearWindows(entry,points,box,insideLand,edgeBlockers)){
+          const edgeGrade=window.edgeEnds.map((atEdge,index)=>atEdge&&!ordinary.some(other=>other.edgeEnds[index]));
+          if(edgeGrade.some(Boolean))windows.push({...window,edgeGrade});
+        }
+      }
     }catch(error){omit('partial-analysis',[entry.id],error.message);}
   }
   windows.sort((a,b)=>Number(isPrincipal(b.entry.route))-Number(isPrincipal(a.entry.route))||
@@ -331,14 +349,14 @@ export function planRegionalSurfaceRoads(terrain,{rise,thickness,blockedMask=[],
   const partialSources=new Map();
   let partialAttempts=0,partialStations=0;
   for(const window of windows){
-    const {entry,points,length,from,to,blockers,edgeEnds}=window,count=partialSources.get(entry.key)||0;
+    const {entry,points,length,from,to,blockers,edgeEnds,edgeGrade}=window,count=partialSources.get(entry.key)||0;
     if(count>=limits.slicesPerSource)continue;
     if(partialAttempts>=limits.partialAttempts||plannedStations>=limits.stations||
         partialStations>=limits.partialStations||overlapChecks>=limits.overlapChecks)break;
     partialAttempts++;
     try{
       const independentGrade=isPrincipal(entry.route);
-      const plan=planSurfaceRoad([{...entry.route,points,gradeWindow:independentGrade?gradeWindow:undefined}],terrain,rise,thickness);
+      const plan=planSurfaceRoad([{...entry.route,points,edgeGrade,gradeWindow:independentGrade?gradeWindow:undefined}],terrain,rise,thickness);
       if(blockers.some(mask=>collides(plan.mask,mask))||collides(plan.mask,plannedMask))continue;
       const [route]=plan.routes,stations=route.profile.stations.length;
       if(plannedStations+stations>limits.stations||partialStations+stations>limits.partialStations)continue;

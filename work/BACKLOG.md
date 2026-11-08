@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Revisat el **2026-11-08** amb la v0.23.41. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
+Revisat el **2026-11-08** amb la v0.23.42. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
 
 ## Ordre de treball
 
@@ -60,6 +60,8 @@ Rasant de la v0.23.41 acceptada provisionalment per l’usuari a l’enllaç de 
 ### RO-052 — Continuïtat i amplada del traçat viari
 
 **P1.** Revisar el model complet de l’Hospitalet quan reapareguin discontinuïtats entre ramals i passos a diferent nivell. El cupó del ramal conserva les calçades inferiors i el model complet encara presenta interferències. [Mesures i reproducció](RO-052-CONTINUITAT.md#talls-locals-sota-els-taulers-v02319)
+
+A Lleida, queda corregit el tram de carrer a la vora sud que tornava a seguir el vessant a prop d’un pont de vianants. Pendent de revisió visual de la v0.23.42 amb el retall original. [Control de la Seu Vella](RO-052-CONTINUITAT.md#carrer-a-la-vora-de-la-seu-vella-v02342)
 
 ### RO-044 — Catastre per seccions i recuperació de configuracions
 

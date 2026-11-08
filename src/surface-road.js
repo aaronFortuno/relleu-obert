@@ -182,7 +182,27 @@ function planarTop([a,b,c],[za,zb,zc]){
   };
 }
 
-function planRoute({points,width,sourceFeatureIds,gradeWindow},pad,{rect,ground},rise,structure){
+function continueGradeToEdge(stations,edgeGrade,{width,height},carriagewayWidth,limit,minimumTop){
+  const inside=({centre:[x,y]})=>x>=0&&x<=width&&y>=0&&y<=height;
+  const maxFraction=edgeGrade.every(Boolean) ? .45 : .75;
+  for(const [end,extend] of edgeGrade.entries()){
+    if(!extend)continue;
+    const rows=end?stations.slice().reverse():stations;
+    const first=rows.find(inside);
+    if(!first)continue;
+    const along=station=>Math.abs(station.distanceMM-rows[0].distanceMM);
+    const depth=Math.min(Math.max(4,2.5*carriagewayWidth),maxFraction*(along(rows.at(-1))-along(first)));
+    const index=rows.findIndex(station=>along(station)>=along(first)+depth),anchor=rows[index],next=rows[index+1];
+    if(index<1||!next)continue;
+    // Extrapolate the inner tangent, allowing a cut without consuming the base.
+    const grade=(next.heightMM-anchor.heightMM)/(along(next)-along(anchor));
+    const maxGrade=Math.min(limit,(anchor.heightMM-minimumTop)/along(anchor));
+    const edgeSlope=Math.max(-limit,Math.min(maxGrade,grade));
+    for(const station of rows.slice(0,index))station.heightMM=anchor.heightMM+edgeSlope*(along(station)-along(anchor));
+  }
+}
+
+function planRoute({points,width,sourceFeatureIds,gradeWindow,edgeGrade},pad,{rect,ground,proj,exaggeration=1,verticalReference},rise,structure){
   const stations=centreline(points,width,pad,structure?.flexible?structure.ends:undefined),half=width/2;
   const junctionHeight=pad?(pad.heightMM??ground(...points[pad.index])+rise):null;
   let start=-1,end=-1;
@@ -198,6 +218,7 @@ function planRoute({points,width,sourceFeatureIds,gradeWindow},pad,{rect,ground}
     applyGrade(stations.slice(end),ground,rise,junctionHeight,{end:false,height:last,grade,flexible},gradeWindow);
     for(const s of stations.slice(start,end+1))s.heightMM=first+(s.distanceMM-origin)*grade;
   }else applyGrade(stations,ground,rise,junctionHeight,undefined,gradeWindow,pad?.maxGrade);
+  if(edgeGrade)continueGradeToEdge(stations,edgeGrade,proj,width,.12*exaggeration,verticalReference.minimumSurfaceMM+rise);
   const patches=[],padPolygons=[];
   const edge=(station,sign)=>snap(move(station.centre,station.normal,sign*half));
   for(let i=1;i<stations.length;i++){

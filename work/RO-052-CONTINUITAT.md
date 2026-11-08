@@ -1,5 +1,13 @@
 # RO-052 — Continuïtat i amplada de la calçada
 
+## Carrer a la vora de la Seu Vella, v0.23.42
+
+El retall de `lleida-seu.json` talla el carrer `484995572` al sud. El pont de vianants `3015886350` hi passa a un altre nivell. La reserva per als enllaços del pont deixava el final del carrer sobre la malla del vessant, amb un desnivell transversal d’uns 1,4 mm a la prova de detall reduït.
+
+Si el carrer arriba al tall i el pont pertany a un altre traçat i nivell, el motor pot recuperar el tram de vora amb una reserva local que manté la petjada del tauler. La rasant interior es prolonga fins al tall amb un límit que preserva el gruix de la base. La prova de regressió mesura la calçada i comprova que el tauler conserva la seva cota.
+
+Al retall de 200 × 200 mm amb MET5, edificis de l’ICGC, detall 24 i arbres desactivats, la malla viària passa l’auditoria. Les dues vores coincideixen a la precisió de 0,001 mm entre 1 i 6 mm del tall. La rasant longitudinal és d’aproximadament el 5% als darrers 5 mm. Queda la comprovació visual amb tots els ajustos originals.
+
 ## Talls locals sota els taulers, v0.23.19
 
 La calçada amb rasant pròpia ja es construeix com un sòlid. Per preservar l’assignació de materials, es retalla el volum que comparteix amb el substrat i s’hi munten els enllaços i els suports. Abans, si el tall de tots els taulers fallava, es recuperava el paviment sobre el terreny a tot el retall. Ara el motor divideix el tall en grups i conserva els talls vàlids. Si cal descartar un perfil, es tornen a calcular les petjades perquè aquell tram recuperi el paviment habitual sense deixar buits. La recuperació té un pressupost acotat de talls i de repeticions del model.

@@ -71,6 +71,37 @@ test('roads outside the plate do not exhaust the regional paving budget',()=>{
   assert.equal(model.provenance.surfaceRoads.fullAccepted,3);
 });
 
+test('a carriageway keeps its interior grade to the crop before an unrelated overpass',()=>{
+  const grid=41,span=100/(grid-1);
+  const local={...road('edge-road',[[-5,50],[75,50]],'local','minor'),properties:{sourceLayer:'transportation',class:'minor',width:5}};
+  const bridge=road('overpass',[[9,34],[9,66]],'footbridge','path');
+  Object.assign(bridge.properties,{brunnel:'bridge',layer:1,subclass:'footway',width:2});
+  const coordinates=toGeo([[8.5,34],[9.5,34],[9.5,66],[8.5,66]]).map(p=>[...p,175]);
+  const deck={id:'known-footbridge',coordinates,faces:[0,1,2,0,2,3],outlines:[[...coordinates,coordinates[0]]],
+    axis:bridge.geometry.coordinates,sourceFeatureIds:[bridge.id],roadClass:'path',layer:1};
+  const data={...fixture,features:[local,bridge],infrastructure:{items:[deck]},localDEM:{...fixture.localDEM,width:grid,height:grid,
+    affine:[extent/(grid-1),0,0,0,extent/(grid-1),0],values:Float32Array.from({length:grid**2},(_,i)=>{
+      const x=span*(i%grid),y=span*Math.floor(i/grid);
+      return 100+.9*y-5*Math.max(0,1-x/4);
+    })}};
+  const model=buildModel(data,{...options,resolution:24,exaggeration:1,surfaceRoads:'regional'},()=>{},api);
+  assert(model.provenance.surfaceRoads.partialGroups.some(group=>group.sourceFeatureIds.includes(local.id)&&group.edgeEnds[0]));
+  const top=roadTop(model);
+  assert(Math.abs(model.context.ground(2,49.3)-model.context.ground(2,50.7))>.5);
+  for(const x of [.1,1,2,3]){
+    const left=top(x,49.3),right=top(x,50.7);
+    assert([left,right].every(Number.isFinite),`Missing road at ${x}`);
+    assert(Math.abs(left-right)<.001,`Crossfall at ${x}`);
+  }
+  const edge=top(.1,50),between=top(1,50),inner=top(3,50);
+  assert([edge,between,inner].every(Number.isFinite));
+  assert(Math.abs(edge-inner)/2.9<.08,`the road dives with the terrain at the cut (${edge}, ${inner})`);
+  assert(Math.abs((between-edge)/.9-(inner-between)/2)<.001,'the terminal grade varies before reaching the cut');
+  const builtDeck=model.context.bridges.find(item=>item.id===deck.id);
+  assert(builtDeck?.top(9,50)>model.context.ground(9,50)+5);
+  for(const part of model.categories)assert.deepEqual(auditPart(part).errors,[]);
+});
+
 test('a principal pavement crosses an ordinary road with its own level sections while reserving the railway crossing',()=>{
   const count=51;
   const features=[

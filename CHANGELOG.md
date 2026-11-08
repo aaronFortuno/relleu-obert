@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.23.42 — 2026-11-08
+
+- Els carrers tallats per la vora de la maqueta poden conservar la rasant quan un pas superior proper els deixava sense paviment independent. El tram final manté la secció plana de banda a banda i respecta la petjada del tauler.
+
 ## v0.23.41 — 2026-11-08
 
 - Amb els perfils suaus activats, les autopistes i carreteres principals de superfície fixen la rasant abans de tallar o reblir el terreny. Els enllaços fan servir la cota dels taulers i de la calçada que arriba a les boques dels túnels.
