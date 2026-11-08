@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Revisat el **2026-11-08** amb la v0.23.42. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
+Revisat el **2026-11-08** amb la v0.23.43. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
 
 ## Ordre de treball
 

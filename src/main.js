@@ -18,6 +18,8 @@ import {readProjects,saveProject,deleteProject,exportProjectLibrary,importProjec
 import {cutGuideSegments} from './cut-guides.js';
 import {regionLimitMessage} from './region-limits.js';
 import {initDialogs} from './dialogs.js';
+import {prependReleases,releasesAfter} from './release-history.js';
+import changelog from '../CHANGELOG.md?raw';
 import {formatNumber,getLocale,initI18n,onLocaleChange,t,translateEngineMessage} from './i18n.js';
 import {createPresentationMode} from './presentation-scene.js';
 import {createDemandRenderer} from './render-scheduler.js';
@@ -1637,6 +1639,8 @@ $('#release-list').insertAdjacentHTML('afterbegin',`<article class="release-entr
 $('#release-list').insertAdjacentHTML('afterbegin',`<article class="release-entry"><div><strong>v0.23.12</strong><time datetime="2026-11-06">06/11/2026</time></div><p data-i18n="history.0.23.12">${t('history.0.23.12')}</p></article>`);
 $('#release-list').insertAdjacentHTML('afterbegin',`<article class="release-entry"><div><strong>v0.23.13</strong><time datetime="2026-11-06">06/11/2026</time></div><p data-i18n="history.0.23.13">${t('history.0.23.13')}</p></article>`);
 $('#release-list').insertAdjacentHTML('afterbegin',`<article class="release-entry"><div><strong>v0.23.14</strong><time datetime="2026-11-06">06/11/2026</time></div><p data-i18n="history.0.23.14">${t('history.0.23.14')}</p></article>`);
+// The earlier summaries include translations maintained by the locale dictionaries.
+prependReleases($('#release-list'),releasesAfter(changelog,'0.23.14'));
 $('#copy-lightning').onclick=async()=>{try{await navigator.clipboard.writeText('aptswim903@walletofsatoshi.com');feedback('copy-status',statusMessage('copy.done'));}catch{feedback('copy-status',statusMessage('copy.manual'));}};
 for(const toggle of document.querySelectorAll('.sidebar-left .section-toggle'))toggle.disabled=true;
 function refreshWorkshopLanguage(){

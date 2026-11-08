@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.23.43 — 2026-11-08
+
+- L’historial del peu de pàgina recupera les entrades posteriors a la v0.23.14. Les notes de les versions noves es publiquen al quadre automàticament des del changelog del repositori.
+
 ## v0.23.42 — 2026-11-08
 
 - Els carrers tallats per la vora de la maqueta poden conservar la rasant quan un pas superior proper els deixava sense paviment independent. El tram final manté la secció plana de banda a banda i respecta la petjada del tauler.
