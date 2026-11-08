@@ -1,4 +1,15 @@
-# RO-051 — Perfils de vies principals sobre el relleu intacte
+# RO-051 — Perfils de vies principals
+
+## Rasant prioritària amb tall i reblert
+
+Des de la v0.23.41, amb els perfils suaus activats, les calçades de superfície `motorway`, `trunk` i `primary` comparteixen el tall i reblert del ferrocarril. Els fragments compatibles s’uneixen, la secció queda plana de banda a banda i la cota longitudinal s’estima entre els extrems. Als accessos compatibles, la cota del tauler té prioritat. Els connectors i les boques dels túnels consulten el paviment generat. Una geometria invàlida es registra com a tram omès i la resta del model continua.
+
+- Rajadell, 150 mm a 1:10.000. Amb les capes viàries i detall 36, quatre perfils de la C-37 sense omissions, dos enllaços amb el viaducte i les dues boques de `1820235140`. Als punts d’enllaç, la variació mesurada dins una finestra longitudinal de 0,1 mm és com a màxim 0,013 mm, sense buits al centre. Amb totes les capes i detall 12, ambdós motors ometen el túnel per falta de prolongació acreditada.
+- Millau, retall de l’estrep sud de la incidència `millau-bonys.json`. A detall 64 i amb les capes viàries, les dues calçades de l’A75 tenen tall i reblert. A les dues unions amb el tauler singular, la variació en una finestra de 0,1 mm és inferior a 0,005 mm al centre i hi ha paviment a ambdues bandes. Al segon retall, `millau-sud.json`, el motor aplica el perfil als dos sentits de l’A75 amb tall i reblert.
+
+Queda la revisió al visor i al laminador, en particular els ramals i els creuaments densos. Les proves locals de retalls reals s’han fet sobre la malla del motor.
+
+## Prototip anterior sobre el relleu intacte
 
 Lot v0.18.1, 2026-11-02. L'usuari proposa connectar els punts alts del
 perfil longitudinal i confirma que els trams suspesos rebin suports

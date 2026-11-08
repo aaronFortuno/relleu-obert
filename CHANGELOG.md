@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.23.41 — 2026-11-08
+
+- Amb els perfils suaus activats, les autopistes i carreteres principals de superfície fixen la rasant abans de tallar o reblir el terreny. Els enllaços fan servir la cota dels taulers i de la calçada que arriba a les boques dels túnels.
+
 ## v0.23.40 — 2026-11-08
 
 - El cercador de Territori ressalta el primer resultat. Les fletxes recorren la llista, Retorn centra el mapa al lloc actiu i Esc tanca la llista.

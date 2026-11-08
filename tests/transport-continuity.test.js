@@ -211,3 +211,35 @@ for(const [label,widthMM,heightMM,rotation]of [['square',100,100,0],['rotated re
   assert(data.localDEM.values.every((v,i)=>v===before[i]),'source DEM changed');
   assert.deepEqual(data.infrastructure.items[0],deck,'surveyed deck was altered');
 });
+
+test('a principal road cuts and fills without introducing steps at a bridge or tunnel',()=>{
+  const data=chain(),{values,width}=data.localDEM;
+  for(let y=0;y<width;y++){
+    values[y*width+12]+=20+(y-20)*2; // x = -400 m, crest on a side slope
+    values[y*width+28]-=8;  // x = 400 m, hollow after the tunnel
+  }
+  const model=buildModel(data,{size:100,resolution:20,exaggeration:1,trees:false,estimatedTunnels:true,
+    majorRoads:true,surfaceRoads:'grade-first'},()=>{},api);
+  const {majorRoads,tunnels}=model.provenance;
+  assert.equal(majorRoads.count,3,JSON.stringify(majorRoads.omissions));
+  assert.equal(tunnels.count,1,model.warnings.join(' '));
+  const bridge=model.context.bridges.find(b=>b.id==='surveyed-control');
+  assert.equal(bridge.approaches.plans.length,2,JSON.stringify(bridge.approaches.missed));
+  const probe=pavementProbe(model.categories.find(p=>p.id==='roads'),'grade-first');
+  const point=x=>model.context.proj.project(geo(x));
+  try{
+    const cut=point(-400),fill=point(400);
+    assert(probe.top(cut)<model.context.ground(...cut)-1);
+    assert(probe.top(fill)>model.context.ground(...fill)+.5);
+    for(const p of [cut,fill]){
+      checkStrip(probe,p,[1,0],()=>probe.top(p),'grade-first transverse section');
+      const [x,y]=p,z=probe.top(p);
+      close(probe.top([x-1,y])+probe.top([x+1,y]),2*z,.003,'linear grade through DEM crest or hollow');
+    }
+    for(const approach of bridge.approaches.plans){
+      checkSeam(probe,approach.sections[0],[1,0],'grade-first deck');
+      checkSeam(probe,approach.sections.at(-1),[1,0],'grade-first surface landing');
+    }
+    for(const portal of tunnels.profiles[0].portalConnections)checkSeam(probe,portal,[1,0],'grade-first tunnel portal');
+  }finally{probe.delete();}
+});

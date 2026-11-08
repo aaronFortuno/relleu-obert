@@ -117,7 +117,7 @@ function requiredLowering(samples,minLength){
  * Items contain a closed Float32/Uint32 cutter plus path/section/source IDs.
  */
 export function generateProceduralTunnelVoids(features,elevationAt,options={}){
-  const {enabled=false,projection,verticalReference,exaggeration=1.5,ground,waterMask=[],minBaseMM=2.5,minimumVoidFloorMM=0,minOpeningMM=1.2,maxTunnels=24,surfaceRiseMM=0,railSurfaceRiseMM=surfaceRiseMM,surfaceAt,surfaceBreaks,portalRoute,sharedPavement,trailWidth}=options;
+  const {enabled=false,projection,verticalReference,exaggeration=1.5,ground,roofGround=ground,waterMask=[],minBaseMM=2.5,minimumVoidFloorMM=0,minOpeningMM=1.2,maxTunnels=24,surfaceRiseMM=0,railSurfaceRiseMM=surfaceRiseMM,surfaceAt,surfaceBreaks,portalRoute,sharedPavement,trailWidth}=options;
   const pavementThicknessMM=sharedPavement?.thicknessMM??.3,sectionProfile='estimated-parabolic-arch';
   const minimumFloorMM=Math.max(minBaseMM+pavementThicknessMM,minimumVoidFloorMM);
   const warnings=[],metadata={enabled:enabled===true,estimated:true,method:sharedPavement?'shared-surface-road-grade':'linear-dem-with-generated-surface-portal-ramps',section:sectionProfile,sectionWallHeightRatio:.55,sectionRoofSegments:16,pavementThicknessMM,minimumBaseMM:minBaseMM,minimumOpeningMM:minOpeningMM,count:0,omitted:0,omissions:[]};
@@ -175,12 +175,12 @@ export function generateProceduralTunnelVoids(features,elevationAt,options={}){
     const floorMargin=Math.min(...path.map(p=>p[2]))-minimumFloorMM;
     if(floorMargin<0){fail(id,'la cota del paviment tallaria el gruix mínim de base.');continue;}
     let loweringMM=0;
-    let coverSamples=sampleRoofCover(path,distances,projection,ground,widthMM,heightMM,1);
+    let coverSamples=sampleRoofCover(path,distances,projection,roofGround,widthMM,heightMM,1);
     let covered=coveredRoof(coverSamples,minOpeningMM);
     if(!sharedPavement&&!covered&&coverSamples&&inside(path[0],projection)&&inside(path.at(-1),projection)){
       // At coarse print scales the minimum printable bore can exceed the
       // clearance of the DEM-derived grade. Try only a small, uniform offset.
-      coverSamples=sampleRoofCover(path,distances,projection,ground,widthMM,heightMM,.25);
+      coverSamples=sampleRoofCover(path,distances,projection,roofGround,widthMM,heightMM,.25);
       const shift=requiredLowering(coverSamples,minOpeningMM);
       if(shift>0&&shift<=Math.min(.75,12*projection.scale*exaggeration,floorMargin)){
         const shifted=coverSamples.map(sample=>({...sample,roof:sample.roof+shift}));

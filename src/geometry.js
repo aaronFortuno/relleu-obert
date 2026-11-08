@@ -13,7 +13,8 @@ import {CATEGORIES,groupMaterials} from './materials.js';
 import {polygonTester} from './polygon-index.js';
 import {lineBuffer} from './roads.js';
 import {isRailway,isInactiveRailway,railwayOptions,railwayWidthMetres} from './railways.js';
-import {surfaceRailAxes,railwaySections,railwayPatches} from './railway-surface.js';
+import {surfaceRailAxes,railwaySections,corridorPatches} from './railway-surface.js';
+import {principalSurface,principalAxes,principalSections} from './principal-road-surface.js';
 import {buildingOptions,buildingRise} from './building-options.js';
 import {splitModel} from './mesh-tiles.js';
 import {catalogueBridgeItem,catalogueBridgeUpper} from './catalogue-bridges.js';
@@ -509,33 +510,53 @@ function roadSurface(index,polygons,rise,terrain){
   return surfacePart(index,terrainSolid(polygons,(x,y)=>ground(x,y)+rise,(x,y)=>ground(x,y)-.65,width,height,resolution,terrainGrid));
 }
 
-function buildSurfaceRailways(terrain,rise){
-  const {transport,land,ground,exaggeration,verticalReference,proj:{width,height}}=terrain;
+function buildSurfaceCorridors(land,rise,index,axes,sectionsFor,protectedMask=[]){
   const part={vertices:[],faces:[]},support={vertices:[],faces:[]};
   const accepted=[],omissions=[],byId=new Map();
-  for(const axis of surfaceRailAxes(transport,width,height)){
+  for(const axis of axes){
     try{
-      const sections=railwaySections(axis,ground,exaggeration,verticalReference.minimumSurfaceMM,rise);
-      const patches=railwayPatches(sections),shape=mergeLayer(patches.map(p=>[p.polygon]));
-      if(patches.reduce((sum,p)=>sum+area(p.polygon[0]),0)-footprintArea(shape)>1e-5)
-        throw Error('El traçat ferroviari se solapa amb ell mateix.');
+      const sections=sectionsFor(axis,accepted);
+      let patches=corridorPatches(sections);
+      const shape=mergeLayer(patches.map(p=>[p.polygon]));
+      if(patches.reduce((sum,p)=>sum+area(p.polygon[0]),0)-footprintArea(shape)>1e-5){
+        if(index!==3)throw Error('El traçat se solapa amb ell mateix.');
+        let used=[];
+        patches=patches.flatMap(({polygon,top})=>{
+          const visible=subtract([polygon],used);
+          used=mergeLayer([used,[polygon]].filter(mask=>mask.length));
+          return visible.map(polygon=>({polygon,top}));
+        });
+      }
       const extent=meshFootprintBounds(shape);
       const occupied=accepted.filter(route=>extent.every((value,i)=>i<2?value<=route.extent[i+2]:value>=route.extent[i-2]));
-      const mask=subtract(intersect(shape,land),mergeLayer(occupied.map(route=>route.mask)));
+      const avoid=mergeLayer([protectedMask,...occupied.map(route=>route.mask),...(axis.anchors??[]).flatMap(anchor=>anchor?[anchor.mask]:[])].filter(mask=>mask.length));
+      const mask=subtract(intersect(shape,land),avoid);
       if(!mask.length)continue;
       const clipped=footprintArea(shape)-footprintArea(mask)>1e-8;
       const platform=new Surface(),foundation=new Surface(),thickness=.65+rise;
-      for(const {polygon,top} of patches)for(const patch of clipped?intersect([polygon],mask):[polygon]){
-        platform.polygon(patch,top);
-        foundation.polygon(patch,(x,y)=>top(x,y)-thickness);
-      }
+      const visible=clipped?patches.flatMap(({polygon,top})=>intersect([polygon],mask).map(polygon=>({polygon,top}))):patches;
+      for(const {polygon,top} of visible){platform.polygon(polygon,top);foundation.polygon(polygon,(x,y)=>top(x,y)-thickness);}
       const points=[],faces=platform.faces.slice();
       for(let i=0;i<platform.vertices.length;i+=3)points.push(platform.vertices.slice(i,i+3));
-      const rail=platform.solid((x,y,z)=>z-thickness),base=foundation.solid(()=>0);
-      if(!rail.faces.length||auditPart(rail).errors.length||auditPart(base).errors.length)
-        throw Error('El paviment ferroviari no forma una malla tancada.');
-      append(part,rail);append(support,base);
-      const route={mask,extent,points,faces,top:topSampler(points,faces)};
+      const floor=(x,y,z)=>z-thickness;
+      let pavement=platform.solid(floor),base=foundation.solid(()=>0);
+      let errors=[...auditPart(pavement).errors,...auditPart(base).errors];
+      if(errors.length&&index===3){
+        // Cropped seams can meet at a T after rounding. Use the same closed
+        // prisms as the terrain, keeping the planned height at every vertex.
+        const prisms={vertices:[],faces:[]},supports={vertices:[],faces:[]};
+        for(let i=0;i<faces.length;i+=3){
+          const row=faces.slice(i,i+3).map(id=>points[id]);
+          const strip=new Surface(),fill=new Surface();
+          strip.tri(...row);fill.tri(...row.map(([x,y,z])=>[x,y,floor(x,y,z)]));
+          append(prisms,strip.solid(floor));append(supports,fill.solid(()=>0));
+        }
+        [pavement,base]=removeCollapsedSurfaceComponents([surfacePart(index,prisms),surfacePart(0,supports)],{floatRoundoff:true}).parts;
+        errors=[...auditPart(pavement).errors,...auditPart(base).errors];
+      }
+      if(!pavement.faces.length||errors.length)throw Error(errors[0]??'El paviment no forma una malla tancada.');
+      append(part,pavement);append(support,base);
+      const route={axis,sections,mask,extent,points,faces,top:topSampler(points,faces)};
       accepted.push(route);
       for(const id of axis.sourceFeatureIds.map(String)){
         if(!byId.has(id))byId.set(id,[]);
@@ -543,7 +564,7 @@ function buildSurfaceRailways(terrain,rise){
       }
     }catch(error){omissions.push({sourceFeatureIds:axis.sourceFeatureIds,reason:error.message});}
   }
-  return {part:surfacePart(8,part),support,mask:mergeLayer(accepted.map(route=>route.mask)),count:accepted.length,omissions,byId};
+  return {part:surfacePart(index,part),support,mask:mergeLayer(accepted.map(route=>route.mask)),count:accepted.length,omissions,byId,accepted};
 }
 
 function meshFootprintBounds(polygons){
@@ -975,10 +996,12 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
   const roadRise=options.roadRise??0;
   if(![0,.5,1].includes(roadRise))throw Error('Relleu dels camins invàlid.');
   const {railRise}=railwayOptions(options);
-  const rail=measure('transport.railways',()=>buildSurfaceRailways(terrain,roadRise+railRise)),railPoly=rail.mask;
+  const railwayRise=roadRise+railRise;
+  const rail=measure('transport.railways',()=>buildSurfaceCorridors(land,railwayRise,8,surfaceRailAxes(transport,width,height),
+    axis=>railwaySections(axis,ground,exaggeration,minimumSurfaceMM,railwayRise))),railPoly=rail.mask;
   const roadOnlySource=subtract(terrain.roadPoly,railPoly);
   const sourceRoadPoly=railPoly.length?merge([roadOnlySource,railPoly].filter(p=>p.length)):terrain.roadPoly;
-  const cutTerrain=railPoly.length?{...terrain,land:subtract(land,railPoly)}:terrain;
+  let cutTerrain=railPoly.length?{...terrain,land:subtract(land,railPoly)}:terrain;
   let roadOnlyPoly=roadOnlySource,roadPoly=sourceRoadPoly;
   if(railPoly.length){forest=subtract(forest,railPoly);bare=subtract(bare,railPoly);}
   warnings.push(...rail.omissions.map(({sourceFeatureIds,reason})=>`Via ferroviària ${sourceFeatureIds.join(', ')} omesa: ${reason}`));
@@ -998,7 +1021,8 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
     const [x,y]=project([lon,lat]);if(x<0||y<0||x>width||y>height)return elevationAt(lon,lat);
     return originMeters+(ground(x,y)-minimumSurfaceMM)/(scale*exaggeration);
   };
-  const majorRoadsEnabled=!surfaceRoad&&options.majorRoads===true;
+  const gradeFirst=options.surfaceRoads==='grade-first'&&options.majorRoads===true;
+  const majorRoadsEnabled=!gradeFirst&&!surfaceRoad&&options.majorRoads===true;
   if(majorRoadsEnabled)progress('Calculant els perfils de les vies principals…');
   const allowCrossing=(other,p)=>other.properties?.brunnel==='tunnel'?options.estimatedTunnels===true:
     other.properties?.brunnel==='bridge'&&knownCrossingSources.some(source=>source.contains(p)&&!!source.item.railway===isRailway(other.properties));
@@ -1099,42 +1123,6 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
     if(next.size===excludedProfiles.size)return fallbackMajor(message);
     return buildTransport(data,options,terrain,progress,infrastructureApi,diagnostics,buildingGeometry,next,preview,recoveryPass+1);
   };
-  const independentPavement=options.surfaceRoads==='independent';
-  if((options.surfaceRoads==='regional'||independentPavement)&&infrastructureApi){
-    try{
-      progress('Comprovant on es pot aplicar el paviment nou…');
-      const blockedIds=new Set(acceptedMajor.flatMap(item=>item.sourceFeatureIds));
-      const blockedMask=merge([deckMask,railPoly].filter(p=>p.length));
-      const plan=measure('surface-road.regional-plan',()=>planRegionalSurfaceRoads(terrain,{rise:roadRise,thickness:.65+roadRise,
-        blockedMask,blockedIds,principalPavement:independentPavement&&options.majorRoads===true&&options.smoothProfiles===true}));
-      regionalMetadata=plan.metadata;
-      if(plan.regions.length){
-        const built=measure('surface-road.regional-mesh',()=>assembleRegionalSurfaceRoads(cutTerrain,roadRise,infrastructureApi,progress,plan,roadOnlyPoly,railPoly));
-        if(built){
-          surfaceRoad=built;
-          roadOnlyPoly=built.legacyRoadPoly;
-          roadPoly=built.roadPoly;
-          forest=built.forest;
-        }
-      }
-    }catch(error){
-      regionalMetadata={...regionalMetadata,mode:'regional',applied:false,accepted:0,fullAccepted:0,partialAccepted:0,
-        partialLengthMM:0,error:error.message};
-    }
-    if(regionalMetadata.eligible||regionalMetadata.error)warnings.push(regionalMetadata.applied
-      ?`Paviment de superfície nou aplicat a ${regionalMetadata.accepted} fragments viaris. La resta conserva el càlcul habitual.`
-      :`Paviment de superfície nou sense aplicar al retall. ${regionalMetadata.error??'Cap grup ha superat les comprovacions.'}`);
-  }
-  let staticBase=surfaceRoad?.parts??terrain.surfaces.slice();
-  if((acceptedMajor.length||railPoly.length)&&!regionalMetadata?.applied){
-    const cover=terrainCover(forest,bare,cutTerrain,progress);
-    for(const index of [0,4,6])staticBase[index]=cover[index];
-  }
-  if(rail.support.faces.length){append(rail.support,staticBase[0]);staticBase[0]=surfacePart(0,rail.support);}
-  if(preview)progress('Triangulant carreteres i ferrocarrils…');
-  if(!surfaceRoad)staticBase[3]=roadSurface(3,roadOnlyPoly,roadRise,terrain);
-  staticBase[8]=rail.part;
-  preview?.parts('transport',staticBase,proj);
   const bridges=[];
   let publishedDecks=0,lastDeckPreview=performance.now();
   for(const [index,sourceItem] of deckItems.entries()){
@@ -1211,6 +1199,72 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
       return merge([...other.map(p=>[p]),railPoly,mappedDeckMask].filter(p=>p.length));
     },{id:bridge.id}));
   }
+  const principalRoutes=gradeFirst?transport.filter(principalSurface):[];
+  let principal=null;
+  if(principalRoutes.length){
+    progress('Construint la rasant i el suport de les vies principals…');
+    const junctionAt=(point,axis,accepted)=>{
+      for(const route of accepted)if((route.axis.layer??0)===(axis.layer??0)){
+        const z=route.top(...point);if(z!=null)return z;
+      }
+      return null;
+    };
+    principal=measure('transport.principal-grade',()=>buildSurfaceCorridors(land,roadRise,3,principalAxes(principalRoutes,bridges,proj),
+      (axis,accepted)=>principalSections(axis,terrain,roadRise,(point,route)=>junctionAt(point,route,accepted)),railPoly));
+    const original=mergeLayer(principalRoutes.flatMap(route=>roadPieces[route.roadPiece]?.polys.map(p=>[p])??[]));
+    roadOnlyPoly=subtract(roadOnlyPoly,mergeLayer([original,principal.mask].filter(mask=>mask.length)));
+    roadPoly=mergeLayer([roadOnlyPoly,railPoly,principal.mask].filter(mask=>mask.length));
+    cutTerrain={...terrain,land:subtract(cutTerrain.land,principal.mask)};
+    const uncovered=subtract(land,roadPoly),greenMask=merge(cropped(green));
+    forest=intersect(uncovered,greenMask);bare=subtract(uncovered,greenMask);
+    majorMetadata={...majorMetadata,enabled:true,applied:principal.count>0,method:'endpoint-grade-cut-and-fill',count:principal.count,
+      terrainModified:principal.count>0,omitted:principal.omissions.length,omissions:principal.omissions,
+      profiles:principal.accepted.map(({axis,sections})=>({sourceFeatureIds:axis.sourceFeatureIds,roadClass:axis.class,
+        elevationMethod:'endpoint-grade-cut-and-fill',sections,anchors:axis.anchors.map(anchor=>anchor&&{bridgeId:anchor.bridgeId,point:anchor.point,z:anchor.z})}))};
+    warnings.push(...principal.omissions.map(({sourceFeatureIds,reason})=>`Rasant de la via ${sourceFeatureIds.join(', ')} omesa: ${reason}`));
+  }
+  const independentPavement=options.surfaceRoads==='independent';
+  const fixedTransportMask=principal?.mask.length?mergeLayer([railPoly,principal.mask].filter(mask=>mask.length)):railPoly;
+  if((options.surfaceRoads==='regional'||options.surfaceRoads==='grade-first'||independentPavement)&&infrastructureApi){
+    try{
+      progress('Comprovant on es pot aplicar el paviment nou…');
+      const blockedIds=new Set([...acceptedMajor,...principalRoutes].flatMap(item=>item.sourceFeatureIds));
+      const blockedMask=merge([deckMask,fixedTransportMask].filter(p=>p.length));
+      const plan=measure('surface-road.regional-plan',()=>planRegionalSurfaceRoads(terrain,{rise:roadRise,thickness:.65+roadRise,
+        blockedMask,blockedIds,principalPavement:independentPavement&&options.majorRoads===true&&options.smoothProfiles===true}));
+      regionalMetadata=plan.metadata;
+      if(plan.regions.length){
+        const built=measure('surface-road.regional-mesh',()=>assembleRegionalSurfaceRoads(cutTerrain,roadRise,infrastructureApi,progress,plan,roadOnlyPoly,fixedTransportMask));
+        if(built){
+          surfaceRoad=built;
+          roadOnlyPoly=built.legacyRoadPoly;
+          roadPoly=built.roadPoly;
+          forest=built.forest;
+        }
+      }
+    }catch(error){
+      regionalMetadata={...regionalMetadata,mode:'regional',applied:false,accepted:0,fullAccepted:0,partialAccepted:0,
+        partialLengthMM:0,error:error.message};
+    }
+    if(regionalMetadata.eligible||regionalMetadata.error)warnings.push(regionalMetadata.applied
+      ?`Paviment de superfície nou aplicat a ${regionalMetadata.accepted} fragments viaris. La resta conserva el càlcul habitual.`
+      :`Paviment de superfície nou sense aplicar al retall. ${regionalMetadata.error??'Cap grup ha superat les comprovacions.'}`);
+  }
+  let staticBase=surfaceRoad?.parts??terrain.surfaces.slice();
+  if((acceptedMajor.length||railPoly.length||principal)&&!regionalMetadata?.applied){
+    const cover=terrainCover(forest,bare,cutTerrain,progress);
+    for(const index of [0,4,6])staticBase[index]=cover[index];
+  }
+  if(principal?.support.faces.length)append(rail.support,principal.support);
+  if(rail.support.faces.length){append(rail.support,staticBase[0]);staticBase[0]=surfacePart(0,rail.support);}
+  if(preview)progress('Triangulant carreteres i ferrocarrils…');
+  if(!surfaceRoad)staticBase[3]=roadSurface(3,roadOnlyPoly,roadRise,terrain);
+  if(principal?.part.faces.length){
+    const roads={vertices:[],faces:[]};append(roads,staticBase[3]);append(roads,principal.part);
+    staticBase[3]=surfacePart(3,roads);
+  }
+  staticBase[8]=rail.part;
+  preview?.parts('transport',[...staticBase,...bridges.map(bridge=>({...CATEGORIES[bridge.category],...bridge.mesh}))],proj);
   const matchesLine=(structure,line)=>{
     if(!line)return false;
     const ids=new Set((structure.sourceFeatureIds||structure.identity?.sourceFeatureIds||[]).map(String));
@@ -1229,7 +1283,8 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
     if(ids.length===1)return bridgesByRoute.get(String(ids[0]))||[];
     return [...new Set(ids.flatMap(id=>bridgesByRoute.get(String(id))||[]))].sort((a,b)=>a-b);
   };
-  const railwayLandings=line=>new Set((line?.sourceFeatureIds||[]).flatMap(id=>rail.byId.get(String(id))||[]));
+  const corridorLandings=line=>new Set((line?.sourceFeatureIds||[]).flatMap(id=>
+    (line.railway?rail:principal)?.byId.get(String(id))||[]));
   const exteriorSurface=(x,y,railway,properties={},routeLine=null,excludedID=null)=>{
     const identity=transportIdentity(properties);
     for(const index of bridgeIndices(routeLine)){
@@ -1238,7 +1293,7 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
         const z=bridge.top(x,y);if(z!=null)return z;
       }
     }
-    if(railway)for(const platform of railwayLandings(routeLine)){
+    for(const platform of corridorLandings(routeLine)){
       const z=platform.top(x,y);if(z!=null)return z;
     }
     return ground(x,y)+roadRise+(railway?railRise:0);
@@ -1249,11 +1304,19 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
       const bridge=bridges[index];
       fractions.push(...crossSectionFractions(section,{points:bridge.points,faces:bridge.sourceFaces}));
     }
-    for(const platform of railwayLandings(section.line))fractions.push(...crossSectionFractions(section,platform));
+    for(const platform of corridorLandings(section.line))fractions.push(...crossSectionFractions(section,platform));
     return fractions;
   };
   if(preview&&options.estimatedTunnels)progress('Calculant els traçats i portals dels túnels…');
-  const tunnelVoids=generateProceduralTunnelVoids(data.features,elevationAt,{enabled:options.estimatedTunnels===true,projection:proj,verticalReference,exaggeration,ground,minimumVoidFloorMM:minimumSurfaceMM,surfaceRiseMM:roadRise,railSurfaceRiseMM:roadRise+railRise,waterMask:waterPoly,surfaceAt:exteriorSurface,surfaceBreaks:exteriorBreaks,sharedPavement:surfaceRoad?.sharedPavement,trailWidth:options.trailWidth,portalRoute:({point,outward,properties,sourceFeatureIds,maxLengthMM})=>{
+  const roofGround=principal?(x,y)=>{
+    for(const route of principal.accepted){
+      const [left,bottom,right,top]=route.extent;
+      if(x<left||x>right||y<bottom||y>top)continue;
+      const height=route.top(x,y);if(height!=null)return height;
+    }
+    return ground(x,y);
+  }:ground;
+  const tunnelVoids=generateProceduralTunnelVoids(data.features,elevationAt,{enabled:options.estimatedTunnels===true,projection:proj,verticalReference,exaggeration,ground,roofGround,minimumVoidFloorMM:minimumSurfaceMM,surfaceRiseMM:roadRise,railSurfaceRiseMM:roadRise+railRise,waterMask:waterPoly,surfaceAt:exteriorSurface,surfaceBreaks:exteriorBreaks,sharedPavement:surfaceRoad?.sharedPavement,trailWidth:options.trailWidth,portalRoute:({point,outward,properties,sourceFeatureIds,maxLengthMM})=>{
     const own=new Set(sourceFeatureIds),lines=transport.filter(t=>t.brunnel!=='tunnel'&&!t.sourceFeatureIds?.some(id=>own.has(id)));
     const route=continuationRoute(point,outward,lines,transportIdentity(properties),maxLengthMM,{allowStructures:true});return route.segments.length?route:null;
   }});
