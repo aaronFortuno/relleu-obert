@@ -147,6 +147,7 @@ const vegetation=()=>({trees:$('#trees').checked,density:2.5,brushDensity:Number
   ...(pureSelected()?{vegetationHeight:Number($('#vegetation-height').value),vegetationNoise:Number($('#vegetation-noise').value)}:{})});
 let currentStatus='',currentBadge='';
 const placeSearch=$('#place-search'),searchResults=$('#search-results'),searchForm=$('#search-form');
+let activePlaceResult=null;
 const searchSubmit=searchForm.querySelector('[type="submit"]');
 const searchIcon=$('#search-icon'),searchSpinner=$('#search-spinner');
 const searchPending=baseMessage('status.searching'),searchChoose=baseMessage('status.chooseResult'),searchEmpty=baseMessage('status.noResults');
@@ -878,18 +879,32 @@ function cancelPlaceSearch(){
 }
 function clearPlaceSearchResults(){
   searchResults.replaceChildren();
+  activatePlaceResult(null);
+  placeSearch.setAttribute('aria-expanded','false');
   if(currentStatus===searchPending||currentStatus===searchChoose||currentStatus===searchEmpty)say('');
 }
+function activatePlaceResult(option){
+  activePlaceResult?.setAttribute('aria-selected','false');
+  activePlaceResult=option;
+  if(option){
+    option.setAttribute('aria-selected','true');
+    placeSearch.setAttribute('aria-activedescendant',option.id);
+  }else placeSearch.removeAttribute('aria-activedescendant');
+}
 async function searchPlace(query,signal){
-  searchResults.replaceChildren();
+  clearPlaceSearchResults();
   say(searchPending);
   try{
     const results=await placeMap.search(query,signal);
     if(signal.aborted)return;
     if(results===null){say(baseMessage('status.regionChosen'));return;}
-    for(const result of results){
+    for(const [index,result] of results.entries()){
       const button=document.createElement('button');
       button.type='button';
+      button.id=`place-result-${index}`;
+      button.tabIndex=-1;
+      button.setAttribute('role','option');
+      button.setAttribute('aria-selected','false');
       button.textContent=result.label;
       button.onclick=()=>{
         placeMap.choose(result);
@@ -898,6 +913,10 @@ async function searchPlace(query,signal){
         say(baseMessage('status.regionChosen'));
       };
       searchResults.appendChild(button);
+    }
+    if(results.length){
+      placeSearch.setAttribute('aria-expanded','true');
+      activatePlaceResult(searchResults.firstElementChild);
     }
     say(results.length?searchChoose:searchEmpty);
   }catch(error){
@@ -910,6 +929,23 @@ function schedulePlaceSearch(event){
 }
 placeSearch.oninput=placeSearch.oncompositionend=schedulePlaceSearch;
 placeSearch.oncompositionstart=cancelPlaceSearch;
+placeSearch.onkeydown=event=>{
+  if(!activePlaceResult||event.isComposing||event.altKey||event.ctrlKey||event.metaKey||event.shiftKey)return;
+  if(event.key==='ArrowDown'||event.key==='ArrowUp'){
+    event.preventDefault();
+    const next=event.key==='ArrowDown'?activePlaceResult.nextElementSibling:activePlaceResult.previousElementSibling;
+    if(next){
+      activatePlaceResult(next);
+      next.scrollIntoView({block:'nearest'});
+    }
+  }else if(event.key==='Enter'){
+    event.preventDefault();
+    activePlaceResult.click();
+  }else if(event.key==='Escape'){
+    event.preventDefault();
+    cancelPlaceSearch();
+  }
+};
 searchForm.onsubmit=event=>{
   event.preventDefault();
   if(narrowWorkshop.matches)placeSearch.blur();

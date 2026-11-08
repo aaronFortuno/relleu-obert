@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.23.40 — 2026-11-08
+
+- El cercador de Territori ressalta el primer resultat. Les fletxes recorren la llista, Retorn centra el mapa al lloc actiu i Esc tanca la llista.
+
 ## v0.23.39 — 2026-11-08
 
 - Al-Khazneh s’integra com una façana tallada al cingle. Quan la reconstrucció entra a la maqueta, el motor omet la petjada genèrica que hi coincideix i conserva els edificis veïns.

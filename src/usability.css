@@ -35,6 +35,10 @@
 .language-list button:focus-visible {outline-offset:0}
 .language-list button:disabled {opacity:.65;cursor:not-allowed}
 
+.search-results button[aria-selected=true] {
+  background:#eef3e7;box-shadow:inset 2px 0 var(--green);
+}
+
 #help-dialog {scrollbar-width:thin;scrollbar-color:#cbd5c2 transparent}
 .help-guide h3 {margin:0;color:var(--green);font-size:inherit;font-weight:650}
 .help-guide .guide-intro {margin:0 0 12px}

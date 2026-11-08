@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Revisat el **2026-11-08** amb la v0.23.39. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
+Revisat el **2026-11-08** amb la v0.23.40. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
 
 ## Ordre de treball
 
@@ -66,6 +66,8 @@ Al-Khazneh r1 passa els controls d’encaix locals a 1:500 i 1:1.000 i en un ret
 ### RO-045 — Coherència visual dels sidebars
 
 **P2.** Validar amb una maqueta carregada que la roda fa zoom sobre el mapa i que permet desplaçar els ajustos inferiors sense canviar el retall. [Comprovació local](arxiu/HISTORIAL.md#v02314--zoom-de-territori-i-enllaços-de-ponts)
+
+La cerca amb fletxes i Retorn, el tancament amb Esc i l’entrada directa de coordenades s’han comprovat al navegador a la v0.23.40.
 
 ### RO-019 — Internacionalització
 
