@@ -6,6 +6,10 @@ Actualitzat el 2026-11-08. Les entrades validades surten del [backlog actiu](../
 
 El [backlog actiu](../BACKLOG.md) conserva les tasques amb passos pendents. Els [ajornaments i les idees](AJORNATS.md) tenen un registre separat. Els informes de versions superades, les observacions originals i les seves mostres es guarden a l’arxiu. [Criteri d’arxiu](../README.md)
 
+## v0.23.36 — Ancoratge en terrenys en pendent
+
+RO-032 admet cotes d’ancoratge per a edificis que segueixen un vessant. L’abadia de Mont-Saint-Michel manté el cim a 157,27 m i conserva els edificis veïns a 1:2.500 i 1:5.000 amb Mapterhorn. Els 690 punts de la cara inferior queden dins del penyal a les dues escales. Un retall girat de 95 mm a 1:2.500 tanca la malla. El control de 160 mm i 13° exhaureix els 512 MB del procés de prova en delimitar la costa, també amb el catàleg desactivat. Queden la revisió de l’usuari al visor i el laminat. [RO-032](../BACKLOG.md#ro-032--cobertes-i-volums-singulars)
+
 ## v0.23.35 — Cerca, exageració vertical i Foradada r3
 
 En Model complet, l’exageració vertical torna a calcular la maqueta amb les dades del retall carregat i conserva la vista i els traços del pinzell. La cerca mostra un indicador tan bon punt s’edita el text i espera un segon abans de consultar els resultats. Retorn envia la cerca al moment.

@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.23.36 — 2026-11-08
+
+- Els edificis singulars poden declarar la cota d’ancoratge en un vessant. L’abadia de Mont-Saint-Michel manté les cotes de les cobertes i el contacte amb el penyal. El motor refina localment la malla del terreny amb les elevacions de la font.
+
 ## v0.23.35 — 2026-11-08
 
 - L’exageració vertical s’aplica automàticament en Model complet quan es deixa anar el control. Es mantenen la vista i les edicions de vegetació del retall carregat.
