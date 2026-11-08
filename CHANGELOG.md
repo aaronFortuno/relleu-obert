@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.23.37 — 2026-11-08
+
+- La Balma de Can Solà incorpora una reconstrucció aproximada del voladís des d’Open Place Models. Les excavacions naturals eliminen els residus coplanars de les juntes de material abans d’obrir el buit.
+
 ## v0.23.36 — 2026-11-08
 
 - Els edificis singulars poden declarar la cota d’ancoratge en un vessant. L’abadia de Mont-Saint-Michel manté les cotes de les cobertes i el contacte amb el penyal. El motor refina localment la malla del terreny amb les elevacions de la font.

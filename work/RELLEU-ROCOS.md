@@ -95,6 +95,24 @@ El mateix retall de Model complet a 1:2.000 s’ha generat amb MET5 en dos proce
 
 Tots dos models conserven les dues boques i la volta. El control amb relleu general també confirma que la càrrega normal fa zero peticions dels GeoTIFF del pilot. La fluïdesa al navegador correspon a l’observació de l’usuari.
 
+## Balma de Can Solà
+
+El retall de l’usuari fa 20 × 15 cm, a 1:4.047 i exageració ×1. El MET5 mostra el cingle, però cada punt horitzontal només té una cota. Per representar una balma cal descriure també el buit entre el sostre i el terra.
+
+EspeleoÍndex és un inventari sistemàtic de cavitats amb coordenades i exportació tabular. En alguns casos publica plantes i seccions, com la de Can Solà, amb una obertura d’uns 120 m, una fondària màxima de 34 m i una alçada de fins a 15 m. Les dades breus tenen llicència CC BY-NC 4.0 i els plànols i les fotografies tenen condicions pròpies. No s’ha trobat una font de volums oberts amb cobertura sistemàtica ni un aixecament 3D reutilitzable d’aquesta balma. [EspeleoÍndex](https://espeleoindex.com/cavitat/can-sola-balma-de-1518/) · [Condicions d’ús](https://espeleoindex.com/informacio/) · [Fitxa de patrimoni](https://patrimonicultural.diba.cat/print/pdf/node/74391)
+
+La r1 segueix el front corbat del cingle amb un retall de 192 × 192 m del MDT de 50 cm, mostrejat cada 1,5 m. El buit obert cap a l’est i sud-est és una reconstrucció original ajustada a les dimensions publicades i al peu del cingle. El sostre i el terra interiors són aproximats. El navegador carrega 120.141 bytes de malla de tall i cotes locals quan el retall i l’escala ho permeten. [Model i fonts](https://github.com/aaronFortuno/open-place-models/tree/main/models/balma-de-can-sola/r1)
+
+En la prova inicial del retall de l’usuari, un component coplanar en una junta de material feia fallar l’excavació. El motor ara retira aquests residus locals abans de restar el volum, amb el mateix criteri que ja fa servir per al paviment regional.
+
+| Control MET5 | Escala | Gir | Resultat |
+| --- | --- | --- | --- |
+| Model complet · retall de l’usuari | 1:4.047 | 0° | Boca oberta a les tres seccions. Coberta, terra i paret de fons presents. |
+| Model complet · retall més pròxim | 1:2.000 | +34° | Mateixos controls amb el retall girat. |
+| Relleu pur | 1:10.000 | −26° | Mateixos controls a l’escala general del mode. |
+
+La cota màxima de l’obertura equival a uns 3,7 mm al retall de l’usuari. Queda comprovar la semblança al visor i el comportament del voladís al laminador.
+
 ## Reproducció local
 
 ```powershell
@@ -103,6 +121,9 @@ node --max-old-space-size=512 scripts/pilot-cavall-detail.mjs
 node --max-old-space-size=512 scripts/pilot-degotalls.mjs
 node --max-old-space-size=512 scripts/check-foradada.mjs complet
 node --max-old-space-size=512 scripts/check-foradada.mjs relleu
+node --max-old-space-size=512 scripts/check-can-sola.mjs original
+node --max-old-space-size=512 scripts/check-can-sola.mjs girat
+node --max-old-space-size=512 scripts/check-can-sola.mjs relleu
 ```
 
-El primer script escriu quatre 3MF, les seccions SVG i les mesures a `output/cavall-bernat/`. El pilot de detall escriu tres 3MF i les mesures a `output/cavall-bernat-detall/`. El script dels Degotalls baixa en flux l’escaneig original, en comprova l’empremta i desa el cupó i l’auditoria a `output/`. Els controls de la Foradada comproven la malla i només exporten 3MF amb `--3mf`.
+El primer script escriu quatre 3MF, les seccions SVG i les mesures a `output/cavall-bernat/`. El pilot de detall escriu tres 3MF i les mesures a `output/cavall-bernat-detall/`. El script dels Degotalls baixa en flux l’escaneig original, en comprova l’empremta i desa el cupó i l’auditoria a `output/`. Els controls de la Foradada comproven la malla i només exporten 3MF amb `--3mf`. Els de Can Solà auditen les malles i comproven la boca, la coberta, el terra i el fons amb raigs.

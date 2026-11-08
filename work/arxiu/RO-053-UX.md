@@ -31,7 +31,7 @@ Terreny i vies encara comparteixen generació; vegetació i edificis
 reutilitzen les actualitzacions existents. El document següent conserva
 la proposta de càlcul independent i els límits encara pendents.
 
-Prototip: [public/prototypes/ro053/index.html](../public/prototypes/ro053/index.html).
+Prototip: [public/prototypes/ro053/index.html](../../public/prototypes/ro053/index.html).
 Des d'un servidor local del projecte: `/prototypes/ro053/`. El paquet de
 publicació també el pot servir sota el subdirectori de GitHub Pages.
 
@@ -60,9 +60,9 @@ addicional ha de continuar explícita i acotada; RO-047 no s'activa aquí.
 
 ## Inventari inicial (v0.19.1) i friccions concretes
 
-Lectura de [index.html](../index.html), [main.js](../src/main.js),
-[worker.js](../src/worker.js), [geometry.js](../src/geometry.js),
-[sources.js](../src/sources.js) i [place-map.js](../src/place-map.js).
+Lectura de [index.html](../../index.html), [main.js](../../src/main.js),
+[worker.js](../../src/worker.js), [geometry.js](../../src/geometry.js),
+[sources.js](../../src/sources.js) i [place-map.js](../../src/place-map.js).
 
 | Ara | Efecte observat al codi | Canvi proposat |
 | --- | --- | --- |

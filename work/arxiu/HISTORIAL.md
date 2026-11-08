@@ -2,6 +2,20 @@
 
 Actualitzat el 2026-11-08. Les entrades validades surten del [backlog actiu](../BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.23.37 — Balma de Can Solà
+
+RO-035 prova la primera balma oberta al vessant a Open Place Models. La cavitat local es conserva al retall de l’usuari i en dos retalls girats. El motor elimina els residus coplanars de les juntes de material abans d’excavar. La forma interior és aproximada i resta el contrast al visor i al laminador. [Fonts i controls](../RELLEU-ROCOS.md#balma-de-can-solà)
+
+## Tancament de RO-053 i RO-056 · 2026-11-08
+
+### RO-053 — Flux de treball per etapes
+
+L’usuari dona el flux per bo. El disseny queda arxivat i l’informe de mesures conserva el control d’Amsterdam de 10 × 10 cm. Les proves d’altres dispositius, el contrast de les guies al bosc i l’optimització d’Amsterdam a 25 × 25 cm es poden reprendre si apareix una incidència concreta. [Flux](RO-053-UX.md) · [Mesures](../RO-053-TEMPS.md)
+
+### RO-056 — Base, talls i plaques
+
+L’usuari dona la línia per tancada. Queden validats al laminador el projecte de quatre plaques de Tamariu i el cupó de dues plaques desiguals. La placa de referència del 3MF multiplaca fa 256 × 256 mm. Els perfils d’impressora i els avisos específics queden com a millora futura. [Resultats](../RO-024-RESULTATS.md#cupó-amb-talls-desiguals)
+
 ## Reordenació de la documentació · 2026-11-08
 
 El [backlog actiu](../BACKLOG.md) conserva les tasques amb passos pendents. Els [ajornaments i les idees](AJORNATS.md) tenen un registre separat. Els informes de versions superades, les observacions originals i les seves mostres es guarden a l’arxiu. [Criteri d’arxiu](../README.md)
@@ -52,7 +66,7 @@ Al centre d’Amsterdam, l’usuari només detecta tres ponts absents en la revi
 
 El Cavall Bernat té un primer control de detall a 1:2.000 amb cotes del MDT de 50 cm de l’ICGC i un anell de transició al MET5. Els tres 3MF superen l’auditoria, també amb el retall girat 35°. Es documenta l’ús del catàleg per a futurs pedaços d’elevació, malles amb cavitats i infraestructures. Queden el contrast visual i el laminat del cupó, i la integració automàtica. [Pilot de relleu rocós](../RELLEU-ROCOS.md#pilot-de-detall-local-amb-el-mdt-de-50-cm)
 
-Per a RO-056 s’exporta un cupó de Tamariu de 10 × 10 cm amb dues plaques de 100 × 60 i 100 × 40 mm. Els quatre filaments coincideixen al tall dins de la tolerància de l’auditoria i el mar arriba a la base de les dues peces. Pendent de laminar. [Ajustos d’impressió](../BACKLOG.md#ro-056--base-talls-i-plaques)
+Per a RO-056 s’exporta un cupó de Tamariu de 10 × 10 cm amb dues plaques de 100 × 60 i 100 × 40 mm. Els quatre filaments coincideixen al tall dins de la tolerància de l’auditoria i el mar arriba a la base de les dues peces. Pendent de laminar. [Ajustos d’impressió](#ro-056--base-talls-i-plaques)
 
 ## v0.23.27 — Pilot de la Torre Glòries
 
@@ -282,7 +296,7 @@ Compilació estàtica verificada. A Tamariu, Relleu pur de 15 × 15 cm i detall 
 
 ## v0.22.34 — Taller mòbil
 
-RO-053 adapta el selector inicial i el taller amb una barra inferior de Visor, Ajustos i Exporta. La cerca i el mapa encapçalen Territori, amb l’acció de generar fixa. El visor continua visible mentre els panells estan oberts. En horitzontal es comparteix l’amplada amb el panell. L’exportació mòbil conserva el nombre de materials, els formats i el canvi de mida. [Flux mòbil](../RO-053-UX.md#taller-mòbil)
+RO-053 adapta el selector inicial i el taller amb una barra inferior de Visor, Ajustos i Exporta. La cerca i el mapa encapçalen Territori, amb l’acció de generar fixa. El visor continua visible mentre els panells estan oberts. En horitzontal es comparteix l’amplada amb el panell. L’exportació mòbil conserva el nombre de materials, els formats i el canvi de mida. [Flux mòbil](RO-053-UX.md#taller-mòbil)
 
 Revisat al navegador a 320 × 568, 390 × 844 i 740 × 390. Comprovats el carrusel, la mida personalitzada, la generació de Tamariu, els canvis de vegetació sobre la mateixa malla, el retorn a navegació, els diàlegs i la descàrrega d’un 3MF amb dos materials. Verificats els dos sidebars a 1.280 × 720 i 1.100 × 680. Superades 35 proves locals i la construcció estàtica. Pendent de validar en dispositius reals.
 
@@ -646,7 +660,7 @@ Un túnel aplicat cadascun i auditoria sense errors. Tauler principal amb
 (`ifc-114729`, `ifc-132561`), conservats als avisos. [Resultats i models](../RO-052-CONTINUITAT.md).
 RO-052 continua obert per a aquests extrems, contrast general i laminat.
 
-RO-053 entrega [proposta i pilot](../RO-053-UX.md) amb prototip públic
+RO-053 entrega [proposta i pilot](RO-053-UX.md) amb prototip públic
 independent: Peça → Territori → Terreny → Vegetació → Vies → Edificis.
 36 comprovacions lleugeres correctes; revisió visual principal a 1280×720
 i 1600×900, inclosos traços conservats, arbres ocultats, recuperació

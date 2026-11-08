@@ -91,7 +91,10 @@ export function carveCatalogueLandforms(parts,patches,api,datum,zScale){
       });
       const {selected,restore}=selectSurfaceComponents(parts,openings,{categories:parts.map(p=>p.id)});
       if(!selected.length){skip('outside terrain');continue;}
-      const result=carveTunnelMaterials(selected,openings,[],api);
+      // Surface assembly can leave closed coplanar remnants near a material seam.
+      // Remove them locally before Manifold interprets them as input solids.
+      const {parts:substrate}=removeCollapsedSurfaceComponents(selected,{floatRoundoff:true});
+      const result=carveTunnelMaterials(substrate,openings,[],api);
       const removedMM3=Object.values(result.removed).reduce((sum,v)=>sum+v,0);
       if(removedMM3<=1e-5){skip('no intersecting volume');continue;}
       const {parts:carved}=removeCollapsedSurfaceComponents(result.parts);

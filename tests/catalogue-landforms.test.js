@@ -26,10 +26,14 @@ test('a separate lower cut cannot block an opening in a cropped landform',async(
     const patches=prepareCatalogueLandforms([source],proj);
     assert.equal(patches[0].cutters.length,width===20?1:2);
     const original={id:'terrain',...solidMesh([width,20,25],[0,0,0])};
-    const {applied,skipped,parts}=carveCatalogueLandforms([original],patches,api,datum,1);
+    // A closed but coplanar remnant at a material boundary is not a solid.
+    const seam={id:'green',vertices:Float32Array.of(8,2,15.5,9,2,16.5,9,3,17.5,8,3,16.5),
+      faces:Uint32Array.of(0,2,1,0,1,3,1,2,3,2,0,3)};
+    const {applied,skipped,parts}=carveCatalogueLandforms([original,seam],patches,api,datum,1);
     assert.equal(applied.length,1);
     assert.equal(skipped.length,0);
     assert.ok(Math.abs(applied[0].removedMM3-400)<.01);
     assert.deepEqual(auditPart(parts[0]).errors,[]);
+    assert.equal(parts.find(part=>part.id==='green').faces.length,0);
   }
 });

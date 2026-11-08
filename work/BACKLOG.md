@@ -1,23 +1,14 @@
 # Backlog actiu de Relleu Obert
 
-Revisat el **2026-11-08** amb la v0.23.36. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
+Revisat el **2026-11-08** amb la v0.23.37. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
 
 ## Ordre de treball
 
-1. Mesurar la fase de vies en el retall gran d’Amsterdam. [RO-053](#ro-053--flux-de-treball-per-etapes)
-2. Definir els límits per placa i els avisos d’impressora. [RO-056](#ro-056--base-talls-i-plaques)
-3. Continuar la revisió de la galeria per blocs. [RO-046](#ro-046--catàleg-de-llocs-recomanats)
-4. Contrastar la Foradada r3 al visor i reprendre els controls de relleu rocós. [RO-035](#ro-035--cavitats-i-relleus-amb-voladissos) · [RO-023](#ro-023--relleu-local-i-fonts-vectorials-de-més-precisió)
+1. Revisar al visor i al laminador el pilot de la Balma de Can Solà. [RO-035](#ro-035--cavitats-i-relleus-amb-voladissos)
+2. Continuar la revisió de la galeria per blocs. [RO-046](#ro-046--catàleg-de-llocs-recomanats)
+3. Contrastar la Foradada r3 al visor i reprendre els controls de relleu rocós. [RO-035](#ro-035--cavitats-i-relleus-amb-voladissos) · [RO-023](#ro-023--relleu-local-i-fonts-vectorials-de-més-precisió)
 
 ## Desenvolupament i proves
-
-### RO-053 — Flux de treball per etapes
-
-**P1.** Aïllar el muntatge del paviment regional i repetir Amsterdam a 25 × 25 cm amb totes les capes. El control de 10 × 10 cm triga 32,16 s. Comprovar al navegador el recàlcul automàtic d’exageració en Model complet i validar el redimensionament, la guia inicial i els gestos i el teclat en mòbil. Les guies de tall perden contrast al bosc dens. [Mesures](RO-053-TEMPS.md#amsterdam-amb-totes-les-capes--v02327) · [Flux de treball](RO-053-UX.md)
-
-### RO-056 — Base, talls i plaques
-
-**P2.** Tamariu lamina correctament en quatre plaques i en el cupó de dues plaques desiguals. Comprovar el límit de la placa de la impressora triada i avisar abans d’exportar si alguna peça el supera. La referència del 3MF multiplaca actual és de 256 × 256 mm. [Resultats d’impressió](RO-024-RESULTATS.md)
 
 ### RO-046 — Catàleg de llocs recomanats
 
@@ -25,7 +16,7 @@ Revisat el **2026-11-08** amb la v0.23.36. [Historial i validacions](arxiu/HISTO
 
 ### RO-035 — Cavitats i relleus amb voladissos
 
-**P3.** Comparar la carena i la Cadireta de la Foradada r3 al visor amb la foto i comprovar el laminat de les dues boques. Recuperar la transformació geogràfica del cupó dels Degotalls per encaixar-lo al terreny. [Fonts i controls](RELLEU-ROCOS.md#carena-i-cadireta--v02335)
+**P2.** Comparar la boca i el voladís de Can Solà al visor i revisar-ne el laminat. El motor ha comprovat el retall original, un de girat i un de Relleu pur. Queden també la comparació visual i el laminat de la Foradada r3, i la transformació geogràfica dels Degotalls. [Fonts i controls](RELLEU-ROCOS.md#balma-de-can-solà)
 
 ### RO-023 — Relleu local i fonts vectorials de més precisió
 
