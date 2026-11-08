@@ -2,6 +2,10 @@
 
 Actualitzat el 2026-11-08. Les entrades validades surten del [backlog actiu](../BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.23.39 — Al-Khazneh al cingle
+
+RO-035 integra la façana de Petra com a part del terreny. El control a 1:500 omet la petjada genèrica d’Al-Khazneh i conserva l’edifici veí. El retall girat 27° a 1:1.000 conserva la façana amb els edificis desactivats. Un segon retall a 1:1.000, girat −25°, talla un costat de la façana. Els tres retalls mantenen lliure la porta i donen malles tancades. La cota de la plaça i la forma del cingle són aproximades. Queden la revisió de l’usuari i el laminat. [Fonts i revisió](https://github.com/aaronFortuno/open-place-models/blob/main/models/petra-treasury/r1/README.md)
+
 ## v0.23.38 — Rasant ferroviària independent
 
 RO-050 uneix els fragments compatibles i estima un pendent constant entre els extrems de cada eix de superfície. El tall i el reblert conserven la secció plana encara que es canviï el perfil de les carreteres. Al pas a nivell el material ferroviari preval a la intersecció. Si la secció ferroviària es plega o el sòlid no passa la comprovació, es conserva el terreny i s’anota el tram omès.

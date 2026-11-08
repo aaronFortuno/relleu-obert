@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Revisat el **2026-11-08** amb la v0.23.38. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
+Revisat el **2026-11-08** amb la v0.23.39. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
 
 ## Ordre de treball
 
@@ -18,6 +18,8 @@ Revisat el **2026-11-08** amb la v0.23.38. [Historial i validacions](arxiu/HISTO
 ### RO-035 — Cavitats i relleus amb voladissos
 
 **P2.** Can Solà està validada al visor per l’usuari. Queda el laminat. El primer lot d’Open Place Models prioritzarà la boca i els primers metres de cinc coves i balmes de Catalunya. Queden també la comparació visual i el laminat de la Foradada r3, i la transformació geogràfica dels Degotalls. [Fonts i controls](RELLEU-ROCOS.md#balma-de-can-solà) · [Cua de modelatge](https://github.com/aaronFortuno/open-place-models/blob/main/CAVITY-QUEUE.md)
+
+Al-Khazneh r1 passa els controls d’encaix locals a 1:500 i 1:1.000 i en un retall parcial. Queden la revisió al visor i el laminat del pòrtic. [Controls d’Al-Khazneh](arxiu/HISTORIAL.md#v02339--al-khazneh-al-cingle)
 
 ### RO-023 — Relleu local i fonts vectorials de més precisió
 

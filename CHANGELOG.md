@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.23.39 — 2026-11-08
+
+- Al-Khazneh s’integra com una façana tallada al cingle. Quan la reconstrucció entra a la maqueta, el motor omet la petjada genèrica que hi coincideix i conserva els edificis veïns.
+
 ## v0.23.38 — 2026-11-08
 
 - Els ferrocarrils de superfície tenen una rasant pròpia, amb seccions planes d’una banda a l’altra. El terreny es retalla o es rebleix sota la via. Els creuaments de superfície donen prioritat a la via ferroviària.
