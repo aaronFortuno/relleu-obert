@@ -85,6 +85,16 @@ test('surveyed base replaces surface elevations locally and anchors the catalogu
   assert.equal(tower(model).landmark.terrainBaseElevation,terrainBaseElevation);
 });
 
+test('absolute building anchor preserves the terrain surface',()=>{
+  const anchorElevation=-10;
+  const model=generate({rotation:37,models:[{...landmark,kind:'building',anchorElevation}]});
+  const {proj,ground,verticalReference:{originMeters,minimumSurfaceMM}}=model.context;
+  near(originMeters,0);
+  near(ground(...proj.project(anchor)),minimumSurfaceMM);
+  near(tower(model).roof,minimumSurfaceMM+(anchorElevation+20)*1.5*proj.scale);
+  assert.equal(tower(model).landmark.anchorElevation,anchorElevation);
+});
+
 test('rotated boundary closes the mesh and invalid catalogue meshes leave original buildings intact',async()=>{
   const api=await Module();
   api.setup();

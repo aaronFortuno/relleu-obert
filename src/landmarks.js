@@ -45,7 +45,8 @@ function readCatalogue(data,directory){
   for(const feature of data.features){
     try{
       const {type,id,bbox,geometry:footprint,properties}=feature;
-      const {name,revision,anchor,mesh,height,attribution,license,sources,spatialDataLicense,replacement,bridge,landform,terrainBaseElevation,kind='building'}=properties;
+      const {name,revision,anchor,mesh,height,attribution,license,sources,spatialDataLicense,replacement,bridge,landform,
+        anchorElevation,terrainBaseElevation,kind='building'}=properties;
       if(!['building','bridge','landform'].includes(kind))continue;
       check(type==='Feature'&&label(id)&&!ids.has(id)&&validBounds(bbox)&&inside(bbox,anchor)&&validFootprint(footprint,bbox));
       check([name,revision,mesh,attribution,license].every(label)&&Number.isFinite(height)&&height>0&&height<=1200&&
@@ -54,11 +55,13 @@ function readCatalogue(data,directory){
         optionalIds(replacement.featureIds)&&optionalIds(replacement.families));
       if(kind==='bridge')check(validBridgeProfile(bridge)&&footprint.type==='Polygon');
       if(kind==='landform')check(validLandformProfile(landform));
+      if(anchorElevation!==undefined)check(kind==='building'&&terrainBaseElevation===undefined&&Number.isFinite(anchorElevation)&&anchorElevation>=-500&&anchorElevation<=9000);
       if(terrainBaseElevation!==undefined)check(kind==='building'&&Number.isFinite(terrainBaseElevation)&&terrainBaseElevation>=-500&&terrainBaseElevation<=9000);
       const glb=assetURL(mesh,directory,'.glb');
       const url=kind==='landform'?assetURL(landform.data,directory,'.json'):glb;
       ids.add(id);
       entries.push({id,name,revision,bbox,anchor,footprint,height,attribution,license,sources,spatialDataLicense,replacement,kind,bridge,landform,url,
+        ...(anchorElevation===undefined?{}:{anchorElevation}),
         ...(terrainBaseElevation===undefined?{}:{terrainBaseElevation})});
     }catch{
       incomplete=true;

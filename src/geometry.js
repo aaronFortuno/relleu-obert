@@ -282,6 +282,11 @@ function validBuildingMesh(model){
   return !mesh.empty&&!mesh.errors.length&&mesh.bbox&&Math.abs(mesh.bbox.min[1])<=.001&&Math.abs(mesh.bbox.max[1]-model.height)<=.01;
 }
 
+function paddedFootprintBounds(points,margin){
+  return {lo:[0,1].map(axis=>Math.min(...points.map(point=>point[axis]))-margin),
+    hi:[0,1].map(axis=>Math.max(...points.map(point=>point[axis]))+margin)};
+}
+
 function buildingTerrainUnderlays(models,proj){
   // Surface elevation products may already contain a large monument.
   // Blend from the surveyed ground through roughly one coarse DEM sample.
@@ -289,8 +294,7 @@ function buildingTerrainUnderlays(models,proj){
   return (models??[]).filter(model=>model.kind==='building'&&Number.isFinite(model.terrainBaseElevation)&&validBuildingMesh(model)).map(model=>{
     const footprint=geoPolys({geometry:model.footprint},proj.project);
     const rings=footprint.flat(),points=rings.flat();
-    const lo=[0,1].map(axis=>Math.min(...points.map(point=>point[axis]))-margin);
-    const hi=[0,1].map(axis=>Math.max(...points.map(point=>point[axis]))+margin);
+    const {lo,hi}=paddedFootprintBounds(points,margin);
     const edges=rings.flatMap(ring=>ring.slice(1).map(([x,y],i)=>{
       const [ax,ay]=ring[i],dx=x-ax,dy=y-ay;
       return {ax,ay,dx,dy,lengthSquared:dx*dx+dy*dy};
@@ -328,6 +332,12 @@ function prepareTerrain(data,options,progress,preview,measure){
   const terrainBands=landforms.map(({model,surfaceExtent:{lo,hi}})=>
     ({lo,hi,step:Math.max(Math.min(3,model.landform.minimumWidth/3)*scale,(hi[0]-lo[0])/48,(hi[1]-lo[1])/48)}));
   for(const {lo,hi} of underlays)terrainBands.push({lo,hi,step:Math.max(5*scale,(hi[0]-lo[0])/48,(hi[1]-lo[1])/48)});
+  if(!data.localDEM)for(const model of data.singularModels??[]){
+    if(model.kind!=='building'||!Number.isFinite(model.anchorElevation)||!validBuildingMesh(model))continue;
+    const points=geoPolys({geometry:model.footprint},project).flat(2);
+    const {lo,hi}=paddedFootprintBounds(points,6*scale);
+    terrainBands.push({lo,hi,step:Math.max(3*scale,(hi[0]-lo[0])/48,(hi[1]-lo[1])/48)});
+  }
   const terrainGrid=terrainBands.length?focusedTerrainGrid(width,height,resolution,terrainBands):undefined;
   const surfaceAt=catalogueTerrain((lon,lat)=>rasterHeight?rasterHeight(lon,lat):sampleHeight(prepared.tiles,lon,lat),landforms);
   const elevationAt=underlays.length?(lon,lat)=>buildingTerrainHeight(surfaceAt(lon,lat),project([lon,lat]),underlays):surfaceAt;
@@ -465,7 +475,8 @@ function prepareTerrain(data,options,progress,preview,measure){
     }
     return flowingWaterAt(x,y);
   };
-  const terrain={size,exaggeration,resolution,terrainGrid,proj,rect,warnings,landforms,terrainBases:new Map(underlays.map(({id,elevation})=>[id,elevation])),elevationAt:data.terrainRaster?bridgeElevation:elevationAt,cropToElevationWindow:!!data.terrainRaster,deckItems,deckMask,transport,roadPieces,railPieces,maximumElevation,waterAt,
+  const terrain={size,exaggeration,resolution,terrainGrid,proj,rect,warnings,landforms,terrainBases:new Map(underlays.map(({id,elevation})=>[id,elevation])),
+    useCatalogueAnchors:!data.localDEM,elevationAt:data.terrainRaster?bridgeElevation:elevationAt,cropToElevationWindow:!!data.terrainRaster,deckItems,deckMask,transport,roadPieces,railPieces,maximumElevation,waterAt,
     roadOnlyPoly,roadPoly,forest,bare,railPoly,waterPoly,land,oceanPoly,inlandSupport:surfacePart(0,inlandSupport),green,cropped,ground,verticalReference,diagnostics:prepared.diagnostics,
     woodsMask:measure('terrain.woods',()=>merge(cropped(woods)),{inputs:woods.length})};
   terrain.surfaces=measure('terrain.surfaces',()=>terrainCover(forest,bare,terrain,progress));
@@ -1341,6 +1352,7 @@ function prepareLandmark(ctx,model,config){
   if(!validBuildingMesh(model))throw Error('La malla original no té una base o altura vàlida.');
   const mode=config.buildingMode,rise=buildingRise(model.height,scale,config);
   const terrainBaseElevation=ctx.terrain?.terrainBases?.get(model.id);
+  const anchorElevation=mode==='source'&&ctx.terrain?.useCatalogueAnchors?model.anchorElevation:undefined;
   let solid;
   if(mode==='flat')solid=terrainSolid(footprint,(x,y)=>ground(x,y)+rise,(x,y)=>ground(x,y)-.3,width,height,resolution,grid);
   else if(mode==='limited')solid=levelBuildingSolid(footprint,rise,ground,width,height,resolution,undefined,grid);
@@ -1349,19 +1361,21 @@ function prepareLandmark(ctx,model,config){
     for(const patch of terrainPatches(footprint,width,height,resolution,grid))for(const ring of patch)for(const [x,y]of ring){
       const z=ground(x,y);floor=Math.min(floor,z);reference=Math.max(reference,z);
     }
-    if(terrainBaseElevation!==undefined){
+    const catalogueElevation=terrainBaseElevation??anchorElevation;
+    if(catalogueElevation!==undefined){
       const {minimumSurfaceMM,originMeters}=ctx.verticalReference;
-      reference=minimumSurfaceMM+(terrainBaseElevation-originMeters)*scale*ctx.terrain.exaggeration;
+      reference=minimumSurfaceMM+(catalogueElevation-originMeters)*scale*ctx.terrain.exaggeration;
       floor=Math.min(reference,floor);
     }
     const [lon,lat]=model.anchor,lonMetres=111320*Math.cos(lat*Math.PI/180);
     const vertices=new Float32Array(model.vertices.length);
     const embed=Math.max(0,floor-.3);
+    const verticalScale=anchorElevation===undefined?scale:scale*ctx.terrain.exaggeration;
     let crossesEdge=false;
     for(let i=0;i<vertices.length;i+=3){
       const [x,y]=project([lon+model.vertices[i]/lonMetres,lat-model.vertices[i+2]/111320]);
       const up=model.vertices[i+1];
-      vertices[i]=x;vertices[i+1]=y;vertices[i+2]=Math.abs(up)<1e-5?embed:reference+up*scale;
+      vertices[i]=x;vertices[i+1]=y;vertices[i+2]=Math.abs(up)<1e-5?embed:reference+up*verticalScale;
       crossesEdge||=x<0||x>width||y<0||y>height;
     }
     solid={vertices,faces:model.faces};
@@ -1377,6 +1391,7 @@ function prepareLandmark(ctx,model,config){
   if(!solid?.faces.length)throw Error('El model no té volum dins del retall.');
   const {id,name,revision,license,spatialDataLicense,attribution,sources,replacement}=model;
   return {id,h:model.height,valid:true,p:{landmark:{name,revision,license,spatialDataLicense,attribution,sources,
+    ...(anchorElevation===undefined?{}:{anchorElevation}),
     ...(terrainBaseElevation===undefined?{}:{terrainBaseElevation})}},
     footprints:footprint,fragments:[{solid,count:1}],replacement};
 }

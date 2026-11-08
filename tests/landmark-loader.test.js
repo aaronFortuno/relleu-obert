@@ -74,7 +74,7 @@ test('catalogue and model failures can be retried while usable models remain ava
   let catalogueCalls=0,meshCalls=0,otherCalls=0;
   const load=createLandmarkLoader(catalogue,url=>{
     if(url===catalogue)return ++catalogueCalls===1?new Response(null,{status:502}):
-      collection(tower(),tower({id:'other',properties:{mesh:'models/other/r1/print.glb'}}));
+      collection(tower(),tower({id:'other',properties:{mesh:'models/other/r1/print.glb',anchorElevation:48.2}}));
     if(url===mesh)return ++meshCalls===1?new Response('broken GLB'):glb({wide:true});
     assert.equal(url,otherMesh);
     otherCalls++;
@@ -88,6 +88,7 @@ test('catalogue and model failures can be retried while usable models remain ava
   assert.match(partial.warnings[0],/algun model singular/);
   const complete=await load(crop);
   assert.deepEqual(complete.models.map(({id})=>id),['tower','other']);
+  assert.equal(complete.models[1].anchorElevation,48.2);
   assert.deepEqual(complete.models[0].faces,Uint32Array.from(faces));
   assert.deepEqual(complete.warnings,[]);
   assert.deepEqual([catalogueCalls,meshCalls,otherCalls],[2,2,1]);
