@@ -1,6 +1,6 @@
 # RO-014 — Proposta d’implementació: marc imprimible independent
 
-2026-11-01 · Proposta per a una futura iteració 0.x; **no és codi implementat ni validat**. Relació amb [BACKLOG.md](BACKLOG.md#ro-014--marc-imprimible-independent) i [RO-024-SOLIDS.md](RO-024-SOLIDS.md). RO-024 no està resolt: aquesta proposta **no presumeix unió booleana validada ni ajust físic confirmat**; el marc és geometria pròpia tancada i la impressió queda com a validació separada de l’usuari.
+2026-11-01 · Proposta per a una futura iteració 0.x; **no és codi implementat ni validat**. Relació amb [Ajornaments i idees](AJORNATS.md#ro-014--marc-imprimible-independent) i [RO-024-SOLIDS.md](RO-024-SOLIDS.md). RO-024 no està resolt: aquesta proposta **no presumeix unió booleana validada ni ajust físic confirmat**; el marc és geometria pròpia tancada i la impressió queda com a validació separada de l’usuari.
 
 ## 1. Propòsit i decisions de l’usuari
 

@@ -16,7 +16,7 @@ El servei ArcGIS de transports retorna XY malgrat `returnZ=true`. Per això
 no es converteix `brunnel` o `layer` en una altura arbitrària. L’IFC sí que
 conté XYZ del tauler. Desar-ne el fitxer principal a `output/full280110.ifc`
 i executar `node scripts/prepare-infrastructure.mjs` reconstrueix la mostra
-compacta [eix-diagonal-decks.json](../public/data/eix-diagonal-decks.json).
+compacta [eix-diagonal-decks.json](../../public/data/eix-diagonal-decks.json).
 No cal descarregar el paquet GPKG de tot Catalunya ni processar IFC al client.
 
 | Element IFC | Vèrtexs de superfície | Triangles de superfície | Cotes originals (m) |

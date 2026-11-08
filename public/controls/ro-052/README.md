@@ -18,4 +18,4 @@ túnels i seccions són adaptacions estimades d'impressió.
 Resultats locals i limitacions a `work/RO-052-CONTINUITAT.md` del repo.
 Revisar especialment les boques i els estreps, els creuaments i les
 omissions abans del laminat. Aquests fitxers no són els controls PRE de
-`work/repro/ro052/`, que es conserven com a evidència històrica.
+`work/arxiu/repro/ro052/`, que es conserven com a evidència històrica.

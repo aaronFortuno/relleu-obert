@@ -43,7 +43,7 @@
 
 ## Com reproduir els artefactes
 
-El [generador inclòs al repositori](../scripts/solid-control.mjs) crea un ZIP
+El [generador inclòs al repositori](../../scripts/solid-control.mjs) crea un ZIP
 amb el model sencer i dues peces alternatives, així com instruccions i
 manifest. Per defecte fa el control petit, més pràctic per provar al laminador:
 

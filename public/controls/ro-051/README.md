@@ -21,5 +21,5 @@ El prototip encara no té selector a l'aplicació. El cas d'1,5 km amb detall
 12 recupera els camins previs per un component de volum nul, també amb
 el codi original; aquests fitxers no el donen per resolt.
 
-[Informe de rendiment](../../../work/RO-051-RENDIMENT.md) ·
+[Informe de rendiment](../../../work/arxiu/RO-051-RENDIMENT.md) ·
 [Seguiment al backlog](../../../work/BACKLOG.md#ro-051--perfils-de-carreteres-principals)

@@ -34,7 +34,7 @@ node scripts/prepare-historical-urban.mjs --probe 1.430 42.332 1.470 42.363
 
 ### Comparació estàtica de l’ICGC
 
-L’[eina de preparació](../scripts/package-urban-cover.py) separa els polígons residencials, industrials i de serveis en cel·les de 0,0625° i desa cada cel·la com a GeoJSON comprimit. L’índex descriu les edicions i les cel·les amb geometries. Es consulta per coordenades i es retalla a la mateixa finestra en totes dues edicions. El càlcul uneix els polígons abans de mesurar la superfície en una projecció equivalent. El resultat indica la superfície total per edició i els guanys i pèrdues de superfície cartografiada entre les dues.
+L’[eina de preparació](../../scripts/package-urban-cover.py) separa els polígons residencials, industrials i de serveis en cel·les de 0,0625° i desa cada cel·la com a GeoJSON comprimit. L’índex descriu les edicions i les cel·les amb geometries. Es consulta per coordenades i es retalla a la mateixa finestra en totes dues edicions. El càlcul uneix els polígons abans de mesurar la superfície en una projecció equivalent. El resultat indica la superfície total per edició i els guanys i pèrdues de superfície cartografiada entre les dues.
 
 La preparació de Catalunya sencera ha generat 959 cel·les el 2009 (14,96 MB) i 965 el 2024 (16,39 MB). El paquet complet ocupa 32,66 MB, incloent-hi l’índex i el límit administratiu. Es pot allotjar com a fitxers estàtics i carregar només les cel·les que creuen el retall. A Girona se’n consulten quatre, amb 163 kB per al 2009 i 175 kB per al 2024. La superfície calculada del 2009 difereix un 0,0093% de la unió retallada dels vectors originals.
 
@@ -104,7 +104,7 @@ python scripts/package-urban-cover.py web-coverage output/siose-pilot/logrono ou
 
 A **Territori → Llocs amb dades històriques** es pot centrar el mapa a la Vall d’Aro, a la Garrotxa o a Avinyó. El control **Any de la cartografia** admet només edicions documentades quan tot el retall està cobert per una font amb almenys dues dates. El mode és Model complet; la font i la data queden a les metadades d’exportació i la tria es conserva als projectes desats.
 
-Els carrilets són visibles el 1960 i absents el 1980. A Avinyó, els anys 2009, 2018 i 2024 mostren l’àrea urbanitzada amb una capa de color de 0,3 mm, sense convertir els polígons en volums d’edificis. Els retalls i l’atribució són a [les dades del pilot](../datasets/historical/README.md). El relleu i les capes no documentades per a l’any triat són actuals; no es recuperen ponts, túnels ni rasants ferroviàries històriques si no consten a la font.
+Els carrilets són visibles el 1960 i absents el 1980. A Avinyó, els anys 2009, 2018 i 2024 mostren l’àrea urbanitzada amb una capa de color de 0,3 mm, sense convertir els polígons en volums d’edificis. Els retalls i l’atribució són a [les dades del pilot](../../datasets/historical/README.md). El relleu i les capes no documentades per a l’any triat són actuals; no es recuperen ponts, túnels ni rasants ferroviàries històriques si no consten a la font.
 
 | Font | Què es pot recuperar | Limitació |
 | --- | --- | --- |

@@ -2,7 +2,7 @@
 
 2026-11-02 · Lliurament fitat: auditoria + unió dins del material, sense UI ni
 canvis d'exportació, sense activar res a l'aplicació. Relació amb
-[RO-024-SOLIDS.md](RO-024-SOLIDS.md). Revisat per l’agent principal; encara sense activació general.
+[RO-024-SOLIDS.md](arxiu/RO-024-SOLIDS.md). Revisat per l’agent principal; encara sense activació general.
 
 ## Fitxers nous (cap altre tocat)
 
@@ -57,7 +57,7 @@ amb materials agrupats (volums amb encavalcaments descomptats).
 
 ## Portes que queden (segons RO-024-SOLIDS.md)
 
-- Fases 3–4: [control sintètic i partició comprovats localment](RO-024-TUNEL-CONTROL.md), sense equivalència a dades reals.
+- Fases 3–4: [control sintètic i partició comprovats localment](arxiu/RO-024-TUNEL-CONTROL.md), sense equivalència a dades reals.
 - Fase 5: laminador Bambu i impressió física — validació de l'usuari.
 - Més regions, escales, vegetació i pressupost de temps/memòria abans
   d’integrar la unió en les exportacions habituals.
@@ -75,7 +75,7 @@ amb materials agrupats (volums amb encavalcaments descomptats).
 
 ## Retall real de la Perica
 
-Evidència numèrica: [informe](mostres/perica-solids-v012.json).
+Evidència numèrica: [informe](arxiu/mostres/perica-solids-v012.json).
 Generació local amb `output/audit-perica-v012.mjs`, sense cap petició remota;
 fixture de Catastre guardat a `output/tamariu-perica-catastre.geojson`.
 Els fitxers d’entrada i 3MF de control són locals, no es descarreguen des de CI.
@@ -141,3 +141,7 @@ El generador aplica aquesta assignació a tots els 3MF per a Bambu Studio, tamb�
 L’exportació de Bambu Studio agrupa les maquetes dividides en un projecte 3MF amb una peça per placa i filaments compartits. Fa servir plaques de referència de 256 × 256 mm. L’opció «3MF Bambu · peces en ZIP» conserva els 3MF individuals i el plànol de muntatge.
 
 L’usuari ha obert el projecte de Tamariu 40 × 45 cm a Bambu Studio i confirma que les quatre plaques laminen bé. Les peces de 200 × 225 mm tenen les mateixes malles al projecte únic i al ZIP. Les àrees de les seccions adjacents coincideixen per material. El blau arriba a la base a les tres peces que contenen mar.
+
+## Cupó amb talls desiguals
+
+Tamariu a 1:10.000, retall de 10 × 10 cm centrat a 41,918 N i 3,2075 E, detall equilibrat, base de 5 mm i tall a 40 mm des del sud. El 3MF conté dues plaques de 100 × 60 i 100 × 40 mm. Les malles dels quatre filaments són tancades i el mar arriba a la base en totes dues peces. Les àrees de les seccions adjacents difereixen menys de 0,000001 mm² per filament. L’usuari confirma que es laminen correctament. El fitxer local és `output/tamariu-cupo-dues-plaques-10x10.3mf`.

@@ -21,7 +21,7 @@ Totes les fitxes s’obren amb detall alt, inclòs el panoràmic dels Pirineus. 
 
 ### Prioritat de revisió per a les noves fitxes
 
-Les sis fitxes ja són a la galeria. Els enquadraments inicials, les fonts i les comprovacions locals consten al [document de proves de relleu](RO-046-PROVES-RELLEU.md).
+Les sis fitxes ja són a la galeria. Els enquadraments inicials, les fonts i les comprovacions locals consten al [document de proves de relleu](arxiu/RO-046-PROVES-RELLEU.md).
 
 | Fitxa | Estat | Què cal comprovar | Ajust o observació |
 | --- | --- | --- | --- |

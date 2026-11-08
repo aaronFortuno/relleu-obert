@@ -1,6 +1,6 @@
 # RO-026 — Fonts per a edificis més fidels
 
-Estudi inicial del **2026-11-01**. Seguiment i criteris d’acceptació a [BACKLOG.md](BACKLOG.md#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts). Estat: **En estudi**. A v0.9, Catastre ja és una font opcional amb parts, comprovada al navegador sobre la Perica. ICGC continua com a selecció inicial a l’àmbit català; no s’aplica una jerarquia automàtica de qualitat. [PAISATGE-3D.md](PAISATGE-3D.md) conserva el contrast inicial i els límits.
+Estudi inicial del **2026-11-01**. Seguiment i criteris d’acceptació a [BACKLOG.md](BACKLOG.md#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts). Estat: **En estudi**. A v0.9, Catastre ja és una font opcional amb parts, comprovada al navegador sobre la Perica. ICGC continua com a selecció inicial a l’àmbit català; no s’aplica una jerarquia automàtica de qualitat. [PAISATGE-3D.md](arxiu/PAISATGE-3D.md) conserva el contrast inicial i els límits.
 
 ## Què volem comparar
 

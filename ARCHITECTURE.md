@@ -62,10 +62,10 @@ zero, preservant totes les capes de volum positiu, incloses les primes.
 
 ### Perfils viaris i paviment de túnels (v0.18.1)
 
-L'envolupant viària és un **prototip desactivat per defecte**, sense control
-a la UI publicada. Només s'executa amb `majorRoads:true` explícit. Es
-conserven les amplades i el tractament anterior dels camins mentre no
-s'optimitzi la integració de capes als retalls grans. [Represa](work/REPRESA.md).
+A la v0.18.1, l’envolupant viària era un prototip que s’activava amb
+`majorRoads:true`. El punt de represa d’aquella iteració queda a l’arxiu.
+Els controls actuals de paviment i enllaços es recullen a l’informe de
+continuïtat. [Represa de la v0.18.1](work/arxiu/REPRESA.md) · [Continuïtat i amplada](work/RO-052-CONTINUITAT.md)
 
 `major-roads.js` construeix plataformes estimades per a `motorway`, `trunk`
 i enllaços. Uneix fragments compatibles i mostreja l'eix i les dues vores
@@ -175,7 +175,7 @@ Des de v0.3, el Worker conserva el terreny, els edificis i el camp d’altitud e
 
 `src/polygon-index.js` accelera les comprovacions d’ancoratge de la vegetació amb una graella de polígons i bandes d’arestes. Manté el test vectorial exacte; no rasteritza ni simplifica els límits.
 
-Des de v0.4.2, els fitxers d’altitud no es llegeixen amb `getImageData`: una petita alteració dels canals RGB pot representar centenars de metres. WebP es descodifica amb libwebp/WASM i PNG amb fast-png, sense fer servir el canvas. El preview continua utilitzant WebGL, però no determina les altituds. Els hashes dels fitxers font i els rangs descodificats queden a la procedència. L’informe [RO-001](work/RO-001-DIAGNOSTIC.md) distingeix la prova de corrupció simulada de la validació encara pendent a Brave.
+Des de v0.4.2, els fitxers d’altitud no es llegeixen amb `getImageData`: una petita alteració dels canals RGB pot representar centenars de metres. WebP es descodifica amb libwebp/WASM i PNG amb fast-png, sense fer servir el canvas. El preview continua utilitzant WebGL, però no determina les altituds. Els hashes dels fitxers font i els rangs descodificats queden a la procedència. L’informe [RO-001](work/arxiu/RO-001-DIAGNOSTIC.md) distingeix la prova de corrupció simulada de la validació encara pendent a Brave.
 
 ## Línies tècniques de referència
 

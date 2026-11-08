@@ -547,7 +547,7 @@
 
 ## v0.19.0 — 2026-11-02 · ENTREGA PARCIAL
 
-Tancament per canvi d'ordinador, demanat per l'usuari. Compilació correcta; **12/13 proves curtes finals**, amb un graó pendent al portal del rectangle girat. La passada ordinària anterior de 370 casos és prèvia al darrer refinament. No es dona RO-052 per resolt. Vegeu `work/REPRESA-RO-052.md`.
+Tancament per canvi d'ordinador, demanat per l'usuari. Compilació correcta; **12/13 proves curtes finals**, amb un graó pendent al portal del rectangle girat. La passada ordinària anterior de 370 casos és prèvia al darrer refinament. No es dona RO-052 per resolt. Vegeu `work/arxiu/REPRESA-RO-052.md`.
 
 - RO-052: política comuna d'amplada de calçada per a superfície, ponts procedimentals i paviment de túnels; amplada explícita, carrils i classe amb un mínim físic compartit. Les obertures dels túnels i els contorns estructurals mesurats es conserven separats.
 - Connexions escollides per identitat i extrems del traçat; passada final d'encaix amb les cotes del segment real connectat, sense saltar a ponts que només es creuen amb la carretera. Transicions d'amplada suaus als taulers mesurats i conservació del primer revolt de l'enllaç.
@@ -559,7 +559,7 @@ Tancament per canvi d'ordinador, demanat per l'usuari. Compilació correcta; **1
 
 - RO-051: màscares d’obstacles dels pilars calculades sota demanda i reutilitzades. El control local de 3 km / 150 mm / detall 12 passa de 189,274 a 56,638 s (70,1% menys), amb 2 unions en lloc de 14 i els mateixos resums de perfils, omissions, pilars i llums. Sense paral·lelitzar ni canviar operands o precisió de les unions.
 - Prototip viari encara desactivat per defecte i sense selector a la UI. El cas d’1,5 km / detall 12 conserva una recuperació preexistent per component de volum nul; pendent d’aïllar i corregir abans d’activar-lo. Màscares multipart i validació d’usuari/laminador/impressió també pendents.
-- Dos controls 3MF disponibles a `public/controls/ro-051/`: retall de 3 km sense túnels ni arbres, i Rajadell amb ICGC/túnels i sense arbres. Són models de revisió, no una garantia d’impressió. Mesures i reproducció a `work/RO-051-RENDIMENT.md`; seguiment al backlog.
+- Dos controls 3MF disponibles a `public/controls/ro-051/`: retall de 3 km sense túnels ni arbres, i Rajadell amb ICGC/túnels i sense arbres. Són models de revisió, no una garantia d’impressió. Mesures i reproducció a `work/arxiu/RO-051-RENDIMENT.md`; seguiment al backlog.
 - 344 proves locals correctes, incloent càlcul diferit, reutilització en editar edificis, regressions de ponts i túnels, i compilació local correcta. Fixture de format numèric amb idioma real per evitar dependència de la configuració del sistema, sense canviar el nucli d’idiomes.
 
 ## v0.18.1 — 2026-11-02
@@ -567,7 +567,7 @@ Tancament per canvi d'ordinador, demanat per l'usuari. Compilació correcta; **1
 - RO-034: túnels estimats activats inicialment, parets i sostre parabòlic, i paviment de 0,3 mm de material camí o ferrocarril. Excavació i assignació de material en una transacció de sòlids, sense conversions intermèdies ni pèrdua de closques interiors.
 - RO-051: prototip d'envolupant superior amb calçades planes i suports estimats, mantenint el DEM i el camp de relleu. **Desactivat per defecte i sense opció a la UI**: el retall de 3 km necessita optimització abans d'activar-lo. La publicació manté el tractament anterior dels camins.
 - Obstacles limitats al retall físic, també girat, conservant els ancoratges complets del perfil. Comprovacions de llum entre plataformes amb el realç ferroviari inclòs. Correcció de fragments exactament col·lapsats, sense eliminar volums petits positius.
-- Rajadell: túnel principal excavat i viaducte amb onze pilars al control local. El prototip explícit també aplica quatre perfils viaris al retall inicial, però la prova ampliada es va interrompre per durada excessiva. Estat i diagnòstic reproduïble a `work/REPRESA.md`. Laminat i impressió pendents.
+- Rajadell: túnel principal excavat i viaducte amb onze pilars al control local. El prototip explícit també aplica quatre perfils viaris al retall inicial, però la prova ampliada es va interrompre per durada excessiva. Estat i diagnòstic reproduïble a `work/arxiu/REPRESA.md`. Laminat i impressió pendents.
 
 ## v0.18.0 — 2026-11-02
 

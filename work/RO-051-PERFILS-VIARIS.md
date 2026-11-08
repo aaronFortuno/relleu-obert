@@ -10,7 +10,7 @@ UI.** Requereix `majorRoads:true` explícit al codi. La represa en l'equip
 de 64 GB redueix el retall de 3 km de 189,274 a 56,638 s amb màscares
 d'obstacles sota demanda, sense canviar les unions ni els seus operands.
 Conserva els 14 perfils i els resums de suports. [Mesures i validacions
-pendents](RO-051-RENDIMENT.md); [punt de partida i reproducció](REPRESA.md).
+pendents](arxiu/RO-051-RENDIMENT.md); [punt de partida i reproducció](arxiu/REPRESA.md).
 Els resultats viaris d'aquest informe són del prototip, no del valor per
 defecte de l'aplicació publicada.
 

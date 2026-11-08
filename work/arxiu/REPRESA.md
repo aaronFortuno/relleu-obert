@@ -65,7 +65,7 @@ de 3 km no s'ha deixat acabar; pot trigar minuts. Vigilar memòria amb un
 procés independent, com indiquen les instruccions del projecte.
 
 Captura d'un error del motor ràpid de polígons:
-`work/repro/RO-051-polygon-failure.json.gz` (JSON gzip amb operació,
+`work/arxiu/repro/RO-051-polygon-failure.json.gz` (JSON gzip amb operació,
 arguments XY, error i pila). És una mostra real, encara sense reduir al
 cas mínim. Descomprimir amb `node:zlib.gunzipSync`; no cal descarregar
 dades. No afirmar que aquesta primera captura explica tota la lentitud.

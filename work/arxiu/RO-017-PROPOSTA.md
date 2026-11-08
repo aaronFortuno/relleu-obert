@@ -1,6 +1,6 @@
 # RO-017 — Proposta d’implementació: fletxa de nord / brúixola imprimible
 
-2026-11-01 · Proposta per a una futura iteració 0.x; **no és codi implementat ni validat**. Relació amb [BACKLOG.md](BACKLOG.md#ro-017--rosa-dels-vents-i-altres-complements), [RO-014-PROPOSTA.md](RO-014-PROPOSTA.md), [RO-016-PROPOSTA.md](RO-016-PROPOSTA.md) i [RO-024-SOLIDS.md](RO-024-SOLIDS.md). RO-024 no està resolt: **no es presumeix unió booleana validada**; la brúixola és geometria pròpia tancada, en fitxer independent. Abast acotat: **una fletxa de nord inicial**, no una biblioteca d’accessoris.
+2026-11-01 · Proposta per a una futura iteració 0.x; **no és codi implementat ni validat**. Relació amb [Ajornaments i idees](AJORNATS.md#ro-017--rosa-dels-vents-i-altres-complements), [RO-014-PROPOSTA.md](RO-014-PROPOSTA.md), [RO-016-PROPOSTA.md](RO-016-PROPOSTA.md) i [RO-024-SOLIDS.md](RO-024-SOLIDS.md). RO-024 no està resolt: **no es presumeix unió booleana validada**; la brúixola és geometria pròpia tancada, en fitxer independent. Abast acotat: **una fletxa de nord inicial**, no una biblioteca d’accessoris.
 
 ## 1. Propòsit i abast
 

@@ -2,7 +2,7 @@
 
 Actualitzat el 2026-11-04. L’abast queda limitat a les cobertes publicades per fonts obertes. El pilot de reconstrucció amb LiDAR queda descartat.
 
-El flux incorpora la forma de la coberta quan la font la retorna amb dades suficients i conserva el volum pla si falta informació. L’opció «OpenStreetMap · cobertes i parts» ja fa una consulta opcional d’atributs originals. Per incorporar l’ICGC cal verificar un servei públic que retorni geometria LoD2 o atributs equivalents en un retall petit. El catàleg RTL documenta la geometria i el servei de consulta comprovat només exposa careners en 2D. [Integració](RO-032-INTEGRACIO.md) · [Capa RTL](https://maps.icgc.cat/vector01/rest/services/topografia_local/MapServer/15)
+El flux incorpora la forma de la coberta quan la font la retorna amb dades suficients i conserva el volum pla si falta informació. L’opció «OpenStreetMap · cobertes i parts» ja fa una consulta opcional d’atributs originals. Per incorporar l’ICGC cal verificar un servei públic que retorni geometria LoD2 o atributs equivalents en un retall petit. El catàleg RTL documenta la geometria i el servei de consulta comprovat només exposa careners en 2D. [Integració](../RO-032-INTEGRACIO.md) · [Capa RTL](https://maps.icgc.cat/vector01/rest/services/topografia_local/MapServer/15)
 
 ## Seguiment del 4 de novembre
 

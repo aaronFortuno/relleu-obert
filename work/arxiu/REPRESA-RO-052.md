@@ -15,10 +15,10 @@ reals i la serialització d'identificadors absents. 377/377 proves ordinàries
 finals i sis integrades verificades (cinc inicials i una repetida després
 de corregir només metadades). Dos controls reals regenerats amb auditoria
 sense errors; al quadrat queden dos extrems sense enllaç suau. [Informe
-actual i fitxers](RO-052-CONTINUITAT.md). No donar per resolt RO-052 ni
+actual i fitxers](../RO-052-CONTINUITAT.md). No donar per resolt RO-052 ni
 substituir la revisió de laminat/impressió per aquestes proves.
 
-**RO-053:** [disseny, invalidacions i pilot](RO-053-UX.md),
+**RO-053:** [disseny, invalidacions i pilot](../RO-053-UX.md),
 amb [demostració navegable](https://aaronFortuno.github.io/relleu-obert/prototypes/ro053/)
 revisada localment a 1280×720 i 1600×900. Ordre validat: Peça → Territori →
 Terreny → Vegetació → Vies → Edificis. El prototip continua simulant
@@ -44,7 +44,7 @@ No queda cap prova, generació de model ni feina d'agent en marxa.
 L'usuari ha reiterat explícitament la necessitat d'estudiar un flux més
 granular, separat en terreny, vegetació, vies i edificis, amb mida
 d'impressió abans de seleccionar ubicació/zoom. Queda registrat com a
-**[RO-053, P1](BACKLOG.md#ro-053--flux-de-treball-per-etapes)**, amb la seva
+**[RO-053, P1](../BACKLOG.md#ro-053--flux-de-treball-per-etapes)**, amb la seva
 seqüència candidata, dependències i criteris. No deixar-ho com una nota
 opcional al final del diagnòstic ni donar l'ordre per decidit.
 

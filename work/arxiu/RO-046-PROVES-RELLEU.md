@@ -1,6 +1,6 @@
 # Maquetes de prova per al catàleg de relleu
 
-Els sis models de prova inicials de [RO-046](RO-046-CATALEG.md) fan servir **Relleu pur**, exageració vertical ×1,5, base de 5 mm i dos filaments, terra i aigua. Els ajustos actuals de cada fitxa de la galeria consten a la cua de revisió del catàleg.
+Els sis models de prova inicials de [RO-046](../RO-046-CATALEG.md) fan servir **Relleu pur**, exageració vertical ×1,5, base de 5 mm i dos filaments, terra i aigua. Els ajustos actuals de cada fitxa de la galeria consten a la cua de revisió del catàleg.
 
 Les malles per filament passen l’auditoria local i les vistes zenitals confirmen els enquadraments. Als retalls costaners el mar arriba a la cara inferior de la base. El 3MF panoràmic té quatre plaques i mostra mar als dos extrems. En aquest retall, els rius i els llacs segueixen les superfícies d’aigua cartografiades. Els rierols que només tenen traçat lineal s’ometen per mantenir llegible el relleu del conjunt.
 

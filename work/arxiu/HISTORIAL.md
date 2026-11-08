@@ -1,100 +1,104 @@
 # Historial i validacions de Relleu Obert
 
-Actualitzat el 2026-11-08. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
+Actualitzat el 2026-11-08. Les entrades validades surten del [backlog actiu](../BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
+
+## Reordenació de la documentació · 2026-11-08
+
+El [backlog actiu](../BACKLOG.md) conserva les tasques amb passos pendents. Els [ajornaments i les idees](AJORNATS.md) tenen un registre separat. Els informes de versions superades, les observacions originals i les seves mostres es guarden a l’arxiu. [Criteri d’arxiu](../README.md)
 
 ## v0.23.35 — Cerca, exageració vertical i Foradada r3
 
 En Model complet, l’exageració vertical torna a calcular la maqueta amb les dades del retall carregat i conserva la vista i els traços del pinzell. La cerca mostra un indicador tan bon punt s’edita el text i espera un segon abans de consultar els resultats. Retorn envia la cerca al moment.
 
-L’usuari confirma la millora en mòbil i el laminat de les quatre plaques de Tamariu. En l’últim retall d’Amsterdam sembla que hi són tots els ponts. L’obertura de la Foradada r2 es veu bé, amb marge de millora en la carena i la Cadireta. [Backlog actiu](BACKLOG.md)
+L’usuari confirma la millora en mòbil i el laminat de les quatre plaques de Tamariu. En l’últim retall d’Amsterdam sembla que hi són tots els ponts. L’obertura de la Foradada r2 es veu bé, amb marge de millora en la carena i la Cadireta. [Backlog actiu](../BACKLOG.md)
 
-La Foradada r3 amplia el pedaç local i recupera el voladís de la Cadireta. El motor comprova les dues boques i el buit sota el cap en dos retalls girats. Queda comparar la silueta integrada al visor. [Fonts i controls](RELLEU-ROCOS.md#carena-i-cadireta--v02335)
+La Foradada r3 amplia el pedaç local i recupera el voladís de la Cadireta. El motor comprova les dues boques i el buit sota el cap en dos retalls girats. Queda comparar la silueta integrada al visor. [Fonts i controls](../RELLEU-ROCOS.md#carena-i-cadireta--v02335)
 
 ## v0.23.34 — Cota de base dels models singulars
 
-RO-032 admet la cota del paviment quan el model d’elevacions ja inclou part del monument. A Guiza, el relleu general hauria situat el cim a 243,73 m. El model es col·loca sobre el paviment de 59,90 m i arriba a 198,40 m. Les proves amb Mapzen i les dues fonts d’edificis OSM conserven els veïns a 1:2.000 i 1:5.000 i tanquen el retall parcial girat. Queden la revisió al visor i el laminat de l’usuari. [RO-032](BACKLOG.md#ro-032--cobertes-i-volums-singulars)
+RO-032 admet la cota del paviment quan el model d’elevacions ja inclou part del monument. A Guiza, el relleu general hauria situat el cim a 243,73 m. El model es col·loca sobre el paviment de 59,90 m i arriba a 198,40 m. Les proves amb Mapzen i les dues fonts d’edificis OSM conserven els veïns a 1:2.000 i 1:5.000 i tanquen el retall parcial girat. Queden la revisió al visor i el laminat de l’usuari. [RO-032](../BACKLOG.md#ro-032--cobertes-i-volums-singulars)
 
 ## v0.23.33 — Retirada del pilot de sectors de Montserrat
 
-El catàleg actiu retira el model del massís i els fitxers de detall. Relleu Obert elimina el carregador de sectors i conserva el relleu general amb la Foradada com a cavitat del catàleg. La comparativa es manté com a referència de RO-023. [Mesures](RELLEU-ROCOS.md#comparativa-amb-el-relleu-general--v02332)
+El catàleg actiu retira el model del massís i els fitxers de detall. Relleu Obert elimina el carregador de sectors i conserva el relleu general amb la Foradada com a cavitat del catàleg. La comparativa es manté com a referència de RO-023. [Mesures](../RELLEU-ROCOS.md#comparativa-amb-el-relleu-general--v02332)
 
 ## v0.23.32 — Montserrat torna al relleu general
 
-L’usuari observa menys fluïdesa al visor i una qualitat similar o inferior amb els dos sectors actius. El control de Model complet passa de 176.298 a 331.310 triangles amb els sectors. Es desactiva la càrrega normal dels GeoTIFF i es conserva l’obertura singular de la Foradada. El pilot queda disponible per a proves locals. [Comparativa](RELLEU-ROCOS.md#comparativa-amb-el-relleu-general--v02332)
+L’usuari observa menys fluïdesa al visor i una qualitat similar o inferior amb els dos sectors actius. El control de Model complet passa de 176.298 a 331.310 triangles amb els sectors. Es desactiva la càrrega normal dels GeoTIFF i es conserva l’obertura singular de la Foradada. El pilot queda disponible per a proves locals. [Comparativa](../RELLEU-ROCOS.md#comparativa-amb-el-relleu-general--v02332)
 
 ## v0.23.31 — Montserrat per sectors
 
-RO-023 i RO-035 connecten el catàleg de Montserrat al motor. Dos retalls girats, un per mode, baixen els GeoTIFF de la Foradada nord i les Agulles nord. Les 193 cotes de la unió coincideixen i el pas i la volta de la Foradada es conserven en la malla. Pendent de contrast al visor. [Mesures i reproducció](RELLEU-ROCOS.md#pilot-del-massís-de-montserrat)
+RO-023 i RO-035 connecten el catàleg de Montserrat al motor. Dos retalls girats, un per mode, baixen els GeoTIFF de la Foradada nord i les Agulles nord. Les 193 cotes de la unió coincideixen i el pas i la volta de la Foradada es conserven en la malla. Pendent de contrast al visor. [Mesures i reproducció](../RELLEU-ROCOS.md#pilot-del-massís-de-montserrat)
 
 ## v0.23.30 — Sortida de la Roca Foradada
 
-La revisió de l’usuari ha detectat una paret després del final de la prova axial de la r1. La r2 amplia el pedaç d’elevacions i comprova el pas des de fora de la roca. El Model complet refina localment el terreny al voltant de la cavitat. A Open Place Models, la branca `montserrat-pilot` prepara una vista general i dos sectors de detall de Montserrat. [Controls](RELLEU-ROCOS.md#correcció-de-la-sortida--v02330)
+La revisió de l’usuari ha detectat una paret després del final de la prova axial de la r1. La r2 amplia el pedaç d’elevacions i comprova el pas des de fora de la roca. El Model complet refina localment el terreny al voltant de la cavitat. A Open Place Models, la branca `montserrat-pilot` prepara una vista general i dos sectors de detall de Montserrat. [Controls](../RELLEU-ROCOS.md#correcció-de-la-sortida--v02330)
 
 ## v0.23.29 — Pilot de la Roca Foradada
 
-RO-035 integra un pedaç de carena i una cavitat aproximada d’Open Place Models. Els 3MF de Model complet a 1:2.000 i Relleu pur a 1:10.000 passen l’auditoria de malla. La revisió posterior ha confirmat que la prova inicial acabava dins del buit i no detectava la paret del fons. [Control inicial](RELLEU-ROCOS.md#roca-foradada--control-dobertura-passant)
+RO-035 integra un pedaç de carena i una cavitat aproximada d’Open Place Models. Els 3MF de Model complet a 1:2.000 i Relleu pur a 1:10.000 passen l’auditoria de malla. La revisió posterior ha confirmat que la prova inicial acabava dins del buit i no detectava la paret del fons. [Control inicial](../RELLEU-ROCOS.md#roca-foradada--control-dobertura-passant)
 
 ## v0.23.28 — Viaducte singular de Millau
 
-RO-033 incorpora Millau des d’Open Place Models. El control conserva set piles de projecte i dos enllaços a l’A75 als dos retalls sencers. Un tercer retall, girat i parcial, conserva tres piles i tanca el tauler als límits. L’usuari valida el laminat del cupó de Tamariu de dues plaques. [Controls de Millau](RO-033-CONTROLS-PROCEDIMENTALS.md#pilot-de-millau-al-catàleg--v02328)
+RO-033 incorpora Millau des d’Open Place Models. El control conserva set piles de projecte i dos enllaços a l’A75 als dos retalls sencers. Un tercer retall, girat i parcial, conserva tres piles i tanca el tauler als límits. L’usuari valida el laminat del cupó de Tamariu de dues plaques. [Controls de Millau](../RO-033-CONTROLS-PROCEDIMENTALS.md#pilot-de-millau-al-catàleg--v02328)
 
 ## 2026-11-07 — Controls d’Amsterdam i del relleu de Montserrat
 
-Al centre d’Amsterdam, l’usuari només detecta tres ponts absents en la revisió visual. El control local de 10 × 10 cm a 1:10.000 es completa en 32,16 s, amb 10,09 s fins al primer relleu i 83 taulers procedimentals. El muntatge del paviment regional ocupa 14,02 s. La maqueta de 25 × 25 cm s’atura durant vies en els tres intents per memòria. [Informe i reproducció](RO-053-TEMPS.md#amsterdam-amb-totes-les-capes--v02327)
+Al centre d’Amsterdam, l’usuari només detecta tres ponts absents en la revisió visual. El control local de 10 × 10 cm a 1:10.000 es completa en 32,16 s, amb 10,09 s fins al primer relleu i 83 taulers procedimentals. El muntatge del paviment regional ocupa 14,02 s. La maqueta de 25 × 25 cm s’atura durant vies en els tres intents per memòria. [Informe i reproducció](../RO-053-TEMPS.md#amsterdam-amb-totes-les-capes--v02327)
 
-El Cavall Bernat té un primer control de detall a 1:2.000 amb cotes del MDT de 50 cm de l’ICGC i un anell de transició al MET5. Els tres 3MF superen l’auditoria, també amb el retall girat 35°. Es documenta l’ús del catàleg per a futurs pedaços d’elevació, malles amb cavitats i infraestructures. Queden el contrast visual i el laminat del cupó, i la integració automàtica. [Pilot de relleu rocós](RELLEU-ROCOS.md#pilot-de-detall-local-amb-el-mdt-de-50-cm)
+El Cavall Bernat té un primer control de detall a 1:2.000 amb cotes del MDT de 50 cm de l’ICGC i un anell de transició al MET5. Els tres 3MF superen l’auditoria, també amb el retall girat 35°. Es documenta l’ús del catàleg per a futurs pedaços d’elevació, malles amb cavitats i infraestructures. Queden el contrast visual i el laminat del cupó, i la integració automàtica. [Pilot de relleu rocós](../RELLEU-ROCOS.md#pilot-de-detall-local-amb-el-mdt-de-50-cm)
 
-Per a RO-056 s’exporta un cupó de Tamariu de 10 × 10 cm amb dues plaques de 100 × 60 i 100 × 40 mm. Els quatre filaments coincideixen al tall dins de la tolerància de l’auditoria i el mar arriba a la base de les dues peces. Pendent de laminar. [Ajustos d’impressió](BACKLOG.md#ro-056--base-talls-i-plaques)
+Per a RO-056 s’exporta un cupó de Tamariu de 10 × 10 cm amb dues plaques de 100 × 60 i 100 × 40 mm. Els quatre filaments coincideixen al tall dins de la tolerància de l’auditoria i el mar arriba a la base de les dues peces. Pendent de laminar. [Ajustos d’impressió](../BACKLOG.md#ro-056--base-talls-i-plaques)
 
 ## v0.23.27 — Pilot de la Torre Glòries
 
-RO-032 integra la Torre Glòries des del repositori independent Open Place Models. Prova local amb el catàleg publicat, el MET5 i les tres fonts d’edificis a dues escales. Els dos 3MF contenen la malla del catàleg i la seva atribució. Queden pendents la revisió de l’usuari al visor i el laminat. [Retalls i comprovacions](RO-032-INTEGRACIO.md#pilot-de-la-torre-glòries--v02327)
+RO-032 integra la Torre Glòries des del repositori independent Open Place Models. Prova local amb el catàleg publicat, el MET5 i les tres fonts d’edificis a dues escales. Els dos 3MF contenen la malla del catàleg i la seva atribució. Queden pendents la revisió de l’usuari al visor i el laminat. [Retalls i comprovacions](../RO-032-INTEGRACIO.md#pilot-de-la-torre-glòries--v02327)
 
 ## 2026-11-07 — Catàleg independent de llocs singulars
 
-S’aparca GlobalBuildingAtlas i es prioritzen les malles singulars. RO-032 recull la proposta de repositori separat amb índex GeoJSON, models GLB en metres, referència geogràfica i llicència per model. Queden pendents el repositori i la prova d’integració. [Proposta de catàleg](RO-032-INTEGRACIO.md#proposta-de-catàleg-independent)
+S’aparca GlobalBuildingAtlas i es prioritzen les malles singulars. RO-032 recull la proposta de repositori separat amb índex GeoJSON, models GLB en metres, referència geogràfica i llicència per model. Queden pendents el repositori i la prova d’integració. [Proposta de catàleg](../RO-032-INTEGRACIO.md#proposta-de-catàleg-independent)
 
 ## 2026-11-07 — Estudi de GlobalBuildingAtlas
 
-RO-026 registra les llicències separades, el límit de detall LoD1 i la comprovació HTTP 206 amb CORS a Source Cooperative. Les estimacions de lectura de 7,1 MB a Tamariu i 10,2 MB a Glòries es basen en metadades de GeoParquet. La comparació d’edificis i la integració queden pendents. [Estudi de viabilitat](RO-026-FONTS-EDIFICIS.md#globalbuildingatlas--estudi-de-viabilitat)
+RO-026 registra les llicències separades, el límit de detall LoD1 i la comprovació HTTP 206 amb CORS a Source Cooperative. Les estimacions de lectura de 7,1 MB a Tamariu i 10,2 MB a Glòries es basen en metadades de GeoParquet. La comparació d’edificis i la integració queden pendents. [Estudi de viabilitat](../RO-026-FONTS-EDIFICIS.md#globalbuildingatlas--estudi-de-viabilitat)
 
 ## v0.23.26 — Cerca automàtica i estudi de malles singulars
 
-La cerca de llocs espera dos segons de pausa i conserva l’acció immediata amb Retorn. «Projecte nou» passa a la capçalera, al costat de la galeria. RO-032 documenta el pes i la topologia de dues malles de la Torre Eiffel, el CAD 3D de Barcelona i el primer control per retall de 3DBAG. [Fonts i criteris del cupó](RO-032-INTEGRACIO.md#catàleg-de-geometries-singulars--v02326)
+La cerca de llocs espera dos segons de pausa i conserva l’acció immediata amb Retorn. «Projecte nou» passa a la capçalera, al costat de la galeria. RO-032 documenta el pes i la topologia de dues malles de la Torre Eiffel, el CAD 3D de Barcelona i el primer control per retall de 3DBAG. [Fonts i criteris del cupó](../RO-032-INTEGRACIO.md#catàleg-de-geometries-singulars--v02326)
 
 Al navegador, la cerca mostra el darrer text introduït després de la pausa i Retorn aplica les coordenades de seguida. Capçalera comprovada a 1.280, 1.024 i 390 px. «Projecte nou» retorna al selector de mides des de la vista mòbil. Compilació i 29 proves acotades correctes.
 
 ## v0.23.25 — Altures d’edificis i fonts fora d’Espanya
 
-Els projectes nous i les fitxes de la galeria utilitzen l’altura disponible de la font. El límit de 5 m queda com a ajust voluntari. S’ha comprovat el selector en un projecte nou i en obrir Zumaia després d’activar el límit. RO-026 documenta les proves WFS de l’IGN a Perpinyà i Tolosa i la disponibilitat de dades d’Andorra i Portugal. La primera integració internacional queda pendent. [Fonts i mesures](RO-026-FONTS-EDIFICIS.md#fonts-fora-despanya--v02325)
+Els projectes nous i les fitxes de la galeria utilitzen l’altura disponible de la font. El límit de 5 m queda com a ajust voluntari. S’ha comprovat el selector en un projecte nou i en obrir Zumaia després d’activar el límit. RO-026 documenta les proves WFS de l’IGN a Perpinyà i Tolosa i la disponibilitat de dades d’Andorra i Portugal. La primera integració internacional queda pendent. [Fonts i mesures](../RO-026-FONTS-EDIFICIS.md#fonts-fora-despanya--v02325)
 
 ## v0.23.24 — Detall automàtic, cobertes de muntanya i talls individuals
 
 RO-046 i RO-055 passen totes les fitxes a detall alt, incorporen les cobertes WorldCover dels Alps, Lavaredo, el Fuji i Geiranger i ajusten les Bardenas i el Colorado. El control de les Bardenas conserva les 21.025 cotes i elimina la capa grisa del mosaic regional. S’han regenerat les miniatures dels cinc retalls ajustats i del panoràmic. Al navegador, un canvi de detall regenera Tamariu i el botó d’exportació torna a estar disponible en acabar. El panoràmic en detall alt genera 5.005.740 triangles en quatre peces a 1:500.000. El visor mostra mar als dos extrems i habilita l’exportació.
 
-RO-056 permet restablir un tall individual amb doble clic o Supr. Comprovat al navegador amb els dos talls desplaçats en una maqueta de 40 × 40 cm. [Cua de revisió](RO-046-CATALEG.md#revisió-per-a-maquetes-daula)
+RO-056 permet restablir un tall individual amb doble clic o Supr. Comprovat al navegador amb els dos talls desplaçats en una maqueta de 40 × 40 cm. [Cua de revisió](../RO-046-CATALEG.md#revisió-per-a-maquetes-daula)
 
 ## v0.23.23 — Sis enquadraments revisats i cobertes dels Pirineus
 
-RO-046 incorpora els sis JSON de revisió. L’istme d’O Vao i Zumaia passen a Model complet. El panoràmic incorpora un retall de 500 × 100 km i una màscara WorldCover de sòl nu i neu o gel. La columna «Estat» identifica els ajustos incorporats, els pendents i les validacions de l’usuari. [Cua de revisió](RO-046-CATALEG.md#revisió-per-a-maquetes-daula)
+RO-046 incorpora els sis JSON de revisió. L’istme d’O Vao i Zumaia passen a Model complet. El panoràmic incorpora un retall de 500 × 100 km i una màscara WorldCover de sòl nu i neu o gel. La columna «Estat» identifica els ajustos incorporats, els pendents i les validacions de l’usuari. [Cua de revisió](../RO-046-CATALEG.md#revisió-per-a-maquetes-daula)
 
 ## v0.23.22 — Mont Fuji i Geirangerfjord
 
-RO-046 aplica l’exageració ×1,25 als dos retalls i el nou centre i escala de Geirangerfjord. Es recuperen els estats i enquadraments de la revisió anterior al Markdown. [Cua de revisió](RO-046-CATALEG.md#grans-formes-del-relleu)
+RO-046 aplica l’exageració ×1,25 als dos retalls i el nou centre i escala de Geirangerfjord. Es recuperen els estats i enquadraments de la revisió anterior al Markdown. [Cua de revisió](../RO-046-CATALEG.md#grans-formes-del-relleu)
 
 ## v0.23.21 — Accés a la galeria i relleu proper
 
-RO-046 incorpora els ajustos de Roses, el Croscat, els dos retalls de l’Aneto i el Teide. Tamariu, Tenerife i Santorini queden validats. Tamariu es pot tornar a provar a 1:15.000. La galeria queda a la capçalera i selecciona la cerca anterior en obrir-se. [Cua de revisió](RO-046-CATALEG.md#revisió-per-a-maquetes-daula)
+RO-046 incorpora els ajustos de Roses, el Croscat, els dos retalls de l’Aneto i el Teide. Tamariu, Tenerife i Santorini queden validats. Tamariu es pot tornar a provar a 1:15.000. La galeria queda a la capçalera i selecciona la cerca anterior en obrir-se. [Cua de revisió](../RO-046-CATALEG.md#revisió-per-a-maquetes-daula)
 
 ## v0.23.20 — Sis fitxes noves i revisió per blocs
 
-RO-046 incorpora sis fitxes a la galeria i aplica cinc correccions a partir dels diagnòstics de l’usuari. Cap de Creus queda validat. Els cinc retalls ajustats i les noves incorporacions queden a la [cua de revisió](RO-046-CATALEG.md#revisió-per-a-maquetes-daula) amb la resta de fitxes.
+RO-046 incorpora sis fitxes a la galeria i aplica cinc correccions a partir dels diagnòstics de l’usuari. Cap de Creus queda validat. Els cinc retalls ajustats i les noves incorporacions queden a la [cua de revisió](../RO-046-CATALEG.md#revisió-per-a-maquetes-daula) amb la resta de fitxes.
 
 ## v0.23.19 — Talls locals sota les rasants a l’Hospitalet
 
-En repetir el retall dens, el motor conserva 19 perfils suaus i retorna al paviment habitual en un sol tram que falla. Les tres malles per material passen l’auditoria. Els 39 enllaços registrats dels taulers cartografiats es mantenen. El pas de vianants tapat i els 13 extrems sense enllaç continuen pendents. [Control](RO-052-CONTINUITAT.md#talls-locals-sota-els-taulers-v02319)
+En repetir el retall dens, el motor conserva 19 perfils suaus i retorna al paviment habitual en un sol tram que falla. Les tres malles per material passen l’auditoria. Els 39 enllaços registrats dels taulers cartografiats es mantenen. El pas de vianants tapat i els 13 extrems sense enllaç continuen pendents. [Control](../RO-052-CONTINUITAT.md#talls-locals-sota-els-taulers-v02319)
 
-La comprovació posterior diferencia els dos fitxers `regional.3mf` per la geometria exportada i afegeix un 3MF de 80 × 80 mm amb retall girat 45°. El fitxer girat conté 16 perfils suaus i passa l’auditoria. [Retall girat](RO-052-CONTINUITAT.md#retall-girat-45)
+La comprovació posterior diferencia els dos fitxers `regional.3mf` per la geometria exportada i afegeix un 3MF de 80 × 80 mm amb retall girat 45°. El fitxer girat conté 16 perfils suaus i passa l’auditoria. [Retall girat](../RO-052-CONTINUITAT.md#retall-girat-45)
 
 L’usuari aprecia una millora al laminador i accepta provisionalment el retall girat. Les irregularitats que es vegin a la peça física i els enllaços pendents continuen en seguiment.
 
@@ -102,31 +106,31 @@ RO-046 prepara sis maquetes candidates en Relleu pur. Les cinc d’una sola plac
 
 ## v0.23.18 — Control viari dens a l’Hospitalet
 
-El subretall complet confirma una fallada col·lectiva en assignar el material de 20 perfils viaris. Els dos modes exporten la mateixa geometria. El pilot aïllat genera un ramal sobre dues calçades amb una llum calculada mínima d’1,11 mm i enllaços continus. L’error d’integració i el pas de vianants tapat queden pendents. [Controls](RO-052-CONTINUITAT.md#xarxa-densa-a-lhospitalet-v02318)
+El subretall complet confirma una fallada col·lectiva en assignar el material de 20 perfils viaris. Els dos modes exporten la mateixa geometria. El pilot aïllat genera un ramal sobre dues calçades amb una llum calculada mínima d’1,11 mm i enllaços continus. L’error d’integració i el pas de vianants tapat queden pendents. [Controls](../RO-052-CONTINUITAT.md#xarxa-densa-a-lhospitalet-v02318)
 
 ## v0.23.17 — Pas inferior i cruïlla a nivell a Mataró
 
-L’usuari valida els dos 3MF de superfície de la v0.23.16. El control següent repeteix un pas inferior real a dues escales. El tauler es conserva a 1:3.333 amb almenys 2,19 mm de llum calculada. A 1:8.000 es construeix una cruïlla seca a una sola cota amb els quatre accessos. El 3MF confirma la continuïtat als dos estreps i als quatre braços. El laminat i la integració del pilot a la xarxa completa queden pendents. [Controls](RO-052-CONTINUITAT.md#pas-inferior-i-cruïlla-a-nivell-a-mataró-v02317)
+L’usuari valida els dos 3MF de superfície de la v0.23.16. El control següent repeteix un pas inferior real a dues escales. El tauler es conserva a 1:3.333 amb almenys 2,19 mm de llum calculada. A 1:8.000 es construeix una cruïlla seca a una sola cota amb els quatre accessos. El 3MF confirma la continuïtat als dos estreps i als quatre braços. El laminat i la integració del pilot a la xarxa completa queden pendents. [Controls](../RO-052-CONTINUITAT.md#pas-inferior-i-cruïlla-a-nivell-a-mataró-v02317)
 
 ## v0.23.16 — Carreteres i senders sobre terreny real
 
-Dos cupons de 100 × 100 mm amb MET5 i vies cartografiades. El 3MF de Mataró comprova excavació i reblert sota una calçada d’autopista. El de Palamós comprova una via local en excavació i un sender amb desnivell natural. La secció transversal mesurada varia menys de 0,001 mm en tots dos. Queda pendent el laminat i el control de creuaments. [Mesures i reproducció](RO-052-CONTINUITAT.md#cupons-de-mataró-i-palamós-v02316)
+Dos cupons de 100 × 100 mm amb MET5 i vies cartografiades. El 3MF de Mataró comprova excavació i reblert sota una calçada d’autopista. El de Palamós comprova una via local en excavació i un sender amb desnivell natural. La secció transversal mesurada varia menys de 0,001 mm en tots dos. Queda pendent el laminat i el control de creuaments. [Mesures i reproducció](../RO-052-CONTINUITAT.md#cupons-de-mataró-i-palamós-v02316)
 
 ## v0.23.15 — Prova de calçada amb rasant pròpia
 
-La variant optativa afegeix set trams de rasant independent al segon retall de l’Hospitalet. Al cupó, la via principal conserva la secció plana quan hi arriba una via menor i deixa espai al ferrocarril. L’auditoria local del retall passa. Els pics de pendent als punts de transició es mantenen i queda pendent revisar el visor i el laminat. [Mesures](RO-052-CONTINUITAT.md#prova-de-calçada-amb-rasant-pròpia-v02315)
+La variant optativa afegeix set trams de rasant independent al segon retall de l’Hospitalet. Al cupó, la via principal conserva la secció plana quan hi arriba una via menor i deixa espai al ferrocarril. L’auditoria local del retall passa. Els pics de pendent als punts de transició es mantenen i queda pendent revisar el visor i el laminat. [Mesures](../RO-052-CONTINUITAT.md#prova-de-calçada-amb-rasant-pròpia-v02315)
 
 ## v0.23.14 — Zoom de Territori i enllaços de ponts
 
 La cerca i el mapa queden fixats sota la capçalera de Territori a escriptori. La roda fa zoom damunt del mapa i desplaça els ajustos al seu panell. El canvi de pas conserva el retall i deixa tot l’espai als altres apartats. Comprovat localment a 1280 × 720, 1100 × 680 i en el canvi a format mòbil.
 
-En el segon retall de l’Hospitalet, els extrems sense enllaç dels taulers cartografiats de vies principals passen de 24 a 5. Les sis malles superen l’auditoria de tancament. Els pics de pendent dels trams mostrejats es mantenen i RO-051 continua obert. [Mesures](RO-052-CONTINUITAT.md#segon-retall-de-lhospitalet-v02314)
+En el segon retall de l’Hospitalet, els extrems sense enllaç dels taulers cartografiats de vies principals passen de 24 a 5. Les sis malles superen l’auditoria de tancament. Els pics de pendent dels trams mostrejats es mantenen i RO-051 continua obert. [Mesures](../RO-052-CONTINUITAT.md#segon-retall-de-lhospitalet-v02314)
 
 ## v0.23.13 — Territori, pilot històric i ponts de vies principals
 
 La roda desplaça el contingut de Territori també damunt del mapa. La revisió a Cardona i Cornellà confirma que les cobertes històriques disponibles només permeten dibuixar superfícies urbanitzades. Es retiren els controls del pilot i se n’arxiven les dades. En obrir un projecte desat amb una edició històrica, el taller recupera els ajustos i avisa que generarà la maqueta amb cartografia actual.
 
-Al retall de l’Hospitalet i el Prat, el model sense arbres conserva els dos taulers principals amb una separació mesurada de 0,28 i 0,36 mm respecte de l’aigua al llarg de l’eix. Les dues calçades conserven els enllaços. Pendent de revisar la maqueta completa al visor i al laminador. [Mesures i límits](RO-052-CONTINUITAT.md#hospitalet-i-el-prat-v02313)
+Al retall de l’Hospitalet i el Prat, el model sense arbres conserva els dos taulers principals amb una separació mesurada de 0,28 i 0,36 mm respecte de l’aigua al llarg de l’eix. Les dues calçades conserven els enllaços. Pendent de revisar la maqueta completa al visor i al laminador. [Mesures i límits](../RO-052-CONTINUITAT.md#hospitalet-i-el-prat-v02313)
 
 ## v0.23.12 — Selecció d’edicions per cobertura (RO-025)
 
@@ -138,7 +142,7 @@ El control d’edició apareix al peu de la previsualització quan el Model comp
 
 ## v0.23.10 — Comparació del sòl urbanitzat (RO-025)
 
-El taller carrega les edicions 2009 i 2024 per cel·les segons el retall. La previsualització indica la superfície cartografiada i el model conserva la font i l’any. Queda pendent la validació d’ús. [Publicació i fonts](RO-025-CARTOGRAFIA-HISTORICA.md#publicació-al-taller)
+El taller carrega les edicions 2009 i 2024 per cel·les segons el retall. La previsualització indica la superfície cartografiada i el model conserva la font i l’any. Queda pendent la validació d’ús. [Publicació i fonts](RO-025-CARTOGRAFIA-HISTORICA.md#publicació-al-taller-entre-la-v02310-i-la-v02312)
 
 Impressió incorpora un plànol zenital dels talls. La tria de files i columnes i els tiradors ajusten les dimensions de les peces. La capçalera explicita el projecte d’aula, i el diàleg V4V agrupa les fonts de dades per capa. S’han revisat els controls d’edició, el moviment del tall amb el teclat i la lectura de les fonts a 1280 × 720 i 1100 × 680. El laminat continua pendent.
 
@@ -178,7 +182,7 @@ S’ha comprovat al navegador la descàrrega, el rebuig d’un fitxer aliè, la 
 
 ## v0.23.6 — Tenerife en dues peces
 
-RO-046 aplica el retall de l’usuari a la fitxa de Tenerife. La maqueta fa 40 × 20 cm a 1:300.000, amb un gir de −25° i dues peces de 20 × 20 cm. El nou render conserva el contorn de l’illa i mostra un sol tall. [Enquadrament i captura](RO-046-CATALEG.md#tenerife-en-dues-peces)
+RO-046 aplica el retall de l’usuari a la fitxa de Tenerife. La maqueta fa 40 × 20 cm a 1:300.000, amb un gir de −25° i dues peces de 20 × 20 cm. El nou render conserva el contorn de l’illa i mostra un sol tall. [Enquadrament i captura](../RO-046-CATALEG.md#tenerife-en-dues-peces)
 
 El motor reprodueix els quatre vèrtexs i els 916.184 triangles de l’informe de l’usuari amb Mapterhorn. La fitxa i el filtre de mida s’han comprovat al navegador a 1280 × 720. Han passat 32 proves locals. La compilació de producció queda pendent del marge de 2,5 GiB de memòria lliure.
 
@@ -190,13 +194,13 @@ Revisat a 1280 × 720, 1100 × 680, 390 × 844 i 320 × 568. S’han comprovat l
 
 ## v0.23.4 — Galeria amb graella i filtres
 
-RO-046 i RO-054 amplien el diàleg i mantenen la cerca, els filtres i el selector de secció a la vista mentre es desplacen les fitxes. Cada fitxa mostra la captura estàtica, la descripció, el tipus de paisatge, el mode, la mida i l’escala. El sector de l’Aneto i els llacs glacials tenen retalls fixos i captures del visor. Les dreceres d’«Altres retalls» surten de la galeria. [Dades del catàleg](RO-046-CATALEG.md#graella-de-la-galeria-i-fitxes-de-laneto)
+RO-046 i RO-054 amplien el diàleg i mantenen la cerca, els filtres i el selector de secció a la vista mentre es desplacen les fitxes. Cada fitxa mostra la captura estàtica, la descripció, el tipus de paisatge, el mode, la mida i l’escala. El sector de l’Aneto i els llacs glacials tenen retalls fixos i captures del visor. Les dreceres d’«Altres retalls» surten de la galeria. [Dades del catàleg](../RO-046-CATALEG.md#graella-de-la-galeria-i-fitxes-de-laneto)
 
 Revisats 1280 × 720, 1100 × 680, 740 × 390, 390 × 844 i 320 × 568. S’han comprovat el desplaçament intern, els filtres combinats, l’estat sense resultats, el canvi d’idioma, el retorn del focus i el desament i reobertura d’un projecte de prova. Han passat 41 proves locals. La compilació de producció queda pendent del marge de 2,5 GiB de memòria lliure.
 
 ## v0.23.3 — Taller en cinc idiomes
 
-RO-019 activa català, castellà, gallec, basc i anglès al selector de capçalera. El canvi actualitza la interfície, les fitxes, les etiquetes accessibles i els missatges habituals de generació. La preferència es desa en aquest navegador. Les notes històriques i l’informe tècnic conserven els textos originals. [Configuració i cobertura](RO-019-SETUP.md)
+RO-019 activa català, castellà, gallec, basc i anglès al selector de capçalera. El canvi actualitza la interfície, les fitxes, les etiquetes accessibles i els missatges habituals de generació. La preferència es desa en aquest navegador. Les notes històriques i l’informe tècnic conserven els textos originals. [Configuració i cobertura](../RO-019-SETUP.md)
 
 Al navegador s’han comprovat els quatre idiomes nous, la persistència en recarregar, el canvi durant la generació de Tamariu i la conservació de l’exageració i del gir amb el model obert. Revisat de 320 a 1280 px. Han passat 49 proves locals i la compilació estàtica.
 
@@ -210,7 +214,7 @@ Revisada la capçalera a 1280 × 720, 1100 × 680, 390 × 844, 320 × 568 i 667 
 
 RO-053 reutilitza les petjades retallades quan són en sec i uneix les màscares d’edificis per grups. Els edificis de ribera mantenen el retall exacte. L’informe de generació mesura la unió per separat.
 
-Al retall de control d’Amsterdam, la capa d’edificis passa de 40,5–63,5 s a 30,1 s. A Tamariu passa de 3,5 a 0,86 s. Els buffers de malla, les metadades i la superfície mostrejada coincideixen als dos controls. Han passat 35 proves i la compilació estàtica. [Condicions i mesures](RO-053-TEMPS.md#capa-dedificis-a-la-v0231)
+Al retall de control d’Amsterdam, la capa d’edificis passa de 40,5–63,5 s a 30,1 s. A Tamariu passa de 3,5 a 0,86 s. Els buffers de malla, les metadades i la superfície mostrejada coincideixen als dos controls. Han passat 35 proves i la compilació estàtica. [Condicions i mesures](../RO-053-TEMPS.md#capa-dedificis-a-la-v0231)
 
 ## v0.23.0 — Consolidació
 
@@ -220,7 +224,7 @@ Versió de referència per mesurar el temps de generació i el flux fins a l’e
 
 RO-033 ajusta la cota dels taulers curts que poden deixar pas sobre l’aigua i recolzar a totes dues ribes. En retalls densos es prioritzen els creuaments i es reparteixen pel retall. L’enllaç cerca vies dins la distància que pot recórrer i mostra el progrés per pont.
 
-Controls de Model complet a Amsterdam i Empuriabrava a 1:10.000 i 1:5.000. Control de relleu, aigua i ponts a l’extensió completa d’Amsterdam. Han passat 86 proves locals i la compilació estàtica. Pendent de validar la maqueta gran amb totes les capes al navegador i al laminador. [Mesures](RO-033-CONTROLS-PROCEDIMENTALS.md#ponts-curts-sobre-canals)
+Controls de Model complet a Amsterdam i Empuriabrava a 1:10.000 i 1:5.000. Control de relleu, aigua i ponts a l’extensió completa d’Amsterdam. Han passat 86 proves locals i la compilació estàtica. Pendent de validar la maqueta gran amb totes les capes al navegador i al laminador. [Mesures](../RO-033-CONTROLS-PROCEDIMENTALS.md#ponts-curts-sobre-canals)
 
 ## v0.22.42 — Galeria al taller
 
@@ -242,7 +246,7 @@ Revisats vuit formats entre 320 × 568 i 1280 × 720. A 1280 × 640, la pantalla
 
 ## v0.22.39 — Relleu pur fins a 1:500.000 en peces quadrades
 
-RO-055 unifica el topall de Relleu pur al mapa, la geometria i la galeria de projectes. En peces quadrades i rectangulars, el rang és d’1:10.000 a 1:500.000. La càrrega adapta la resolució a l’extensió geogràfica i manté el pressupost de mostres. [Mesures i fonts](RO-055-RELLEU-PUR.md)
+RO-055 unifica el topall de Relleu pur al mapa, la geometria i la galeria de projectes. En peces quadrades i rectangulars, el rang és d’1:10.000 a 1:500.000. La càrrega adapta la resolució a l’extensió geogràfica i manté el pressupost de mostres. [Mesures i fonts](../RO-055-RELLEU-PUR.md)
 
 Han passat 41 proves locals i la compilació. Comprovades les dimensions i les escales al selector, el desament d’un quadrat a 1:500.000 i les càrregues simulades de 100 × 100 km al Bodensee i de 250 × 250 km en un retall girat 45°.
 
@@ -274,13 +278,13 @@ Compilació estàtica verificada. A Tamariu, Relleu pur de 15 × 15 cm i detall 
 
 ## v0.22.34 — Taller mòbil
 
-RO-053 adapta el selector inicial i el taller amb una barra inferior de Visor, Ajustos i Exporta. La cerca i el mapa encapçalen Territori, amb l’acció de generar fixa. El visor continua visible mentre els panells estan oberts. En horitzontal es comparteix l’amplada amb el panell. L’exportació mòbil conserva el nombre de materials, els formats i el canvi de mida. [Flux mòbil](RO-053-UX.md#taller-mòbil)
+RO-053 adapta el selector inicial i el taller amb una barra inferior de Visor, Ajustos i Exporta. La cerca i el mapa encapçalen Territori, amb l’acció de generar fixa. El visor continua visible mentre els panells estan oberts. En horitzontal es comparteix l’amplada amb el panell. L’exportació mòbil conserva el nombre de materials, els formats i el canvi de mida. [Flux mòbil](../RO-053-UX.md#taller-mòbil)
 
 Revisat al navegador a 320 × 568, 390 × 844 i 740 × 390. Comprovats el carrusel, la mida personalitzada, la generació de Tamariu, els canvis de vegetació sobre la mateixa malla, el retorn a navegació, els diàlegs i la descàrrega d’un 3MF amb dos materials. Verificats els dos sidebars a 1.280 × 720 i 1.100 × 680. Superades 35 proves locals i la construcció estàtica. Pendent de validar en dispositius reals.
 
 ## v0.22.33 — Catàleg complet al carrusel
 
-RO-046 incorpora les 19 fitxes que faltaven. Les 28 fitxes intercalen Relleu pur i Model complet i generen el retall en clicar-lo. Les captures són WebP del visor. Tenerife conserva el panorama de tres peces. [Retalls i fonts](RO-046-CATALEG.md#catàleg-complet-al-carrusel)
+RO-046 incorpora les 19 fitxes que faltaven. Les 28 fitxes intercalen Relleu pur i Model complet i generen el retall en clicar-lo. Les captures són WebP del visor. Tenerife conserva el panorama de tres peces. [Retalls i fonts](../RO-046-CATALEG.md#incorporació-dels-lots-al-carrusel)
 
 Generats els 19 models d’un en un. Granada ha completat el retall amb vies ordinàries en fallar la unió dels perfils suaus. Amsterdam ha completat el retall amb el reintent de precisió de les unions projectades. Chicago i Amsterdam han trigat uns 27 i 24 minuts en aquest equip. Verificades la compilació, les 28 fitxes, l’ordre i la previsualització a 1280 × 720 i 1100 × 680. Superades 85 proves locals. Pendent de validació d’ús.
 
@@ -298,19 +302,19 @@ L’intent 112 va tornar a entrar a Pages i va esgotar els deu minuts a `updatin
 
 ## v0.22.31 — Primer lot de Model complet al carrusel
 
-RO-046 incorpora l’Eixample de Barcelona, el Barri Vell i l’Onyar de Girona, i el castell, la vila i la Vall Salina de Cardona. Hi ha dues fitxes de Relleu pur entre cada parella de Model complet, també en tancar el bucle. Els tres models tenen una sola peça i es generen a 1:10.000 en clicar la fitxa. [Retalls i captures](RO-046-CATALEG.md#primer-lot-de-model-complet-al-carrusel)
+RO-046 incorpora l’Eixample de Barcelona, el Barri Vell i l’Onyar de Girona, i el castell, la vila i la Vall Salina de Cardona. Hi ha dues fitxes de Relleu pur entre cada parella de Model complet, també en tancar el bucle. Els tres models tenen una sola peça i es generen a 1:10.000 en clicar la fitxa. [Retalls i captures](../RO-046-CATALEG.md#primer-lot-de-model-complet-al-carrusel)
 
 Generades les tres maquetes des del carrusel amb edificis de l’ICGC i elevacions del MET5. La de Barcelona ha trigat 4 min 8 s en aquest equip. Verificades les imatges i la barreja a la construcció estàtica a 1280 × 720 i 1100 × 680. Superades 27 proves locals. Pendent de validació d’ús.
 
 ## v0.22.30 — Fletxes laterals i fitxes flotants
 
-RO-046 barreja les sis fitxes en cada càrrega i alternarà els modes quan hi hagi exemples de Model complet. Les fletxes dels extrems acceleren el moviment amb el punter i cada activació avança o retrocedeix una fitxa exacta. La fitxa s’amplia al centre i conserva la generació en seleccionar-la. Les mides queden a la dreta de la taula. El Cap de Creus té un nou render estàtic de la península amb un retall de 20 × 20 km, a 1:100.000 i amb un gir de +10°. [Retall i imatge](RO-046-CATALEG.md#primer-lot-al-carrusel)
+RO-046 barreja les sis fitxes en cada càrrega i alternarà els modes quan hi hagi exemples de Model complet. Les fletxes dels extrems acceleren el moviment amb el punter i cada activació avança o retrocedeix una fitxa exacta. La fitxa s’amplia al centre i conserva la generació en seleccionar-la. Les mides queden a la dreta de la taula. El Cap de Creus té un nou render estàtic de la península amb un retall de 20 × 20 km, a 1:100.000 i amb un gir de +10°. [Retall i imatge](../RO-046-CATALEG.md#primer-lot-al-carrusel)
 
 Revisat al navegador a 1280 × 720 i 1100 × 680 amb el punter i el teclat. Comprovats el canvi d’ordre en recarregar, l’ampliació i el retorn de la fitxa, i el pas de 227 px en tots dos sentits en la finestra de 1100 × 680. S’han comprovat l’alternança amb un catàleg mixt de prova i la generació del Cap de Creus amb el nou retall. Superades 49 proves locals. La construcció estàtica local queda pendent pel llindar de memòria. Pendent de validació d’ús.
 
 ## v0.22.29 — Segon lot de Catalunya al carrusel
 
-Montserrat, l’estany de Sant Maurici i els volcans del Croscat i Santa Margarida s’incorporen al carrusel de RO-046. Les imatges són renders estàtics i les fitxes obren la generació de Relleu pur amb els retalls del catàleg. [Retalls i fonts](RO-046-CATALEG.md#segon-lot-al-carrusel)
+Montserrat, l’estany de Sant Maurici i els volcans del Croscat i Santa Margarida s’incorporen al carrusel de RO-046. Les imatges són renders estàtics i les fitxes obren la generació de Relleu pur amb els retalls del catàleg. [Retalls i fonts](../RO-046-CATALEG.md#segon-lot-al-carrusel)
 
 Al retall de Montserrat, dos rierols amb contorns gairebé coincidents feien que la unió de polígons s’encallés. La normalització a 0,0001 mm abans de la unió permet conservar els cursos d’aigua i completar el model amb l’escala i el detall previstos. La prova de regressió reprodueix la confluència.
 
@@ -340,7 +344,7 @@ El control del gir passa a la cantonada superior dreta del visor i indica si est
 
 ## v0.22.23 — Tres exemples a la pantalla inicial
 
-El carrusel de RO-046 mostra Roses, el Cap de Creus i el delta de l’Ebre amb WebP estàtics. Les fitxes i el selector de Territori apliquen el retall, el mode i la mida de cada exemple. Els tres models s’han generat al navegador amb dades reals. El format estàndard de Relleu pur aplica la mateixa comprovació de cobertura marina que el panoràmic quan falten tessel·les d’elevació. [Catàleg i fonts del lot](RO-046-CATALEG.md#primer-lot-al-carrusel)
+El carrusel de RO-046 mostra Roses, el Cap de Creus i el delta de l’Ebre amb WebP estàtics. Les fitxes i el selector de Territori apliquen el retall, el mode i la mida de cada exemple. Els tres models s’han generat al navegador amb dades reals. El format estàndard de Relleu pur aplica la mateixa comprovació de cobertura marina que el panoràmic quan falten tessel·les d’elevació. [Catàleg i fonts del lot](../RO-046-CATALEG.md#primer-lot-al-carrusel)
 
 Revisat a 1280 × 720 i 1100 × 680 amb teclat i ratolí, inclosa la recuperació d’un projecte del Cap de Creus. Construcció estàtica i 38 proves locals superades. Queda la revisió d’ús i de laminat.
 
@@ -354,7 +358,7 @@ El lector MET5 converteix el codi marí a 0 m. Amb dades reals de Tamariu, els d
 
 ## 2026-11-04 — Proposta de catàleg per als dos modes
 
-RO-046 documenta 28 enquadraments amb coordenades i mides reproduïbles al selector actual. Comprovats els límits de mida, escala i càrrega, i l’encaix del contorn de Tenerife al panorama girat. La tria del primer lot i la generació de mostres continuen pendents. [Catàleg](RO-046-CATALEG.md)
+RO-046 documenta 28 enquadraments amb coordenades i mides reproduïbles al selector actual. Comprovats els límits de mida, escala i càrrega, i l’encaix del contorn de Tenerife al panorama girat. La tria del primer lot i la generació de mostres continuen pendents. [Catàleg](../RO-046-CATALEG.md)
 
 ## v0.22.21 — Filaments configurables en Relleu pur
 
@@ -392,83 +396,83 @@ El selector inicial mostra les vuit mides i les personalitzades sobre la mateixa
 
 ## v0.22.14 — Diverses plaques en un sol 3MF
 
-L’usuari confirma que el projecte de Tamariu 40 × 45 cm s’obre amb les quatre plaques a Bambu Studio. El 3MF amb plaques passa a ser el format per defecte de les maquetes dividides a Bambu. El ZIP de peces queda al menú de descàrrega. [Control de Tamariu](RO-024-RESULTATS.md#projecte-bambu-amb-quatre-plaques-a-la-v02214)
+L’usuari confirma que el projecte de Tamariu 40 × 45 cm s’obre amb les quatre plaques a Bambu Studio. El 3MF amb plaques passa a ser el format per defecte de les maquetes dividides a Bambu. El ZIP de peces queda al menú de descàrrega. [Control de Tamariu](../RO-024-RESULTATS.md#projecte-bambu-amb-quatre-plaques-a-la-v02214)
 
 ## v0.22.13 — Filament per peça a Bambu Studio
 
-L’usuari valida al laminador el control de Montserrat amb filament per peça. Les franges desapareixen i el temps estimat passa de 3 dies i 21 h a 3 dies i 17 h. El mateix format s’aplica a l’exportació de Bambu Studio. [Prova de laminat](RO-024-RESULTATS.md#filament-per-peça-a-la-v02213)
+L’usuari valida al laminador el control de Montserrat amb filament per peça. Les franges desapareixen i el temps estimat passa de 3 dies i 21 h a 3 dies i 17 h. El mateix format s’aplica a l’exportació de Bambu Studio. [Prova de laminat](../RO-024-RESULTATS.md#filament-per-peça-a-la-v02213)
 
 ## v0.22.12 — Senders i aigua continental
 
-Els senders tenen un mínim de 0,30 mm i una amplada ajustable que es desa a la galeria local. El 3MF de control confirma que a la cota de 0,2 mm hi ha terreny i mar. Rius, rierols i llacs tenen una capa de 0,65 mm sobre terreny sòlid. Pendent de revisió al laminador. [Control d’aigua](RO-024-RESULTATS.md#capes-baixes-del-model-complet-a-la-v02212) · [Amplada dels senders](RO-052-CONTINUITAT.md#amplada-dels-senders-a-la-v02212)
+Els senders tenen un mínim de 0,30 mm i una amplada ajustable que es desa a la galeria local. El 3MF de control confirma que a la cota de 0,2 mm hi ha terreny i mar. Rius, rierols i llacs tenen una capa de 0,65 mm sobre terreny sòlid. Pendent de revisió al laminador. [Control d’aigua](../RO-024-RESULTATS.md#capes-baixes-del-model-complet-a-la-v02212) · [Amplada dels senders](../RO-052-CONTINUITAT.md#amplada-dels-senders-a-la-v02212)
 
 ## v0.22.11 — Més cobertura del paviment independent
 
-L’encaix del paviment es resol per trams. El control en vessant verifica la secció plana al llarg del camí i a les vores, el suport, la divisió en peces i la recuperació després d’una fallada local. Queda pendent revisar el retall de Marganell al visor i al laminador. [Mesures](RO-051-PERFILS-VIARIS.md#més-cobertura-del-paviment-independent-a-la-v02211)
+L’encaix del paviment es resol per trams. El control en vessant verifica la secció plana al llarg del camí i a les vores, el suport, la divisió en peces i la recuperació després d’una fallada local. Queda pendent revisar el retall de Marganell al visor i al laminador. [Mesures](../RO-051-PERFILS-VIARIS.md#més-cobertura-del-paviment-independent-a-la-v02211)
 
 ## v0.22.10 — Paviment independent entre cruïlles
 
-El Model complet prova el paviment nou per defecte. El retall de Marganell de l’usuari recupera quatre trams entre cruïlles. Queda pendent validar la maqueta al visor i al laminador. [Control de Marganell](RO-051-PERFILS-VIARIS.md#paviment-independent-entre-cruïlles-a-la-v02210)
+El Model complet prova el paviment nou per defecte. El retall de Marganell de l’usuari recupera quatre trams entre cruïlles. Queda pendent validar la maqueta al visor i al laminador. [Control de Marganell](../RO-051-PERFILS-VIARIS.md#paviment-independent-entre-cruïlles-a-la-v02210)
 
 ## v0.22.9 — Paviment nou en retalls reals
 
-L’usuari valida el cupó gran. El generador admet la prova optativa `?paviment=nou` en Model complet. El control de Marganell recupera tres fragments i conserva la resta de la xarxa amb el càlcul habitual. [Mesures i límits](RO-051-PERFILS-VIARIS.md#primera-prova-en-retalls-reals-a-la-v0229)
+L’usuari valida el cupó gran. El generador admet la prova optativa `?paviment=nou` en Model complet. El control de Marganell recupera tres fragments i conserva la resta de la xarxa amb el càlcul habitual. [Mesures i límits](../RO-051-PERFILS-VIARIS.md#primera-prova-en-retalls-reals-a-la-v0229)
 
 ## v0.22.8 — Xarxa viària de 120 × 120 mm
 
-Un cupó sintètic combina vies sinuoses, una cruïlla en T i un pont sobre una segona via. Es comproven els enllaços sense graó, el pas inferior i el contacte entre el paviment i el terreny. [Cupó i mesures](RO-051-PERFILS-VIARIS.md#xarxa-viària-de-120-mm-a-la-v0228)
+Un cupó sintètic combina vies sinuoses, una cruïlla en T i un pont sobre una segona via. Es comproven els enllaços sense graó, el pas inferior i el contacte entre el paviment i el terreny. [Cupó i mesures](../RO-051-PERFILS-VIARIS.md#xarxa-viària-de-120-mm-a-la-v0228)
 
 ## v0.22.7 — Túnel amb rasant compartida
 
-L’usuari valida el cupó de pont. El cupó de túnel conserva una rasant del 4% als dos accessos i a l’interior. Es comproven les dues boques obertes i el pas continu al 3MF. [Cupó i mesures](RO-051-PERFILS-VIARIS.md#túnel-amb-rasant-compartida-v0227)
+L’usuari valida el cupó de pont. El cupó de túnel conserva una rasant del 4% als dos accessos i a l’interior. Es comproven les dues boques obertes i el pas continu al 3MF. [Cupó i mesures](../RO-051-PERFILS-VIARIS.md#túnel-amb-rasant-compartida--v0227)
 
 ## v0.22.6 — Pont i via inferior al nou paviment
 
-L’usuari valida la rasant suavitzada de la corba. Al cupó següent, un pont recte conserva el pendent de les calçades d’accés als dos estreps i deixa 3,67 mm de pas lliure sobre la via inferior. El 3MF queda disponible per a la validació de l’usuari. [Cupó i mesures](RO-051-PERFILS-VIARIS.md#pont-sobre-una-via-inferior-v0226)
+L’usuari valida la rasant suavitzada de la corba. Al cupó següent, un pont recte conserva el pendent de les calçades d’accés als dos estreps i deixa 3,67 mm de pas lliure sobre la via inferior. El 3MF queda disponible per a la validació de l’usuari. [Cupó i mesures](../RO-051-PERFILS-VIARIS.md#pont-sobre-una-via-inferior--v0226)
 
 ## v0.22.5 — Rasant contínua a la corba del cupó
 
-La vista lateral del primer cupó de corba mostrava replans als girs. El nou traçat els substitueix per arcs i una rasant interpolada. La part ascendent puja de forma contínua a la malla exportada i la T conserva la cota comuna. [Cupó i mesures](RO-051-PERFILS-VIARIS.md#rasant-contínua-a-la-corba-v0225)
+La vista lateral del primer cupó de corba mostrava replans als girs. El nou traçat els substitueix per arcs i una rasant interpolada. La part ascendent puja de forma contínua a la malla exportada i la T conserva la cota comuna. [Cupó i mesures](../RO-051-PERFILS-VIARIS.md#rasant-contínua-a-la-corba--v0225)
 
 ## v0.22.4 — Corba i cruïlla en T en vessant
 
-El cupó recte queda validat per l’usuari. Al nou cupó, les seccions de la corba tenen un desnivell transversal inferior a 0,00002 mm i els nou punts de la cruïlla comparteixen cota. Es lliura el 3MF per comprovar al laminador. [Cupó i mesures](RO-051-PERFILS-VIARIS.md#cupó-de-corba-i-cruïlla-v0224)
+El cupó recte queda validat per l’usuari. Al nou cupó, les seccions de la corba tenen un desnivell transversal inferior a 0,00002 mm i els nou punts de la cruïlla comparteixen cota. Es lliura el 3MF per comprovar al laminador. [Cupó i mesures](../RO-051-PERFILS-VIARIS.md#cupó-de-corba-i-cruïlla--v0224)
 
 ## v0.22.3 — Cupó de paviment en vessant
 
-Pilot de calçada a la cota de l’eix, amb seccions transversals planes i suport de terreny sota tot el paviment. El cupó 3MF conserva els dos materials. El motor nou es pot provar amb el control reproduïble d’una recta en vessant. [Cupó i mesures](RO-051-PERFILS-VIARIS.md#cupó-de-paviment-en-vessant-v0223)
+Pilot de calçada a la cota de l’eix, amb seccions transversals planes i suport de terreny sota tot el paviment. El cupó 3MF conserva els dos materials. El motor nou es pot provar amb el control reproduïble d’una recta en vessant. [Cupó i mesures](../RO-051-PERFILS-VIARIS.md#cupó-de-paviment-en-vessant--v0223)
 
 ## v0.22.2 — Perfils de vies amb cotes fora del retall
 
-Si falta una cota fora de la maqueta, es torna a calcular el perfil dins del retall amb un marge de 5 m. El retall de Millau sud passa de 13 a 17 perfils aplicats. Una part de l’A75 segueix el terreny quan les comprovacions de ponts, túnels o unions fallen. [Diagnòstic i mesures](RO-051-PERFILS-VIARIS.md#millau-sud-a-la-v0222)
+Si falta una cota fora de la maqueta, es torna a calcular el perfil dins del retall amb un marge de 5 m. El retall de Millau sud passa de 13 a 17 perfils aplicats. Una part de l’A75 segueix el terreny quan les comprovacions de ponts, túnels o unions fallen. [Diagnòstic i mesures](../RO-051-PERFILS-VIARIS.md#millau-sud-a-la-v0222)
 
 ## v0.22.1 — Calçades de l’accés sud de Millau
 
-Es recuperen els dos perfils de l’A75 després de comprovar la separació entre el paviment i la volta excavada. L’amplada estimada per a autopistes de sentit únic evita el solapament observat al retall de l’usuari. Deu seccions transversals mesurades a la malla final. [Diagnòstic i mesures](RO-051-PERFILS-VIARIS.md#accés-sud-de-millau-a-la-v0221)
+Es recuperen els dos perfils de l’A75 després de comprovar la separació entre el paviment i la volta excavada. L’amplada estimada per a autopistes de sentit únic evita el solapament observat al retall de l’usuari. Deu seccions transversals mesurades a la malla final. [Diagnòstic i mesures](../RO-051-PERFILS-VIARIS.md#accés-sud-de-millau-a-la-v0221)
 
 ## v0.22.0 — Consolidació de les vies
 
-Els dos perfils pendents de Sant Salvador tenen enllaços que superen el pendent admissible. Les reserves de traçat asimètriques provades tampoc resolen els enllaços. Es publica amb el paviment sobre el terreny en aquests trams. Els controls de Sant Salvador, Millau a dues escales i el ferrocarril de 800 m superen l’auditoria. [Diagnòstic i comparativa](RO-051-PERFILS-VIARIS.md#transicions-pendents-a-la-v0220)
+Els dos perfils pendents de Sant Salvador tenen enllaços que superen el pendent admissible. Les reserves de traçat asimètriques provades tampoc resolen els enllaços. Es publica amb el paviment sobre el terreny en aquests trams. Els controls de Sant Salvador, Millau a dues escales i el ferrocarril de 800 m superen l’auditoria. [Diagnòstic i comparativa](../RO-051-PERFILS-VIARIS.md#transicions-pendents-a-la-v0220)
 
 ## v0.21.9 — Signatura d’ortogra.fi
 
 El peu incorpora la signatura centrada de Plec amb el logotip i l’enllaç a ortogra.fi.
 
-**Control de Montgròs.** Un cupó de 19 × 13 mm extret de la maqueta conserva el pas al punt del torrent amb capes de 0,10 i 0,20 mm a Bambu Studio. El control de 0,20 mm també passa amb quatre materials. [Laminat](RO-033-CONTROLS-PROCEDIMENTALS.md#laminat-del-cupó-de-montgròs)
+**Control de Montgròs.** Un cupó de 19 × 13 mm extret de la maqueta conserva el pas al punt del torrent amb capes de 0,10 i 0,20 mm a Bambu Studio. El control de 0,20 mm també passa amb quatre materials. [Laminat](../RO-033-CONTROLS-PROCEDIMENTALS.md#laminat-del-cupó-de-montgròs)
 
 ## v0.21.8 — Tauler de la C-37 a Montgròs
 
-La unió entre tessel·les conserva el traçat més llarg quan l’altre hi queda contingut. El retall de Sant Salvador a 1:20.000 recupera el pont al torrent de Montgròs. Les dues connexions amb la C-37 tenen paviment a banda i banda i la diferència de cota mesurada és inferior a 0,007 mm. Pas lliure de 0,27 mm pendent de comprovar al laminador. [Resultats](RO-033-CONTROLS-PROCEDIMENTALS.md#torrent-de-montgròs)
+La unió entre tessel·les conserva el traçat més llarg quan l’altre hi queda contingut. El retall de Sant Salvador a 1:20.000 recupera el pont al torrent de Montgròs. Les dues connexions amb la C-37 tenen paviment a banda i banda i la diferència de cota mesurada és inferior a 0,007 mm. Pas lliure de 0,27 mm pendent de comprovar al laminador. [Resultats](../RO-033-CONTROLS-PROCEDIMENTALS.md#torrent-de-montgròs)
 
 ## v0.21.7 — Coberta dels túnels estimats
 
-Un descens limitat recupera l’obertura de Sant Salvador a 1:20.000. Comprovacions sobre la malla exportada de pas a les dues boques i de sòlid al sostre i a la base al tram cobert. [Resultats](RO-034-OBERTURES.md#sant-salvador-a-120000)
+Un descens limitat recupera l’obertura de Sant Salvador a 1:20.000. Comprovacions sobre la malla exportada de pas a les dues boques i de sòlid al sostre i a la base al tram cobert. [Resultats](../RO-034-OBERTURES.md#sant-salvador-a-120000)
 
-**Bateria a dues escales.** Sis malles auditades. Es conserven els enllaços de pont dels controls i es recuperen perfils a Sant Salvador, Millau i el ferrocarril de 800 m. S’ha identificat un fragment de pont omès al torrent de Montgròs. [Comparativa](RO-051-PERFILS-VIARIS.md#bateria-repetida-amb-v0217)
+**Bateria a dues escales.** Sis malles auditades. Es conserven els enllaços de pont dels controls i es recuperen perfils a Sant Salvador, Millau i el ferrocarril de 800 m. S’ha identificat un fragment de pont omès al torrent de Montgròs. [Comparativa](../RO-051-PERFILS-VIARIS.md#bateria-repetida-amb-v0217)
 
 ## v0.21.6 — Transicions de la C-37
 
-Una reserva més llarga de traçat recupera un tercer perfil de la C-37 a Sant Salvador a 1:10.000. Queden dues omissions d’enllaç i un creuament sense cota acreditada. El control ferroviari de 800 m conserva la rasant. [Resultats](RO-051-PERFILS-VIARIS.md#transicions-amb-v0216)
+Una reserva més llarga de traçat recupera un tercer perfil de la C-37 a Sant Salvador a 1:10.000. Queden dues omissions d’enllaç i un creuament sense cota acreditada. El control ferroviari de 800 m conserva la rasant. [Resultats](../RO-051-PERFILS-VIARIS.md#transicions-amb-v0216)
 
 ## v0.21.5 — Mides i guies de tall
 
@@ -476,15 +480,15 @@ Tria inicial amb 10 × 10 cm i mides personalitzades. El visor i l’exportació
 
 **Control local de Tamariu, 40 × 45 cm.** S’han vist les dues guies discontínues en zenital i en perspectiva. El traç es distingeix menys al bosc dens. El ZIP descarregat al navegador conté quatre 3MF de 200 × 225 mm. El plànol i les cares de tall de les quatre malles coincideixen a X = 200 mm i Y = 225 mm en coordenades de muntatge.
 
-**Represa de la 0.22.** Primer, transicions de la C-37 a 1:10.000. Després, diagnòstic de la coberta del túnel a 1:20.000 i repetició de la bateria a dues escales. El laminat dels controls de tall queda com a comprovació independent. [Ordre de treball](BACKLOG.md#ordre-de-treball)
+**Represa de la 0.22.** Primer, transicions de la C-37 a 1:10.000. Després, diagnòstic de la coberta del túnel a 1:20.000 i repetició de la bateria a dues escales. El laminat dels controls de tall queda com a comprovació independent. [Ordre de treball](../BACKLOG.md#ordre-de-treball)
 
 ## v0.21.4 — Unió de paviment
 
-La unió en coordenades locals i la correcció del sentit de cares en prismes aïllats recuperen perfils en els dos retalls afectats de la bateria. [Resultats](RO-051-PERFILS-VIARIS.md#repetició-amb-v0214)
+La unió en coordenades locals i la correcció del sentit de cares en prismes aïllats recuperen perfils en els dos retalls afectats de la bateria. [Resultats](../RO-051-PERFILS-VIARIS.md#repetició-amb-v0214)
 
 ## v0.21.3 — Perfils de vies principals amb MET5
 
-Els eixos de superfície es retallen abans de mostrejar el MET5. El planificador conserva cinc perfils troncals al retall sud-oest de Sant Salvador de Guardiola, un més que abans. El resultat integrat i el laminat del túnel i el pont queden pendents. [Control de la C-37](RO-051-PERFILS-VIARIS.md)
+Els eixos de superfície es retallen abans de mostrejar el MET5. El planificador conserva cinc perfils troncals al retall sud-oest de Sant Salvador de Guardiola, un més que abans. El resultat integrat i el laminat del túnel i el pont queden pendents. [Control de la C-37](../RO-051-PERFILS-VIARIS.md)
 
 ## v0.21.2 — Lliurament de la graella MET5
 
@@ -492,7 +496,7 @@ El missatge del navegador al procés de geometria conserva el ràster numèric. 
 
 ## v0.21.1 — MET5 al Pedraforca
 
-MET5 seleccionat automàticament en retalls amb cobertura completa. Dos 3MF auditats al Pedraforca. Als Degotalls falta la transformació del núvol terrestre. [Resultats i comprovacions](RELLEU-ROCOS.md)
+MET5 seleccionat automàticament en retalls amb cobertura completa. Dos 3MF auditats al Pedraforca. Als Degotalls falta la transformació del núvol terrestre. [Resultats i comprovacions](../RELLEU-ROCOS.md)
 
 ## v0.21.0 — Control d’exportació per altura i rasants
 
@@ -635,10 +639,10 @@ Controls reals regenerats en 3MF estàndard, sense arbres i RO-051
 desactivat: Rajadell 150×150 mm, 10,238 s, i 150×200 mm / 25°, 6,305 s.
 Un túnel aplicat cadascun i auditoria sense errors. Tauler principal amb
 11/12 pilars i dos enllaços. Al quadrat queden dos extrems `no gentle join`
-(`ifc-114729`, `ifc-132561`), conservats als avisos. [Resultats i models](RO-052-CONTINUITAT.md).
+(`ifc-114729`, `ifc-132561`), conservats als avisos. [Resultats i models](../RO-052-CONTINUITAT.md).
 RO-052 continua obert per a aquests extrems, contrast general i laminat.
 
-RO-053 entrega [proposta i pilot](RO-053-UX.md) amb prototip públic
+RO-053 entrega [proposta i pilot](../RO-053-UX.md) amb prototip públic
 independent: Peça → Territori → Terreny → Vegetació → Vies → Edificis.
 36 comprovacions lleugeres correctes; revisió visual principal a 1280×720
 i 1600×900, inclosos traços conservats, arbres ocultats, recuperació
@@ -688,7 +692,7 @@ falla la boca inicial del rectangle girat amb cotes 7,06837 / 7,17250 /
 7,35417 mm. No s'ha afluixat ni eliminat la regressió. Compilació final
 correcta en 2,85 s. Blocs pesants, suite final, models regenerats i revisió
 visual pendents. Cap procés o agent queda en marxa. Diagnòstics i 3MF
-anteriors preservats a `work/repro/ro052/` com a evidència, no com a models
+anteriors preservats a `work/arxiu/repro/ro052/` com a evidència, no com a models
 finals per imprimir. No s'han comprovat Pages/CI remotament.
 
 L'usuari autoritza corregir la continuïtat i l'amplada del traçat en
@@ -853,7 +857,7 @@ Ferrocarrils: capa pròpia amb increment seleccionable de +0,5 o +1 mm sobre el 
 
 ## v0.17.0 — Suports a escala i obertures experimentals
 
-Treball en tres fronts autoritzat per l’usuari: pilars (RO-033), túnels (RO-034) i reorganització del backlog. Captura de zoom out amb un sol pilar: incidència reproduïda i tractada amb cap adaptat, espaiat físic i diagnòstic de llums. L’opció de túnels és estimada, explícita i desactivada inicialment; no s’atribueixen dades constructives inexistents. Validacions locals i límits als informes [suports](RO-033-SUPORTS-ESCALA.md) i [túnels](RO-034-OBERTURES.md).
+Treball en tres fronts autoritzat per l’usuari: pilars (RO-033), túnels (RO-034) i reorganització del backlog. Captura de zoom out amb un sol pilar: incidència reproduïda i tractada amb cap adaptat, espaiat físic i diagnòstic de llums. L’opció de túnels és estimada, explícita i desactivada inicialment; no s’atribueixen dades constructives inexistents. Validacions locals i límits als informes [suports](RO-033-SUPORTS-ESCALA.md) i [túnels](../RO-034-OBERTURES.md).
 
 262 proves i build correctes; comprovació local de navegador i 3MF real a 3 km: viaducte principal amb 8 pilars i un component. Els túnels d’aquesta regió remota s’ometen amb avís, mentre el cas de control de la mostra en detall ràpid sí que passa: 3MF real llegit i 12 segments del pas central lliures en tres malles. RO-034 continua obert per a generalització; no es pressuposen laminat ni impressió.
 
@@ -904,7 +908,7 @@ l’excepció ja disponible, sense crear un catàleg mundial de plànols; altres
 casos específics només sota demanda. Revisió del codi: suports i enllaços
 reutilitzables, però la reconstrucció dels taulers fora de les mostres encara
 no està integrada. RO-033 passa a P1 i continua obert. S’actualitzen
-[arquitectura](../ARCHITECTURE.md) i [prioritats](BACKLOG.md); sense canvis de
+[arquitectura](../../ARCHITECTURE.md) i [prioritats](../BACKLOG.md); sense canvis de
 funcionalitat ni versió nova. Validació visual distingida de laminat/impressió.
 
 ## v0.15.0 — Pilars, enllaços i camins realçats
@@ -916,7 +920,7 @@ Captures d’extrems flotants rebudes de l’usuari; no són una validació de c
 Primer tauler real del viaducte incorporat a la mostra i al 3MF; [dades,
 comprovacions i límits](RO-033-IMPLEMENTACIO.md). Estudi de túnels amb revisió
 de l’agent principal: [fonts insuficients per al buit real](RO-034-DADES-IFC.md).
-[Llibre d’estil](../DESIGN.md) obligatori per a contribucions i delegacions,
+[Llibre d’estil](../../DESIGN.md) obligatori per a contribucions i delegacions,
 amb tokens compartits i revisió visual. 217 proves, construcció i navegador
 locals correctes. Cap entrada arxivada ni validació física presumida; RO-033,
 RO-034 i RO-045 continuen al backlog. Pages/CI remots els comprova l’usuari.

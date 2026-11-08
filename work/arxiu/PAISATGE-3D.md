@@ -2,7 +2,7 @@
 
 Actualització v0.9.0: Catastre ja és una font opcional al selector, carregada des del navegador; edificis i parts coherents amb límit de consulta. Primeres cobertes gabled/skillion disponibles amb atributs locals, sense font automàtica de teulades. Els resultats nous continuen pendents de validació. El text següent conserva el contrast inicial de v0.8.0.
 
-2026-11-01 · RO-002 / RO-023 / RO-026 / RO-032–RO-035. Estudi i primer contrast de dades; no implica que aquestes funcions estiguin implementades. Seguiment al [backlog](BACKLOG.md).
+2026-11-01 · RO-002 / RO-023 / RO-026 / RO-032–RO-035. Estudi i primer contrast de dades; no implica que aquestes funcions estiguin implementades. Seguiment al [backlog](../BACKLOG.md).
 
 ## Resultat immediat: el megabloc de la Perica
 

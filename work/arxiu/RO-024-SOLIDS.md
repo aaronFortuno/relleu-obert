@@ -1,6 +1,6 @@
 # RO-024 — Sòlids abans de ponts, túnels i cavitats
 
-2026-11-01 · Pla per a la iteració següent. No acredita unions generals ni impressió física. Relació amb [PAISATGE-3D.md](PAISATGE-3D.md) i [BACKLOG.md](BACKLOG.md#ro-024--unió-de-volums-i-validació-dimpressió).
+2026-11-01 · Pla per a la iteració següent. No acredita unions generals ni impressió física. Relació amb [PAISATGE-3D.md](PAISATGE-3D.md) i [BACKLOG.md](../BACKLOG.md#ro-024--unió-de-volums-i-validació-dimpressió).
 
 ## Què tenim i què falta
 

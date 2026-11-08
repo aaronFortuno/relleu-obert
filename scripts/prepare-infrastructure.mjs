@@ -1,5 +1,5 @@
 // Offline preparation of the bundled ICGC sample; the app itself remains static.
-// Obtain the source ZIP linked in work/RO-033-IMPLEMENTACIO.md, unzip its main
+// Obtain the source ZIP linked in work/arxiu/RO-033-IMPLEMENTACIO.md, unzip its main
 // IFC to output/full280110.ifc, then: node scripts/prepare-infrastructure.mjs
 import {readFile,writeFile} from 'node:fs/promises';import proj4 from 'proj4';import earcut from 'earcut';
 const s=await readFile('output/full280110.ifc','utf8'),entities=new Map([...s.matchAll(/^#(\d+)=(.*);\s*$/gm)].map(m=>[+m[1],m[2].trim()]));

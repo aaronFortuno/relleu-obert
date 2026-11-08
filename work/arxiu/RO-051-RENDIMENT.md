@@ -1,11 +1,11 @@
 # RO-051 — Diagnòstic de rendiment en l'equip de 64 GB
 
 2026-11-02. Represa des de `c74e992` / v0.18.1. Seguiment de decisions i
-validacions al [backlog](BACKLOG.md#ro-051--perfils-de-carreteres-principals).
+validacions al [backlog](../BACKLOG.md#ro-051--perfils-de-carreteres-principals).
 L'estratègia geomètrica i els seus límits continuen a
-[RO-051-PERFILS-VIARIS.md](RO-051-PERFILS-VIARIS.md).
+[RO-051-PERFILS-VIARIS.md](../RO-051-PERFILS-VIARIS.md).
 
-Entrega **v0.18.2**: els [controls 3MF](../public/controls/ro-051/README.md)
+Entrega **v0.18.2**: els [controls 3MF](../../public/controls/ro-051/README.md)
 s'incorporen al repositori i a la publicació estàtica, idèntics als fitxers
 auditats de `output/` (SHA-256 comprovat). L'usuari demana commit i push
 després de cada iteració validada i agents per a subtasques independents.

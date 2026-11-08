@@ -22,7 +22,7 @@ La prova de regressió de `tests/buildings.test.js` comprova totes les petjades 
 
 ## Decisió i feina pendent
 
-**Seguiment ampliat:** [RO-026 — Fonts per a edificis més fidels](RO-026-FONTS-EDIFICIS.md) concentra la nova petició de comparació i priorització de proveïdors. RO-002 continua com el cas concret de regressió del megabloc de la Perica.
+**Seguiment ampliat:** [RO-026 — Fonts per a edificis més fidels](../RO-026-FONTS-EDIFICIS.md) concentra la nova petició de comparació i priorització de proveïdors. RO-002 continua com el cas concret de regressió del megabloc de la Perica.
 
 **Diagnòstic fet; separació de cases pendent.** No es creen parcel·les fictícies ni es pressuposa que cada canvi de direcció del contorn sigui una casa. S’ha afegit l’advertiment de petjades agrupades a «Dades i limitacions» i als fitxers exportats.
 

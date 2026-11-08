@@ -26,7 +26,7 @@ Les geometries singulars es carreguen d’Open Place Models quan intersecten el 
 - Fonts originals i atribucions: https://mapterhorn.com/attribution/ i https://download.mapterhorn.com/attribution.json . La precisió real varia segons la font i la regió.
 - Es conserva una còpia del catàleg d’atribucions originals a `public/data/elevation-attribution.json`.
 - Font alternativa: Mapzen / Tilezen Terrain Tiles, AWS Open Data, https://registry.opendata.aws/terrain-tiles/ . Atribucions originals: https://github.com/tilezen/joerd/blob/master/docs/attribution.md . La font efectivament utilitzada queda registrada a les metadades de cada regió.
-- La mostra inclou quatre tessel·les al zoom 14. L’exportació registra el proveïdor. El catàleg documenta els proveïdors de les captures i enllaça les fonts originals. [Atribucions del catàleg](work/RO-046-CATALEG.md#catàleg-complet-al-carrusel)
+- La mostra inclou quatre tessel·les al zoom 14. L’exportació registra el proveïdor. El catàleg documenta els proveïdors de les captures i enllaça les fonts originals. [Atribucions del catàleg](work/RO-046-CATALEG.md#incorporació-dels-lots-al-carrusel)
 
 ## Biblioteques
 
@@ -56,7 +56,7 @@ La imatge de Lichtbild aportada per l’usuari s’ha utilitzat per entendre l�
 
 ## Recerca de parts d’edificis i paisatge 3D
 
-Consulta del WFS INSPIRE BU del Catastre el 2026-11-01, amb envolupant i metodologia a [work/PAISATGE-3D.md](work/PAISATGE-3D.md). La figura comparativa deriva de petjades ICGC RTT i parts de la Dirección General del Catastro. Els GML originals i la mostra GeoJSON experimental són locals, no s’inclouen en la web ni es declaren MIT. Referències i [condicions de la font](https://www.catastro.hacienda.gob.es/webinspire/documentos/Licencia.pdf) a l’estudi. Cap proveïdor nou s’ha incorporat encara al mode automàtic.
+Consulta del WFS INSPIRE BU del Catastre el 2026-11-01, amb envolupant i metodologia a [estudi arxivat](work/arxiu/PAISATGE-3D.md). La figura comparativa deriva de petjades ICGC RTT i parts de la Dirección General del Catastro. Els GML originals i la mostra GeoJSON experimental són locals, no s’inclouen en la web ni es declaren MIT. Referències i [condicions de la font](https://www.catastro.hacienda.gob.es/webinspire/documentos/Licencia.pdf) a l’estudi. Cap proveïdor nou s’ha incorporat encara al mode automàtic.
 
 ## Catastre i cobertes (v0.9)
 
@@ -88,7 +88,7 @@ regió queda identificada a la interfície i a les metadades d’exportació.
 del [full IFC 280110, any 2024](https://datacloud.icgc.cat/datacloud/topografia-territorial/ifc/topografia-territorial-v1r0-full280110-2024.zip),
 ICGC Referencial Topogràfic Territorial, CC BY 4.0. No són dades MIT.
 Extracció, coordenades, atribució, gruix de maqueta i límits documentats a
-[RO-033-IMPLEMENTACIO.md](work/RO-033-IMPLEMENTACIO.md).
+[RO-033-IMPLEMENTACIO.md](work/arxiu/RO-033-IMPLEMENTACIO.md).
 
 ## Repartiment de pilars de Rajadell (v0.15)
 

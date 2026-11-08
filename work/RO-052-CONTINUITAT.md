@@ -134,7 +134,7 @@ plecs dels enllaços en revolts i metadades absents al JSON. **377/377 proves
 ordinàries finals i sis proves integrades verificades.** Dos controls reals
 regenerats amb túnels i auditoria sense errors. RO-052 continua obert:
 dos extrems sense enllaç suau al quadrat, contrast general i revisió de
-laminat/impressió pendents. [Represa actualitzada](REPRESA-RO-052.md).
+laminat/impressió pendents. [Represa actualitzada](arxiu/REPRESA-RO-052.md).
 
 ## Correcció i verificació v0.19.1
 
@@ -195,7 +195,7 @@ Els informes detallats locals són `output/ro052-rajadell-final.json` i
 `output/ro052-rectangle-final.json`. Es van generar des d'a72d787 amb
 aquestes correccions encara sense commit; aquest és l'origen registrat,
 no una prova feta després del commit final. Els controls PRE de
-[repro/ro052](repro/ro052/README.md) es conserven com a evidència històrica.
+[repro/ro052](arxiu/repro/ro052/README.md) es conserven com a evidència històrica.
 
 ## Fonaments incorporats a v0.19.0
 

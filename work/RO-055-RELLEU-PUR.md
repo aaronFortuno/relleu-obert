@@ -4,11 +4,17 @@ A Territori, el mode Relleu pur permet treballar d’1:10.000 a 1:500.000 en for
 
 ## Font dels colors
 
-El retall inclòs s’ha derivat d’ESA WorldCover 2021 v200 (Zanaga et al., 2022), tessel·la N42E000, CC BY 4.0. El fitxer reprodueix les classes de sòl nu o amb vegetació escassa (60) i neu o gel (70). El gris granític és una elecció de paleta per al sòl nu. La classe blanca descriu la cobertura del conjunt de 2021. Fora del retall distribuït la paleta és neutra.
+El primer retall de l’Aneto deriva d’ESA WorldCover 2021 v200 (Zanaga et al., 2022), tessel·la N42E000, CC BY 4.0. El gris granític representa el sòl nu o amb vegetació escassa (classe 60) i el blanc, la neu o el gel cartografiats (classe 70). Les ampliacions cobreixen sectors dels Alps, Lavaredo, el Fuji i Geiranger. Els mosaics regionals s’ometen si un píxel representa més de 2 mm a la maqueta.
 
 - [Dades ESA WorldCover](https://esa-worldcover.org/en/data-access)
 - [Citació i llicència del conjunt 2021](https://doi.org/10.5281/zenodo.7254221)
 - [Script de preparació del retall](../scripts/prepare-aneto-coverage.mjs)
+
+## Controls de mar i vegetació
+
+La textura de bosc a 1:10.000 té una alçada màxima inicial de 0,8 mm, regulable entre 0,2 i 2 mm, i una irregularitat inicial del 45 %. L’alçada varia amb l’escala i es redueix als límits del bosc. Al cas de `linies-vegetacio.json` es va comprovar que les vores de les tessel·les ja no deixaven franges buides.
+
+Al retall panoràmic de l’eix pirinenc, el visor ja mostra l’Atlàntic i el Mediterrani. A Tamariu 30 × 30 cm, el codi marí −8888 del MET5 provocava una base massa alta. En convertir el codi a 0 m, els dos modes situen la superfície marina a 5 mm. En Relleu pur, els tres fragments marins arriben a la base i passen l’auditoria de sòlids. Queda comprovar els talls i el material en el laminat de Relleu pur. [Especificació del MET5, §5](https://icgc-web-pro.s3.eu-central-1.amazonaws.com/produccio/s3fs-public/met5v10esp_02ca_54782.pdf#page=8)
 
 ## Mesures locals
 

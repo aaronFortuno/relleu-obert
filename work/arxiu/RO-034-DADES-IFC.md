@@ -24,7 +24,7 @@ no afirma que no existeixin altres fonts adequades.
    7 punts, només XY. L’identificador de tessel·la no s’acredita com a ID
    original d’OpenStreetMap. `layer=-1` no significa un metre de profunditat.
 
-L’envolupant és la de [la mostra inclosa](../public/data/eix-diagonal.json).
+L’envolupant és la de [la mostra inclosa](../../public/data/eix-diagonal.json).
 Les consultes RTT en UTM i en coordenades geogràfiques corresponen a la
 mateixa zona de prova.
 
