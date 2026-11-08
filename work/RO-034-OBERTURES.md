@@ -1,5 +1,15 @@
 # RO-034 — Obertures experimentals i portals
 
+## Pas inferior del Guggenheim, v0.23.44
+
+El retall de `bilbao-guggenheim-carreteres.json` és de 200 × 200 mm a aproximadament 1:1.323. Al detall original (64), el motor obria només un dels dos sentits del pas inferior. La cota DEM de l’altre sentit (`419022652`) quedava massa alta per enllaçar amb la calçada inferior dins la prolongació prevista. El vial de servei (`4411383522`) tenia un plec al costat interior d’una corba del portal.
+
+El motor pot reintentar una rasant lleugerament més baixa quan el túnel té dos accessos cartografiats i conserva la coberta i la base. Es mantenen els límits de longitud i pendent. Les corbes conserven els vèrtexs del traçat i les boques, i s’eliminen les seccions interpolades que es plegarien dins de l’angle. El paviment i la volta comparteixen les seccions resultants.
+
+Amb Mapterhorn, OpenFreeMap i arbres desactivats, els tres trams de carretera s’obren als detalls 24 i 64 i les malles superen l’auditoria. A detall 64 el descens del perfil `419022652` és de 0,25 mm a la peça. En un punt de creuament, la malla conserva la calçada inferior a 12,87 mm i la superior a 21,58 mm, mesurades des de la base. A detall 64 encara s’ometen el pas ciclista, dos ramals del tramvia i l’enllaç d’un pont de vianants. Queda pendent la revisió visual i el contrast en una ronda de Barcelona.
+
+## Pilot inicial
+
 **Actualització v0.18.1:** opció activada inicialment a la interfície,
 volta parabòlica i paviment de camí/ferrocarril. Vegeu el detall al final;
 les seccions anteriors descriuen els criteris i resultats de v0.17–0.18.

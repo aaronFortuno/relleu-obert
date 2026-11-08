@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Revisat el **2026-11-08** amb la v0.23.43. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
+Revisat el **2026-11-08** amb la v0.23.44. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
 
 ## Ordre de treball
 
@@ -50,6 +50,8 @@ Al-Khazneh r1 passa els controls d’encaix locals a 1:500 i 1:1.000 i en un ret
 ### RO-034 — Túnels imprimibles
 
 **P1.** Les dues boques del túnel de Sant Salvador a 1:20.000 passen la comprovació de malla. Validar al laminador les boques, la volta i el paviment de l’interior, i repetir el control en un segon retall. [Controls de túnels](RO-034-OBERTURES.md)
+
+Al Guggenheim, el control de malla recupera els dos sentits del pas inferior i el vial de servei. Pendent de revisió visual del conjunt i contrast a la Ronda Litoral o la Ronda de Dalt. [Control de Bilbao](RO-034-OBERTURES.md#pas-inferior-del-guggenheim-v02344)
 
 ### RO-051 — Perfils de carreteres principals
 

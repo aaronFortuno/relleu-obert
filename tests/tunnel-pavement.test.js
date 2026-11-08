@@ -33,6 +33,27 @@ test('procedural estimates declare the actual parabola, pavement category and ba
   const low=generateProceduralTunnelVoids([feature('trunk')],()=>100,{...options,verticalReference:{originMeters:100,minimumSurfaceMM:2.9}});
   assert.equal(low.items.length,0);assert.match(low.warnings[0],/paviment.*base/);
 });
+
+test('a curved mapped underpass can reach the lower roads when the DEM overestimates both portal heights',()=>{
+  const projection={width:100,height:80,scale:.1,project:([x,y])=>[x*10000,y*10000]};
+  const feature={id:'underpass',properties:{sourceLayer:'transportation',brunnel:'tunnel',class:'trunk',width:35,layer:-1},
+    geometry:{type:'LineString',coordinates:[[.002,.004],[.008,.004]]}};
+  const ground=x=>x>20&&x<80?20:5;
+  const portalRoute=({point:[x,y],outward:[dx]})=>[[x,y],[x+dx*8,y+4]];
+  const options={enabled:true,projection,ground,verticalReference:{originMeters:100,minimumSurfaceMM:5},portalRoute};
+  const result=generateProceduralTunnelVoids([feature],()=>116,options);
+  const [tunnel]=result.items;
+  assert(tunnel,result.warnings.join(' '));
+  assert(tunnel.loweringMM>0&&tunnel.loweringMM<=.75);
+  assert(tunnel.minimumCoveredRoofMM>=.3);
+  assert(tunnel.portalRampGrades.every(grade=>Math.abs(grade)<=.25));
+  assert(tunnel.portalConnections.every(({centre})=>Math.abs(centre[2]-5)<1e-8));
+  assert(tunnel.pavementSections.every(({across})=>across.every(p=>p[2]-.3>=2.5)));
+  for(const part of [tunnel,...tunnelPavements([tunnel])])assert.deepEqual(auditPart(part).errors,[]);
+  const unmapped=generateProceduralTunnelVoids([feature],()=>116,{...options,portalRoute:undefined});
+  assert.equal(unmapped.items.length,0,'a lowering retry requires mapped access roads at both ends');
+});
+
 test('parabolic cutter keeps the analytical rectangular API and a closed rising curved section',()=>{
   const section=parabolicTunnelSection(8,6);assert.equal(section.length,19);
   assert.deepEqual(section[2],[4,3.3000000000000003]);assert.deepEqual(section[10],[0,6]);

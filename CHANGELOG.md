@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.23.44 — 2026-11-08
+
+- Els túnels amb accessos cartografiats poden ajustar lleugerament la rasant quan la cota estimada de les boques no arriba a la calçada inferior. El càlcul evita plecs del paviment a les corbes dels accessos i manté els límits de pendent, coberta i gruix de base. Al retall del Guggenheim s’obren els dos sentits del pas inferior i el vial de servei.
+
 ## v0.23.43 — 2026-11-08
 
 - L’historial del peu de pàgina recupera les entrades posteriors a la v0.23.14. Les notes de les versions noves es publiquen al quadre automàticament des del changelog del repositori.
