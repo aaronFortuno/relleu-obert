@@ -1479,7 +1479,17 @@ function prepareBuildingGeometry(ctx,config,progress,preview,measure=(_phase,run
   const urbanCover=ctx.meta.historical?.layer==='urban';
   const isDry=(buildingMode==='none'&&!urbanCover)||!features.length?null:dryFootprints(waterPoly,width,height,res);
   let batch={vertices:[],faces:[]},lastPreview=performance.now();
-  const landmarks=[];
+  const withBounds=landmark=>{
+    const points=landmark.footprints.flatMap(([ring])=>ring),xs=points.map(p=>p[0]),ys=points.map(p=>p[1]);
+    return {...landmark,bounds:[Math.min(...xs),Math.min(...ys),Math.max(...xs),Math.max(...ys)]};
+  };
+  // A façade carved into the terrain can replace an extruded building outline.
+  // Keep the original outline whenever the terrain cut is skipped.
+  const landmarks=(ctx.activeLandforms||[]).flatMap(({model})=>{
+    if(!model.replacement)return [];
+    const footprints=intersect(geoPolys({geometry:model.footprint},ctx.proj.project),rect);
+    return footprints.length?[withBounds({footprints,replacement:model.replacement})]:[];
+  });
   const bridgeSupports=new Map();
   for(const bridge of ctx.bridges||[])for(const id of bridge.supportFeatureIds||[])bridgeSupports.set(id,bridge.mask);
   if(buildingMode!=='none'&&!urbanCover)for(const model of ctx.singularModels||[]){
@@ -1487,8 +1497,7 @@ function prepareBuildingGeometry(ctx,config,progress,preview,measure=(_phase,run
     try{
       const landmark=prepareLandmark(ctx,model,config);
       if(!landmark)continue;
-      const points=landmark.footprints.flatMap(([ring])=>ring),xs=points.map(p=>p[0]),ys=points.map(p=>p[1]);
-      landmarks.push({...landmark,bounds:[Math.min(...xs),Math.min(...ys),Math.max(...xs),Math.max(...ys)]});
+      landmarks.push(withBounds(landmark));
       prepared.push(landmark);
       if(preview)append(batch,landmark.fragments[0].solid);
     }catch{
