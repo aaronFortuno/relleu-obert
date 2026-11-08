@@ -1,5 +1,5 @@
 import {auditPart} from './solid-audit.js';
-import {selectSurfaceComponents,removeCollapsedSurfaceComponents} from './surface-components.js';
+import {selectSurfaceComponents,removeCollapsedSurfaceComponents,separateSurfaceComponents} from './surface-components.js';
 import {carveTunnelMaterials} from './tunnel-pavement.js';
 
 const finiteIn=(value,min,max)=>Number.isFinite(value)&&value>=min&&value<=max;
@@ -45,12 +45,14 @@ export function prepareCatalogueLandforms(models,proj){
       const [x,y]=toMap(world[i],world[i+2]);
       world[i]=x;world[i+2]=world[i+1];world[i+1]=y;
     }
-    const extent=bounds(world),{lo,hi}=extent;
-    if(hi[0]<=0||hi[1]<=0||lo[0]>=proj.width||lo[1]>=proj.height)return [];
+    const cutters=separateSurfaceComponents({vertices:world,faces:cutter.faces})
+      .map(part=>({...part,extent:bounds(part.vertices)}))
+      .filter(({extent:{lo,hi}})=>hi[0]>0&&hi[1]>0&&lo[0]<proj.width&&lo[1]<proj.height);
+    if(!cutters.length)return [];
     const half=(grid.side-1)*grid.step/2;
     const corners=[[-half,-half],[-half,half],[half,-half],[half,half]].map(([x,y])=>toMap(x,y));
     const surfaceExtent={lo:[0,1].map(axis=>Math.min(...corners.map(p=>p[axis]))),hi:[0,1].map(axis=>Math.max(...corners.map(p=>p[axis])))};
-    return [{model,world,extent,surfaceExtent,grid,lon,lat,k}];
+    return [{model,cutters,surfaceExtent,grid,lon,lat,k}];
   });
 }
 
@@ -76,18 +78,20 @@ export function catalogueTerrain(sample,patches){
 // The cutter is kept in absolute metres until the active base and vertical scale are known.
 export function carveCatalogueLandforms(parts,patches,api,datum,zScale){
   const applied=[],skipped=[];
-  for(const {model,world,extent:{lo}} of patches){
+  for(const {model,cutters} of patches){
     const skip=reason=>skipped.push({name:model.name,id:model.id,reason});
     const at=z=>datum.minimumSurfaceMM+(z-datum.originMeters)*zScale;
-    const floor=at(lo[2]);
-    if(floor<datum.minimumSurfaceMM||!api){skip('below base or geometry engine unavailable');continue;}
-    const vertices=Float32Array.from(world);
-    for(let i=2;i<vertices.length;i+=3)vertices[i]=at(vertices[i]);
+    const eligible=cutters.filter(({extent:{lo}})=>lo[2]>=datum.originMeters);
+    if(!eligible.length||!api){skip('below base or geometry engine unavailable');continue;}
     try{
-      const cutter={vertices,faces:model.cutter.faces};
-      const {selected,restore}=selectSurfaceComponents(parts,[cutter],{categories:parts.map(p=>p.id)});
+      const openings=eligible.map(({vertices:world,faces})=>{
+        const vertices=Float32Array.from(world);
+        for(let i=2;i<vertices.length;i+=3)vertices[i]=at(vertices[i]);
+        return {vertices,faces};
+      });
+      const {selected,restore}=selectSurfaceComponents(parts,openings,{categories:parts.map(p=>p.id)});
       if(!selected.length){skip('outside terrain');continue;}
-      const result=carveTunnelMaterials(selected,[cutter],[],api);
+      const result=carveTunnelMaterials(selected,openings,[],api);
       const removedMM3=Object.values(result.removed).reduce((sum,v)=>sum+v,0);
       if(removedMM3<=1e-5){skip('no intersecting volume');continue;}
       const {parts:carved}=removeCollapsedSurfaceComponents(result.parts);
@@ -101,7 +105,7 @@ export function carveCatalogueLandforms(parts,patches,api,datum,zScale){
 }
 
 export function clearOfLandforms(patches,x,y,padding){
-  return !patches?.some(({extent:{lo,hi}})=>x>=lo[0]-padding&&x<=hi[0]+padding&&y>=lo[1]-padding&&y<=hi[1]+padding);
+  return !patches?.some(({cutters})=>cutters.some(({extent:{lo,hi}})=>x>=lo[0]-padding&&x<=hi[0]+padding&&y>=lo[1]-padding&&y<=hi[1]+padding));
 }
 
 export function landformWarnings({applied,skipped}){

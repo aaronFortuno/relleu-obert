@@ -3,6 +3,7 @@ import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {loadRegion,loadBuildingLayer,applyBuildingLayer,defaultBuildingSource} from './sources.js';
 import {inCatalonia} from './buildings.js';
 import {createPlaceMap,MAX_PROJECT_SCALE} from './place-map.js';
+import {createPlaceSearchScheduler} from './place-search.js';
 import {PURE_RELIEF_RESOLUTIONS} from './pure-relief-mesh.js';
 import {smoothTerrainNormals} from './terrain-normals.js';
 import {CATEGORIES,PALETTES,defaultAssignments,RELIEF_MATERIALS,RELIEF_PALETTES,defaultReliefAssignments,reliefMaterialId} from './materials.js';
@@ -147,8 +148,13 @@ const vegetation=()=>({trees:$('#trees').checked,density:2.5,brushDensity:Number
 let currentStatus='',currentBadge='';
 const placeSearch=$('#place-search'),searchResults=$('#search-results'),searchForm=$('#search-form');
 const searchSubmit=searchForm.querySelector('[type="submit"]');
+const searchIcon=$('#search-icon'),searchSpinner=$('#search-spinner');
 const searchPending=baseMessage('status.searching'),searchChoose=baseMessage('status.chooseResult'),searchEmpty=baseMessage('status.noResults');
-let searchTimer,searchRequest;
+const placeSearchScheduler=createPlaceSearchScheduler({run:searchPlace,setPending(pending){
+  searchIcon.hidden=pending;
+  searchSpinner.hidden=!pending;
+  searchResults.setAttribute('aria-busy',String(pending));
+}});
 const say=(message,error=false)=>{currentStatus=message;$('#status').textContent=messageText(message);$('#status').classList.toggle('error',error);};
 const badge=message=>{currentBadge=message;$('#model-badge').textContent=messageText(message);$('#model-badge').hidden=!message;};
 const workLabels={
@@ -163,7 +169,7 @@ function lock(value){
   $('#model-mode').disabled=updating;
   $('#streams').disabled=waterLocked;
   $('#stream-width').disabled=waterLocked||!$('#streams').checked;
-  $('#exag').disabled=value&&job==='build'&&pureSelected();
+  $('#exag').disabled=value&&job==='build';
   $('#detail').disabled=updating||drawing;
   for(const id of ['road-rise','rail-rise','trail-width','estimated-tunnels','major-profiles','model-scale','new-project'])$('#'+id).disabled=updating;
   lockBuildingControls(updating);
@@ -534,26 +540,31 @@ function sameTerrain(options,includeTransport=true){
   const keys=includeTransport?[...reliefKeys,'roadRise','railRise','trailWidth','estimatedTunnels','majorRoads']:reliefKeys;
   return sameTerrainFrame(options)&&keys.every(key=>options[key]===old[key]);
 }
-const canUpdateRelief=options=>options.pureRelief&&!tooLargeRegion&&sameTerrainFrame(options);
+const canUpdateElevation=options=>!!region&&!tooLargeRegion&&sameTerrainFrame(options);
+const canUpdateRelief=options=>options.pureRelief&&canUpdateElevation(options);
 function cancelReliefUpdate(){
   clearTimeout(reliefTimer);
   reliefTimer=null;
 }
-function requestReliefUpdate(message){
+function requestReliefUpdate(message,allowLandscape=false){
   cancelReliefUpdate();
   const options=modelOptions();
-  if(!canUpdateRelief(options)){requireBuild(message);return;}
-  needsBuild=false;
-  badge('');
+  if(!(allowLandscape?canUpdateElevation(options):canUpdateRelief(options))){requireBuild(message);return;}
+  if(options.pureRelief){needsBuild=false;badge('');}
   say('');
-  reliefTimer=setTimeout(flushReliefUpdate,150);
+  reliefTimer=setTimeout(flushReliefUpdate,options.pureRelief?150:250);
   lock(busy);
 }
 function flushReliefUpdate(){
   if(busy||pendingVegetation||drawing){reliefTimer=setTimeout(flushReliefUpdate,100);return;}
   reliefTimer=null;
   const options=modelOptions();
-  if(!canUpdateRelief(options)){lock(false);return;}
+  if(!canUpdateElevation(options)){lock(false);return;}
+  if(!options.pureRelief){
+    if(options.exaggeration!==model.provenance.options.exaggeration)generate();
+    else lock(false);
+    return;
+  }
   if(sameTerrain(options,false)){
     needsBuild=false;badge('');lock(false);say(statusMessage('status.reliefReady'));return;
   }
@@ -862,22 +873,19 @@ worker.onerror=event=>{
   settleBuildings(error);
 };
 function cancelPlaceSearch(){
-  clearTimeout(searchTimer);
-  searchRequest?.abort();
-  searchRequest=null;
+  placeSearchScheduler.cancel();
+  clearPlaceSearchResults();
+}
+function clearPlaceSearchResults(){
   searchResults.replaceChildren();
   if(currentStatus===searchPending||currentStatus===searchChoose||currentStatus===searchEmpty)say('');
 }
-async function searchPlace(){
-  const query=placeSearch.value.trim();
-  if(placeSearch.disabled||!query||searchRequest)return;
-  const request=new AbortController();
-  searchRequest=request;
+async function searchPlace(query,signal){
   searchResults.replaceChildren();
   say(searchPending);
   try{
-    const results=await placeMap.search(query,request.signal);
-    if(request.signal.aborted)return;
+    const results=await placeMap.search(query,signal);
+    if(signal.aborted)return;
     if(results===null){say(baseMessage('status.regionChosen'));return;}
     for(const result of results){
       const button=document.createElement('button');
@@ -893,22 +901,19 @@ async function searchPlace(){
     }
     say(results.length?searchChoose:searchEmpty);
   }catch(error){
-    if(!request.signal.aborted)say(error.messageKey?baseMessage(error.messageKey):error.message,true);
-  }finally{
-    if(searchRequest===request)searchRequest=null;
+    if(!signal.aborted)say(error.messageKey?baseMessage(error.messageKey):error.message,true);
   }
 }
 function schedulePlaceSearch(event){
-  cancelPlaceSearch();
-  if(!event.isComposing&&placeSearch.value.trim())searchTimer=setTimeout(searchPlace,2000);
+  clearPlaceSearchResults();
+  placeSearchScheduler.schedule(event.isComposing||placeSearch.disabled?'':placeSearch.value.trim());
 }
 placeSearch.oninput=placeSearch.oncompositionend=schedulePlaceSearch;
 placeSearch.oncompositionstart=cancelPlaceSearch;
 searchForm.onsubmit=event=>{
   event.preventDefault();
-  clearTimeout(searchTimer);
   if(narrowWorkshop.matches)placeSearch.blur();
-  searchPlace();
+  placeSearchScheduler.start(placeSearch.disabled?'':placeSearch.value.trim());
 };
 const panoramicPilotId='pirineus-eix';
 const legacyReliefPilotId='pirineus-relleu';
@@ -1186,8 +1191,9 @@ function syncExaggerationLabel(){
 }
 $('#exag').oninput=()=>{
   syncExaggerationLabel();
-  requestReliefUpdate(statusMessage('pending.relief'));
+  if(pureSelected())requestReliefUpdate(statusMessage('pending.relief'));
 };
+$('#exag').onchange=()=>{if(!pureSelected())requestReliefUpdate(statusMessage('pending.relief'),true);};
 $('#detail').onchange=()=>{
   if(busy||pendingVegetation||drawing)return;
   if(selection&&selectedSize&&!tooLargeRegion){generate();return;}

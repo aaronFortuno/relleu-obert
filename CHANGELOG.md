@@ -1,5 +1,11 @@
 # Canvis
 
+## v0.23.35 — 2026-11-08
+
+- L’exageració vertical s’aplica automàticament en Model complet quan es deixa anar el control. Es mantenen la vista i les edicions de vegetació del retall carregat.
+- La cerca de llocs espera un segon des de l’última edició i mostra un indicador fins que es resol la consulta. Retorn manté la cerca immediata.
+- La Foradada r3 amplia el detall de la carena, conserva el forat triangular i incorpora el voladís de la Cadireta.
+
 ## v0.23.34 — 2026-11-07
 
 - Els models singulars amb una cota de base documentada poden corregir el relleu sota la petjada. A Guiza, la piràmide s’assenta al paviment sense sumar l’alçada que ja recull el model d’elevacions.

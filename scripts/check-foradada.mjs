@@ -49,6 +49,11 @@ function checkPassage(parts,source,model,project,offset=[0,0]){
   // Start and finish beyond the cutter. In r1 the east cap blocked every
   // through ray even though an axial segment inside the cavity was clear.
   const samples=[896,897,898,899].flatMap(elevation=>[-1,0,1].map(lateral=>[elevation,lateral]));
+  const cadireta=source.revision==='r3'?[1,3,5].map((east,i)=>{
+    const south=i===0?-52:-53;
+    const point=project([lon+east/k,lat-south/111320]);
+    return {east,south,xy:[point[0]-offset[0],point[1]-offset[1]],hits:[]};
+  }):[];
   let apertureHits=0,roofHits=0,portalHits=0;
   for(const part of parts){
     const mesh=new api.Mesh({numProp:3,vertProperties:part.vertices,triVerts:part.faces});mesh.merge();
@@ -58,9 +63,15 @@ function checkPassage(parts,source,model,project,offset=[0,0]){
       for(const [z,lateral] of samples)apertureHits+=solid.rayCast(at(-14,z,lateral),at(32,z,lateral)).length;
       for(const end of [-14,32])portalHits+=solid.rayCast(at(end,896),at(end,960)).length;
       roofHits+=solid.rayCast(at(7,898),at(7,960)).length;
+      for(const {xy,hits} of cadireta){
+        const z=elevation=>minimumSurfaceMM+(elevation-originMeters)*zScale;
+        hits.push(...solid.rayCast([...xy,z(910)],[...xy,z(834)]).map(hit=>
+          Math.round((originMeters+(hit.position[2]-minimumSurfaceMM)/zScale)*100)/100));
+      }
     }finally{solid.delete();}
   }
-  return {rays:samples.length,apertureHits,portalHits,roofHits};
+  return {rays:samples.length,apertureHits,portalHits,roofHits,
+    ...(cadireta.length?{cadireta:cadireta.map(({east,south,hits})=>({east,south,hits:hits.sort((a,b)=>b-a)}))}:{})};
 }
 
 await mkdir(out,{recursive:true});
@@ -79,15 +90,18 @@ for(const test of cases.filter(({name})=>!args.some(arg=>cases.some(entry=>entry
   const model=buildModel(request.region,request.options,undefined,api);
   const {project}=makeProjection(region.meta.bbox,width,request.options);
   const audit=model.parts.map(auditPart).map(({id,errors,triangles})=>({id,errors,triangles}));
-  const bytes=export3MF?threeMF(model,{bambu:true}):null,basename=`${out}/roca-foradada-r2-${name}`;
+  const bytes=export3MF?threeMF(model,{bambu:true}):null,basename=`${out}/roca-foradada-${source.revision}-${name}`;
   const report={...test,terrainControl,terrain:region.meta.terrain.provider,source:model.provenance.catalogueLandforms,
     omissions:model.provenance.catalogueLandformOmissions,warnings:model.warnings.filter(w=>w.includes('Foradada')),audit,...checkPassage(bytes?exportedParts(bytes):model.parts,source,model,project)};
   console.log(JSON.stringify(report));
-  assert(report.source?.some(entry=>entry.id===source.id&&entry.revision==='r2'));
+  assert(report.source?.some(entry=>entry.id===source.id&&entry.revision===source.revision));
   assert(audit.every(part=>!part.errors.length));
   assert.equal(report.apertureHits,0,'La cavitat ha de travessar la roca.');
   assert.equal(report.portalHits,0,'Els dos extrems de la prova han de començar a l’aire lliure.');
   assert(report.roofHits>0,'La cavitat ha de conservar la volta.');
+  if(report.cadireta)for(const {east,south,hits:[top,bottom,ground]} of report.cadireta){
+    assert(top-bottom>2&&bottom-ground>7,`La Cadireta ha de sobresortir sobre el buit a (${east}, ${south}).`);
+  }
   if(bytes)await writeFile(`${basename}-1-${scale}.3mf`,bytes);
   if(pureRelief){
     const updated=updatePureRelief(model,{exaggeration:1.25,baseThickness:6});

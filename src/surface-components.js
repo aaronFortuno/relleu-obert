@@ -22,6 +22,10 @@ function extract(part,triangles){
   let i=0;for(const t of ordered)for(let k=0;k<3;k++)faces[i++]=remap.get(part.faces[t*3+k]);
   return {...part,vertices,faces};
 }
+export function separateSurfaceComponents(part){
+  const components=partComponents(part.faces);
+  return components.length===1?[part]:components.map(triangles=>extract(part,triangles));
+}
 function combine(a,b){
   if(!a?.faces.length)return b;if(!b?.faces.length)return a;
   const vertices=new Float32Array(a.vertices.length+b.vertices.length),faces=new Uint32Array(a.faces.length+b.faces.length),offset=a.vertices.length/3;

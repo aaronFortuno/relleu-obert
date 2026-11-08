@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Actualitzat el **2026-11-07 · v0.23.34**. [Historial](HISTORIAL.md).
+Actualitzat el **2026-11-08 · v0.23.35**. [Historial](HISTORIAL.md).
 
 ## Ordre de treball
 
@@ -11,8 +11,8 @@ Actualitzat el **2026-11-07 · v0.23.34**. [Historial](HISTORIAL.md).
 | **Catàleg de relleu** | RO-046 | Amsterdam té una primera revisió visual del centre. Continuar amb l’Eixample, Girona i Venècia, i reprendre els controls pendents de les Bardenas, Colorado i Lavaredo. [Cua de revisió](RO-046-CATALEG.md#revisió-per-a-maquetes-daula) |
 | **Paviment de superfície** | RO-051, RO-052 | El retall girat mostra millora al laminador i es dona per bo de moment. La impressió física i els enllaços pendents queden en seguiment. [Control de l’Hospitalet](RO-052-CONTINUITAT.md#talls-locals-sota-els-taulers-v02319) |
 | **Seguiment de les estructures** | RO-033, RO-034, RO-050 | Registrar noves incidències amb retall i escala. A Sant Salvador, dos perfils segueixen el terreny pel pendent dels enllaços. El túnel a 1:20.000 té les dues boques comprovades al 3MF. El pas de Montgròs es conserva al cupó laminat. [Controls de vies](RO-051-PERFILS-VIARIS.md#transicions-pendents-a-la-v0220) · [Montgròs](RO-033-CONTROLS-PROCEDIMENTALS.md#laminat-del-cupó-de-montgròs) |
-| **Validació en paral·lel** | RO-024, RO-033, RO-046, RO-054, RO-055 | Revisar Tamariu 40 × 45 cm i Amsterdam amb totes les capes al laminador. També queden la recuperació d’un projecte girat i els talls dels Rasos–Gallina Pelada. |
-| **Pilot de relleu rocós** | RO-023, RO-035 | Revisar la Foradada i el Cavall Bernat i recuperar la georeferenciació dels Degotalls. El pilot de sectors de Montserrat s’ha retirat. [Comparativa](RELLEU-ROCOS.md#comparativa-amb-el-relleu-general--v02332) |
+| **Validació en paral·lel** | RO-024, RO-033, RO-046, RO-054, RO-055 | Les quatre plaques de Tamariu laminen bé segons l’usuari. Queden el laminat d’Amsterdam, la recuperació d’un projecte girat i els talls dels Rasos–Gallina Pelada. |
+| **Pilot de relleu rocós** | RO-023, RO-035 | Comparar la silueta de la Foradada r3 i la Cadireta al visor, revisar el Cavall Bernat i recuperar la georeferenciació dels Degotalls. [Proves de la r3](RELLEU-ROCOS.md#carena-i-cadireta--v02335) |
 | **Catàleg de llocs singulars** | RO-032, RO-033 | Torre Glòries validada al visor. Guiza i Millau verificats en retalls locals. Revisar Guiza al visor i les llums i els tirants del viaducte al laminador. [Controls de Millau](RO-033-CONTROLS-PROCEDIMENTALS.md#pilot-de-millau-al-catàleg--v02328) |
 
 Els encàrrecs independents avancen en paral·lel. Cada bloc validat té el seu commit i es manté una sola prova pesada alhora. Els casos que requereixen inspecció al laminador poden quedar pendents mentre avancen altres línies.
@@ -25,12 +25,12 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 
 | ID | Prioritat | Estat | Proper resultat comprovable |
 | ------------------------------------------------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| [RO-053](#ro-053--flux-de-treball-per-etapes) | P1 | Taller mòbil, canvi de mida i guia de primera maqueta | Validar el taller en telèfons reals, la utilitat de la guia i el contrast de les guies de tall al bosc |
-| [RO-033](#ro-033--ponts-i-viaductes) | P1 | Montgròs validat al cupó. Obertures mesurades a Amsterdam i Empuriabrava | Laminar els ponts curts i comprovar les llums en una placa completa |
+| [RO-053](#ro-053--flux-de-treball-per-etapes) | P1 | Millora del taller mòbil confirmada en ús | Comprovar gestos i teclat, la utilitat de la guia i el contrast de les guies de tall al bosc |
+| [RO-033](#ro-033--ponts-i-viaductes) | P1 | Montgròs validat al cupó. Cap pont absent detectat en l’última revisió visual d’Amsterdam | Laminar els ponts curts i comprovar les llums en una placa completa |
 | [RO-034](#ro-034--túnels-imprimibles) | P1 | Dues boques i rasant compartida verificades al cupó 3MF | Validar el cupó i revisar el tram cobert de Sant Salvador al laminador |
 | [RO-051](#ro-051--perfils-de-carreteres-principals) | P1 | Retall girat acceptat provisionalment després de revisar-lo al laminador | Valorar quines irregularitats es distingeixen en la impressió física |
 | [RO-052](#ro-052--continuïtat-i-amplada-del-traçat-viari) | P1 | Ramal sobre dues calçades verificat al cupó. Interferència amb un camí de vianants en el model complet | Comprovar la llum i els enllaços després d’integrar cada grup de vies |
-| [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió) | P1 | Filament per peça validat a Montserrat. Projecte de quatre plaques obert a Bambu Studio | Contrastar el laminat de les quatre peces de Tamariu |
+| [RO-024](#ro-024--unió-de-volums-i-validació-dimpressió) | P1 | Filament per peça validat a Montserrat i quatre plaques de Tamariu laminades correctament | Contrastar el laminat dels Rasos–Gallina Pelada i la impressió física |
 | [RO-026](#ro-026--fidelitat-dels-edificis-i-selecció-de-fonts) | P1 | ICGC, Catastre i OSM actius. GlobalBuildingAtlas aparcat | Comparar les parts i petjades de les fonts actuals en una segona zona |
 | [RO-032](#ro-032--cobertes-i-volums-singulars) | P1 | Torre Glòries validada al visor. Cota de Guiza verificada al motor | Revisar Guiza al visor i comprovar el laminat dels models |
 | [RO-023](#ro-023--relleu-local-i-fonts-vectorials-de-més-precisió) | P2 | MET5 integrat. Cupó local de detall amb MDT de 50 cm | Comparar la silueta del Cavall Bernat i validar la transició al laminador |
@@ -52,7 +52,7 @@ Millau, Rajadell i els Rasos–Gallina Pelada són casos de prova de les mateixe
 
 | ID | Prioritat | Estat | Abast |
 | -------------------------------------------------------- | --------- | ------------------ | -------------------------------------------------------------- |
-| [RO-035](#ro-035--cavitats-i-relleus-amb-voladissos) | P3 | Pilot al catàleg | La Foradada té una obertura aproximada verificada en malla. Laminar-la i buscar dades 3D per a altres cavitats. |
+| [RO-035](#ro-035--cavitats-i-relleus-amb-voladissos) | P3 | Obertura de la r2 validada al visor. Carena i Cadireta de la r3 comprovades en malla | Comparar la silueta de la r3 al visor, laminar-la i buscar dades 3D per a altres cavitats. |
 | [RO-012](#ro-012--presentació-realista-del-model-imprès) | P3 | Objectiu redefinit | Imatge estàtica fotorealista del model amb entorn escolar |
 | [RO-011](#ro-011--comptador-dexportacions-i-umami) | P3 | Per estudiar | Definir recompte i font real abans de publicar una xifra |
 
@@ -107,11 +107,11 @@ Comparar la font actual i un MDT de detall al mateix retall de Montserrat, a due
 
 El pilot del Cavall Bernat combina el MET5 amb un retall numèric de l’ICGC a 50 cm, processat fora de línia. Els tres sòlids passen l’auditoria i el pedaç conserva la vora del retall a 0° i 35°. Queden el contrast visual, el laminat i el carregador automàtic. [Cupó de detall](RELLEU-ROCOS.md#pilot-de-detall-local-amb-el-mdt-de-50-cm)
 
-El pilot de sectors de Montserrat s’ha retirat del catàleg i del motor després que l’usuari detectés menys fluïdesa sense millora visual clara. Al retall de control, els sectors afegien un 88 % de triangles a la malla del visor. El relleu general i la Foradada r2 es mantenen. [Comparativa i retall](RELLEU-ROCOS.md#comparativa-amb-el-relleu-general--v02332)
+El pilot de sectors de Montserrat s’ha retirat del catàleg i del motor després que l’usuari detectés menys fluïdesa sense millora visual clara. Al retall de control, els sectors afegien un 88 % de triangles a la malla del visor. Ara s’utilitza el relleu general amb el pedaç local de la Foradada. [Comparativa i retall](RELLEU-ROCOS.md#comparativa-amb-el-relleu-general--v02332)
 
 ### RO-024 — Unió de volums i validació d’impressió
 
-El cupó del Bages permet consultar els materials per altura. A Montserrat, l’usuari valida el filament per peça al laminador. A Tamariu, confirma que el 3MF únic s’obre amb quatre plaques. Queda pendent comprovar al laminador les vores i els materials de Tamariu 40 × 45 cm i dels Rasos–Gallina Pelada, i revisar el pas inferior de Rajadell. Impressió física pendent. [Resultats i controls](RO-024-RESULTATS.md)
+El cupó del Bages permet consultar els materials per altura. A Montserrat, l’usuari valida el filament per peça al laminador. A Tamariu, confirma que el 3MF únic s’obre i es lamina bé amb quatre plaques. Queda pendent el laminat dels Rasos–Gallina Pelada i del pas inferior de Rajadell, i la impressió física. [Resultats i controls](RO-024-RESULTATS.md)
 
 ### RO-025 — Vegetació mesurada i paisatges històrics
 
@@ -135,9 +135,9 @@ Els llocs que substitueixen un fragment del relleu es coordinen amb RO-035. El c
 
 ### RO-033 — Ponts i viaductes
 
-Els ponts curts que poden recolzar a totes dues ribes s’ajusten a la cota de l’aigua modelada. El pressupost es reparteix pel retall i prioritza els creuaments. Verificar el model complet d’Amsterdam al visor i laminar les obertures. [Mesures dels canals](RO-033-CONTROLS-PROCEDIMENTALS.md#ponts-curts-sobre-canals)
+Els ponts curts que poden recolzar a totes dues ribes s’ajusten a la cota de l’aigua modelada. El pressupost es reparteix pel retall i prioritza els creuaments. Queda comprovar les obertures al laminador. [Mesures dels canals](RO-033-CONTROLS-PROCEDIMENTALS.md#ponts-curts-sobre-canals)
 
-En un render del centre d’Amsterdam, l’usuari només ha identificat tres ponts absents. El retall precís i els tres identificadors queden per determinar. L’observació visual i el recompte d’eixos del motor es registren per separat.
+En la primera revisió del centre d’Amsterdam, l’usuari havia identificat tres ponts absents. En l’última revisió visual sembla que hi són tots. Queda pendent un recompte exhaustiu per retall.
 
 Pilars i taulers procedimentals, amb dades específiques documentades per a Rajadell. Millau i el cupó del Bages estan validats al visor. La regla general per als fragments continguts recupera el tauler de Montgròs a 1:20.000 i conserva el de la Fessona, amb dues unions a cadascun. L’obertura de 0,27 mm de Montgròs es conserva a la secció mostrejada del cupó laminat amb capes de 0,10 i 0,20 mm. Pendent de comprovar en una placa completa i en una impressió física. [Controls procedimentals](RO-033-CONTROLS-PROCEDIMENTALS.md) · [Suports segons escala](RO-033-SUPORTS-ESCALA.md)
 
@@ -147,7 +147,7 @@ Obertures estimades amb volta parabòlica i paviment del material de la via. Rev
 
 ### RO-035 — Cavitats i relleus amb voladissos
 
-El cupó local dels Degotalls a 1:200 té bon resultat segons l’usuari. Falta la transformació per integrar-lo al terreny. L’usuari ha detectat que la Foradada r1 quedava tapada a la sortida. La r2 amplia el detall i comprova una secció de pas des de fora de les dues boques. Queden el nou laminat, el contrast visual i la cerca de la malla fotogramètrica original. [Pilot i fonts](RELLEU-ROCOS.md#correcció-de-la-sortida--v02330)
+El cupó local dels Degotalls a 1:200 té bon resultat segons l’usuari. Falta la transformació per integrar-lo al terreny. L’usuari confirma que el forat triangular de la Foradada r2 es veu bé. La r3 amplia la carena i reconstrueix el voladís de la Cadireta. Les dues boques i el buit sota el cap es conserven en les proves de malla. Queden el contrast de la silueta al visor i el laminat. [Pilot i fonts](RELLEU-ROCOS.md#carena-i-cadireta--v02335)
 
 ### RO-044 — Catastre per seccions i recuperació de configuracions
 
@@ -191,7 +191,9 @@ Els senders tenen un mínim de 0,30 mm i el selector de Vies en modifica l’amp
 
 L’amplada i la fondària es poden editar al principi de «La teva maqueta», dins d’«Exporta» al mòbil. El formulari indica els límits i manté el flux d’aplicar i generar la nova mida.
 
-El taller mòbil integra els passos en panells inferiors que deixen el visor a la vista. S’hi pot generar i ajustar la maqueta, seleccionar el nombre de materials i exportar amb els formats habituals. Queda pendent comprovar els gestos i el teclat en dispositius reals. [Flux mòbil](RO-053-UX.md#taller-mòbil)
+El taller mòbil integra els passos en panells inferiors que deixen el visor a la vista. S’hi pot generar i ajustar la maqueta, seleccionar el nombre de materials i exportar amb els formats habituals. L’usuari confirma la millora general. Queda pendent comprovar els gestos i el teclat en més dispositius. [Flux mòbil](RO-053-UX.md#taller-mòbil)
+
+L’exageració vertical s’aplica automàticament en tots dos modes amb les dades del retall carregat. La cerca de llocs espera un segon des de l’última edició i mostra un indicador mentre espera o consulta resultats.
 
 El selector inicial compara les mides i els talls sobre una taula de 60 × 40 cm. Els retalls mostren el mateix paisatge a escala constant i s’ofereix un sol rectangle predefinit. El progrés per capes està validat en diversos llocs. A Tamariu 40 × 45 cm, les guies es veuen en zenital i perspectiva i coincideixen amb les cares de tall dels quatre 3MF. El traç es distingeix menys al bosc dens. «La teva maqueta» permet preparar una mida nova conservant el centre, el gir i els ajustos. Queda validar el redimensionament en ús i millorar el contrast de les guies al bosc. [Validació](HISTORIAL.md#v0215--mides-i-guies-de-tall) · [Flux](RO-053-UX.md) · [Mesures](RO-053-TEMPS.md)
 

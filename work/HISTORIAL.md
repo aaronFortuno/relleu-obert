@@ -1,6 +1,14 @@
 # Historial i validacions de Relleu Obert
 
-Actualitzat: 2026-11-07. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
+Actualitzat el 2026-11-08. Les entrades validades surten del [backlog actiu](BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
+
+## v0.23.35 — Cerca, exageració vertical i Foradada r3
+
+En Model complet, l’exageració vertical torna a calcular la maqueta amb les dades del retall carregat i conserva la vista i els traços del pinzell. La cerca mostra un indicador tan bon punt s’edita el text i espera un segon abans de consultar els resultats. Retorn envia la cerca al moment.
+
+L’usuari confirma la millora en mòbil i el laminat de les quatre plaques de Tamariu. En l’últim retall d’Amsterdam sembla que hi són tots els ponts. L’obertura de la Foradada r2 es veu bé, amb marge de millora en la carena i la Cadireta. [Backlog actiu](BACKLOG.md)
+
+La Foradada r3 amplia el pedaç local i recupera el voladís de la Cadireta. El motor comprova les dues boques i el buit sota el cap en dos retalls girats. Queda comparar la silueta integrada al visor. [Fonts i controls](RELLEU-ROCOS.md#carena-i-cadireta--v02335)
 
 ## v0.23.34 — Cota de base dels models singulars
 

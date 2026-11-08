@@ -68,6 +68,14 @@ El control torna a llegir els triangles del 3MF i comprova dotze línies de pas,
 
 Els tres controls de 10 × 10 cm passen a 1:2.000 en Model complet amb les capes actives, a 1:10.000 en Model complet amb la geometria de terreny i a 1:10.000 en Relleu pur amb la textura de vegetació desactivada. El control de Relleu pur conserva el pas després de canviar l’exageració i la base i en dividir el sòlid en dues plaques. El retall més ampli de Model complet amb totes les capes ha superat el límit de memòria de la prova local.
 
+### Carena i Cadireta · v0.23.35
+
+L’usuari confirma que el forat triangular de la r2 és recognoscible al visor. Les captures mostren diferències en la silueta de les agulles, els salts de la carena i el cap de la Cadireta.
+
+La r3 amplia el pedaç local a 160 × 160 m i mostreja el MDT de l’ICGC cada 1,25 m. Això cobreix els ressalts a tots dos costats de l’obertura. La Cadireta incorpora un voladís aproximat ajustat a la cota de la carena i a les proporcions documentades. El fitxer que carrega Relleu Obert ocupa 127.400 bytes. Cada volum de tall es comprova dins del retall, de manera que un buit fora de la selecció o massa baix no descarta l’altre. [Model r3 i fonts](https://github.com/aaronFortuno/open-place-models/tree/main/models/roca-foradada/r3)
+
+El motor ha comprovat Model complet a 1:2.000 amb gir de +35° i Relleu pur a 1:10.000 amb gir de −29°, sobre MET5. Tots dos conserven la volta i els dotze raigs de pas lliure entre les boques. Els tres punts de control de la Cadireta donen un buit sota el cap d’entre 21 i 24 m de cota real del model. El pas continua obert després de canviar l’exageració i la base en Relleu pur i de dividir la peça en dues. Queden el contrast visual del perfil integrat i el laminat.
+
 ### Pilot del massís de Montserrat
 
 El pilot de la v0.23.31 combinava el relleu general amb dos sectors de 384 × 384 m i pas de 2 m. Les 193 cotes de la vora comuna coincidien. Els dos sectors sumaven 299.992 bytes. El control de Model complet a 1:2.000 mesurava 0,003 mm de diferència entre mostres a 1 mm real a banda i banda de la vora. La Foradada mantenia les dues boques i la volta al control de malla dels dos modes. [Fitxa històrica del model](https://github.com/aaronFortuno/open-place-models/tree/1ef40e7/models/montserrat/r1)
