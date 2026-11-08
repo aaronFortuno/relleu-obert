@@ -4,7 +4,7 @@ Revisat el **2026-11-08** amb la v0.23.37. [Historial i validacions](arxiu/HISTO
 
 ## Ordre de treball
 
-1. Revisar al visor i al laminador el pilot de la Balma de Can Solà. [RO-035](#ro-035--cavitats-i-relleus-amb-voladissos)
+1. Preparar les cinc boques del primer lot de coves i balmes. [RO-035](#ro-035--cavitats-i-relleus-amb-voladissos)
 2. Continuar la revisió de la galeria per blocs. [RO-046](#ro-046--catàleg-de-llocs-recomanats)
 3. Contrastar la Foradada r3 al visor i reprendre els controls de relleu rocós. [RO-035](#ro-035--cavitats-i-relleus-amb-voladissos) · [RO-023](#ro-023--relleu-local-i-fonts-vectorials-de-més-precisió)
 
@@ -16,7 +16,7 @@ Revisat el **2026-11-08** amb la v0.23.37. [Historial i validacions](arxiu/HISTO
 
 ### RO-035 — Cavitats i relleus amb voladissos
 
-**P2.** Comparar la boca i el voladís de Can Solà al visor i revisar-ne el laminat. El motor ha comprovat el retall original, un de girat i un de Relleu pur. Queden també la comparació visual i el laminat de la Foradada r3, i la transformació geogràfica dels Degotalls. [Fonts i controls](RELLEU-ROCOS.md#balma-de-can-solà)
+**P2.** Can Solà està validada al visor per l’usuari. Queda el laminat. El primer lot d’Open Place Models prioritzarà la boca i els primers metres de cinc coves i balmes de Catalunya. Queden també la comparació visual i el laminat de la Foradada r3, i la transformació geogràfica dels Degotalls. [Fonts i controls](RELLEU-ROCOS.md#balma-de-can-solà) · [Cua de modelatge](https://github.com/aaronFortuno/open-place-models/blob/main/CAVITY-QUEUE.md)
 
 ### RO-023 — Relleu local i fonts vectorials de més precisió
 

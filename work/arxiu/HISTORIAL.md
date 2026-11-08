@@ -4,7 +4,7 @@ Actualitzat el 2026-11-08. Les entrades validades surten del [backlog actiu](../
 
 ## v0.23.37 — Balma de Can Solà
 
-RO-035 prova la primera balma oberta al vessant a Open Place Models. La cavitat local es conserva al retall de l’usuari i en dos retalls girats. El motor elimina els residus coplanars de les juntes de material abans d’excavar. La forma interior és aproximada i resta el contrast al visor i al laminador. [Fonts i controls](../RELLEU-ROCOS.md#balma-de-can-solà)
+RO-035 prova la primera balma oberta al vessant a Open Place Models. La cavitat local es conserva al retall de l’usuari i en dos retalls girats. El motor elimina els residus coplanars de les juntes de material abans d’excavar. L’usuari valida la càrrega i la fidelitat visual de la reconstrucció aproximada. Queda el laminat. Open Place Models documenta un primer lot de cinc cavitats catalanes. [Fonts i controls](../RELLEU-ROCOS.md#balma-de-can-solà) · [Cua de modelatge](https://github.com/aaronFortuno/open-place-models/blob/main/CAVITY-QUEUE.md)
 
 ## Tancament de RO-053 i RO-056 · 2026-11-08
 

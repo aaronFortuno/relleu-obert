@@ -111,7 +111,7 @@ En la prova inicial del retall de l’usuari, un component coplanar en una junta
 | Model complet · retall més pròxim | 1:2.000 | +34° | Mateixos controls amb el retall girat. |
 | Relleu pur | 1:10.000 | −26° | Mateixos controls a l’escala general del mode. |
 
-La cota màxima de l’obertura equival a uns 3,7 mm al retall de l’usuari. Queda comprovar la semblança al visor i el comportament del voladís al laminador.
+L’alçada màxima de l’obertura equival a uns 3,7 mm al retall de l’usuari. L’usuari confirma que el model es carrega bé i representa el relleu amb força fidelitat. Queda comprovar el comportament del voladís al laminador.
 
 ## Reproducció local
 
