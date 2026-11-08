@@ -7,7 +7,7 @@ Des de la v0.23.41, amb els perfils suaus activats, les calçades de superfície
 - Rajadell, 150 mm a 1:10.000. Amb les capes viàries i detall 36, quatre perfils de la C-37 sense omissions, dos enllaços amb el viaducte i les dues boques de `1820235140`. Als punts d’enllaç, la variació mesurada dins una finestra longitudinal de 0,1 mm és com a màxim 0,013 mm, sense buits al centre. Amb totes les capes i detall 12, ambdós motors ometen el túnel per falta de prolongació acreditada.
 - Millau, retall de l’estrep sud de la incidència `millau-bonys.json`. A detall 64 i amb les capes viàries, les dues calçades de l’A75 tenen tall i reblert. A les dues unions amb el tauler singular, la variació en una finestra de 0,1 mm és inferior a 0,005 mm al centre i hi ha paviment a ambdues bandes. Al segon retall, `millau-sud.json`, el motor aplica el perfil als dos sentits de l’A75 amb tall i reblert.
 
-Queda la revisió al visor i al laminador, en particular els ramals i els creuaments densos. Les proves locals de retalls reals s’han fet sobre la malla del motor.
+En la primera revisió de la v0.23.41, l’usuari confirma que els dos sentits de l’Eix Transversal a l’enllaç amb la C-37 ja es veuen sense bonys. Les calçades queden a cotes diferents, una diferència acceptada provisionalment. Queden dos retalls de contrast i la comprovació al laminador. Les proves locals de retalls reals s’han fet sobre la malla del motor.
 
 ## Prototip anterior sobre el relleu intacte
 

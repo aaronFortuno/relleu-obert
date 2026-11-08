@@ -55,7 +55,7 @@ Al-Khazneh r1 passa els controls d’encaix locals a 1:500 i 1:1.000 i en un ret
 
 **P1.** El retall girat s’ha acceptat provisionalment al laminador. Queden dos enllaços a Sant Salvador i la comprovació de quines irregularitats són visibles en imprimir. Si es corregeix una rasant, contrastar-la en un segon retall o escala. [Perfils i transicions](RO-051-PERFILS-VIARIS.md)
 
-La v0.23.41 aplica la rasant independent a les calçades principals. Validar al visor i al laminador els accessos de la C-37 i l’A75, i contrastar els ramals en una xarxa densa. [Controls locals](RO-051-PERFILS-VIARIS.md#rasant-prioritària-amb-tall-i-reblert)
+Rasant de la v0.23.41 acceptada provisionalment per l’usuari a l’enllaç de l’Eix Transversal amb la C-37. Queden dos retalls de contrast, la comprovació al laminador i els ramals en una xarxa densa. [Controls i observacions](RO-051-PERFILS-VIARIS.md#rasant-prioritària-amb-tall-i-reblert)
 
 ### RO-052 — Continuïtat i amplada del traçat viari
 
