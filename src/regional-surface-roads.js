@@ -62,6 +62,7 @@ export function stitchGroup(input){
       if(edges.length!==2)continue;
       const [{i,j},{i:k,j:l}]=edges,a=routes[i],b=routes[k];
       if(i===k||(j!==0&&j!==a.points.length-1)||(l!==0&&l!==b.points.length-1)||
+          (a.points[j].length===3&&Math.abs(a.points[j][2]-b.points[l][2])>epsilon)||
           Math.abs(a.width-b.width)>epsilon||(a.layer??0)!==(b.layer??0)||!compatibleTransport(a,b))continue;
       if((a.oneway||0)*(j===0?-1:1)!==(b.oneway||0)*(l===0?1:-1))continue;
       const left=j===0?a.points.slice().reverse():a.points,right=l===0?b.points:b.points.slice().reverse();

@@ -5,12 +5,18 @@ const delta=(a,b)=>[b[0]-a[0],b[1]-a[1]];
 
 export function surfaceRailAxes(routes,width,height){
   const tracks=routes.filter(route=>route.railway&&!['bridge','tunnel'].includes(route.brunnel));
-  return stitchGroup(sourceFragments(tracks,[0,0,width,height]));
+  const profiled=tracks.filter(route=>route.elevations).map(route=>({...route,
+    points:route.points.map(([x,y],i)=>[x,y,route.elevations[i]])}));
+  const box=[0,0,width,height];
+  return [...stitchGroup(sourceFragments(profiled,box)),
+    ...stitchGroup(sourceFragments(tracks.filter(route=>!route.elevations),box))];
 }
 
 // Estimate one constant grade along the joined axis. The terrain between the
 // anchors decides where to cut or fill, never the elevation of the platform.
-export function railwaySections({points,width},ground,exaggeration,minimumSurfaceMM,rise){
+export function railwaySections({points,width},ground,exaggeration,minimumSurfaceMM,rise,projectElevation){
+  if(points[0].length===3&&projectElevation)return corridorSections({points,width},()=>
+    (_,i)=>Math.max(minimumSurfaceMM,projectElevation(points[i][2]))+rise);
   return corridorSections({points,width},span=>{
     const start=ground(...points[0]),end=ground(...points.at(-1));
     const limit=.04*exaggeration,grade=Math.max(-limit,Math.min(limit,(end-start)/span));
@@ -32,7 +38,7 @@ export function corridorSections({points,width},profile){
     const [nx,ny]=[before[0]+after[0],before[1]+after[1]];
     const miter=nx*before[0]+ny*before[1];
     if(miter<.5)throw Error('El gir de la via és massa tancat.');
-    const dx=nx*width/(2*miter),dy=ny*width/(2*miter),z=height(distances[i]);
+    const dx=nx*width/(2*miter),dy=ny*width/(2*miter),z=height(distances[i],i);
     return {left:[x+dx,y+dy,z],right:[x-dx,y-dy,z]};
   });
 }

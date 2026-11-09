@@ -1,7 +1,8 @@
 import {validBridgeProfile} from './catalogue-bridges.js';
 import {decodeLandform,validLandformProfile} from './catalogue-landforms.js';
+import {decodeRailway} from './catalogue-railways.js';
 
-const catalogueLimit=512*1024,meshLimit=4*1024*1024;
+const catalogueLimit=512*1024,meshLimit=4*1024*1024,sidecarLimit=256*1024;
 const catalogueWarning='No s’ha pogut carregar el catàleg de models singulars.';
 const meshWarning='No s’ha pogut carregar algun model singular. Es conserva la geometria de la cartografia general.';
 const decoder=new TextDecoder('utf-8',{fatal:true});
@@ -45,9 +46,9 @@ function readCatalogue(data,directory){
   for(const feature of data.features){
     try{
       const {type,id,bbox,geometry:footprint,properties}=feature;
-      const {name,revision,anchor,mesh,height,attribution,license,sources,spatialDataLicense,replacement,bridge,landform,
+      const {name,revision,anchor,mesh,height,attribution,license,sources,spatialDataLicense,replacement,bridge,landform,railway,
         anchorElevation,terrainBaseElevation,kind='building'}=properties;
-      if(!['building','bridge','landform'].includes(kind))continue;
+      if(!['building','bridge','landform','railway'].includes(kind))continue;
       check(type==='Feature'&&label(id)&&!ids.has(id)&&validBounds(bbox)&&inside(bbox,anchor)&&validFootprint(footprint,bbox));
       check([name,revision,mesh,attribution,license].every(label)&&Number.isFinite(height)&&height>0&&height<=1200&&
         Array.isArray(sources)&&sources.every(label)&&(spatialDataLicense===undefined||label(spatialDataLicense)));
@@ -58,9 +59,11 @@ function readCatalogue(data,directory){
       if(anchorElevation!==undefined)check(kind==='building'&&terrainBaseElevation===undefined&&Number.isFinite(anchorElevation)&&anchorElevation>=-500&&anchorElevation<=9000);
       if(terrainBaseElevation!==undefined)check(kind==='building'&&Number.isFinite(terrainBaseElevation)&&terrainBaseElevation>=-500&&terrainBaseElevation<=9000);
       const glb=assetURL(mesh,directory,'.glb');
-      const url=kind==='landform'?assetURL(landform.data,directory,'.json'):glb;
+      const url=kind==='landform'?assetURL(landform.data,directory,'.json'):
+        kind==='railway'?assetURL(railway?.data,directory,'.json'):glb;
       ids.add(id);
       entries.push({id,name,revision,bbox,anchor,footprint,height,attribution,license,sources,spatialDataLicense,replacement,kind,bridge,landform,url,
+        ...(kind==='railway'?{railway}:{}),
         ...(anchorElevation===undefined?{}:{anchorElevation}),
         ...(terrainBaseElevation===undefined?{}:{terrainBaseElevation})});
     }catch{
@@ -157,14 +160,15 @@ export function createLandmarkLoader(catalogueURL,fetcher=fetch){
   const assets=new Map();
   let catalogueRequest;
   function assetRequest(url,kind){
-    if(assets.has(url))return assets.get(url);
-    const terrain=kind==='landform';
-    const request=fetchBytes(fetcher,url,terrain?256*1024:meshLimit).then(bytes=>terrain?
-      decodeLandform(JSON.parse(decoder.decode(bytes))):decodeGLB(bytes)).catch(error=>{
-      if(assets.get(url)===request)assets.delete(url);
+    const sidecar=kind==='landform'?decodeLandform:kind==='railway'?decodeRailway:null;
+    const key=sidecar?`${kind}:${url}`:url;
+    if(assets.has(key))return assets.get(key);
+    const request=fetchBytes(fetcher,url,sidecar?sidecarLimit:meshLimit).then(bytes=>sidecar?
+      sidecar(JSON.parse(decoder.decode(bytes))):decodeGLB(bytes)).catch(error=>{
+      if(assets.get(key)===request)assets.delete(key);
       throw error;
     });
-    assets.set(url,request);
+    assets.set(key,request);
     if(assets.size>16)assets.delete(assets.keys().next().value);
     return request;
   }
@@ -178,7 +182,11 @@ export function createLandmarkLoader(catalogueURL,fetcher=fetch){
     try{catalogueData=await catalogueRequest;}
     catch{return {models,warnings:[catalogueWarning]};}
     const candidates=catalogueData.entries.filter(entry=>(!kinds||kinds.includes(entry.kind))&&intersects(entry.bbox,bbox));
-    const results=await Promise.allSettled(candidates.slice(0,8).map(async ({url,...entry})=>({...entry,...await assetRequest(url,entry.kind)})));
+    const results=await Promise.allSettled(candidates.slice(0,8).map(async ({url,...entry})=>{
+      const asset=await assetRequest(url,entry.kind);
+      if(entry.kind==='railway')check(asset.paths.every(path=>path.points.every(point=>inside(entry.bbox,point.slice(0,2)))));
+      return {...entry,...asset};
+    }));
     for(const result of results)if(result.status==='fulfilled')models.push(result.value);
     if(catalogueData.incomplete||models.length<candidates.length)warnings.push(meshWarning);
     return {models,warnings};

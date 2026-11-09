@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createLandmarkLoader} from '../src/landmarks.js';
 import {catalogueBridgeItem} from '../src/catalogue-bridges.js';
+import {applyCatalogueRailways} from '../src/catalogue-railways.js';
 
 const catalogue='https://example.org/landmarks/catalog.geojson';
 const mesh=new URL('models/tower/r1/print.glb',catalogue).href;
@@ -135,6 +136,64 @@ test('pure terrain loads only the intersecting landform sidecar and rejects an u
   assert.equal(rejected.warnings.length,1);
 });
 
+const railwayProfile={data:'models/railway/r1/route.json'};
+const railwayEntry=tower({id:'rack-railway',properties:{name:'Rack railway',kind:'railway',railway:railwayProfile}});
+const railwayAsset=new URL(railwayProfile.data,catalogue).href;
+const railwayData={version:1,replace:['123'],paths:[
+  {id:'approach',structure:'surface',width:3,points:[[2.184,41.406,1000],[2.185,41.406,1010]]},
+  {id:'span',structure:'bridge',width:3,points:[[2.185,41.406,1010],[2.186,41.406,1020]]},
+  {id:'bore',structure:'tunnel',width:3,points:[[2.186,41.406],[2.187,41.406]]},
+]};
+const transport=(id,properties={})=>({id,properties:{sourceLayer:'transportation',class:'rail',...properties},
+  geometry:{type:'LineString',coordinates:[[2.184,41.406],[2.185,41.406]]}});
+
+test('railway sidecar replaces only listed active rails in both transport sources',async()=>{
+  const requests=[];
+  const load=createLandmarkLoader(catalogue,url=>{
+    requests.push(url);
+    if(url===catalogue)return collection(railwayEntry);
+    assert.equal(url,railwayAsset);
+    return Response.json(railwayData);
+  });
+  assert.deepEqual(await load(crop,['landform']),{models:[],warnings:[]});
+  assert.deepEqual(await load([4,41,5,42]),{models:[],warnings:[]});
+  const {models,warnings}=await load(crop,['railway']);
+  assert.deepEqual(warnings,[]);
+  assert.deepEqual(requests,[catalogue,railwayAsset]);
+  assert.deepEqual(models[0].railway,railwayProfile);
+  const listed=transport(123),siding=transport(456),old=transport(123,{subclass:'abandoned'}),road=transport(123,{class:'primary'});
+  const input={singularModels:models,features:[listed,siding,old,road],bridgeFeatures:[listed,siding]};
+  const result=applyCatalogueRailways(input);
+  assert.deepEqual(result.features.slice(0,3),[siding,old,road]);
+  assert.deepEqual(result.bridgeFeatures,[siding]);
+  assert.deepEqual(input.features,[listed,siding,old,road]);
+  assert.deepEqual(input.bridgeFeatures,[listed,siding]);
+  assert.deepEqual(result.features.slice(3).map(feature=>[
+    feature.id,feature.properties.brunnel,feature.properties.catalogueRailway,feature.properties.width,feature.geometry.coordinates,
+  ]),railwayData.paths.map(path=>[
+    'rack-railway:'+path.id,path.structure==='surface'?undefined:path.structure,'rack-railway',path.width,path.points,
+  ]));
+});
+
+test('invalid and oversized railway assets keep general transport geometry',async()=>{
+  const [first]=railwayData.paths;
+  const invalidResponses=[
+    Response.json({...railwayData,paths:[first,{...first,structure:'tunnel'}]}),
+    Response.json({...railwayData,paths:[{...first,points:[[2.184,41.406],[2.185,41.406,1010]]}]}),
+    Response.json({...railwayData,replace:[123]}),
+    Response.json({...railwayData,paths:[{...first,points:[[3,42,1000],[3.1,42,1010]]}]}),
+    new Response(new Uint8Array(256*1024+1)),
+  ];
+  for(const response of invalidResponses){
+    const load=createLandmarkLoader(catalogue,url=>url===catalogue?collection(railwayEntry):response);
+    const {models,warnings}=await load(crop);
+    assert.deepEqual(models,[]);
+    assert.match(warnings[0],/Es conserva la geometria/);
+    const data={features:[transport(123)],singularModels:models};
+    assert.strictEqual(applyCatalogueRailways(data),data);
+  }
+});
+
 test('invalid entries cannot request unapproved URLs or carry replacement IDs of another type',async()=>{
   const requests=[];
   const load=createLandmarkLoader(catalogue,url=>{
@@ -145,7 +204,8 @@ test('invalid entries cannot request unapproved URLs or carry replacement IDs of
       tower({id:'external',properties:{mesh:'https://unrelated.org/print.glb'}}),
       tower({id:'parent-directory',properties:{mesh:'../print.glb'}}),
       tower({id:'bad-replacement',properties:{replacement:{featureIds:[42]}}}),
-      tower({id:'bad-anchor',properties:{anchor:[2.17,41.4]}}));
+      tower({id:'bad-anchor',properties:{anchor:[2.17,41.4]}}),
+      tower({id:'bad-railway',properties:{kind:'railway',railway:{data:'../route.json'}}}));
   });
   const {models,warnings}=await load(crop);
   assert.deepEqual(models.map(({id})=>id),['tower']);

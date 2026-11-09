@@ -13,14 +13,14 @@ const MAX_FRAGMENTS=1000,MAX_TOTAL_POINTS=20000,MAX_LINE_POINTS=2000;
 
 // Una línia amb qualsevol punt invàlid (no finit o fora de lon/lat) es
 // rebutja sencera: mai se salta el punt i s'uneixen les vores sobre un buit.
-function cleanLine(line){
+function cleanLine(line,profiled=false){
   if(!Array.isArray(line))return null;
   const points=[];
   for(const p of line){
     if(!Array.isArray(p)||p.length<2||!Number.isFinite(p[0])||!Number.isFinite(p[1]))return null;
     if(Math.abs(p[0])>180||Math.abs(p[1])>90)return null;
     const last=points[points.length-1];
-    if(!last||Math.abs(p[0]-last[0])>1e-9||Math.abs(p[1]-last[1])>1e-9)points.push([p[0],p[1]]);
+    if(!last||Math.abs(p[0]-last[0])>1e-9||Math.abs(p[1]-last[1])>1e-9)points.push(profiled?[p[0],p[1],p[2]]:[p[0],p[1]]);
   }
   return points.length>=2?points:null;
 }
@@ -43,7 +43,7 @@ function widthFromProperties(props,warnings,label){
   return railway?railwayWidthMetres(props):roadWidthMetres(props);
 }
 
-const groupOf=props=>JSON.stringify([String(props.class??''),String(props.layer??0),String(props.name??''),String(props.ref??''),String(props.oneway??''),props.railway??'',props.subclass??'',isRailway(props)?railwayWidthMetres(props):roadWidthMetres(props)]);
+const groupOf=(props,dimensions)=>JSON.stringify([String(props.class??''),String(props.layer??0),String(props.name??''),String(props.ref??''),String(props.oneway??''),props.railway??'',props.subclass??'',isRailway(props)?railwayWidthMetres(props):roadWidthMetres(props),props.catalogueRailway,dimensions]);
 
 // MVT tiles include a buffer. Two copies of one way can overlap by tens of
 // metres without sharing a vertex at the seam. Work in metres for matching.
@@ -191,7 +191,7 @@ function joinFragments(fragments){
         else if(a[1]===0&&b[1]===0){const r=A.points.slice().reverse();points=r.concat(B.points.slice(1));ids=A.ids.slice().reverse().concat(B.ids);}
         else{points=B.points.concat(A.points.slice(1));ids=B.ids.concat(A.ids);}
         const keep=frags.filter((_,i)=>i!==a[0]&&i!==b[0]);
-        keep.push({points:cleanLine(points)||points,ids,props:A.props,group:A.group});
+        keep.push({points:cleanLine(points,points[0].length===3)||points,ids,props:A.props,group:A.group});
         frags.length=0;frags.push(...keep);
         changed=true;
         break;
@@ -227,10 +227,10 @@ export function generateProceduralBridgeItems(features,elevationAt,{scale=.1,min
         warnings.push(`Pont ${f.id??index} omès: línia de ${line.length} punts superior al límit de ${MAX_LINE_POINTS}.`);
         continue; // Never invent a new endpoint and interpolate a false vertical profile.
       }
-      const points=cleanLine(line);
+      const points=cleanLine(line,Boolean(props.catalogueRailway)&&line?.[0]?.length===3);
       if(!points){if(Array.isArray(line)&&line.length)warnings.push(`Geometria de pont invàlida o massa curta (${f.id??index}).`);continue;}
       if(totalPoints+points.length>MAX_TOTAL_POINTS){droppedFragments++;continue;}
-      const group=groupOf(props); // route/width identity before deduplicating
+      const group=groupOf(props,points[0].length); // route/width identity before deduplicating
       const key=group+'|'+lineKey(points),reverse=group+'|'+lineKey(points.slice().reverse());
       if(seen.has(key)||seen.has(reverse))continue; // duplicat del mateix grup, també en ordre invers
       seen.add(key);
@@ -277,9 +277,10 @@ export function generateProceduralBridgeItems(features,elevationAt,{scale=.1,min
       const step=(points.length-1)/(MAX_AXIS_POINTS-1);
       points=Array.from({length:MAX_AXIS_POINTS},(_,i)=>points[Math.round(i*step)]);
     }
-    const [lon0,lat0]=points[0],[lon1,lat1]=points[points.length-1];
+    const [lon0,lat0,firstElevation]=points[0],[lon1,lat1,lastElevation]=points.at(-1);
+    const profiled=firstElevation!==undefined;
     let z0,z1;
-    try{z0=elevationAt(lon0,lat0);z1=elevationAt(lon1,lat1);}
+    try{z0=firstElevation??elevationAt(lon0,lat0);z1=lastElevation??elevationAt(lon1,lat1);}
     catch{warnings.push(`Pont ${id} omès: el DEM ha fallat a un extrem.`);return;}
     if(![z0,z1].every(v=>Number.isFinite(v)&&v>-500&&v<9000)){
       warnings.push(`Pont ${id} omès: elevació d’extrem no vàlida (${z0}, ${z1}).`);
@@ -307,7 +308,7 @@ export function generateProceduralBridgeItems(features,elevationAt,{scale=.1,min
       const dot=before[0]*after[0]+before[1]*after[1];
       if(dot<-.5){warnings.push(`Pont ${id} omès: revolt massa tancat per a un offset fiable.`);return;}
       const nx=-(before[1]+after[1])/(1+dot),ny=(before[0]+after[0])/(1+dot); // miter limitat (|miter|≤2)
-      const z=z0+(z1-z0)*distance[i]/total;
+      const z=profiled?points[i][2]:z0+(z1-z0)*distance[i]/total;
       coordinates.push([(xy[i][0]+nx*half)/kx,(xy[i][1]+ny*half)/LAT_METRES,z],[(xy[i][0]-nx*half)/kx,(xy[i][1]-ny*half)/LAT_METRES,z]);
     }
     const faces=[];
@@ -332,7 +333,7 @@ export function generateProceduralBridgeItems(features,elevationAt,{scale=.1,min
       name:axis.props.name,
       oneway:axis.props.oneway,
       railway,
-      elevationMethod:'linear-dem-endpoints',
+      elevationMethod:profiled?'catalogue-estimated-profile':'linear-dem-endpoints',
       sourceFeatureIds:axis.ids,
     });
   });

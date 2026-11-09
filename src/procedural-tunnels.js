@@ -9,7 +9,7 @@ import {transportIdentity} from './transport-network.js';
 import earcut from 'earcut';
 
 const MAX_FEATURES=50000,MAX_FRAGMENTS=256,MAX_POINTS=10000,MAX_LINE_POINTS=1000;
-const key=p=>p.map(v=>v.toFixed(6)).join(',');
+const key=([lon,lat])=>lon.toFixed(6)+','+lat.toFixed(6);
 const inside=(p,projection)=>p[0]>=0&&p[1]>=0&&p[0]<=projection.width&&p[1]<=projection.height;
 function sweptFootprints(path,width,projection){
   const directions=[];
@@ -137,7 +137,7 @@ function requiredLowering(samples,minLength){
  * Items contain a closed Float32/Uint32 cutter plus path/section/source IDs.
  */
 export function generateProceduralTunnelVoids(features,elevationAt,options={}){
-  const {enabled=false,projection,verticalReference,exaggeration=1.5,ground,roofGround=ground,waterMask=[],minBaseMM=2.5,minimumVoidFloorMM=0,minOpeningMM=1.2,maxTunnels=24,surfaceRiseMM=0,railSurfaceRiseMM=surfaceRiseMM,surfaceAt,surfaceBreaks,portalRoute,sharedPavement,trailWidth}=options;
+  const {enabled=false,projection,verticalReference,exaggeration=1.5,ground,roofGround=ground,waterMask=[],minBaseMM=2.5,minimumVoidFloorMM=0,minOpeningMM=1.2,maxTunnels=24,surfaceRiseMM=0,railSurfaceRiseMM=surfaceRiseMM,surfaceAt,surfaceBreaks,portalRoute,portalProfile,sharedPavement,trailWidth}=options;
   const pavementThicknessMM=sharedPavement?.thicknessMM??.3,sectionProfile='estimated-parabolic-arch';
   const minimumFloorMM=Math.max(minBaseMM+pavementThicknessMM,minimumVoidFloorMM);
   const warnings=[],metadata={enabled:enabled===true,estimated:true,method:sharedPavement?'shared-surface-road-grade':'linear-dem-with-generated-surface-portal-ramps',section:sectionProfile,sectionWallHeightRatio:.55,sectionRoofSegments:16,pavementThicknessMM,minimumBaseMM:minBaseMM,minimumOpeningMM:minOpeningMM,count:0,omitted:0,omissions:[]};
@@ -159,9 +159,10 @@ export function generateProceduralTunnelVoids(features,elevationAt,options={}){
       const id=f.id??index;
       if(fragments.length>=MAX_FRAGMENTS||totalPoints+(line?.length||0)>MAX_POINTS){dropped++;continue;}
       if(!Array.isArray(line)||line.length<2||line.length>MAX_LINE_POINTS||!line.every(p=>Array.isArray(p)&&p.length>=2&&Number.isFinite(p[0])&&Number.isFinite(p[1])&&Math.abs(p[0])<=180&&Math.abs(p[1])<=85)){fail(id,'traçat invàlid o fora del pressupost de punts.');continue;}
-      const points=line.map(p=>p.slice(0,2)).filter((p,i,a)=>!i||key(p)!==key(a[i-1]));if(points.length<2){fail(id,'longitud nul·la.');continue;}
+      const dimensions=props.catalogueRailway&&line[0].length===3?3:2;
+      const points=line.map(p=>p.slice(0,dimensions)).filter((p,i,a)=>!i||key(p)!==key(a[i-1]));if(points.length<2){fail(id,'longitud nul·la.');continue;}
       const sourceWidth=isRailway(props)?railwayWidthMetres(props):roadWidthMetres(props);
-      const group=JSON.stringify([props.class,props.layer,props.name,props.ref,props.oneway,sourceWidth]),k=group+'|'+points.map(key).join(';'),r=group+'|'+points.slice().reverse().map(key).join(';');
+      const group=JSON.stringify([props.class,props.layer,props.name,props.ref,props.oneway,sourceWidth,props.catalogueRailway,dimensions]),k=group+'|'+points.map(key).join(';'),r=group+'|'+points.slice().reverse().map(key).join(';');
       if(seen.has(k)||seen.has(r))continue;seen.add(k);totalPoints+=points.length;
       fragments.push({points,ids:[id],props,group});
     }
@@ -184,13 +185,14 @@ export function generateProceduralTunnelVoids(features,elevationAt,options={}){
     const distances=[0];for(let i=1;i<xy.length;i++)distances.push(distances.at(-1)+Math.hypot(xy[i][0]-xy[i-1][0],xy[i][1]-xy[i-1][1]));
     const length=distances.at(-1);if(length<widthMM*2){fail(id,'massa curt per a la secció imprimible a aquesta escala.');continue;}
     let z0,z1;
-    try{z0=elevationAt(...f.points[0]);z1=elevationAt(...f.points.at(-1));}catch{fail(id,'falten dades DEM als extrems originals.');continue;}
+    try{z0=f.points[0][2]??elevationAt(...f.points[0]);z1=f.points.at(-1)[2]??elevationAt(...f.points.at(-1));}catch{fail(id,'falten dades DEM als extrems originals.');continue;}
     if(![z0,z1].every(z=>Number.isFinite(z)&&z>=-500&&z<=9000)){fail(id,'cota DEM invàlida.');continue;}
     // The pavement may lie within the printed base, but its top (the start of
     // the air passage) must never break through the selected solid layers.
-    const modelZ=z=>Math.max(minimumVoidFloorMM,verticalReference.minimumSurfaceMM+(z-verticalReference.originMeters)*projection.scale*exaggeration-.15);
+    const boreRise=f.points[0].length===3&&railway?railSurfaceRiseMM:0;
+    const modelZ=z=>Math.max(minimumVoidFloorMM,verticalReference.minimumSurfaceMM+(z-verticalReference.originMeters)*projection.scale*exaggeration+boreRise-.15);
     const startZ=modelZ(z0),endZ=modelZ(z1),path=xy.map(([x,y],i)=>[x,y,sharedPavement?
-      sharedPavement.top(x,y):startZ+(endZ-startZ)*distances[i]/length]);
+      sharedPavement.top(x,y):f.points[i][2]!==undefined?modelZ(f.points[i][2]):startZ+(endZ-startZ)*distances[i]/length]);
     if(path.some(p=>!Number.isFinite(p[2]))){fail(id,'la rasant compartida no cobreix l’eix del túnel.');continue;}
     const floorMargin=Math.min(...path.map(p=>p[2]))-minimumFloorMM;
     if(floorMargin<0){fail(id,'la cota del paviment tallaria el gruix mínim de base.');continue;}
@@ -221,7 +223,7 @@ export function generateProceduralTunnelVoids(features,elevationAt,options={}){
     };
     // Explicit experimental policy: generalized MVT endpoints need not match
     // the DEM's portal. Allow at most 8 printed mm AND 100 real metres.
-    const maxExtension=Math.min(8,100*projection.scale);
+    const maxExtension=f.props.catalogueRailway?Math.min(16,40*projection.scale):Math.min(8,100*projection.scale);
     const portalSamples=(a,b)=>{
       const dx=b[0]-a[0],dy=b[1]-a[1],d=Math.hypot(dx,dy),outward=[-dx/d,-dy/d];
       let result=null;try{result=typeof portalRoute==='function'?portalRoute({point:a.slice(0,2),outward,properties:f.props,sourceFeatureIds:[...f.ids],maxLengthMM:maxExtension}):null;}catch{}
@@ -260,6 +262,18 @@ export function generateProceduralTunnelVoids(features,elevationAt,options={}){
       for(const sample of samples){
         const {distance,direction:[ux,uy]}=sample,p=[...sample.xy,a[2]-(b[2]-a[2])/d*distance];
         if(!inside(p,projection))return finish(sample,p[2],0,null);
+        // The mapped railway landing already has a level cross-section. A
+        // terrain sample just outside its miter may lie on the cliff wall.
+        const landing=f.props.catalogueRailway&&portalProfile?.(sample.xy,sample.line,f.props);
+        if(Number.isFinite(landing)){
+          const adjustment=landing-p[2],grade=(landing-a[2])/distance;
+          if(Math.abs(grade)<=.25&&Math.abs(adjustment)/(projection.scale*exaggeration)<=25){
+            const candidate=finish(sample,landing,adjustment,null);
+            if(!ramp)ramp=candidate;
+            if(Math.abs(adjustment)<.05)return candidate;
+          }
+          continue;
+        }
         let surface=-Infinity;
         let edgeZ,profileZ;
         try{
@@ -382,7 +396,7 @@ export function generateProceduralTunnelVoids(features,elevationAt,options={}){
       const portalAdjustmentMetres=portalAdjustmentMM.map(d=>d/(projection.scale*exaggeration));
       const portalRouting=[first,last].map(p=>p.mapped?'mapped':'estimated-axis-extension'),portalConnections=[0,extended.length-1].map((index,i)=>{const {left,right,centre,across}=pavementSections[index];return {end:i?'end':'start',routing:portalRouting[i],left,right,centre,across,widthMM:carriagewayWidthMM,targetFeatureIds:[first,last][i].line?.sourceFeatureIds??[]};});
       const roadIdentity=transportIdentity(f.props);roadIdentity.sourceFeatureIds=[...new Set(f.ids)];
-      items.push({id,...mesh,path:extended,originalPath:path,roadIdentity,sourceFeatureIds:[...new Set(f.ids)],sourceEndpoints:[[...f.points[0],z0],[...f.points.at(-1),z1]],estimated:true,elevationMethod:metadata.method,sectionProfile,sectionMM,boreSectionMM,pavementCategory,pavementThicknessMM,pavementSections,pavementFractions,minimumBaseMM:minBaseMM,widthMM,carriagewayWidthMM,heightMM,widthMetres,heightMetres,portalRouting,portalConnections,portalAdjustmentMM,portalAdjustmentMetres,maximumPortalAdjustmentMetres:25,portalRampGrades,maximumPortalRampGrade:.25,portalExtensionMM:extension,portalExtensionMetres:extensionMetres,maximumRoofCoverMM:covered.maximum,minimumCoveredRoofMM:covered.minimum,coveredIntervalMM:[covered.first,covered.last],loweringMM,footprints});
+      items.push({id,...mesh,path:extended,originalPath:path,roadIdentity,sourceFeatureIds:[...new Set(f.ids)],sourceEndpoints:[[...f.points[0].slice(0,2),z0],[...f.points.at(-1).slice(0,2),z1]],estimated:true,elevationMethod:f.points[0].length===3?'catalogue-estimated-profile':metadata.method,sectionProfile,sectionMM,boreSectionMM,pavementCategory,pavementThicknessMM,pavementSections,pavementFractions,minimumBaseMM:minBaseMM,widthMM,carriagewayWidthMM,heightMM,widthMetres,heightMetres,portalRouting,portalConnections,portalAdjustmentMM,portalAdjustmentMetres,maximumPortalAdjustmentMetres:25,portalRampGrades,maximumPortalRampGrade:.25,portalExtensionMM:extension,portalExtensionMetres:extensionMetres,maximumRoofCoverMM:covered.maximum,minimumCoveredRoofMM:covered.minimum,coveredIntervalMM:[covered.first,covered.last],loweringMM,footprints});
       if(portalRouting.some(p=>p!=='mapped'))warnings.push(`Túnel ${id}: prolongació estimada de l’eix als portals sense una continuació cartogràfica compatible acreditada.`);
       if(loweringMM)warnings.push(`Túnel ${id}: rasant estimada rebaixada ${(loweringMM/(projection.scale*exaggeration)).toFixed(1)} m per encaixar la coberta i els portals.`);
       if(portalAdjustmentMM.some(d=>Math.abs(d)>.05))warnings.push(`Túnel ${id}: cotes dels portals ajustades ${portalAdjustmentMetres.map(m=>m.toFixed(1)).join(' / ')} m al terreny de la maqueta; perfil estimat, no mesurat.`);

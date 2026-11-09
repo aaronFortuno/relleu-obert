@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.23.46 — 2026-11-09
+
+- El catàleg admet traçats ferroviaris amb cotes pròpies. El Cremallera de Núria comparteix la rasant entre la via, els ponts i els túnels, des del Roc del Dui fins a l’estació. Els túnels s’obren amb l’opció d’estimar túnels de Model complet.
+
 ## v0.23.45 — 2026-11-09
 
 - Els ponts del catàleg poden identificar els edificis de la capa ICGC que ja incorpora la seva malla. Al Pont Vell de Besalú, les dues torres queden dins del sòlid del pont i se suprimeixen les petjades equivalents en aquesta capa.

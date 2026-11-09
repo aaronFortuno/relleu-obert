@@ -254,7 +254,7 @@ export async function loadRegion({sample=true,bbox,buildingSource,decodeElevatio
   if(typeof sample==='string'&&!recommendedPlace(sample))throw Error('Exemple desconegut.');
   let meta=sample?await time('source.catalog',async()=>(await get(base+(recommendedPlace(sample)?.file||'tamariu.json'))).json(),{provider:'sample'}):{name:'Regió seleccionada',bbox,tiles:tileList(bbox),date:new Date().toISOString()};
   if(sample&&bbox)meta={...meta,bbox};
-  const singulars=time('source.singular-models',()=>loadSingularModels(meta.bbox,localBuildings?['landform']:undefined));
+  const singulars=time('source.singular-models',()=>loadSingularModels(meta.bbox,localBuildings?['landform','railway']:undefined));
   let template;
   if(!sample)template=await time('source.catalog',vectorTemplate,{provider:'OpenFreeMap'});
   let features=[],dem=[],terrainRaster,bridgeDem=[],bridgeFeatures=[],incompleteBridgeIds=[],terrainWarnings=[...(meta.sourceWarnings||[])];

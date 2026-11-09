@@ -83,6 +83,24 @@ test('railway grade is unchanged by road crossings and cuts or fills a hillside'
  assert(part(upgraded,'roads')?.faces.length);
 });
 
+test('a catalogue railway retains its steep grade and stitches profiled segments at a crop',()=>{
+ const base=data([line(123,[[0,.007],[.01,.007]],{class:'rail'})]);
+ const singularModels=[{kind:'railway',id:'rack',name:'Rack railway',replace:['123'],paths:[
+  {id:'one',structure:'surface',width:4,points:[[-.001,.005,10],[.005,.005,110]]},
+  {id:'two',structure:'surface',width:4,points:[[.005,.005,110],[.011,.005,210]]},
+ ]}];
+ const model=buildModel({...base,singularModels},{...options,exaggeration:1,railRise:.5});
+ const {proj,verticalReference}=model.context;
+ const top=upperSurface(part(model,'railways'));
+ assert.deepEqual(model.provenance.railways.catalogueProfiles,[['rack:one','rack:two']]);
+ assert.equal(top(...proj.project([.005,.007])),null);
+ for(const lon of [.001,.00499,.005,.00501,.009]){
+  const elevation=10+(lon+.001)*200/.012;
+  near(top(...proj.project([lon,.005])),verticalReference.minimumSurfaceMM+(elevation-verticalReference.originMeters)*proj.scale+.5);
+ }
+ assert.deepEqual(auditPart(part(model,'railways')).errors,[]);
+});
+
 test('a folded rail axis leaves the terrain and does not remove another railway',()=>{
  const curve=line('curve',[[.001,.007],[.005,.008],[.009,.007]],{class:'rail'});
  const invalid=line('fold',[[.002,.002],[.005,.002],[.003,.002]],{class:'rail'});

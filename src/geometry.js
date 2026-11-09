@@ -14,6 +14,7 @@ import {polygonTester} from './polygon-index.js';
 import {lineBuffer} from './roads.js';
 import {isRailway,isInactiveRailway,railwayOptions,railwayWidthMetres} from './railways.js';
 import {surfaceRailAxes,railwaySections,corridorPatches} from './railway-surface.js';
+import {applyCatalogueRailways} from './catalogue-railways.js';
 import {principalSurface,principalAxes,principalSections} from './principal-road-surface.js';
 import {buildingOptions,buildingRise} from './building-options.js';
 import {splitModel} from './mesh-tiles.js';
@@ -340,9 +341,27 @@ function prepareTerrain(data,options,progress,preview,measure){
     const {lo,hi}=paddedFootprintBounds(points,6*scale);
     terrainBands.push({lo,hi,step:Math.max(3*scale,(hi[0]-lo[0])/48,(hi[1]-lo[1])/48)});
   }
-  const terrainGrid=terrainBands.length?focusedTerrainGrid(width,height,resolution,terrainBands):undefined;
   const surfaceAt=catalogueTerrain((lon,lat)=>rasterHeight?rasterHeight(lon,lat):sampleHeight(prepared.tiles,lon,lat),landforms);
   const elevationAt=underlays.length?(lon,lat)=>buildingTerrainHeight(surfaceAt(lon,lat),project([lon,lat]),underlays):surfaceAt;
+  let terrainGrid=terrainBands.length?focusedTerrainGrid(width,height,resolution,terrainBands):undefined;
+  // A coarse slope cell can lie below the surveyed centreline of a tunnel.
+  // Refine only corridors where the source still supports the railbed.
+  const profiledTunnels=(data.singularModels??[]).filter(model=>model.kind==='railway').flatMap(model=>
+    (model.paths??[]).filter(path=>path.structure==='tunnel'&&path.points[0].length===3));
+  if(profiledTunnels.length&&Math.max(width,height)/resolution>45*scale){
+    const at=(x,y)=>elevationAt(...proj.unproject([x,y]));
+    const coarse=createTerrainField({width,height,resolution,grid:terrainGrid,at}).sample;
+    let refinements=0;
+    for(const {points} of profiledTunnels){
+      const axis=points.map(([lon,lat,z])=>[...project([lon,lat]),z]);
+      const needsRefinement=(x,y,z)=>x>0&&x<width&&y>0&&y<height&&coarse(x,y)<z+1&&at(x,y)>z+1;
+      if(!axis.some((point,i)=>needsRefinement(...point)||(i&&needsRefinement(...point.map((v,j)=>(v+axis[i-1][j])/2)))))continue;
+      const {lo,hi}=paddedFootprintBounds(axis,10*scale);
+      terrainBands.push({lo,hi,step:Math.max(10*scale,(hi[0]-lo[0])/15,(hi[1]-lo[1])/15)});
+      if(++refinements===8)break;
+    }
+    if(refinements)terrainGrid=focusedTerrainGrid(width,height,resolution,terrainBands);
+  }
   if(prepared.diagnostics.repaired)warnings.push(`S’han reconstruït ${prepared.diagnostics.repaired} mostres d’altitud invàlides o pics aïllats a partir dels veïns.`);
   const water=[],ocean=[],stillWater=[],green=[],woods=[],roads=[],transport=[],roadPieces=[];
   const cropped=polys=>polys.map(p=>intersect(p,rect)).filter(p=>p.length);
@@ -414,6 +433,7 @@ function prepareTerrain(data,options,progress,preview,measure){
         const points=line.map(project);
         const identity=transportIdentity(p,f.id??featureIndex);
         const route={...identity,identity,properties:p,points,class:railway?'rail':p.class,brunnel:p.brunnel,width:r*2,railway};
+        if(railway&&p.catalogueRailway&&line[0].length===3)route.elevations=line.map(point=>point[2]);
         transport.push(route);
         if(railway||p.brunnel==='tunnel')continue;
         let buffers;
@@ -541,7 +561,7 @@ function buildSurfaceCorridors(land,rise,index,axes,sectionsFor,protectedMask=[]
       const floor=(x,y,z)=>z-thickness;
       let pavement=platform.solid(floor),base=foundation.solid(()=>0);
       let errors=[...auditPart(pavement).errors,...auditPart(base).errors];
-      if(errors.length&&index===3){
+      if(errors.length&&(index===3||axis.points[0].length===3)){
         // Cropped seams can meet at a T after rounding. Use the same closed
         // prisms as the terrain, keeping the planned height at every vertex.
         const prisms={vertices:[],faces:[]},supports={vertices:[],faces:[]};
@@ -766,6 +786,7 @@ export function buildModel(data,options={},progress=()=>{},infrastructureApi=nul
   options={...options,baseThickness:modelBaseThickness(options.baseThickness)};
   if(options.pureRelief)return buildPureRelief(data,options,progress,preview,infrastructureApi);
   preview?.stage('terrain','Preparant el relleu…');
+  data=applyCatalogueRailways(data);
   const terrain=prepareTerrain(data,options,progress,preview,phaseTimer(diagnostics));
   preview?.parts('terrain',terrain.surfaces,terrain.proj);
   return buildTransport(data,options,terrain,progress,infrastructureApi,diagnostics,undefined,undefined,preview);
@@ -998,7 +1019,8 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
   const {railRise}=railwayOptions(options);
   const railwayRise=roadRise+railRise;
   const rail=measure('transport.railways',()=>buildSurfaceCorridors(land,railwayRise,8,surfaceRailAxes(transport,width,height),
-    axis=>railwaySections(axis,ground,exaggeration,minimumSurfaceMM,railwayRise))),railPoly=rail.mask;
+    axis=>railwaySections(axis,ground,exaggeration,minimumSurfaceMM,railwayRise,
+      elevation=>minimumSurfaceMM+(elevation-originMeters)*scale*exaggeration))),railPoly=rail.mask;
   const roadOnlySource=subtract(terrain.roadPoly,railPoly);
   const sourceRoadPoly=railPoly.length?merge([roadOnlySource,railPoly].filter(p=>p.length)):terrain.roadPoly;
   let cutTerrain=railPoly.length?{...terrain,land:subtract(land,railPoly)}:terrain;
@@ -1316,7 +1338,13 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
     }
     return ground(x,y);
   }:ground;
-  const tunnelVoids=generateProceduralTunnelVoids(data.features,elevationAt,{enabled:options.estimatedTunnels===true,projection:proj,verticalReference,exaggeration,ground,roofGround,minimumVoidFloorMM:minimumSurfaceMM,surfaceRiseMM:roadRise,railSurfaceRiseMM:roadRise+railRise,waterMask:waterPoly,surfaceAt:exteriorSurface,surfaceBreaks:exteriorBreaks,sharedPavement:surfaceRoad?.sharedPavement,trailWidth:options.trailWidth,portalRoute:({point,outward,properties,sourceFeatureIds,maxLengthMM})=>{
+  const tunnelVoids=generateProceduralTunnelVoids(data.features,elevationAt,{enabled:options.estimatedTunnels===true,projection:proj,verticalReference,exaggeration,ground,roofGround,minimumVoidFloorMM:minimumSurfaceMM,surfaceRiseMM:roadRise,railSurfaceRiseMM:roadRise+railRise,waterMask:waterPoly,surfaceAt:exteriorSurface,surfaceBreaks:exteriorBreaks,portalProfile:(point,line,properties)=>{
+    if(line?.properties?.catalogueRailway!==properties.catalogueRailway)return null;
+    for(const landing of corridorLandings(line)){
+      const height=landing.top(...point);if(height!=null)return height;
+    }
+    return null;
+  },sharedPavement:surfaceRoad?.sharedPavement,trailWidth:options.trailWidth,portalRoute:({point,outward,properties,sourceFeatureIds,maxLengthMM})=>{
     const own=new Set(sourceFeatureIds),lines=transport.filter(t=>t.brunnel!=='tunnel'&&!t.sourceFeatureIds?.some(id=>own.has(id)));
     const route=continuationRoute(point,outward,lines,transportIdentity(properties),maxLengthMM,{allowStructures:true});return route.segments.length?route:null;
   }});
@@ -1427,8 +1455,12 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
   warnings.push('Els arbres són una representació procedimental dins de zones verdes, no posicions d’arbres mesurades.');
   warnings.push('Les tessel·les vectorials estan generalitzades. Aquesta prova no substitueix cartografia topogràfica de precisió.');
   const containsGroundRoad=polygonTester(roadPoly),approachMask=merge(bridges.flatMap(b=>b.approaches.plans.map(p=>intersect(p.footprint,rect))).filter(p=>p.length)),containsApproach=polygonTester(approachMask);
-  const railwayMetadata={incrementMM:railRise,surfaceRiseMM:roadRise+railRise,method:'level cross-sections; constant estimated grade between endpoints; cut and fill',
-    groundPresent:railPoly.length>0,bridges:bridges.filter(b=>b.railway).length,profiles:rail.count,omissions:rail.omissions};
+  const catalogueProfiles=rail.accepted.filter(({axis})=>axis.points[0].length===3).map(({axis})=>axis.sourceFeatureIds);
+  const railwayMetadata={incrementMM:railRise,surfaceRiseMM:roadRise+railRise,
+    method:catalogueProfiles.length?'level cross-sections; catalogue or endpoint grade; cut and fill':
+      'level cross-sections; constant estimated grade between endpoints; cut and fill',
+    groundPresent:railPoly.length>0,bridges:bridges.filter(b=>b.railway).length,profiles:rail.count,omissions:rail.omissions,
+    ...(catalogueProfiles.length?{catalogueProfiles}:{})};
   const context={ground,verticalReference,proj,rect,forest,land,roadPoly,roadOnlyPoly,railPoly,waterPoly,bridges,tunnelMask,infrastructureApi,containsForest:polygonTester(forest),containsLand:polygonTester(land),containsRoad:p=>containsDeck(p)||containsApproach(p)||containsGroundRoad(p),width,height,scale,staticWarnings:warnings,options:{...options,size,exaggeration,resolution,roadRise,railRise},meta:{...data.meta,tunnels:tunnelMetadata,railways:railwayMetadata,infrastructure:deckCount?{...data.infrastructure,provider:knownCount?'Specific overrides and estimated transport platforms':'Estimated transport platforms from OSM/DEM',items:undefined,count:deckCount,knownCount,proceduralCount,deckProfiles:bridges.map(b=>({id:b.id,mainRoad:b.mainRoad,generatedSurfaceAdjustmentMM:b.generatedSurfaceAdjustmentMM,estimated:b.estimated,elevationMethod:b.elevationMethod,widthMetres:b.widthMetres,sourceFeatureIds:b.sourceFeatureIds,railway:b.railway,surfaceRiseMM:b.surfaceRise,printableThicknessMM:b.thickness})),printableThicknessMM:.6+roadRise,railwayPrintableThicknessMM:bridges.some(b=>b.railway)?.6+roadRise+railRise:undefined}:null},diagnostics:terrain.diagnostics,staticBase,terrain,singularModels:data.singularModels,transportSource:{infrastructure:data.infrastructure,features:data.features,singularModels:data.singularModels},buildingGeometry,buildingFeatures:buildingGeometry?.features??data.features};
   if(terrain.landforms.length){
     const cut=measure('terrain.singular-openings',()=>carveCatalogueLandforms(staticBase,terrain.landforms,infrastructureApi,verticalReference,scale*exaggeration));

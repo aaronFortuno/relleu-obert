@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Revisat el **2026-11-09** amb la v0.23.45. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
+Revisat el **2026-11-09** amb la v0.23.46. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
 
 ## Ordre de treball
 
@@ -38,6 +38,8 @@ Al-Khazneh r1 passa els controls d’encaix locals a 1:500 i 1:1.000 i en un ret
 ## Validació en ús i seguiment
 
 ### RO-050 — Ferrocarrils diferenciats
+
+El Cremallera de Núria incorpora la via oficial de l’ICGC i comparteix cotes entre trams de superfície, ponts i túnels. Queden la revisió al visor de l’usuari i el laminat de les boques. [Controls del Cremallera](arxiu/HISTORIAL.md#v02346--traçat-ferroviari-del-catàleg)
 
 **P1.** La via de superfície té secció transversal plana i una rasant estimada entre extrems, amb tall i reblert. El control de vessant passa amb i sense una carretera transversal i el retall ferroviari del Bages passa la comprovació local de la malla a 400 i 800 m. Queden la validació al visor i al laminador en un pas a nivell i en enllaços amb estructures. [Proves i abast](arxiu/HISTORIAL.md#v02338--rasant-ferroviària-independent)
 
