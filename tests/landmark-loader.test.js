@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createLandmarkLoader} from '../src/landmarks.js';
+import {catalogueBridgeItem} from '../src/catalogue-bridges.js';
 
 const catalogue='https://example.org/landmarks/catalog.geojson';
 const mesh=new URL('models/tower/r1/print.glb',catalogue).href;
@@ -99,14 +100,16 @@ test('bridge metadata is required and future model types do not affect buildings
   const deckRows=axis.map(([lon,lat,z])=>[[lon-.0001,lat,z],[lon+.0001,lat,z]]);
   const bridge={anchorElevation:603,verticalDatum:'NGF-IGN69',ref:'A75',roadClass:'motorway',sourceFeatureIds:['1','2'],
     width:32,depth:4.2,length:200,spans:[100,100],axis,deckRows,pylonIndexCount:3,upperIndexCount:6,
-    stayDiameter:4.5,pierSection:{along:9,across:16}};
+    stayDiameter:4.5,pierSection:{along:9,across:16},supportFeatureIds:['42'],supportBuildingIds:['icgc-808434','icgc-808442']};
   const load=createLandmarkLoader(catalogue,url=>url!==catalogue?glb():collection(
     tower(),tower({id:'bridge',properties:{kind:'bridge',bridge}}),
     tower({id:'incomplete',properties:{kind:'bridge',bridge:{...bridge,spans:[100,90]}}}),
+    tower({id:'unknown-support',properties:{kind:'bridge',bridge:{...bridge,supportBuildingIds:['unverified-42']}}}),
     tower({id:'terrain',properties:{kind:'terrain',mesh:'ignored.glb'}})));
   const {models,warnings}=await load(crop);
   assert.deepEqual(models.map(m=>m.kind),['building','bridge']);
   assert.deepEqual(models[1].bridge,bridge);
+  assert.deepEqual(catalogueBridgeItem(models[1]).supportFeatureIds,['42','icgc-808434','icgc-808442']);
   assert.equal(warnings.length,1);
 });
 

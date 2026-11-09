@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Revisat el **2026-11-08** amb la v0.23.44. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
+Revisat el **2026-11-09** amb la v0.23.45. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
 
 ## Ordre de treball
 
@@ -12,6 +12,8 @@ Revisat el **2026-11-08** amb la v0.23.44. [Historial i validacions](arxiu/HISTO
 ## Desenvolupament i proves
 
 ### RO-046 — Catàleg de llocs recomanats
+
+El Pont Vell de Besalú passa les proves locals amb els edificis ICGC, dos retalls complets i un de parcial. Queden la revisió de l’usuari i el laminat dels arcs. [Validació](arxiu/HISTORIAL.md#v02345--torres-de-pont-a-la-capa-icgc)
 
 **P2.** Continuar per l’Eixample, Girona i Venècia. Revisar els retocs de les Bardenas, Colorado i Lavaredo, i comprovar la llegibilitat, la cota de base i els temps de les fitxes pendents. [Llista de revisió per blocs](RO-046-CATALEG.md#revisió-per-a-maquetes-daula)
 

@@ -4,18 +4,19 @@ import {uniteMaterials} from './solid-operations.js';
 import {projectInfrastructurePath} from './infrastructure-solids.js';
 
 const positive=(value,max)=>Number.isFinite(value)&&value>0&&value<=max;
-const featureIds=(ids,min)=>Array.isArray(ids)&&ids.length>=min&&ids.length<=32&&
-  ids.every(id=>typeof id==='string'&&/^\d{1,18}$/.test(id));
+const featureIds=(ids,min,pattern=/^\d{1,18}$/)=>Array.isArray(ids)&&ids.length>=min&&ids.length<=32&&
+  ids.every(id=>typeof id==='string'&&pattern.test(id));
 const xyz=point=>Array.isArray(point)&&point.length===3&&point.every(Number.isFinite)&&
   Math.abs(point[0])<=180&&Math.abs(point[1])<=90&&point[2]>=-500&&point[2]<=9000;
 
 export function validBridgeProfile(profile){
   if(!profile)return false;
   const {anchorElevation,verticalDatum,ref,roadClass,sourceFeatureIds,width,depth,length,spans,axis,deckRows,
-    pylonIndexCount,upperIndexCount,stayDiameter,pierSection,supportFeatureIds,maxPierAdjustment}=profile;
+    pylonIndexCount,upperIndexCount,stayDiameter,pierSection,supportFeatureIds,supportBuildingIds,maxPierAdjustment}=profile;
   return Number.isFinite(anchorElevation)&&anchorElevation>=-500&&anchorElevation<=9000&&
     [verticalDatum,ref,roadClass].every(v=>typeof v==='string'&&v.length>0&&v.length<=80)&&
     featureIds(sourceFeatureIds,1)&&(supportFeatureIds===undefined||featureIds(supportFeatureIds,0))&&
+    (supportBuildingIds===undefined||featureIds(supportBuildingIds,0,/^icgc-\d{1,18}$/))&&
     positive(width,100)&&positive(depth,30)&&positive(length,10000)&&positive(stayDiameter,20)&&
     Array.isArray(spans)&&spans.length>=2&&spans.length<=40&&spans.every(span=>positive(span,length))&&
     Math.abs(spans.reduce((sum,span)=>sum+span,0)-length)<.01&&
@@ -39,7 +40,8 @@ export function catalogueBridgeItem(model){
     elevationMethod:'catalogue-absolute',catalogue:{id:model.id,name:model.name,revision:model.revision,license:model.license,
       spatialDataLicense:model.spatialDataLicense,attribution:model.attribution,sources:model.sources,verticalDatum:b.verticalDatum},
     layout:{lengthMetres:b.length,spansMetres:b.spans,stationsMetres,sectionMetres:b.pierSection,
-      maxLongitudinalAdjustmentMetres:b.maxPierAdjustment},supportFeatureIds:b.supportFeatureIds,catalogueModel:model};
+      maxLongitudinalAdjustmentMetres:b.maxPierAdjustment},
+    supportFeatureIds:[...(b.supportFeatureIds??[]),...(b.supportBuildingIds??[])],catalogueModel:model};
 }
 
 export function catalogueBridgeUpper(item,proj,verticalReference,exaggeration,lift,api,material){

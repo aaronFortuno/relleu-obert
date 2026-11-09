@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.23.45 — 2026-11-09
+
+- Els ponts del catàleg poden identificar els edificis de la capa ICGC que ja incorpora la seva malla. Al Pont Vell de Besalú, les dues torres queden dins del sòlid del pont i se suprimeixen les petjades equivalents en aquesta capa.
+
 ## v0.23.44 — 2026-11-08
 
 - Els túnels amb accessos cartografiats poden ajustar lleugerament la rasant quan la cota estimada de les boques no arriba a la calçada inferior. El càlcul evita plecs del paviment a les corbes dels accessos i manté els límits de pendent, coberta i gruix de base. Al retall del Guggenheim s’obren els dos sentits del pas inferior i el vial de servei.

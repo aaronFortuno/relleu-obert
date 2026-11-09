@@ -1,6 +1,10 @@
 # Historial i validacions de Relleu Obert
 
-Actualitzat el 2026-11-08. Les entrades validades surten del [backlog actiu](../BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
+Actualitzat el 2026-11-09. Les entrades validades surten del [backlog actiu](../BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
+
+## v0.23.45 — Torres de pont a la capa ICGC
+
+RO-046 valida el Pont Vell de Besalú amb MET5 a 1:850 (+8°), 1:1.600 (−14°) i amb un retall parcial a 1:1.100 (+19°). Els dos retalls complets mantenen oberts els set arcs i els dos portals, i la malla del pont substitueix la versió procedimental. El control amb els edificis de l’ICGC conserva els edificis veïns i elimina el volum duplicat del portal de la vila. [Model i fonts](https://github.com/aaronFortuno/open-place-models/blob/main/models/pont-vell-besalu/r1/README.md)
 
 ## v0.23.39 — Al-Khazneh al cingle
 
