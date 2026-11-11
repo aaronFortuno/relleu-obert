@@ -1,22 +1,44 @@
 #workshop-guide {
-  display:flex;
-  align-items:center;
-  flex:none;
-  gap:8px 16px;
-  min-height:64px;
-  padding:8px 16px;
-  background:var(--paper);
-  border-bottom:1px solid var(--line);
+  position:fixed;
+  inset:0;
+  z-index:1100;
+  pointer-events:none;
 }
-.workshop-guide-copy {min-width:0;flex:1}
-.workshop-guide-copy h2 {font-size:var(--ui-title)}
-.workshop-guide-copy .hint {
-  margin:4px 0 0;
+#workshop-guide[hidden] {display:none}
+.workshop-guide-shade {
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  pointer-events:none;
+}
+.workshop-guide-mask {
+  fill:rgb(27 31 27 / 65%);
+  pointer-events:fill;
+  touch-action:none;
+}
+.workshop-guide-card {
+  position:absolute;
+  left:12px;
+  top:12px;
+  width:310px;
+  padding:12px;
+  overflow:auto;
+  overscroll-behavior:contain;
+  background:var(--paper);
+  border:1px solid var(--ui-control-border);
+  border-radius:5px;
+  pointer-events:auto;
+}
+.workshop-guide-card h2 {margin:0;font-size:var(--ui-title)}
+.workshop-guide-card h2:focus {outline:none}
+.workshop-guide-card .hint {
+  margin:4px 0 10px;
   color:var(--ui-control-text);
   font-size:var(--ui-control);
   line-height:1.4;
 }
-.workshop-guide-actions {display:flex;align-items:center;gap:8px;flex:none}
+.workshop-guide-actions {display:flex;align-items:center;justify-content:flex-end;gap:4px}
 .workshop-guide-actions :is(.primary,.secondary,.quiet-button) {
   width:auto;
   margin:0;
@@ -24,11 +46,10 @@
   min-height:28px;
   font-size:var(--ui-control);
 }
+.workshop-guide-actions .quiet-button {margin-inline-end:auto}
 .workshop-guide-actions button:disabled {cursor:default}
 
 @media(max-width:900px) {
-  #workshop-guide {display:block;padding:8px 12px 4px;min-height:0;max-height:60%;overflow:auto}
-  .workshop-guide-actions {justify-content:flex-end;gap:4px;margin-top:4px}
+  .workshop-guide-card {width:min(310px,calc(100vw - 24px))}
   .workshop-guide-actions :is(.primary,.secondary,.quiet-button) {min-height:44px}
-  .workshop-guide-actions .quiet-button {margin-inline-end:auto}
 }

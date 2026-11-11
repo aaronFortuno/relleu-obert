@@ -43,6 +43,7 @@ import './example-carousel.css';
 import './mobile-workshop.css';
 import './mobile-onboarding.css';
 import {createWorkshopGuide} from './workshop-guide.js';
+import {bindFieldCommit,committedFieldValue} from './field-commit.js';
 import './workshop-guide.css';
 const $=s=>document.querySelector(s),view=$('#viewport'),worker=new Worker(new URL('./worker.js',import.meta.url),{type:'module'});
 const text=(key,params)=>t('runtime.'+key,params);
@@ -94,11 +95,12 @@ const boundaryControls=BOUNDARY_LEVELS.map(level=>{
     changed();
   };
   select.onchange=changed;
-  width.onchange=()=>{
+  bindFieldCommit(width,()=>{
+    const before=Number(width.defaultValue);
     const next=width.valueAsNumber;
     width.value=width.defaultValue=validBoundaryWidth(next)?Math.round(next*10)/10:width.defaultValue;
-    changed();
-  };
+    if(Number(width.value)!==before)changed();
+  });
   return {level,enabled,select,width};
 });
 function boundarySettings(){
@@ -164,7 +166,7 @@ for(const button of workshopButtons)button.onclick=()=>{
   showWorkshopPanel(layout.dataset.mobilePanel===panel?'preview':panel,{focus:true});
 };
 document.addEventListener('keydown',event=>{
-  if(event.key==='Escape'&&!event.defaultPrevented&&narrowWorkshop.matches&&!workshopNav.hidden&&
+  if(event.key==='Escape'&&!event.defaultPrevented&&!workshopGuide.current()&&narrowWorkshop.matches&&!workshopNav.hidden&&
       layout.dataset.mobilePanel!=='preview'&&!document.querySelector('dialog[open]')){
     event.preventDefault();
     showWorkshopPanel('preview',{focus:true});
@@ -229,6 +231,7 @@ function pendingPieceSize(){
   return width!==model.width||height!==model.height;
 }
 const pureSelected=()=>$('#mode-relief').checked;
+const fieldNumber=id=>Number(committedFieldValue($('#'+id)));
 const LANDSCAPE_RESOLUTIONS={24:36,36:64,56:96};
 const isPure=m=>!!m?.provenance.options.pureRelief;
 const canUpdateVegetation=()=>!!model&&pureSelected()===isPure(model);
@@ -243,9 +246,12 @@ const lineStrokes=()=>routeBrush()?drawnRouteStrokes:trailStrokes;
 const canPlacePin=canEditRelief;
 const canPaintWithBrush=()=>brush==='pin'||routeBrush()?canEditRelief():trailBrush()?canPaintTrails():canPaint();
 const trailWidthControl=$('#relief-trail-width'),trailEraserControl=$('#trail-eraser-radius');
-const reliefTrailWidth=()=>validReliefTrailWidth(trailWidthControl.valueAsNumber)?trailWidthControl.valueAsNumber:RELIEF_TRAIL_WIDTH_MM;
+const reliefTrailWidth=()=>{
+  const value=Number(committedFieldValue(trailWidthControl));
+  return validReliefTrailWidth(value)?value:RELIEF_TRAIL_WIDTH_MM;
+};
 const vegetation=()=>({trees:$('#trees').checked,density:2.5,brushDensity:Number($('#density').value),treeType:$('#tree-type').value,strokes,
-  ...(pureSelected()?{vegetationHeight:Number($('#vegetation-height').value),vegetationNoise:Number($('#vegetation-noise').value)}:{})});
+  ...(pureSelected()?{vegetationHeight:fieldNumber('vegetation-height'),vegetationNoise:fieldNumber('vegetation-noise')}:{})});
 let currentStatus='',currentBadge='';
 const placeSearch=$('#place-search'),searchResults=$('#search-results'),searchForm=$('#search-form');
 let activePlaceResult=null;
@@ -642,17 +648,18 @@ function tiling(){
 }
 const pavementMode=new URLSearchParams(location.search).get('paviment');
 const surfaceRoads=pavementMode==='antic'?undefined:pavementMode==='rasant'?'independent':pavementMode==='regional'?'regional':'grade-first';
-function modelOptions(){const [widthMM,heightMM]=size(),pureRelief=pureSelected(),detail=Number($('#detail').value);return {pureRelief,surfaceRoads:pureRelief?undefined:surfaceRoads,streams:$('#streams').checked,streamWidth:Number($('#stream-width').value),reliefTrails:pureRelief&&$('#relief-trails').checked,reliefTrailWidth:pureRelief?reliefTrailWidth():RELIEF_TRAIL_WIDTH_MM,trailStrokes:pureRelief?trailStrokes:[],drawnRouteStrokes:pureRelief?drawnRouteStrokes:[],userRoute:pureRelief?userRoute:null,...(pureRelief?boundarySettings():{}),size:Math.max(widthMM,heightMM),widthMM,heightMM,baseThickness,exaggeration:Number($('#exag').value),resolution:pureRelief?PURE_RELIEF_RESOLUTIONS[detail]:LANDSCAPE_RESOLUTIONS[detail],roadRise:Number($('#road-rise').value),railRise:Number($('#rail-rise').value),trailWidth:Number($('#trail-width').value),estimatedTunnels:!pureRelief&&$('#estimated-tunnels').checked,majorRoads:!pureRelief&&$('#major-profiles').checked,smoothProfiles:true,targetScale:null,selectionPose:selectedPose,buildingMode:pureRelief?'none':$('#building-mode').value,maxBuildingHeight:Number($('#building-height').value),...vegetation()};}
+function modelOptions(){const [widthMM,heightMM]=size(),pureRelief=pureSelected(),detail=Number($('#detail').value);return {pureRelief,surfaceRoads:pureRelief?undefined:surfaceRoads,streams:$('#streams').checked,streamWidth:Number($('#stream-width').value),reliefTrails:pureRelief&&$('#relief-trails').checked,reliefTrailWidth:pureRelief?reliefTrailWidth():RELIEF_TRAIL_WIDTH_MM,trailStrokes:pureRelief?trailStrokes:[],drawnRouteStrokes:pureRelief?drawnRouteStrokes:[],userRoute:pureRelief?userRoute:null,...(pureRelief?boundarySettings():{}),size:Math.max(widthMM,heightMM),widthMM,heightMM,baseThickness,exaggeration:fieldNumber('exag'),resolution:pureRelief?PURE_RELIEF_RESOLUTIONS[detail]:LANDSCAPE_RESOLUTIONS[detail],roadRise:Number($('#road-rise').value),railRise:Number($('#rail-rise').value),trailWidth:Number($('#trail-width').value),estimatedTunnels:!pureRelief&&$('#estimated-tunnels').checked,majorRoads:!pureRelief&&$('#major-profiles').checked,smoothProfiles:true,targetScale:null,selectionPose:selectedPose,buildingMode:pureRelief?'none':$('#building-mode').value,maxBuildingHeight:fieldNumber('building-height'),...vegetation()};}
 
 function configurationKey(o){return JSON.stringify([!!o.pureRelief,o.widthMM,o.heightMM,o.baseThickness,o.exaggeration,o.resolution,o.streams,o.streamWidth,!!o.reliefTrails,o.reliefTrailWidth??RELIEF_TRAIL_WIDTH_MM,o.trailStrokes??[],o.drawnRouteStrokes??[],o.userRoute??null,boundaryKey(o),o.roadRise??0,o.railRise??0,o.trailWidth??1,o.estimatedTunnels??true,o.majorRoads??false,o.targetScale,o.selectionPose?.center,o.selectionPose?.widthM,o.selectionPose?.heightM,o.selectionPose?.rotation,o.buildingMode,o.maxBuildingHeight]);}
-function sameTerrainFrame(options){
+function sameLoadedCrop(options,{includeMode=true}={}){
   const old=model?.provenance.options;
-  if(!old||dirty||options.pureRelief!==!!old.pureRelief)return false;
+  if(!old||dirty||includeMode&&options.pureRelief!==!!old.pureRelief)return false;
   const a=options.selectionPose,b=old.selectionPose;
-  return ['widthMM','heightMM','resolution','targetScale'].every(key=>options[key]===old[key])&&a&&b&&
+  return ['widthMM','heightMM','targetScale'].every(key=>options[key]===old[key])&&a&&b&&
     ['widthM','heightM','rotation'].every(key=>Math.abs(a[key]-b[key])<1e-6)&&
     a.center.every((value,index)=>Math.abs(value-b.center[index])<1e-10);
 }
+const sameTerrainFrame=options=>sameLoadedCrop(options)&&options.resolution===model.provenance.options.resolution;
 const reliefKeys=['baseThickness','exaggeration','streams','streamWidth','reliefTrails','reliefTrailWidth','trailStrokes','drawnRouteStrokes','userRoute'];
 function sameReliefField(key,options,old){
   if(key==='reliefTrails')return options[key]===!!old[key];
@@ -688,7 +695,8 @@ async function flushReliefUpdate(){
   const options=modelOptions();
   if(!canUpdateElevation(options)){lock(false);return;}
   if(!options.pureRelief){
-    if(options.exaggeration!==model.provenance.options.exaggeration)generate();
+    const previous=model.provenance.options;
+    if(['exaggeration','streams','streamWidth','baseThickness'].some(key=>options[key]!==previous[key]))generate();
     else lock(false);
     return;
   }
@@ -852,8 +860,20 @@ function recoverBuildings(error){
   say(model?statusMessage('status.keepBuildingSettings',()=>({error:messageText(error.uiMessage??error.message)})):error.uiMessage??error.message,true);
 }
 
-function updateTrees(){if(!canUpdateVegetation())return;pendingVegetation=true;lock(busy);clearTimeout(timer);if(!drawing){say(statusMessage('status.brushWait'));timer=setTimeout(flushTrees,170);}}
-function flushTrees(){if(!pendingVegetation||drawing||busy||!canUpdateVegetation())return;pendingVegetation=false;job='vegetation';lock(true);worker.postMessage({type:'vegetation',options:vegetation()});}
+function updateTrees(){
+  if(!canUpdateElevation(modelOptions())){
+    requireBuild(statusMessage('pending.selection'));
+    return;
+  }
+  pendingVegetation=true;lock(busy);clearTimeout(timer);
+  if(!drawing){say(statusMessage('status.brushWait'));timer=setTimeout(flushTrees,170);}
+}
+function flushTrees(){
+  if(!pendingVegetation||drawing||busy)return;
+  pendingVegetation=false;
+  if(!canUpdateElevation(modelOptions())){requireBuild(statusMessage('pending.selection'));return;}
+  job='vegetation';lock(true);worker.postMessage({type:'vegetation',options:vegetation()});
+}
 let buildingsSettle=null,buildingsToken=0;
 let previewRequest=null,previewSerial=0;
 function clearBuildingPreview(){
@@ -1175,8 +1195,12 @@ function applyPureRelief(){
   openStep('place');
   requireBuild(statusMessage('pending.mode'));
 }
-$('#model-mode').onchange=applyPureRelief;
-for(const id of ['streams','stream-width'])$('#'+id).onchange=()=>requestReliefUpdate(statusMessage('pending.streams'));
+$('#model-mode').onchange=()=>{
+  const applyHere=sameLoadedCrop(modelOptions(),{includeMode:false});
+  applyPureRelief();
+  if(applyHere&&sameLoadedCrop(modelOptions(),{includeMode:false}))generate();
+};
+for(const id of ['streams','stream-width'])$('#'+id).onchange=()=>requestReliefUpdate(statusMessage('pending.streams'),true);
 const requestTrailUpdate=()=>requestReliefUpdate(statusMessage('pending.reliefTrails'));
 function syncRouteSettings(locked){
   $('#route-import').disabled=$('#route-remove').disabled=locked;
@@ -1207,11 +1231,10 @@ $('#relief-trails').onchange=()=>{
   if(!$('#relief-trails').checked&&trailBrush())endVegetationEditing();
   requestTrailUpdate();
 };
-trailWidthControl.onchange=()=>{
-  if(!validReliefTrailWidth(trailWidthControl.valueAsNumber))
-    trailWidthControl.value=model?.provenance.options.reliefTrailWidth??RELIEF_TRAIL_WIDTH_MM;
-  requestTrailUpdate();
-};
+bindFieldCommit(trailWidthControl,before=>{
+  if(!validReliefTrailWidth(trailWidthControl.valueAsNumber))trailWidthControl.value=before;
+  if(trailWidthControl.valueAsNumber!==Number(before))requestTrailUpdate();
+});
 trailEraserControl.onchange=()=>{
   if(!trailEraserControl.checkValidity()||!trailEraserControl.value)trailEraserControl.value=trailEraserControl.defaultValue;
 };
@@ -1308,13 +1331,13 @@ function selectCuratedExample(example){
   generate();
 }
 initExampleCarousel($('#example-carousel'),CURATED_EXAMPLES,example=>switchProject(()=>selectCuratedExample(example)));
-resizeForm.onsubmit=event=>{
-  event.preventDefault();
+function commitResize(){
   if(!selectedSize||busy||drawing||pendingVegetation||reliefTimer!==null)return;
   const preset=resizeDimensions.read();
   const dimensions=pieceDimensions(preset);
   if(!dimensions||preset===selectedSize)return;
   const previous=modelOptions(),name=placeName;
+  const applyHere=sameLoadedCrop(previous);
   scheduler.cancel();
   clearTimeout(transportTimer);
   transportTimer=null;
@@ -1327,7 +1350,6 @@ resizeForm.onsubmit=event=>{
   brushHistory.resize(previous,options,strokes);
   trailHistory.resize(previous,options,trailStrokes);
   routeHistory.resize(previous,options,drawnRouteStrokes);
-  openStep('place',{focus:true});
   scaleHint();
   if(!limited&&!dirty&&!buildingSourceDirty&&model&&configurationKey(options)===configurationKey(model.provenance.options)){
     needsBuild=false;
@@ -1336,9 +1358,18 @@ resizeForm.onsubmit=event=>{
     lock(false);
     return;
   }
+  if(applyHere&&!tooLargeRegion){generate();return;}
+  if(!workshopGuide.current())openStep('place',{focus:true});
   requireBuild(statusMessage('pending.resize'));
   if(!tooLargeRegion)say(limited?statusMessage('status.resizeLimited'):statusMessage('status.resizeApply'));
+}
+resizeForm.onsubmit=event=>{
+  event.preventDefault();
+  commitResize();
 };
+resizeForm.addEventListener('focusout',event=>{
+  if(!resizeForm.contains(event.relatedTarget))setTimeout(commitResize,0);
+});
 $('#new-project').onclick=()=>switchProject(()=>window.location.reload());
 $('#reset').onclick=()=>{previewOrbit.pause(performance.now());home();};
 $('#top').onclick=()=>{setOrbitEnabled(false);home();const distance=camera.position.distanceTo(controls.target);camera.position.copy(controls.target).add(new THREE.Vector3(0,-.01,distance));controls.update();};
@@ -1462,12 +1493,11 @@ function syncExaggerationLabel(){
 }
 $('#exag').oninput=()=>{
   syncExaggerationLabel();
-  if(pureSelected())requestReliefUpdate(statusMessage('pending.relief'));
 };
-$('#exag').onchange=()=>{if(!pureSelected())requestReliefUpdate(statusMessage('pending.relief'),true);};
+bindFieldCommit($('#exag'),()=>requestReliefUpdate(statusMessage('pending.relief'),true));
 $('#detail').onchange=()=>{
   if(busy||pendingVegetation||drawing)return;
-  if(selection&&selectedSize&&!tooLargeRegion){generate();return;}
+  if(!tooLargeRegion&&sameLoadedCrop(modelOptions())){generate();return;}
   cancelReliefUpdate();
   clearTimeout(transportTimer);
   transportTimer=null;
@@ -1506,7 +1536,12 @@ function lockBuildingControls(updating=busy||pendingVegetation){
   $('#building-height').disabled=updating||$('#building-mode').value!=='limited';
 }
 function buildingControls(){sourceSummary();lockBuildingControls();$('#building-source-hint').textContent=$('#building-source').value==='catastre'?text('building.cadastreHint'):$('#building-source').value==='osm3d'?text('building.osmHint'):'';const mode=$('#building-mode').value;$('#building-mode-hint').textContent=({limited:text('building.limited'),source:$('#building-source').value==='osm3d'?text('building.roofShape'):text('building.roofFlat'),flat:text('building.flat'),none:text('building.none')})[mode];}
-$('#building-mode').onchange=()=>{buildingControls();requestBuildingsAuto(statusMessage('pending.buildings'));};$('#building-height').oninput=()=>{buildingControls();requestBuildingsAuto(statusMessage('pending.buildingHeight'));};
+$('#building-mode').onchange=()=>{buildingControls();requestBuildingsAuto(statusMessage('pending.buildings'));};
+const buildingHeight=$('#building-height');
+bindFieldCommit(buildingHeight,before=>{
+  if(!buildingHeight.value||!buildingHeight.validity.valid)buildingHeight.value=before;
+  if(buildingHeight.valueAsNumber!==Number(before))requestBuildingsAuto(statusMessage('pending.buildingHeight'));
+});
 $('#material-count').onchange=()=>{
   const count=Number($('#material-count').value);
   if(shownMaterialMode())reliefMaterials={count,assignments:defaultReliefAssignments(count)};
@@ -1515,7 +1550,7 @@ $('#material-count').onchange=()=>{
 };
 $('#density').oninput=()=>{$('#density-value').textContent='×'+formatNumber(Number($('#density').value));};$('#trees').onchange=()=>{
   if(!$('#trees').checked&&!trailBrush())endVegetationEditing();
-  if(canUpdateVegetation())updateTrees();else lock(busy);
+  updateTrees();
 };$('#tree-type').onchange=updateTrees;
 const textureSliders=[['vegetation-height',' mm'],['vegetation-noise','%']];
 function syncTextureLabel(id,unit){
@@ -1524,7 +1559,8 @@ function syncTextureLabel(id,unit){
   slider.setAttribute('aria-valuetext',value);
 }
 for(const [id,unit] of textureSliders){
-  $('#'+id).oninput=()=>{syncTextureLabel(id,unit);updateTrees();};
+  $('#'+id).oninput=()=>syncTextureLabel(id,unit);
+  bindFieldCommit($('#'+id),updateTrees);
   syncTextureLabel(id,unit);
 }
 const formatOptions=[...document.querySelectorAll('#export-options [data-format]')];
@@ -1590,17 +1626,20 @@ for(const toggle of infoToggles)toggle.onclick=()=>{
 
 };
 $('#print-base').oninput=syncBaseAction;
+function commitBase(){
+  if(!selectedSize)return;
+  const input=$('#print-base'),value=input.valueAsNumber;
+  if(!validBaseThickness(value))input.value=baseThickness;
+  else if(value!==baseThickness){
+    baseThickness=value;
+    if(model)requestReliefUpdate(statusMessage('print.pendingBase'),true);
+  }
+  syncBaseAction();
+}
+bindFieldCommit($('#print-base'),commitBase);
 $('#print-base-form').onsubmit=event=>{
   event.preventDefault();
-  if(!selectedSize||$('#print-base-fields').disabled)return;
-  const value=$('#print-base').valueAsNumber;
-  if(!validBaseThickness(value)||value===baseThickness)return;
-  baseThickness=value;
-  syncBaseAction();
-  if(!model)return;
-  if(pureSelected()&&canUpdateRelief(modelOptions()))requestReliefUpdate(statusMessage('print.pendingBase'));
-  else if(!needsBuild&&!dirty&&!tooLargeRegion)generate();
-  else requireBuild(statusMessage('print.pendingBase'));
+  commitBase();
 };
 function applyPrintCuts(cuts,dragging=false){
   if(!selectedSize||$('#print-cuts-fields').disabled)return;
@@ -1672,8 +1711,16 @@ function showViewerTools(open,{pane,focus=false}={}){
   if(focus)(open?$('#viewer-edit-title'):viewerToolsOpen).focus({preventScroll:true});
 }
 viewerToolsOpen.onclick=()=>showViewerTools(viewerToolsPanel.hidden,{focus:true});
-$('#viewer-tools-close').onclick=()=>showViewerTools(false,{focus:true});
+function closeViewerToolFromUser(){
+  if(narrowWorkshop.matches&&workshopGuide.current()==='transport'){
+    showViewerTools(false);
+    openStep('transport');
+    $('#trail-tools-link').focus();
+  }else showViewerTools(false,{focus:true});
+}
+$('#viewer-tools-close').onclick=closeViewerToolFromUser;
 $('#print-pins-link').onclick=()=>showViewerTools(true,{pane:'pins',focus:true});
+$('#trail-tools-link').onclick=()=>showViewerTools(true,{pane:'trails',focus:true});
 for(const tab of viewerToolTabs)tab.onclick=()=>showViewerTools(true,{pane:tab.dataset.viewerTool});
 $('#enable-trails').onclick=()=>{
   $('#relief-trails').checked=true;
@@ -1685,7 +1732,7 @@ document.addEventListener('keydown',event=>{
   if(brush!=='navigate'){
     selectNavigate();
     viewerToolTabs.find(tab=>tab.dataset.viewerTool===viewerTool)?.focus({preventScroll:true});
-  }else showViewerTools(false,{focus:true});
+  }else closeViewerToolFromUser();
 });
 $('#undo-brush').onclick=()=>{strokes=withoutLastGesture(strokes);editButtons();updateTrees();};$('#clear-brush').onclick=()=>{strokes=[];editButtons();updateTrees();};$('#brush-radius').oninput=()=>$('#brush-value').textContent=formatNumber(Number($('#brush-radius').value))+' mm';
 $('#undo-trail').onclick=()=>{trailStrokes=withoutLastGesture(trailStrokes);requestTrailUpdate();};
@@ -2201,28 +2248,64 @@ function refreshWorkshopLanguage(){
     try{renderProjectGallery(true);}catch(error){feedback('project-feedback',error.message);}
   }
 }
-function showPrintSetup(){
+function showTourOutput(id){
   showWorkshopPanel('export');
-  if($('#info-print').hidden)$('[aria-controls="info-print"]').click();
+  const panel=id&&document.getElementById(id);
+  if(panel?.hidden)$('[aria-controls="'+id+'"]').click();
 }
+const guideLayers={vegetation:'vegetation',transport:'transport',buildings:'buildings'};
+const guideOutputs={piece:'info-print',materials:'info-materials',data:'info-data'};
+const buildForGuide=()=>busy&&job==='build';
+const guideModelReady=()=>!!model&&!needsBuild&&!busy;
 const workshopGuide=createWorkshopGuide($('#workshop-guide'),{
   fallbackFocus:$('#help-open'),
-  canAdvance:step=>step==='size'?!!selectedSize:step==='territory'?!!model&&!needsBuild&&!busy:true,
+  getSteps:()=>['size','territory','vegetation','transport',...(pureSelected()?[]:['buildings']),'piece','materials','data','download'],
+  canAdvance:step=>step==='size'?!!selectedSize:step==='territory'?guideModelReady():true,
+  autoAdvance:step=>step==='size'?!!selectedSize:step==='territory'&&guideModelReady(),
+  titleKey:step=>step==='transport'&&pureSelected()?'guide.workshop.transport.reliefTitle':undefined,
+  instructionKey:step=>step==='territory'&&buildForGuide()?'guide.workshop.territory.wait':
+    step==='transport'&&pureSelected()?'guide.workshop.transport.relief':
+    step==='size'&&selectedSize?'guide.workshop.size.existing':undefined,
   onStep(step){
     if(step==='size'){
-      if(selectedSize)showPrintSetup();
+      if(selectedSize)showTourOutput('info-print');
       else showWorkshopPanel('preview');
     }else if(step==='territory')openStep('place');
-    else if(step==='layers')openStep('transport');
-    else if(step==='tools')showViewerTools(true);
-    else showPrintSetup();
+    else if(Object.hasOwn(guideLayers,step))openStep(guideLayers[step]);
+    else showTourOutput(guideOutputs[step]);
+  },
+  targets(step){
+    if(step==='size')return [selectedSize?resizeForm:$('.piece-setup-controls')];
+    if(step==='territory'){
+      if(buildForGuide())return [view];
+      return [$('#panel-place'),placeLocation,$('[data-step-action="place"].is-build'),$('#status')];
+    }
+    if(Object.hasOwn(guideLayers,step)){
+      const controls=$('#panel-'+guideLayers[step]);
+      if(step==='transport'&&!viewerToolsPanel.hidden)
+        return [controls,viewerToolsPanel,renderer.domElement];
+      return step==='vegetation'?[controls,renderer.domElement]:[controls];
+    }
+    return [step==='download'?$('.download-panel'):document.getElementById(guideOutputs[step])];
   }
 });
-$('#welcome-guide').onclick=()=>workshopGuide.start({returnFocus:selectedSize?$('#step-place'):$('#welcome-guide')});
+function startWorkshopTour(returnFocus){
+  workshopGuide.start({step:!selectedSize?'size':model&&!needsBuild?'vegetation':'territory',returnFocus});
+}
+$('#welcome-guide').onclick=()=>startWorkshopTour($('#welcome-guide'));
 $('#start-workshop-guide').onclick=()=>{
   $('#help-dialog').close();
-  workshopGuide.start({step:!selectedSize?'size':model&&!needsBuild?'layers':'territory',returnFocus:$('#help-open')});
+  startWorkshopTour($('#help-open'));
+};
+const welcomeTour=$('#workshop-welcome'),welcomeTourKey='relleu-obert.workshop-welcome';
+welcomeTour.addEventListener('close',()=>{try{localStorage.setItem(welcomeTourKey,'seen');}catch{}});
+$('#welcome-start-tour').onclick=()=>{
+  welcomeTour.close();
+  startWorkshopTour($('#welcome-guide'));
 };
 onLocaleChange(refreshWorkshopLanguage);
 initI18n();
 try{restoreProject();}catch(error){say(error.message,true);}
+let firstWorkshopVisit=true;
+try{firstWorkshopVisit=!localStorage.getItem(welcomeTourKey);}catch{}
+if(firstWorkshopVisit&&!selectedSize)welcomeTour.showModal();

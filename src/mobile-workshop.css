@@ -75,6 +75,8 @@
 
   .app-layout[data-mobile-panel=export] .sidebar-right {display:flex;overflow:visible}
   .sidebar-right .info-panel:has(#info-data),#material-legend {display:none}
+  body:has(#workshop-guide[data-guide-step="data"]) .sidebar-right .info-panel:has(#info-data) {display:flex}
+  body:has(#workshop-guide[data-guide-step="materials"]) #material-legend {display:flex}
   .sidebar-right .info-panel .section-toggle {height:44px}
   .sidebar-right .metrics {gap:8px}
   .sidebar-right .metrics>div:nth-child(n+3) {display:none}

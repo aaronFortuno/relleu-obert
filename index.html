@@ -79,6 +79,7 @@
         <select id="stream-width"><option value="1" data-i18n="ui.place.streamWidth1">×1 · 0,45 mm</option><option value="1.5" data-i18n="ui.place.streamWidth15">×1,5 · 0,68 mm</option><option value="2" data-i18n="ui.place.streamWidth2">×2 · 0,90 mm</option><option value="3" data-i18n="ui.place.streamWidth3">×3 · 1,35 mm</option><option value="0" data-i18n="example.streamWidthSurfaces">Només superfícies cartografiades</option></select>
       <div id="relief-trail-settings" hidden>
         <label class="check-row"><input id="relief-trails" type="checkbox" role="switch"><span data-i18n="ui.transport.showReliefTrails">Mostra els senders</span></label>
+        <button type="button" id="trail-tools-link" class="quiet-button" data-i18n="ui.tools.editTrails">Edita senders</button>
 
       </div>
       <section id="relief-boundary-settings" aria-labelledby="relief-boundary-title" hidden>
@@ -106,7 +107,6 @@
     </section>
   </aside>
   <section class="workspace" aria-label="Model tridimensional" data-i18n-aria="ui.preview.title">
-    <div id="workshop-guide" hidden></div>
     <div id="viewport" aria-label="Previsualització tridimensional del model" data-i18n-aria="ui.preview.viewport">
       <div id="brush-cursor" hidden></div>
       <div class="preview-toolbar" hidden><div class="viewer-tools"><button id="reset" title="Restablir la vista" data-i18n-title="ui.preview.resetTitle" data-i18n="ui.preview.reset">↺ Restablir</button><button id="top" aria-label="Vista zenital ↑" data-i18n-aria="ui.preview.topView"><span class="desktop-copy" data-i18n="ui.preview.topView">Vista zenital ↑</span><span class="mobile-copy" data-i18n="ui.preview.topShort">Zenital ↑</span></button><button id="viewer-tools-open" type="button" aria-expanded="false" aria-controls="viewer-edit-panel" data-i18n="ui.tools.title">Eines</button><button id="presentation-toggle" type="button" aria-pressed="false" data-i18n="preview.presentation" disabled>Presentació</button><details class="viewer-help"><summary aria-label="Ajuda dels controls del model" data-i18n-aria="ui.preview.help">?</summary><p id="viewer-hint"><span class="desktop-copy" data-i18n="ui.preview.controls">Arrossega per girar · Roda per apropar · Botó dret per desplaçar</span><span class="mobile-copy" data-i18n="ui.preview.controlsMobile">Un dit per girar. Amb dos dits pots fer zoom i desplaçar la maqueta.</span></p></details></div>
@@ -285,6 +285,7 @@
     <button type="button" data-mobile-panel="export" aria-expanded="false" aria-controls="workshop-export" disabled data-i18n-text="ui.mobile.export"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m-4-4 4 4 4-4M4 16v4h16v-4"/></svg>Exporta</button>
   </nav>
 </main>
+<div id="workshop-guide" hidden></div>
 <footer class="app-footer">
   <span data-i18n="footer.tagline">Un tros del món, a les teves mans.</span>
   <p class="umbrella-project"><span data-i18n="footer.umbrella">Un projecte d’</span><a href="https://ortogra.fi/" class="umbrella-brand">
@@ -293,7 +294,7 @@
       <path d="m27 9 7-6" stroke="var(--umbrella-accent)" stroke-width="4.5"/>
     </svg><span>ortogra<span class="umbrella-dot">.</span>fi</span>
   </a></p>
-  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer" data-i18n-text="ui.footer.openSource"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions" data-i18n-aria="ui.releases.title">v0.23.52</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V" data-i18n-aria="ui.footer.about"><span class="desktop-copy" data-i18n="ui.footer.aboutDesktop">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
+  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer" data-i18n-text="ui.footer.openSource"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions" data-i18n-aria="ui.releases.title">v0.23.53</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V" data-i18n-aria="ui.footer.about"><span class="desktop-copy" data-i18n="ui.footer.aboutDesktop">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
 </footer>
 
 <dialog id="projects-dialog" aria-labelledby="projects-title">
@@ -378,6 +379,16 @@
       <button type="button" data-close class="quiet-button" data-i18n="ui.tools.cancel">Cancel·la</button>
     </div>
   </form>
+</dialog>
+<dialog id="workshop-welcome" aria-labelledby="workshop-welcome-title">
+  <div class="dialog-heading"><h2 id="workshop-welcome-title" data-i18n="guide.workshopWelcome">Benvingut a Relleu Obert</h2><button type="button" data-close aria-label="Tanca" data-i18n-aria="dialog.close">×</button></div>
+  <div class="dialog-content">
+    <p data-i18n="guide.workshopWelcomeText">Converteix un lloc real en una maqueta de relleu per imprimir en 3D. La visita guiada t’acompanya des de la mida fins a la descàrrega.</p>
+    <div class="edit-actions">
+      <button type="button" id="welcome-start-tour" class="primary" data-i18n="guide.workshopStart" autofocus>Inicia el recorregut</button>
+      <button type="button" class="quiet-button" data-close data-i18n="guide.workshopLater">Ara no</button>
+    </div>
+  </div>
 </dialog>
 <dialog id="help-dialog" aria-labelledby="help-title">
   <header class="dialog-heading">

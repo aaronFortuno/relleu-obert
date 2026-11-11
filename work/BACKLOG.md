@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Revisat el **2026-11-11** amb la v0.23.52. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
+Revisat el **2026-11-11** amb la v0.23.53. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
 
 ## Ordre de treball
 
@@ -108,3 +108,5 @@ La v0.23.51 destaca en taronja les rutes dibuixades i importades al visor. Tenen
 ### RO-058 — Auditoria del taller abans de la v0.24
 
 **P1.** La v0.23.52 separa les tres eines de senders i rutes, porta els forats al visor i incorpora una guia opcional. L’aigua passa al bloc de capes i la mida queda al costat de la base i els talls. El canvi de projecte protegeix els ajustos sense desar. Abans de la v0.24, validar els tres recorreguts amb una persona nova i comprovar els errors de perforació en una peça laminada. [Troballes, distribució i criteris d’acceptació](RO-058-AUDITORIA-UX.md)
+
+La v0.23.53 convida a una visita interactiva al primer accés. La visita passa de mida i territori a cada capa i apartat d’impressió, amb els controls reals ressaltats. Els camps numèrics esperen el final de l’edició i canviar el detall o una capa d’un retall pendent conserva la generació manual.

@@ -59,6 +59,9 @@ classes existents. `output` de formulari no ha de flotar a la dreta.
   deixa la maqueta a la vista i mostra el mode actiu i com sortir-ne.
 - Els canvis d’aparença o d’una capa conserven càmera/zoom. Restablir és una
   acció explícita; una regió o mida noves poden requerir enquadrament.
+- La visita guiada ressalta els controls originals de cada pas i permet
+  sortir sempre. Els camps numèrics apliquen els canvis en perdre el focus
+  o amb Retorn. Canviar el retall requereix prémer «Genera el model».
 
 ### Taller mòbil
 

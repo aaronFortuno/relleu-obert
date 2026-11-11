@@ -62,6 +62,9 @@
 .presentation-note{position:absolute;z-index:2;bottom:52px;left:18px;max-width:calc(100% - 36px);padding:6px 10px;border-radius:5px;background:#fffdf4db;color:#52614b;font-size:var(--ui-control);pointer-events:none}.presentation-note[hidden]{display:none}#presentation-toggle[aria-pressed=true]{background:#375d45;color:#fff}
 
 .preview-toolbar .viewer-tools{flex-wrap:wrap}
+body:has(#workshop-guide[data-guide-step="territory"]) [data-step-action="place"].is-build:not(:disabled) {
+  background:var(--green);color:var(--paper);border-color:var(--green);
+}
 .preview-options{display:grid;justify-items:end;gap:6px}
 .viewer-tools #preview-orbit{
   display:inline-flex;align-items:center;gap:8px;

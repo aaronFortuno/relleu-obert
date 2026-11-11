@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.23.53 — 2026-11-11
+
+- La benvinguda del primer accés convida a una visita interactiva. La guia ressalta els controls del pas actiu, adapta el recorregut al mode de maqueta i acompanya fins a la descàrrega.
+- Els camps d’ajust numèric apliquen el canvi en perdre el focus o amb Retorn. Moure el retall manté la generació manual, encara que després es canviïn el detall o les capes.
+
 ## v0.23.52 — 2026-11-11
 
 - El visor separa l’edició de senders blancs, el dibuix de rutes taronges i la importació de GPX. Els forats tenen accés des de les eines, marques numerades i entrada per coordenades.
