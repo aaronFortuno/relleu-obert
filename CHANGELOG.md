@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.23.55 — 2026-11-11
+
+- La visita guiada ressalta **Eines** abans dels ajustos d’impressió i mostra com editar senders, dibuixar o importar rutes i marcar llocs en Relleu pur.
+- **Punts destacats** explica com afegir una marca que s’exportarà com un forat per a una xinxeta o un banderí.
+
 ## v0.23.54 — 2026-11-11
 
 - Benvinguda amb imatges grans de tres maquetes de la galeria i accés a la visita guiada des de la capçalera i l’ajuda.

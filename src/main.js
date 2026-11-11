@@ -1710,6 +1710,7 @@ function showViewerTools(open,{pane,focus=false}={}){
   if(pane)viewerTool=pane;
   if(open&&narrowWorkshop.matches)showWorkshopPanel('preview');
   syncViewerTools();
+  if(workshopGuide.current()==='tools')workshopGuide.update();
   if(focus)(open?$('#viewer-edit-title'):viewerToolsOpen).focus({preventScroll:true});
 }
 viewerToolsOpen.onclick=()=>showViewerTools(viewerToolsPanel.hidden,{focus:true});
@@ -2278,13 +2279,15 @@ function updateWorkshopGuide(){
 }
 const workshopGuide=createWorkshopGuide($('#workshop-guide'),{
   fallbackFocus:$('#help-open'),
-  getSteps:()=>['size','territory','vegetation','transport',...(pureSelected()?[]:['buildings']),'piece','materials','data','download','preview'],
+  getSteps:()=>['size','territory','vegetation','transport',...(pureSelected()?[]:['buildings']),
+    'tools','piece','materials','data','download','preview'],
   canAdvance:step=>step==='size'?!!selectedSize:step==='territory'?guideModelReady():true,
   autoAdvance:step=>step==='size'?!!selectedSize:step==='territory'&&guideModelReady(),
   titleKey:step=>step==='transport'&&pureSelected()?'guide.workshop.transport.reliefTitle':undefined,
   instructionKey:step=>step==='territory'&&buildForGuide()?(slowGuideBuild?'guide.workshop.territory.slow':'guide.workshop.territory.wait'):
     step==='territory'&&guideModelReady()?'guide.workshop.territory.existing':
     step==='transport'&&pureSelected()?'guide.workshop.transport.relief':
+    step==='tools'&&pureSelected()?'guide.workshop.tools.relief':
     step==='preview'&&narrowWorkshop.matches?'guide.workshop.preview.touch':
     step==='size'&&selectedSize?'guide.workshop.size.existing':undefined,
   onStep(step){
@@ -2296,7 +2299,7 @@ const workshopGuide=createWorkshopGuide($('#workshop-guide'),{
       updateWorkshopGuide();
     }
     else if(Object.hasOwn(guideLayers,step))openStep(guideLayers[step]);
-    else if(step==='preview')showWorkshopPanel('preview');
+    else if(step==='tools'||step==='preview')showWorkshopPanel('preview');
     else showTourOutput(guideOutputs[step]);
   },
   targets(step){
@@ -2311,6 +2314,8 @@ const workshopGuide=createWorkshopGuide($('#workshop-guide'),{
         return [controls,viewerToolsPanel,renderer.domElement];
       return step==='vegetation'?[controls,renderer.domElement]:[controls];
     }
+    if(step==='tools')return viewerToolsPanel.hidden?[viewerToolsOpen]:
+      [viewerToolsOpen,viewerToolsPanel,...(pureSelected()?[renderer.domElement]:[])];
     if(step==='preview')return [view];
     return [step==='download'?$('.download-panel'):document.getElementById(guideOutputs[step])];
   }

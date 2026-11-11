@@ -118,8 +118,8 @@
       </div>
       <section id="viewer-edit-panel" hidden aria-labelledby="viewer-edit-title">
         <div class="viewer-edit-header"><h2 id="viewer-edit-title" class="section-heading" tabindex="-1" data-i18n="ui.tools.title">Eines</h2><button type="button" id="viewer-tools-close" class="quiet-button" data-i18n="ui.tools.done">Fet</button></div>
-        <p id="viewer-tools-unavailable" class="hint" data-i18n="ui.tools.pureOnly" hidden>Les eines de senders, rutes i forats estan disponibles en Relleu pur.</p>
-        <div id="viewer-tools-content"><div class="viewer-edit-tabs" role="group" aria-label="Eines del visor" data-i18n-aria="ui.tools.title"><button type="button" data-viewer-tool="trails" aria-pressed="true" data-i18n="ui.tools.trails">Senders</button><button type="button" data-viewer-tool="route" aria-pressed="false" data-i18n="ui.tools.routes">Rutes</button><button type="button" data-viewer-tool="pins" aria-pressed="false" data-i18n-text="ui.tools.holes">Forats <span id="viewer-pin-count" hidden></span></button></div><div data-viewer-pane="trails"><h3 class="section-heading" data-i18n="ui.tools.editTrails">Edita senders</h3><p class="hint" data-i18n="ui.tools.trailHint">Completa o corregeix la cartografia. Els senders són blancs.</p><button type="button" id="enable-trails" class="secondary" data-i18n="ui.transport.showReliefTrails">Mostra els senders</button>        <div class="two-fields">
+        <p id="viewer-tools-unavailable" class="hint" data-i18n="ui.tools.pureOnly" hidden>Pots editar senders i rutes i marcar punts destacats en mode Relleu pur.</p>
+        <div id="viewer-tools-content"><div class="viewer-edit-tabs" role="group" aria-label="Eines del visor" data-i18n-aria="ui.tools.title"><button type="button" data-viewer-tool="trails" aria-pressed="true" data-i18n="ui.tools.trails">Senders</button><button type="button" data-viewer-tool="route" aria-pressed="false" data-i18n="ui.tools.routes">Rutes</button><button type="button" data-viewer-tool="pins" aria-pressed="false" data-i18n-text="ui.tools.points">Punts destacats <span id="viewer-pin-count" hidden></span></button></div><div data-viewer-pane="trails"><h3 class="section-heading" data-i18n="ui.tools.editTrails">Edita senders</h3><p class="hint" data-i18n="ui.tools.trailHint">Completa o corregeix la cartografia. Els senders són blancs.</p><button type="button" id="enable-trails" class="secondary" data-i18n="ui.transport.showReliefTrails">Mostra els senders</button>        <div class="two-fields">
           <div><label for="relief-trail-width" data-i18n="ui.transport.reliefTrailWidth">Amplada (mm)</label><input id="relief-trail-width" type="number" min=".3" max="3" step=".01" value=".42" inputmode="decimal"></div>
           <div><label for="trail-eraser-radius" data-i18n="ui.transport.trailEraser">Radi de goma (mm)</label><input id="trail-eraser-radius" type="number" min="2" max="12" step="1" value="3" inputmode="numeric"></div>
         </div>
@@ -132,11 +132,11 @@
         <p id="route-summary" class="hint" role="status"></p>
       </section>
 </div><div data-viewer-pane="pins" hidden>        <section id="relief-pin-settings" aria-labelledby="relief-pin-title">
-          <h3 id="relief-pin-title" class="section-heading" data-i18n="ui.print.pins">Forats per a xinxetes</h3>
+          <h3 id="relief-pin-title" class="section-heading" data-i18n="ui.tools.points">Punts destacats</h3>
+          <p class="hint" data-i18n="ui.print.pinNote">Marca un lloc a la maqueta. En exportar-la, s’hi obrirà un forat d’1 mm de diàmetre per posar-hi una xinxeta o un banderí.</p>
           <label for="pin-depth" data-i18n="ui.print.pinDepth">Profunditat (mm)</label>
           <select id="pin-depth"><option value="7">7</option><option value="8" selected>8</option><option value="9">9</option></select>
-          <div class="brush-tools" role="group" aria-labelledby="relief-pin-title"><button type="button" data-brush="pin" aria-pressed="false" data-i18n="ui.tools.addHole">Afegeix un forat</button></div>
-          <p class="hint" data-i18n="ui.print.pinNote">Forats d’1 mm de diàmetre. Els cercles del visor indiquen on es perforarà la peça en exportar.</p>
+          <div class="brush-tools" role="group" aria-labelledby="relief-pin-title"><button type="button" data-brush="pin" aria-pressed="false" data-i18n="ui.tools.addPoint">Marca un punt</button></div>
           <form id="pin-coordinates-form"><label for="pin-coordinates" data-i18n="ui.tools.coordinates">Latitud, longitud</label><div class="pin-coordinate-row"><input id="pin-coordinates" placeholder="42.432, 1.942" autocomplete="off" required><button type="submit" class="secondary" data-i18n="ui.tools.add">Afegeix</button></div></form>
           <p id="pin-feedback" class="hint" role="status"></p>
           <ol id="pin-list" class="pin-list"></ol><button type="button" id="undo-pin" class="quiet-button" hidden data-i18n="ui.action.undo">↶ Desfés</button>
@@ -233,7 +233,7 @@
             <p id="print-base-note" class="hint" data-i18n="ui.print.baseNote">Distància de sota la maqueta fins a la cota més baixa del relleu o del mar.</p>
           </fieldset>
         </form>
-        <button type="button" id="print-pins-link" class="quiet-button" hidden data-i18n="ui.tools.holesOnModel">Gestiona els forats al visor</button>
+        <button type="button" id="print-pins-link" class="quiet-button" hidden data-i18n="ui.tools.pointsOnModel">Gestiona els punts destacats al visor</button>
         <div id="print-cuts-section">
           <fieldset id="print-cuts-fields">
             <legend data-i18n="ui.print.cuts">Distribució de les peces</legend>
@@ -295,7 +295,7 @@
       <path d="m27 9 7-6" stroke="var(--umbrella-accent)" stroke-width="4.5"/>
     </svg><span>ortogra<span class="umbrella-dot">.</span>fi</span>
   </a></p>
-  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer" data-i18n-text="ui.footer.openSource"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions" data-i18n-aria="ui.releases.title">v0.23.54</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V" data-i18n-aria="ui.footer.about"><span class="desktop-copy" data-i18n="ui.footer.aboutDesktop">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
+  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer" data-i18n-text="ui.footer.openSource"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions" data-i18n-aria="ui.releases.title">v0.23.55</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V" data-i18n-aria="ui.footer.about"><span class="desktop-copy" data-i18n="ui.footer.aboutDesktop">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
 </footer>
 
 <dialog id="projects-dialog" aria-labelledby="projects-title">

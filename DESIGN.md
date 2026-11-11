@@ -56,12 +56,13 @@ classes existents. `output` de formulari no ha de flotar a la dreta.
   conserva per a un desenvolupament futur, sense controls buits a la UI.
 - Centre: selector de mida amb botons uniformes i una vista de les proporcions
   i els talls sobre una taula. Després, maqueta i controls flotants discrets.
-  Eines del visor separa correccions de senders, rutes i forats. El panell
+  Eines del visor separa correccions de senders, rutes i punts destacats. El panell
   deixa la maqueta a la vista i mostra el mode actiu i com sortir-ne.
 - Els canvis d’aparença o d’una capa conserven càmera/zoom. Restablir és una
   acció explícita; una regió o mida noves poden requerir enquadrament.
 - La visita guiada ressalta els controls originals de cada pas i permet
-  sortir sempre. Els camps numèrics apliquen els canvis en perdre el focus
+  sortir sempre. Presenta Eines del visor abans dels ajustos d’impressió.
+  Els camps numèrics apliquen els canvis en perdre el focus
   o amb Retorn. Canviar el retall requereix prémer «Genera el model».
 
 ### Taller mòbil
