@@ -113,9 +113,20 @@ test('saved projects store pure relief assignments separately from landscape mat
     boundaryStyles:{...defaultBoundaryStyles(),national:'dash-dot',county:'dotted'},
     boundaryPatterns:{...DEFAULT_BOUNDARY_PATTERNS,national:'dash-dot',county:'dotted'}}};
   saveProject(storage,{name:'Relleu amb tres filaments',settings:mixed},firstDate);
-  assert.deepEqual(readProjects(storage)[0].settings,{...mixed,reliefMaterials:{count:3,assignments:[...reliefMaterials.assignments,2,2]}});
+  assert.deepEqual(readProjects(storage)[0].settings,{...mixed,reliefMaterials:{count:3,assignments:[...reliefMaterials.assignments,2,2,1]}});
   assert.throws(()=>saveProject(storage,{name:'Invàlid',settings:{...mixed,
     reliefMaterials:{...reliefMaterials,count:7}}}),/no és vàlida/);
+});
+
+test('project backup restores a GPX route and geographically anchored pin holes',()=>{
+  const source=memoryStorage(),target=memoryStorage();
+  const userRoute={name:'Ruta curta',paths:[[[1.75,42.16],[1.751,42.165]]]};
+  const pins=[{lon:1.75,lat:42.16,depth:8}];
+  const saved={...settings,pureRelief:true,userRoute,pins};
+  saveProject(source,{name:'Ruta i forats',settings:saved},firstDate);
+  importProjectLibrary(target,exportProjectLibrary(source));
+  assert.deepEqual(readProjects(target)[0].settings,saved);
+  assert.throws(()=>saveProject(source,{name:'Forat invàlid',settings:{...saved,pins:[{...pins[0],depth:10}]}}));
 });
 
 test('older projects use the default trail width and texture controls, and new choices persist',()=>{

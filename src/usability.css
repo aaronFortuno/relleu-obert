@@ -229,8 +229,13 @@
 .app-footer .umbrella-brand:hover{text-decoration:underline;text-underline-offset:3px}
 
 .boundary-controls {display:grid;gap:6px}
-#relief-boundary-settings {border-top:1px solid var(--line);margin-top:12px;padding-top:10px}
-#relief-boundary-settings .section-heading {margin:0 0 8px}
+:is(#relief-boundary-settings,#relief-route-settings,#relief-pin-settings) {border-top:1px solid var(--line);margin-top:12px;padding-top:10px}
+:is(#relief-boundary-settings,#relief-route-settings,#relief-pin-settings) .section-heading {margin:0 0 8px}
+#route-import {width:auto}
+#route-remove {white-space:nowrap}
+#pin-depth {margin-bottom:8px}
+.pin-list {list-style:none;padding:0;margin:0}
+.pin-list li {display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:.85rem}
 .boundary-control-row {
   display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:8px;align-items:center;
 }

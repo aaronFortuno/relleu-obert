@@ -57,7 +57,7 @@ export function reliefVegetationTexture(grid,context,options={}){
   // A channel narrower than one cell can pass between all four nodes.
   // Leave a cell diagonal of clearance so its full width remains open.
   context.waterMask??=sampleReliefMask(context.waterPolygons,width,height,n,rows,2)?.weights??null;
-  const markedPolygons=[...(grid.trailStrips||[]).flat(),...(grid.boundaryStrips||[]).flat()];
+  const markedPolygons=[grid.trailStrips,grid.boundaryStrips,grid.routeStrips].flatMap(strips=>strips?.flat()??[]);
   const marks=sampleReliefMask(markedPolygons,width,height,n,rows,2)?.weights;
   const raise=new Float32Array(length);
   let present=false;

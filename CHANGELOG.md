@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.23.50 — 2026-11-11
+
+- Relleu pur pot ressaltar rutes GPX locals sobre la maqueta carregada, amb una assignació de material pròpia. Es conserven els trams separats i els talls entre peces.
+- Impressió permet marcar perforacions d’1 mm de diàmetre i 7–9 mm de fondària. Es comproven el gruix, el suport i la distància a les vores abans d’exportar. Les rutes i les marques viatgen amb les còpies de projectes.
+
 ## v0.23.49 — 2026-11-11
 
 - «Fronteres i límits» es mostra directament a «Senders i límits». L’activació, el patró i l’amplada s’apliquen sobre el model carregat. Es reutilitza el terreny i s’actualitzen els límits i les capes que hi coincideixen.

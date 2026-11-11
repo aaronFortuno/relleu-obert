@@ -13,6 +13,19 @@ import {polygonTester} from '../src/polygon-index.js';
 import {buildRequest} from '../src/build-request.js';
 import {defaultBoundaryStyles} from '../src/relief-boundary-options.js';
 
+test('a GPX route is applied live, split with the model and removed without replacing terrain',()=>{
+  const [w,s,e,n]=bbox,y=s+(n-s)*.45;
+  const model=buildModel({meta:{bbox},dem},{size:400,pureRelief:true,resolution:24,trees:false});
+  const userRoute={name:'Ruta de prova',paths:[[[w,y],[e,y]]]};
+  const next=updatePureRelief(model,{userRoute});
+  assert.equal(next.categories.find(part=>part.id==='terrain'),model.categories.find(part=>part.id==='terrain'));
+  assert.deepEqual(auditPart(next.parts.find(part=>part.id==='route')).errors,[]);
+  assert.equal(splitPureRelief(next,200).filter(piece=>piece.parts.some(part=>part.id==='route')).length,2);
+  const removed=updatePureRelief(next,{userRoute:null});
+  assert.equal(removed.reliefGrid.heights,model.reliefGrid.heights);
+  assert(!removed.parts.some(part=>part.id==='route'));
+});
+
 const bbox=physicalBBox([0,0],10,10);
 const dem=[{z:0,x:0,y:0,size:2,elev:new Float32Array([100,200,500,650])}];
 const options={size:100,pureRelief:true,resolution:12};

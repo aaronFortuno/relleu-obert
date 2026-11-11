@@ -8,6 +8,9 @@ import {createPlaceMap,MAX_PROJECT_SCALE} from './place-map.js';
 import {createPlaceSearchScheduler} from './place-search.js';
 import {PURE_RELIEF_RESOLUTIONS} from './pure-relief-mesh.js';
 import {MAX_RELIEF_TRAIL_STROKES,RELIEF_TRAIL_WIDTH_MM,sameReliefTrailStrokes,validReliefTrailWidth} from './relief-trails.js';
+import {MAX_GPX_BYTES,parseUserRouteGPX} from './relief-user-route.js';
+import {MAX_RELIEF_PINS,RELIEF_PIN_SPACING_MM} from './relief-pin-holes.js';
+import {pinProjection,pinFitsTile} from './relief-pin-placement.js';
 import {smoothTerrainNormals} from './terrain-normals.js';
 import {CATEGORIES,PALETTES,defaultAssignments,RELIEF_MATERIALS,RELIEF_PALETTES,defaultReliefAssignments,reliefMaterialId} from './materials.js';
 import {pieceDimensions,tilePlan,validPrintCuts,scaledBBox,physicalBBox,selectionPose,isPanoramicSize,PURE_SCALE_RANGE,PANORAMIC_SCALE_RANGE} from './selection.js';
@@ -168,6 +171,7 @@ let region,model,busy=false,selection,dirty=false,buildingSourceDirty=false,need
 const brushHistory=createProjectBrushHistory();
 const trailHistory=createProjectBrushHistory({breakOnClipped:true});
 let trailStrokes=[],pendingTrailFrame=null,trailStrokeStart=0;
+let userRoute=null,pins=[];
 let pendingBrushFrame=null,transportTimer=null,reliefTimer=null;
 let exportFormat='bambu';
 let baseThickness=DEFAULT_BASE_THICKNESS_MM,cutPreviewFrame=null;
@@ -227,7 +231,8 @@ const brushHasGeometry=()=>isPure(model)||!model?.provenance.treeRepresentation?
 const canPaint=()=>canUpdateVegetation()&&!busy&&!needsBuild&&reliefTimer===null&&$('#trees').checked&&brushHasGeometry();
 const canPaintTrails=()=>isPure(model)&&pureSelected()&&!busy&&!needsBuild&&reliefTimer===null&&$('#relief-trails').checked;
 const trailBrush=()=>brush.startsWith('trail-');
-const canPaintWithBrush=()=>trailBrush()?canPaintTrails():canPaint();
+const canPlacePin=()=>isPure(model)&&pureSelected()&&!busy&&!needsBuild&&reliefTimer===null&&!pendingVegetation;
+const canPaintWithBrush=()=>brush==='pin'?canPlacePin():trailBrush()?canPaintTrails():canPaint();
 const trailWidthControl=$('#relief-trail-width'),trailEraserControl=$('#trail-eraser-radius');
 const reliefTrailWidth=()=>validReliefTrailWidth(trailWidthControl.valueAsNumber)?trailWidthControl.valueAsNumber:RELIEF_TRAIL_WIDTH_MM;
 const vegetation=()=>({trees:$('#trees').checked,density:2.5,brushDensity:Number($('#density').value),treeType:$('#tree-type').value,strokes,
@@ -264,6 +269,7 @@ function lock(value){
     enabled.disabled=updating;
     select.disabled=width.disabled=updating||!enabled.checked;
   }
+  syncRouteSettings(updating||drawing);
   $('#exag').disabled=value&&job==='build';
   $('#detail').disabled=updating||drawing;
   for(const id of ['road-rise','rail-rise','trail-width','estimated-tunnels','major-profiles','model-scale','new-project'])$('#'+id).disabled=updating;
@@ -399,7 +405,7 @@ function materialProfile(pure){
   const index=id=>categories.findIndex(category=>category.id===categoryId(id));
   return {settings,palettes,categories,categoryId,index,color:id=>palettes[settings.count][settings.assignments[index(id)]]};
 }
-const reliefLineColors=Object.fromEntries(RELIEF_MATERIALS.filter(({id})=>id==='trails'||id==='boundaries').map(({id,color})=>[id,color]));
+const reliefLineColors=Object.fromEntries(RELIEF_MATERIALS.filter(({id})=>['trails','boundaries','route'].includes(id)).map(({id,color})=>[id,color]));
 const previewColor=(pure,id)=>pure&&Object.hasOwn(reliefLineColors,id)?reliefLineColors[id]:materialProfile(pure).color(id);
 function recolor(updateLegend=true){
   const pure=shownMaterialMode(),{color}=materialProfile(pure);
@@ -539,6 +545,7 @@ function display(m,changedCategories=null,refit=true){
   for(const part of m.categories)if(!changedCategories||changedCategories.includes(part.id))addModelMesh(part);
   group.position.set(-m.width/2,-m.height/2,0);recolor();tiling();if(refit)home();refreshPresentation(m,refit);
   showModelNotes(m);
+  refreshPinMarkers();
   if(!brushHasGeometry()&&brush!=='navigate')selectNavigate();
 }
 function showModelNotes(m){
@@ -553,6 +560,9 @@ function shownPrintPlan(){
 }
 function syncPrintSettings(locked=busy||pendingVegetation||reliefTimer!==null||drawing){
   $('#print-panel').hidden=!selectedSize;
+  $('#relief-pin-settings').hidden=!pureSelected();
+  $('#pin-depth').disabled=locked;
+  syncPinList();
   if(!selectedSize)return;
   const [width,height]=size(),cuts=printCuts(width,height),plan=printPlan(width,height);
   $('#print-cuts-reset').disabled=!cuts.columns&&!cuts.rows;
@@ -623,9 +633,9 @@ function tiling(){
 }
 const pavementMode=new URLSearchParams(location.search).get('paviment');
 const surfaceRoads=pavementMode==='antic'?undefined:pavementMode==='rasant'?'independent':pavementMode==='regional'?'regional':'grade-first';
-function modelOptions(){const [widthMM,heightMM]=size(),pureRelief=pureSelected(),detail=Number($('#detail').value);return {pureRelief,surfaceRoads:pureRelief?undefined:surfaceRoads,streams:$('#streams').checked,streamWidth:Number($('#stream-width').value),reliefTrails:pureRelief&&$('#relief-trails').checked,reliefTrailWidth:pureRelief?reliefTrailWidth():RELIEF_TRAIL_WIDTH_MM,trailStrokes:pureRelief?trailStrokes:[],...(pureRelief?boundarySettings():{}),size:Math.max(widthMM,heightMM),widthMM,heightMM,baseThickness,exaggeration:Number($('#exag').value),resolution:pureRelief?PURE_RELIEF_RESOLUTIONS[detail]:LANDSCAPE_RESOLUTIONS[detail],roadRise:Number($('#road-rise').value),railRise:Number($('#rail-rise').value),trailWidth:Number($('#trail-width').value),estimatedTunnels:!pureRelief&&$('#estimated-tunnels').checked,majorRoads:!pureRelief&&$('#major-profiles').checked,smoothProfiles:true,targetScale:null,selectionPose:selectedPose,buildingMode:pureRelief?'none':$('#building-mode').value,maxBuildingHeight:Number($('#building-height').value),...vegetation()};}
+function modelOptions(){const [widthMM,heightMM]=size(),pureRelief=pureSelected(),detail=Number($('#detail').value);return {pureRelief,surfaceRoads:pureRelief?undefined:surfaceRoads,streams:$('#streams').checked,streamWidth:Number($('#stream-width').value),reliefTrails:pureRelief&&$('#relief-trails').checked,reliefTrailWidth:pureRelief?reliefTrailWidth():RELIEF_TRAIL_WIDTH_MM,trailStrokes:pureRelief?trailStrokes:[],userRoute:pureRelief?userRoute:null,...(pureRelief?boundarySettings():{}),size:Math.max(widthMM,heightMM),widthMM,heightMM,baseThickness,exaggeration:Number($('#exag').value),resolution:pureRelief?PURE_RELIEF_RESOLUTIONS[detail]:LANDSCAPE_RESOLUTIONS[detail],roadRise:Number($('#road-rise').value),railRise:Number($('#rail-rise').value),trailWidth:Number($('#trail-width').value),estimatedTunnels:!pureRelief&&$('#estimated-tunnels').checked,majorRoads:!pureRelief&&$('#major-profiles').checked,smoothProfiles:true,targetScale:null,selectionPose:selectedPose,buildingMode:pureRelief?'none':$('#building-mode').value,maxBuildingHeight:Number($('#building-height').value),...vegetation()};}
 
-function configurationKey(o){return JSON.stringify([!!o.pureRelief,o.widthMM,o.heightMM,o.baseThickness,o.exaggeration,o.resolution,o.streams,o.streamWidth,!!o.reliefTrails,o.reliefTrailWidth??RELIEF_TRAIL_WIDTH_MM,o.trailStrokes??[],boundaryKey(o),o.roadRise??0,o.railRise??0,o.trailWidth??1,o.estimatedTunnels??true,o.majorRoads??false,o.targetScale,o.selectionPose?.center,o.selectionPose?.widthM,o.selectionPose?.heightM,o.selectionPose?.rotation,o.buildingMode,o.maxBuildingHeight]);}
+function configurationKey(o){return JSON.stringify([!!o.pureRelief,o.widthMM,o.heightMM,o.baseThickness,o.exaggeration,o.resolution,o.streams,o.streamWidth,!!o.reliefTrails,o.reliefTrailWidth??RELIEF_TRAIL_WIDTH_MM,o.trailStrokes??[],o.userRoute??null,boundaryKey(o),o.roadRise??0,o.railRise??0,o.trailWidth??1,o.estimatedTunnels??true,o.majorRoads??false,o.targetScale,o.selectionPose?.center,o.selectionPose?.widthM,o.selectionPose?.heightM,o.selectionPose?.rotation,o.buildingMode,o.maxBuildingHeight]);}
 function sameTerrainFrame(options){
   const old=model?.provenance.options;
   if(!old||dirty||options.pureRelief!==!!old.pureRelief)return false;
@@ -634,10 +644,11 @@ function sameTerrainFrame(options){
     ['widthM','heightM','rotation'].every(key=>Math.abs(a[key]-b[key])<1e-6)&&
     a.center.every((value,index)=>Math.abs(value-b.center[index])<1e-10);
 }
-const reliefKeys=['baseThickness','exaggeration','streams','streamWidth','reliefTrails','reliefTrailWidth','trailStrokes'];
+const reliefKeys=['baseThickness','exaggeration','streams','streamWidth','reliefTrails','reliefTrailWidth','trailStrokes','userRoute'];
 function sameReliefField(key,options,old){
   if(key==='reliefTrails')return options[key]===!!old[key];
   if(key==='reliefTrailWidth')return options[key]===(old[key]??RELIEF_TRAIL_WIDTH_MM);
+  if(key==='userRoute')return JSON.stringify(options[key])===JSON.stringify(old[key]??null);
   if(key==='trailStrokes')return sameReliefTrailStrokes(options[key],old[key]??[]);
   return options[key]===old[key];
 }
@@ -701,6 +712,7 @@ function recoverRelief(error){
     $('#relief-trails').checked=!!reliefTrails;
     trailWidthControl.value=previousTrailWidth??RELIEF_TRAIL_WIDTH_MM;
     trailStrokes=(model.provenance.options.trailStrokes??[]).slice();
+    userRoute=model.provenance.options.userRoute??null;
     setBoundarySettings(model.provenance.options);
     needsBuild=false;
     badge('');
@@ -988,7 +1000,7 @@ worker.onmessage=({data})=>{
     if(processingRun&&data.timing)processingRun[processingRun.awaitingBuildings?'buildingWorker':'worker']=data.timing;
     pendingVegetation=false;
     if(job==='build'||job==='buildings'||job==='transport')recoverBuildings(Error(data.message));
-    else{lock(false);say(data.message,true);}
+    else{lock(false);say(()=>translateEngineMessage(data.message),true);}
     settleBuildings(Error(data.message));console.error(data.detail);
   }
   if(data.type==='download'){const zipped=data.archive||data.format==='stl',blob=new Blob([data.bytes],{type:zipped?'application/zip':'model/3mf'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=data.filename||`relleu-obert-${data.archive?'peces-':data.plateCount?'plaques-':''}${data.format}${zipped?'.zip':'.3mf'}`;a.click();setTimeout(()=>URL.revokeObjectURL(url),5000);lock(false);say(data.accessory?statusMessage('status.exportAccessory'):data.archive?statusMessage('status.exportArchive'):data.plateCount?statusMessage(data.plateCount===1?'status.exportPlateOne':'status.exportPlates',()=>({count:formatNumber(data.plateCount)})):statusMessage('status.exportReady'));flushTrees();scheduler.flush();}
@@ -1107,6 +1119,8 @@ function syncModelMode(){
   $('#mode-landscape').disabled=panoramic;
   $('#relief-texture-settings').hidden=!pure;
   $('#relief-trail-settings').hidden=!pure;
+  $('#relief-route-settings').hidden=!pure;
+  $('#relief-pin-settings').hidden=!pure;
   $('#landscape-transport-settings').hidden=pure;
   $('#relief-boundary-settings').hidden=!pure;
   $('#tree-type').hidden=$('label[for="tree-type"]').hidden=pure;
@@ -1138,6 +1152,30 @@ function applyPureRelief(){
 $('#model-mode').onchange=applyPureRelief;
 for(const id of ['streams','stream-width'])$('#'+id).onchange=()=>requestReliefUpdate(statusMessage('pending.streams'));
 const requestTrailUpdate=()=>requestReliefUpdate(statusMessage('pending.reliefTrails'));
+function syncRouteSettings(locked){
+  $('#route-import').disabled=$('#route-remove').disabled=locked;
+  $('#route-remove').hidden=!userRoute;
+  $('#route-summary').textContent=userRoute?.name??text('route.empty');
+}
+$('#route-import').onclick=()=>$('#route-file').click();
+$('#route-remove').onclick=()=>{
+  userRoute=null;
+  syncRouteSettings(false);
+  requestReliefUpdate(statusMessage('pending.reliefTrails'));
+};
+$('#route-file').onchange=async event=>{
+  const file=event.target.files[0];
+  event.target.value='';
+  if(!file)return;
+  try{
+    if(file.size>MAX_GPX_BYTES)throw Error('El fitxer GPX supera el límit d’1,5 MB.');
+    const route=parseUserRouteGPX(await file.text(),file.name.replace(/\.gpx$/i,''));
+    if(!pureSelected())return;
+    userRoute=route;
+    syncRouteSettings(busy);
+    requestReliefUpdate(statusMessage('pending.reliefTrails'));
+  }catch(error){say(translateEngineMessage(error.message),true);}
+};
 $('#relief-trails').onchange=()=>{
   if(!$('#relief-trails').checked&&trailBrush())endVegetationEditing();
   requestTrailUpdate();
@@ -1480,7 +1518,7 @@ function exportModel(){
   lock(true);
   say(baseMessage('status.exporting'));
   const {count,assignments}=isPure(model)?reliefMaterials:landscapeMaterials;
-  worker.postMessage({type:'export',format:exportFormat,cuts:printCuts(model.width,model.height),materialCount:count,assignments});
+  worker.postMessage({type:'export',format:exportFormat,cuts:printCuts(model.width,model.height),materialCount:count,assignments,pins:isPure(model)?pins:[]});
 }
 $('#export-model').onclick=exportModel;
 $('#export-formats').onclick=()=>setFormatMenu($('#export-options').hidden,{focus:true});
@@ -1509,6 +1547,7 @@ for(const toggle of infoToggles)toggle.onclick=()=>{
     document.getElementById(button.getAttribute('aria-controls')).hidden=!open;
     button.querySelector('i').textContent=open?'−':'+';
   }
+  if(brush==='pin'&&$('#info-print').hidden)selectNavigate();
 };
 $('#print-base').oninput=syncBaseAction;
 $('#print-base-form').onsubmit=event=>{
@@ -1553,7 +1592,7 @@ function syncVegetationControls(updating){
   const paintDisabled=updating||!canPaint();
   for(const button of document.querySelectorAll('[data-brush]')){
     const mode=button.dataset.brush;
-    button.disabled=mode!=='navigate'&&(mode.startsWith('trail-')?updating||drawing||!canPaintTrails():paintDisabled);
+    button.disabled=mode!=='navigate'&&(mode==='pin'?updating||drawing||!canPlacePin():mode.startsWith('trail-')?updating||drawing||!canPaintTrails():paintDisabled);
   }
 }
 function editButtons(){
@@ -1578,8 +1617,8 @@ function setBrush(button){
 }
 function syncViewerHint(){
   const navigating=brush==='navigate';
-  $('#viewer-hint .desktop-copy').textContent=text(navigating?'viewer.navigateDesktop':'viewer.paintDesktop');
-  $('#viewer-hint .mobile-copy').textContent=text(navigating?'viewer.navigateMobile':'viewer.paintMobile');
+  $('#viewer-hint .desktop-copy').textContent=text(brush==='pin'?'pin.placeHint':navigating?'viewer.navigateDesktop':'viewer.paintDesktop');
+  $('#viewer-hint .mobile-copy').textContent=text(brush==='pin'?'pin.placeHint':navigating?'viewer.navigateMobile':'viewer.paintMobile');
 }
 function selectNavigate(){setBrush(document.querySelector('[data-brush="navigate"]'));}
 function endVegetationEditing(){finishStroke();if(brush!=='navigate')selectNavigate();else $('#brush-cursor').hidden=true;}
@@ -1587,8 +1626,77 @@ document.querySelectorAll('[data-brush]').forEach(b=>b.onclick=()=>setBrush(b));
 const ray=new THREE.Raycaster(),pointer=new THREE.Vector2();
 const brushGround=new Set(['terrain','forest','grass','rock','snow']);
 const brushSurfaces=new Set([...brushGround,'water','inland-water']);
+const pinGuides=new THREE.Group(),pinRay=new THREE.Raycaster();
+const pinMarker=new THREE.RingGeometry(.5,.83,24);
+const pinColor=new THREE.MeshBasicMaterial({color:0xae432e,side:THREE.DoubleSide,depthTest:false,depthWrite:false});
+scene.add(pinGuides);
+function syncPinList(){
+  const list=$('#pin-list');
+  const locked=busy||pendingVegetation||drawing;
+  list.replaceChildren(...pins.map((pin,index)=>{
+    const row=document.createElement('li'),remove=document.createElement('button');
+    const number=index+1;
+    row.append(text('pin.item',{number:formatNumber(number),depth:formatNumber(pin.depth)}));
+    remove.type='button';
+    remove.className='quiet-button';
+    remove.textContent=text('pin.remove');
+    remove.setAttribute('aria-label',text('pin.removeName',{number:formatNumber(number)}));
+    remove.disabled=locked;
+    remove.onclick=()=>{pins.splice(index,1);syncPinList();refreshPinMarkers();};
+    row.append(remove);
+    return row;
+  }));
+}
+function refreshPinMarkers(){
+  pinGuides.clear();
+  if(isPure(model)&&pins.length){
+    group.updateMatrixWorld(true);
+    const {project}=pinProjection(model);
+    const top=group.children.reduce((z,mesh)=>{
+      if(!mesh.geometry.boundingBox)mesh.geometry.computeBoundingBox();
+      return Math.max(z,mesh.geometry.boundingBox.max.z);
+    },0)+1;
+    for(const pin of pins){
+      const [x,y]=project([pin.lon,pin.lat]);
+      if(x<0||x>model.width||y<0||y>model.height)continue;
+      pinRay.ray.origin.set(x-model.width/2,y-model.height/2,top);
+      pinRay.ray.direction.set(0,0,-1);
+      const [hit]=pinRay.intersectObjects(group.children);
+      if(!hit)continue;
+      const marker=new THREE.Mesh(pinMarker,pinColor);
+      marker.position.copy(hit.point);
+      marker.renderOrder=6;
+      pinGuides.add(marker);
+    }
+  }
+  invalidateView();
+}
+function placePin(event){
+  if(pins.length>=MAX_RELIEF_PINS){say(statusMessage('pin.limit',{count:MAX_RELIEF_PINS}),true);return;}
+  const rect=renderer.domElement.getBoundingClientRect();
+  pointer.set((event.clientX-rect.left)/rect.width*2-1,-(event.clientY-rect.top)/rect.height*2+1);
+  ray.setFromCamera(pointer,camera);
+  const [hit]=ray.intersectObjects(group.children);
+  if(!hit||hit.face.normal.z<=0||['water','inland-water'].includes(hit.object.name)){
+    say(statusMessage('pin.landOnly'),true);return;
+  }
+  const x=hit.point.x+model.width/2,y=hit.point.y+model.height/2;
+  const depth=Number($('#pin-depth').value);
+  if(!pinFitsTile(x,y,shownPrintPlan())){say(statusMessage('pin.edge'),true);return;}
+  if(hit.point.z<depth+1){say(statusMessage('pin.thin'),true);return;}
+  const {project,unproject}=pinProjection(model);
+  if(pins.some(pin=>{
+    const [px,py]=project([pin.lon,pin.lat]);
+    return Math.hypot(x-px,y-py)<RELIEF_PIN_SPACING_MM;
+  })){say(statusMessage('pin.overlap'),true);return;}
+  const [lon,lat]=unproject([x,y]);
+  pins.push({lon,lat,depth});
+  syncPinList();
+  refreshPinMarkers();
+  say('');
+}
 function paint(event){
-  if(brush==='navigate'||!canPaintWithBrush()||pendingVegetation&&!drawing)return;
+  if(brush==='navigate'||brush==='pin'||!canPaintWithBrush()||pendingVegetation&&!drawing)return;
   const trails=trailBrush(),erase=brush.endsWith('erase');
   const rect=renderer.domElement.getBoundingClientRect();
   pointer.set((event.clientX-rect.left)/rect.width*2-1,-(event.clientY-rect.top)/rect.height*2+1);
@@ -1628,6 +1736,7 @@ function finishStroke(){
 }
 renderer.domElement.addEventListener('pointerdown',event=>{
   if(brush==='navigate'||event.button!==0||drawing||pendingVegetation||!canPaintWithBrush())return;
+  if(brush==='pin'){placePin(event);return;}
   drawing=true;gesture++;lastPoint=null;
   trailStrokeStart=trailStrokes.length;
   renderer.domElement.setPointerCapture(event.pointerId);
@@ -1657,7 +1766,7 @@ function captureProject(){
   return {sizePreset:selectedSize,pose:selectedPose,pureRelief:pureSelected(),placeName:placeName||undefined,
     exampleId:exampleSelection?.id,materials:landscapeMaterials,reliefMaterials,options,print:{baseThickness,cuts:printCuts(...size())},
     strokes:brushHistory.prepare(modelOptions(),strokes).strokes,
-    ...(pureSelected()?{trailStrokes:trailHistory.prepare(modelOptions(),trailStrokes).strokes}:{})};
+    ...(pureSelected()?{trailStrokes:trailHistory.prepare(modelOptions(),trailStrokes).strokes,userRoute,pins}:{})};
 }
 const feedbackMessages=new Map();
 function feedback(id,message){feedbackMessages.set(id,message);$('#'+id).textContent=messageText(message);}
@@ -1713,7 +1822,9 @@ function restoreProject(){
   sessionStorage.removeItem(projectRestoreKey);
   const project=readProjects(localStorage).find(item=>item.id===id);
   if(!project)throw Error(text('project.notFound'));
-  const {sizePreset,pose,pureRelief,materials,reliefMaterials:savedReliefMaterials,options,print,historical,placeName:savedPlace,exampleId,strokes:savedStrokes,trailStrokes:savedTrails}=project.settings;
+  const {sizePreset,pose,pureRelief,materials,reliefMaterials:savedReliefMaterials,options,print,historical,placeName:savedPlace,exampleId,strokes:savedStrokes,trailStrokes:savedTrails,userRoute:savedRoute,pins:savedPins}=project.settings;
+  userRoute=savedRoute??null;
+  pins=savedPins??[];
   setBoundarySettings(options);
   if(print){
     baseThickness=print.baseThickness;
@@ -1858,6 +1969,7 @@ function refreshWorkshopLanguage(){
   buildingControls();
   legend();metrics();
   syncPrintSettings();
+  syncRouteSettings(busy||drawing||pendingVegetation);
   selectExportFormat(exportFormat);
   scaleHint();
   $('#status').textContent=messageText(currentStatus);

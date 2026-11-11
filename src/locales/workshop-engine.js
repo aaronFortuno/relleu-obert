@@ -2,6 +2,11 @@
 // the messages it displays, with optional named fields for variable values.
 // Each row follows the order ca, es, gl, eu, en.
 export default [
+  ['La ruta GPX no té trams visibles dins d’aquest retall.', 'La ruta GPX no tiene tramos visibles dentro de este recorte.', 'A ruta GPX non ten tramos visibles neste recorte.', 'GPX ibilbideak ez du zati ikusgarririk hautatutako eremuan.', 'The GPX route has no visible sections in this crop.'],
+  ['El fitxer GPX supera el límit d’1,5 MB.', 'El archivo GPX supera el límite de 1,5 MB.', 'O ficheiro GPX supera o límite de 1,5 MB.', 'GPX fitxategiak 1,5 MB-ko muga gainditzen du.', 'The GPX file exceeds the 1.5 MB limit.'],
+  ['El fitxer no és un GPX vàlid.', 'El archivo no es un GPX válido.', 'O ficheiro non é un GPX válido.', 'Fitxategia ez da baliozko GPX bat.', 'The file is not a valid GPX file.'],
+  ['El fitxer GPX no conté cap traçat amb almenys dos punts diferents.', 'El archivo GPX no contiene un trazado con al menos dos puntos distintos.', 'O ficheiro GPX non contén un trazado con polo menos dous puntos distintos.', 'GPX fitxategiak ez du bi puntu desberdin dituen trazadurarik.', 'The GPX file has no track with at least two distinct points.'],
+  ['Preparant els forats per a xinxetes…', 'Preparando los agujeros para chinchetas…', 'Preparando os buratos para chinchetas…', 'Txintxetentzako zuloak prestatzen…', 'Preparing the pin holes…'],
   ['Preparant el motor de geometria…', 'Preparando el motor de geometría…', 'Preparando o motor de xeometría…', 'Geometria-motorra prestatzen…', 'Preparing the geometry engine…'],
   ['Preparant el relleu…', 'Preparando el relieve…', 'Preparando o relevo…', 'Erliebea prestatzen…', 'Preparing the terrain…'],
   ['Revisant les mostres d’altitud…', 'Revisando las muestras de altitud…', 'Revisando as mostras de altitude…', 'Altitude-laginak egiaztatzen…', 'Checking elevation samples…'],

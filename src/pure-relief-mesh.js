@@ -113,7 +113,7 @@ export function reliefParts(grid,bounds=wholeGrid(grid)){
   const parts=[];
   if(terrain)parts.push({...RELIEF_MATERIALS[0],...terrain});
   for(let kind=1;kind<3;kind++)if(skins[kind])parts.push({...RELIEF_MATERIALS[kind],...skins[kind]});
-  const stream=reliefStreamPart(grid,bounds,grid.streamStrips,undefined,[grid.boundaryStrips]),lake=skins[3];
+  const stream=reliefStreamPart(grid,bounds,grid.streamStrips,undefined,[grid.boundaryStrips,grid.routeStrips]),lake=skins[3];
   if(lake||stream)parts.push({...RELIEF_MATERIALS[3],...(lake?combine(lake,stream):stream)});
   if(skins[4])parts.push({...RELIEF_MATERIALS[4],...skins[4]});
   const trees=reliefTreesPart(grid,bounds);
@@ -123,6 +123,8 @@ export function reliefParts(grid,bounds=wholeGrid(grid)){
   if(trails)parts.push({...RELIEF_MATERIALS[6],...trails});
   const boundaries=boundaryMesh(grid,bounds);
   if(boundaries)parts.push({...RELIEF_MATERIALS[7],...boundaries});
+  const route=routeMesh(grid,bounds);
+  if(route)parts.push({...RELIEF_MATERIALS[8],...route});
   return parts;
 }
 
@@ -156,7 +158,7 @@ function joinParts(parts){
 
 export function reliefInlandWater(grid,lakes,panoramic){
   if(!grid.streamStrips?.length)return lakes;
-  const stream=assembleReliefLayer(grid,panoramic,(grid,bounds)=>reliefStreamPart(grid,bounds,grid.streamStrips,undefined,[grid.boundaryStrips]));
+  const stream=assembleReliefLayer(grid,panoramic,(grid,bounds)=>reliefStreamPart(grid,bounds,grid.streamStrips,undefined,[grid.boundaryStrips,grid.routeStrips]));
   if(!stream)return lakes;
   return {...RELIEF_MATERIALS[3],...(lakes?combine(lakes,stream):stream)};
 }
@@ -173,7 +175,7 @@ function assembleReliefLayer(grid,panoramic,partAt){
 
 function trailMesh(grid,bounds){
   if(!grid.trailStrips?.length)return null;
-  return reliefStreamPart(grid,bounds,grid.trailStrips,.20,[grid.streamStrips,grid.boundaryStrips]);
+  return reliefStreamPart(grid,bounds,grid.trailStrips,.20,[grid.streamStrips,grid.boundaryStrips,grid.routeStrips]);
 }
 
 export function assembleReliefTrails(grid,panoramic){
@@ -192,10 +194,20 @@ export function assembleReliefBoundaries(grid,panoramic){
   return mesh?{...RELIEF_MATERIALS[7],...mesh}:null;
 }
 
+function routeMesh(grid,bounds){
+  return grid.routeStrips?.length?reliefStreamPart(grid,bounds,grid.routeStrips,.36,[grid.boundaryStrips]):null;
+}
+
+export function assembleUserRoute(grid,panoramic){
+  if(!grid.routeStrips?.length)return null;
+  const mesh=assembleReliefLayer(grid,panoramic,routeMesh);
+  return mesh?{...RELIEF_MATERIALS[8],...mesh}:null;
+}
+
 export function previewReliefPieces(grid,emit){
   const plan=tilePlan(grid.width,grid.height),total=plan.tiles.length;
   if(total<2||grid.resolution%plan.cols||(grid.rows??grid.resolution)%plan.rows)return false;
-  const previewGrid={...grid,scores:null,lakeWeights:null,forestWeights:null,streamStrips:null,trailStrips:null,boundaryStrips:null,vegetationTexture:null};
+  const previewGrid={...grid,scores:null,lakeWeights:null,forestWeights:null,streamStrips:null,trailStrips:null,boundaryStrips:null,routeStrips:null,vegetationTexture:null};
   for(const [i,tile] of plan.tiles.entries()){
     const parts=reliefParts(previewGrid,tileBounds(grid,tile));
     emit(parts.map(part=>placeInAssembly(part,tile)),{index:i+1,total});

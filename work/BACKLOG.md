@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Revisat el **2026-11-11** amb la v0.23.49. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
+Revisat el **2026-11-11** amb la v0.23.50. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
 
 ## Ordre de treball
 
@@ -99,11 +99,10 @@ Controls de malla a la Cerdanya i al Pedraforca, amb retalls de 6 × 6 km i pece
 
 La v0.23.48 incorpora els patrons amb creu, l’amplada per nivell i el pinzell de senders amb goma per a traços dibuixats i cartografiats. Comprovat en malles de tall fraccionari i còpies de projectes. Al visor, dos retalls de la Cerdanya amb una peça de 100 mm mostren les creus negres i els senders blancs. El dibuix, la goma, Desfés i Restableix s’han comprovat sobre la maqueta. Pendent de laminat. La goma i el dibuix s’apliquen en Relleu pur, sobre la seva capa independent de senders.
 
-1. Ressaltar una ruta a partir d’un GPX local, respectant els trams i els talls entre peces.
-2. Fer un cupó de perforacions verticals de Ø1 mm i 7–9 mm de fondària. Desar els punts geogràfics i comprovar el gruix disponible, la distància a les vores i als talls, i les cavitats existents abans d’exportar. El gruix de base per defecte és de 5 mm. Els banderins personalitzats es deixen per a una fase posterior.
-
 La v0.23.49 actualitza els límits sobre la malla carregada i reutilitza les dades ja consultades per nivell. El control verifica l’activació, el canvi de patró, la retirada i la recuperació dels senders sota la línia.
+
+La v0.23.50 incorpora rutes GPX locals i perforacions verticals de Ø1 mm i 7–9 mm de fondària en Relleu pur. Les proves cobreixen projectes desats, actualització de la ruta i talls entre peces, i el sòlid perforat amb diversos materials i cavitats. Pendent de validació al laminador i d’impressió física. Els banderins personalitzats queden per a una fase posterior.
 
 ### RO-058 — Auditoria del taller abans de la v0.24
 
-Després de les rutes i les perforacions de RO-057, revisar la ubicació i els noms dels controls, els passos per crear i exportar una maqueta, i l’ús amb teclat i mòbil. Fer servir recorreguts reals d’un usuari nou abans de reorganitzar els menús i anunciar la v0.24.
+Seguir tres recorreguts de principi a fi en escriptori, amb teclat i en mòbil: crear una maqueta des de zero, obrir-ne una de la galeria i afegir-hi capes o marques, i preparar peces, materials i descàrrega. Anotar quins controls costen de trobar, en quins punts es perd la vista del model i com es recupera una acció fallida. Prioritzar les correccions abans d’anunciar la v0.24.

@@ -6,11 +6,26 @@ import {splitPureRelief} from './pure-relief-mesh.js';
 import {MAX_PRINT_TILE_MM,isPanoramicSize,tilePlan,validPrintCuts} from './selection.js';
 import {printExportFormat} from './print-settings.js';
 import {previewPieces} from './preview-pieces.js';
+import {locateReliefPins} from './relief-pin-placement.js';
+import {applyReliefPinHoles} from './relief-pin-holes.js';
 import Module from 'manifold-3d';
 import wasmURL from 'manifold-3d/manifold.wasm?url';
 import {createProcessingTiming} from './processing-timing.js';
 let current,api;
 const progress=message=>self.postMessage({type:'progress',message});
+const pinFailures={
+  edge:'massa a prop d’una vora o d’un tall',overlap:'massa a prop d’un altre forat',
+  'no-surface':'sense superfície', 'thin-base':'gruix insuficient',unsupported:'suport insuficient'
+};
+function perforatePiece(piece,pins){
+  if(!pins?.length)return piece;
+  const {piece:drilled,rejected}=applyReliefPinHoles(piece,pins,api);
+  if(rejected.length){
+    const {pin,reason}=rejected[0];
+    throw Error(`Forat ${pin.id} rebutjat: ${pinFailures[reason]??'geometria incompatible'}.`);
+  }
+  return {...drilled,categories:undefined};
+}
 const BUILD_STAGES=['terrain','transport','buildings','vegetation'];
 function postChangedModel(next,flags={}){
   const changedCategories=new Set();
@@ -99,11 +114,19 @@ try{
     if(!validPrintCuts(cuts,current.width,current.height))throw Error('La divisió de la maqueta no és vàlida.');
     const plan=tilePlan(current.width,current.height,cuts),requested=printExportFormat(data.format,plan);
     const format=requested==='bambu-zip'?'bambu':requested;
+    const pureRelief=current.provenance?.options?.pureRelief;
+    // Keep the geometry inside the crop in the printable file, without embedding the full GPX.
+    const source=current.provenance.options?.userRoute?{...current,
+      provenance:{...current.provenance,options:{...current.provenance.options,userRoute:undefined}}}:current;
+    const pinTiles=pureRelief&&data.pins?.length?locateReliefPins(current,data.pins,plan):[];
+    if(pinTiles.some(pins=>pins.length)){
+      progress('Preparant els forats per a xinxetes…');
+      if(!api){api=await Module({locateFile:()=>wasmURL});api.setup();}
+    }
     let bytes,archive=false,plateCount;
     const split=plan.tiles.length>1;
     if(split||current.reliefGrid&&isPanoramicSize(current.width,current.height)){
-      const pureRelief=current.provenance?.options?.pureRelief;
-      let model=pureRelief?current:groupMaterials(current,materialCount,assignments);
+      let model=pureRelief?source:groupMaterials(source,materialCount,assignments);
       progress('Preparant els talls de les peces…');
       let pieces=model.reliefGrid&&!model.provenance.catalogueLandforms?.length&&splitPureRelief(model,plan,progress);
       if(!pieces){
@@ -112,11 +135,11 @@ try{
       }
       if(pureRelief){
         progress('Agrupant els filaments de les peces…');
-        model=groupReliefMaterials({provenance:current.provenance,parts:pieces.flatMap(piece=>piece.parts)},
+        model=groupReliefMaterials({provenance:source.provenance,parts:pieces.flatMap(piece=>piece.parts)},
           materialCount,assignments,{paletteOnly:true});
         for(const [i,piece] of pieces.entries()){
           // Generic cuts retain the original model categories. Only group the cut geometry.
-          pieces[i]=groupReliefMaterials({...piece,categories:undefined},materialCount,assignments);
+          pieces[i]=groupReliefMaterials({...perforatePiece(piece,pinTiles[i]),categories:undefined},materialCount,assignments);
         }
       }
       if(!split){
@@ -129,7 +152,7 @@ try{
       }
     }
     else{
-      const model=groupMaterials(current,materialCount,assignments);
+      const model=groupMaterials(perforatePiece(source,pinTiles[0]),materialCount,assignments);
       bytes=format==='stl'?stlZip(model):threeMF(model,{bambu:format==='bambu'});
     }
     self.postMessage({type:'download',format,archive,plateCount,bytes},[bytes.buffer]);
