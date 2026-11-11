@@ -1,0 +1,34 @@
+#workshop-guide {
+  display:flex;
+  align-items:center;
+  flex:none;
+  gap:8px 16px;
+  min-height:64px;
+  padding:8px 16px;
+  background:var(--paper);
+  border-bottom:1px solid var(--line);
+}
+.workshop-guide-copy {min-width:0;flex:1}
+.workshop-guide-copy h2 {font-size:var(--ui-title)}
+.workshop-guide-copy .hint {
+  margin:4px 0 0;
+  color:var(--ui-control-text);
+  font-size:var(--ui-control);
+  line-height:1.4;
+}
+.workshop-guide-actions {display:flex;align-items:center;gap:8px;flex:none}
+.workshop-guide-actions :is(.primary,.secondary,.quiet-button) {
+  width:auto;
+  margin:0;
+  padding:6px 8px;
+  min-height:28px;
+  font-size:var(--ui-control);
+}
+.workshop-guide-actions button:disabled {cursor:default}
+
+@media(max-width:900px) {
+  #workshop-guide {display:block;padding:8px 12px 4px;min-height:0;max-height:60%;overflow:auto}
+  .workshop-guide-actions {justify-content:flex-end;gap:4px;margin-top:4px}
+  .workshop-guide-actions :is(.primary,.secondary,.quiet-button) {min-height:44px}
+  .workshop-guide-actions .quiet-button {margin-inline-end:auto}
+}

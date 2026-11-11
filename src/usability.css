@@ -229,13 +229,42 @@
 .app-footer .umbrella-brand:hover{text-decoration:underline;text-underline-offset:3px}
 
 .boundary-controls {display:grid;gap:6px}
-:is(#relief-boundary-settings,#relief-route-settings,#relief-pin-settings) {border-top:1px solid var(--line);margin-top:12px;padding-top:10px}
-:is(#relief-boundary-settings,#relief-route-settings,#relief-pin-settings) .section-heading {margin:0 0 8px}
+:is(#relief-boundary-settings,#relief-route-settings) {border-top:1px solid var(--line);margin-top:12px;padding-top:10px}
+:is(#relief-boundary-settings,#relief-route-settings) .section-heading {margin:0 0 8px}
 #route-import {width:auto}
 #route-remove {white-space:nowrap}
-#pin-depth {margin-bottom:8px}
-.pin-list {list-style:none;padding:0;margin:0}
-.pin-list li {display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:.85rem}
+#viewer-edit-panel {
+  position:absolute;z-index:4;inset:52px auto auto 16px;width:min(252px,calc(100% - 32px));max-height:calc(100% - 76px);
+  overflow:auto;overscroll-behavior:contain;padding:12px;background:var(--paper);border:1px solid var(--line);border-radius:5px;
+}
+.viewer-edit-header,.viewer-edit-tabs {display:flex;align-items:center;gap:4px}
+.viewer-edit-header {justify-content:space-between}
+.viewer-edit-header h2,.viewer-edit-header .quiet-button {margin:0}
+.viewer-edit-tabs {margin:8px 0 12px}
+.viewer-edit-tabs button {flex:1;padding:6px 4px;border:1px solid var(--line);border-radius:4px;background:var(--paper);color:var(--green);font-size:var(--ui-control)}
+.viewer-edit-tabs button[aria-pressed=true],.pin-list button[aria-pressed=true],#viewer-tools-open[aria-expanded=true] {background:#e6edde;border-color:var(--green)}
+#viewer-edit-panel :is(.hint,.section-heading) {margin:4px 0 8px}
+#viewer-edit-panel .section-heading {font-size:var(--ui-title);font-weight:650}
+#viewer-edit-panel :is(button,input,select) {font-size:var(--ui-control)}
+#viewer-edit-panel .brush-tools {margin-top:6px}
+#viewer-edit-panel #enable-trails {margin-bottom:4px}
+#viewer-pin-count {margin-left:2px}
+#pin-depth {margin-bottom:4px}
+.pin-coordinate-row {display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px}
+.pin-coordinate-row .secondary {margin:0;min-width:0}
+.pin-list {list-style:none;padding:0;margin:8px 0}
+.pin-list li {display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:6px;border-top:1px solid var(--line);padding:6px 0}
+.pin-list li select {margin:0}
+.pin-list .pin-problem {grid-column:1/-1}
+#viewer-tool-status:not(:empty) {padding-top:6px;border-top:1px solid var(--line)}
+#export-feedback:empty,#pin-feedback:empty,#viewer-tool-status:empty {display:none}
+#export-feedback:not(:empty) {color:#963b23}
+#welcome-guide {margin:0 0 5px}
+@media(max-width:900px){
+  #viewer-edit-panel {inset:55px auto auto 8px;width:min(245px,calc(100% - 16px));max-height:min(50%,calc(100% - 60px))}
+  #viewer-edit-panel :is(button,select,input:not([type=file])) {min-height:44px}
+  #pin-coordinates {font-size:16px!important}
+}
 .boundary-control-row {
   display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:8px;align-items:center;
 }

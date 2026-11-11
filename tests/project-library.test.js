@@ -101,6 +101,7 @@ test('trail brush edits and width travel with a pure relief project backup',()=>
   importProjectLibrary(to,exportProjectLibrary(from));
   const restored=readProjects(to)[0].settings;
   assert.deepEqual(restored.trailStrokes,trailStrokes);
+  assert.equal(restored.drawnRouteStrokes,undefined);
   assert.equal(restored.options.reliefTrailWidth,1);
   assert.throws(()=>saveProject(from,{name:'Error',settings:{...relief,trailStrokes:[{...trailStrokes[0],x:200}]}}),/no és vàlida/);
   assert.throws(()=>saveProject(from,{name:'Error',settings:{...relief,options:{...relief.options,reliefTrailWidth:4}}}),/no és vàlida/);
@@ -118,15 +119,20 @@ test('saved projects store pure relief assignments separately from landscape mat
     reliefMaterials:{...reliefMaterials,count:7}}}),/no és vàlida/);
 });
 
-test('project backup restores a GPX route and geographically anchored pin holes',()=>{
+test('project backup restores distinct drawn and GPX routes and geographically anchored pin holes',()=>{
   const source=memoryStorage(),target=memoryStorage();
   const userRoute={name:'Ruta curta',paths:[[[1.75,42.16],[1.751,42.165]]]};
-  const pins=[{lon:1.75,lat:42.16,depth:8}];
-  const saved={...settings,pureRelief:true,userRoute,pins};
+  const drawnRouteStrokes=[{mode:'add',x:25,y:30,radius:.5,gesture:1},{mode:'add',x:125,y:30,radius:.5,gesture:1}];
+  const pins=[{lon:1.75,lat:42.16,depth:8,id:5},{lon:1.75,lat:42.165,depth:7}];
+  const saved={...settings,pureRelief:true,drawnRouteStrokes,userRoute,pins};
   saveProject(source,{name:'Ruta i forats',settings:saved},firstDate);
   importProjectLibrary(target,exportProjectLibrary(source));
   assert.deepEqual(readProjects(target)[0].settings,saved);
   assert.throws(()=>saveProject(source,{name:'Forat invàlid',settings:{...saved,pins:[{...pins[0],depth:10}]}}));
+  assert.throws(()=>saveProject(source,{name:'Forat duplicat',settings:{...saved,pins:[pins[0],{...pins[1],id:5}]}}));
+  assert.throws(()=>saveProject(source,{name:'Identificador invàlid',settings:{...saved,pins:[{...pins[0],id:0}]}}));
+  assert.throws(()=>saveProject(source,{name:'Ruta invàlida',settings:{...saved,drawnRouteStrokes:[{...drawnRouteStrokes[0],x:200}]}}));
+  assert.throws(()=>saveProject(source,{name:'Mode invàlid',settings:{...settings,drawnRouteStrokes}}));
 });
 
 test('older projects use the default trail width and texture controls, and new choices persist',()=>{

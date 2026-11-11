@@ -1,6 +1,7 @@
 import earcut from 'earcut';
 import {polygonOps} from './polygon-ops.js';
 import {fractionalBounds,sampleBounds} from './relief-bounds.js';
+import {visitReliefCell} from './relief-cells.js';
 
 const pc=polygonOps();
 const STREAM_RAISE=.24,STREAM_EMBED=.12;
@@ -94,7 +95,7 @@ function extrudePatch(poly,heightAt,offset,result,raise){
 }
 
 export function reliefStreamPart(grid,bounds,strips=grid.streamStrips,raise=STREAM_RAISE,exclusions=[]){
-  const {resolution:n,rows=n,width,height,heights,diagonals,lakeWeights,oceanWeights}=grid;
+  const {resolution:n,rows=n,width,height,heights,diagonals,lakeWeights,oceanWeights,centreHeights}=grid;
   if(!strips?.length)return null;
   const {left,bottom,right,top}=sampleBounds(bounds);
   const dy=height/rows,stride=n+1;
@@ -120,21 +121,21 @@ export function reliefStreamPart(grid,bounds,strips=grid.streamStrips,raise=STRE
     }
     for(const [j,candidates]of stripsByRow){
       const a=nodes(i,j),b=nodes(i+1,j),c=nodes(i+1,j+1),d=nodes(i,j+1);
-      for(const triangle of diagonals[j*n+i]?[[a,b,d],[b,c,d]]:[[a,b,c],[a,c,d]]){
-        const land=landPolygon(triangle,3);
+      const cell=j*n+i;
+      visitReliefCell(a,b,c,d,diagonals[cell],centreHeights?.[cell],(p,q,r)=>{
+        const land=landPolygon([p,q,r],3);
         const dry=oceanWeights?landPolygon(land,4):land;
-        if(dry.length<3)continue;
+        if(dry.length<3)return;
         const needsClip=clip&&(i<bounds.left||i+1>bounds.right||j<bounds.bottom||j+1>bounds.top);
         let clipped=pc.intersection(candidates,[[dry.map(([px,py])=>[px,py])]],...(needsClip?[clip]:[]));
         if(clipped.length&&blocked.length)clipped=pc.difference(clipped,...blocked);
-        if(!clipped.length)continue;
-        const [p,q,r]=triangle;
+        if(!clipped.length)return;
         const determinant=(q[0]-p[0])*(r[1]-p[1])-(q[1]-p[1])*(r[0]-p[0]);
         const sx=((q[2]-p[2])*(r[1]-p[1])-(r[2]-p[2])*(q[1]-p[1]))/determinant;
         const sy=((r[2]-p[2])*(q[0]-p[0])-(q[2]-p[2])*(r[0]-p[0]))/determinant;
         const heightAt=(px,py)=>p[2]+sx*(px-p[0])+sy*(py-p[1]);
         for(const patch of clipped)extrudePatch(patch,heightAt,offset,result,raise);
-      }
+      });
     }
   }
   return result.faces.length?{vertices:new Float32Array(result.vertices),faces:new Uint32Array(result.faces)}:null;

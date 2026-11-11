@@ -1,6 +1,6 @@
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import {parseCoordinates,scaledBBox,physicalBBox,selectionPose,coveringSelectionBox,isPanoramicSize,PURE_SCALE_RANGE,PANORAMIC_SCALE_RANGE} from './selection.js';
+import {parseCoordinates,scaledBBox,physicalBBox,selectionPose,coveringSelectionBox,isPanoramicSize,MIN_PROJECT_SCALE,PURE_SCALE_RANGE,PANORAMIC_SCALE_RANGE} from './selection.js';
 import {recommendedPlace,DEFAULT_PLACE,placeSelection} from './recommended-places.js';
 import {maxRegionScale,regionTileCount,MAX_REGION_TILES} from './region-limits.js';
 import {formatNumber,onLocaleChange,t} from './i18n.js';
@@ -71,7 +71,8 @@ export function createPlaceMap(container,{onChange,onName,width=150,height=150})
     center??=p.center;
     const maximum=getScaleLimit(center);
     if(scale>maximum+1e-6)return scaleBox(center,maximum);
-    if(pureRelief&&scale<reliefScaleRange()[0]-1e-6)return scaleBox(p.center,reliefScaleRange()[0]);
+    const minimum=pureRelief?reliefScaleRange()[0]:MIN_PROJECT_SCALE;
+    if(scale<minimum-1e-6)return scaleBox(p.center,minimum);
     return bbox;
   }
   function limitZoom(center){

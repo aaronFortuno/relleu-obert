@@ -27,14 +27,15 @@ export function movePrintCut(bands,index,position){
   return widths(edges);
 }
 
-export function bindPrintCutEditor(fields,{text,formatNumber,onChange}){
+export function bindPrintCutEditor(fields,{text,formatNumber,onChange,onCommit=()=>{}}){
   const board=fields.querySelector('#print-cut-blueprint');
   const readout=fields.querySelector('#print-cut-dimensions');
+  const nudge=fields.querySelector('#print-cut-nudge');
   const selects={
     columns:fields.querySelector('#print-column-count'),
     rows:fields.querySelector('#print-row-count')
   };
-  let layout,handles=[],active=null,gesture=null,layoutKey='';
+  let layout,handles=[],active=null,selected=null,gesture=null,layoutKey='';
 
   const cm=mm=>formatNumber(mm/10,{maximumFractionDigits:1});
   const disabled=()=>!layout||fields.disabled;
@@ -44,11 +45,12 @@ export function bindPrintCutEditor(fields,{text,formatNumber,onChange}){
   };
 
   function showDimensions(){
-    const handle=active??handles[0];
+    const handle=active??selected??handles[0];
     readout.textContent=handle
       ? text(handle.axis==='columns'?'print.widthPair':'print.depthPair',valueParams(handle.axis,handle.index))
       : text('print.fullSize',{width:cm(layout.width),height:cm(layout.height)});
-    for(const item of handles)item.element.classList.toggle('is-active',item===active);
+    for(const item of handles)item.element.classList.toggle('is-active',item===handle);
+    nudge.hidden=!handle;
   }
 
   function changePosition(handle,position,dragging=false){
@@ -91,7 +93,7 @@ export function bindPrintCutEditor(fields,{text,formatNumber,onChange}){
       if(gesture||active!==handle)return;
       activate(handles.find(item=>item.element===document.activeElement)??null);
     });
-    element.addEventListener('focus',()=>activate(handle));
+    element.addEventListener('focus',()=>{selected=handle;activate(handle);});
     element.addEventListener('blur',()=>{if(!gesture&&active===handle)activate(null);});
     element.addEventListener('pointerdown',event=>{
       if(disabled()||gesture||event.button!==0)return;
@@ -111,7 +113,7 @@ export function bindPrintCutEditor(fields,{text,formatNumber,onChange}){
       if(delta!==0)changePosition(handle,gesture.position+delta*gesture.mmPerPixel,true);
     });
     element.addEventListener('lostpointercapture',event=>{
-      if(gesture?.handle===handle&&gesture.id===event.pointerId)gesture=null;
+      if(gesture?.handle===handle&&gesture.id===event.pointerId){gesture=null;onCommit();}
     });
     element.addEventListener('dblclick',()=>resetPosition(handle));
     element.addEventListener('keydown',event=>{
@@ -133,6 +135,13 @@ export function bindPrintCutEditor(fields,{text,formatNumber,onChange}){
     return handle;
   }
 
+  for(const button of nudge.querySelectorAll('button'))button.onclick=()=>{
+    const handle=selected??handles[0];
+    if(disabled()||!handle)return;
+    const {position}=printCutLimits(layout.bands[handle.axis],handle.index);
+    changePosition(handle,position+Number(button.dataset.cutStep));
+  };
+
   for(const axis of axes)selects[axis].addEventListener('change',()=>{
     if(disabled())return;
     const span=axis==='columns'?layout.width:layout.height;
@@ -150,7 +159,7 @@ export function bindPrintCutEditor(fields,{text,formatNumber,onChange}){
       const key=[width,height,plan.cols,plan.rows].join(':');
       if(layoutKey!==key){
         layoutKey=key;
-        active=gesture=null;
+        active=selected=gesture=null;
         handles=axes.flatMap(axis=>bands[axis].slice(1).map((_,index)=>makeHandle(axis,index)));
         board.replaceChildren(...handles.map(handle=>handle.element));
         board.style.setProperty('--print-blueprint-width',Math.min(215,112*width/height)+'px');

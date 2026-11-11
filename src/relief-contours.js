@@ -1,4 +1,5 @@
 import {fractionalBounds,reliefBoundsClipper,sampleBounds} from './relief-bounds.js';
+import {visitReliefCell} from './relief-cells.js';
 
 export const RELIEF_SKIN_DEPTH=.65;
 
@@ -178,7 +179,7 @@ function skinBuilder(bounds,grid,toBase=false,bottomAt){
 
 export function clippedReliefCore(grid,bounds,depth){
   const {left,bottom,right,top}=sampleBounds(bounds),stride=right-left+1;
-  const {resolution:n,rows=n,width,height,heights,diagonals}=grid;
+  const {resolution:n,rows=n,width,height,heights,diagonals,centreHeights}=grid;
   const trim=reliefBoundsClipper(bounds),nodes=new Uint32Array(stride*(top-bottom+1));
   const seamNodes=new Map(),floorNodes=new Map();
   let vertices=new Float32Array(nodes.length*3),faces=new Uint32Array((right-left)*(top-bottom)*6),nv=0,nf=0;
@@ -226,17 +227,18 @@ export function clippedReliefCore(grid,bounds,depth){
     }
   }
   const point=(x,y)=>[x,y,heights[y*(n+1)+x]-depth];
+  const trianglePatch=(a,b,c)=>patch(trim([a,b,c]));
   for(let y=bottom;y<top;y++)for(let x=left;x<right;x++){
     const a=point(x,y),b=point(x+1,y),c=point(x+1,y+1),d=point(x,y+1);
-    if(diagonals[y*n+x]){patch(trim([a,b,d]));patch(trim([b,c,d]));}
-    else{patch(trim([a,b,c]));patch(trim([a,c,d]));}
+    const i=y*n+x;
+    visitReliefCell(a,b,c,d,diagonals[i],centreHeights?.[i]-depth,trianglePatch);
   }
   return {vertices:vertices.slice(0,nv),faces:faces.slice(0,nf)};
 }
 
 export function coverageSkins(grid,bounds,coastal=false){
   const {left,bottom,right,top}=sampleBounds(bounds);
-  const {resolution:n,heights,diagonals,scores,lakeWeights,forestWeights,oceanWeights,seaLevelMM}=grid;
+  const {resolution:n,heights,diagonals,scores,lakeWeights,forestWeights,oceanWeights,seaLevelMM,centreHeights}=grid;
   const layered=scores||lakeWeights||forestWeights;
   const builders=!coastal||layered?Array.from({length:5},()=>skinBuilder(bounds,grid)):[];
   const sea=coastal?skinBuilder(bounds,grid,true):null;
@@ -284,8 +286,8 @@ export function coverageSkins(grid,bounds,coastal=false){
   }
   for(let y=bottom;y<top;y++)for(let x=left;x<right;x++){
     const a=point(x,y),b=point(x+1,y),c=point(x+1,y+1),d=point(x,y+1);
-    if(diagonals[y*n+x]){triangle(a,b,d);triangle(b,c,d);}
-    else{triangle(a,b,c);triangle(a,c,d);}
+    const i=y*n+x;
+    visitReliefCell(a,b,c,d,diagonals[i],centreHeights?.[i],triangle);
   }
   const skins=builders.map(builder=>builder.finish());
   if(coastal){
@@ -296,7 +298,7 @@ export function coverageSkins(grid,bounds,coastal=false){
 }
 
 export function vegetationSkin(grid,bounds){
-  const {vegetationTexture,heights,diagonals,resolution:n,rows=n,width,height}=grid;
+  const {vegetationTexture,heights,diagonals,resolution:n,rows=n,width,height,centreHeights}=grid;
   if(!vegetationTexture)return null;
   const {coverage,raise}=vegetationTexture,{left,bottom,right,top}=sampleBounds(bounds);
   const skin=skinBuilder(bounds,grid,false,point=>point[3]-.06);
@@ -322,8 +324,8 @@ export function vegetationSkin(grid,bounds){
     const i=y*(n+1)+x,j=i+n+1;
     if(coverage[i]<=0&&coverage[i+1]<=0&&coverage[j]<=0&&coverage[j+1]<=0)continue;
     const a=point(x,y,i),b=point(x+1,y,i+1),c=point(x+1,y+1,j+1),d=point(x,y+1,j);
-    if(diagonals[y*n+x]){patch(a,b,d);patch(b,c,d);}
-    else{patch(a,b,c);patch(a,c,d);}
+    const cell=y*n+x;
+    visitReliefCell(a,b,c,d,diagonals[cell],centreHeights?.[cell],patch);
   }
   const mesh=skin.finish();
   return mesh&&{...mesh,areaMM2:area*width*height/(n*rows)};

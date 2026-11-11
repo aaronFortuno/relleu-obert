@@ -1,5 +1,11 @@
 # Canvis
 
+## v0.23.52 — 2026-11-11
+
+- El visor separa l’edició de senders blancs, el dibuix de rutes taronges i la importació de GPX. Els forats tenen accés des de les eines, marques numerades i entrada per coordenades.
+- Guia opcional de cinc passos. La mida, la base i els talls s’ajusten al panell d’impressió. En canviar de projecte, els ajustos sense desar es poden guardar o descartar.
+- Relleu pur permet retalls fins a 1:100 i refina les crestes i depressions amb mostres intermèdies del model d’elevacions. Els talls de les peces conserven les vores compartides.
+
 ## v0.23.51 — 2026-11-11
 
 - Les rutes dibuixades i les importades en GPX es destaquen en taronja al visor. Els senders cartografiats es mantenen blancs i el material d’impressió de les rutes es pot assignar per separat.

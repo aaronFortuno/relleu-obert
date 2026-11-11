@@ -36,7 +36,7 @@ function validatedSettings(settings){
   if(!object(settings)||!pieceDimensions(settings.sizePreset)||!boolean(settings.pureRelief)||
     !object(settings.pose)||!object(settings.materials)||!object(settings.options)||!Array.isArray(settings.strokes))
     throw invalid();
-  const {sizePreset,pureRelief,pose,materials,reliefMaterials,options,strokes,trailStrokes,userRoute,pins,print,historical,placeName,exampleId}=settings;
+  const {sizePreset,pureRelief,pose,materials,reliefMaterials,options,strokes,trailStrokes,drawnRouteStrokes,userRoute,pins,print,historical,placeName,exampleId}=settings;
   const {center,widthM,heightM,rotation}=pose,[width,height]=pieceDimensions(sizePreset);
   const panoramic=isPanoramicSize(width,height);
   const [minScale,maxScale]=panoramic?PANORAMIC_SCALE_RANGE:[0,pureRelief?PURE_SCALE_RANGE[1]:100000];
@@ -81,10 +81,10 @@ function validatedSettings(settings){
       density!=null&&!range(density,.25,5))throw invalid();
     return {mode,x,y,radius,...(gesture!=null?{gesture}:{}),...(density!=null?{density}:{})};
   });
-  let cleanedTrails;
-  if(trailStrokes!==undefined){
-    if(!pureRelief||!Array.isArray(trailStrokes)||trailStrokes.length>MAX_RELIEF_TRAIL_STROKES)throw invalid();
-    cleanedTrails=Array.from(trailStrokes,stroke=>{
+  function cleanLineStrokes(lineStrokes){
+    if(lineStrokes===undefined)return undefined;
+    if(!pureRelief||!Array.isArray(lineStrokes)||lineStrokes.length>MAX_RELIEF_TRAIL_STROKES)throw invalid();
+    return Array.from(lineStrokes,stroke=>{
       if(!object(stroke))throw invalid();
       const {mode,x,y,radius,gesture,breakBefore}=stroke;
       if(!oneOf('add','erase')(mode)||!range(x,-.01,width+.01)||!range(y,-.01,height+.01)||
@@ -93,6 +93,7 @@ function validatedSettings(settings){
       return {mode,x,y,radius,gesture,...(breakBefore?{breakBefore:true}:{})};
     });
   }
+  const cleanedTrails=cleanLineStrokes(trailStrokes),cleanedDrawnRoute=cleanLineStrokes(drawnRouteStrokes);
   let cleanedRoute,cleanedPins;
   try{
     if(!pureRelief&&(userRoute!=null||pins!==undefined))throw invalid();
@@ -102,6 +103,7 @@ function validatedSettings(settings){
   return {sizePreset,pureRelief,pose:{center:center.slice(),widthM,heightM,rotation},
     materials:{count:materials.count,assignments},options:cleanedOptions,strokes:cleanedStrokes,
     ...(cleanedTrails?{trailStrokes:cleanedTrails}:{}),
+    ...(cleanedDrawnRoute?{drawnRouteStrokes:cleanedDrawnRoute}:{}),
     ...(cleanedRoute?{userRoute:cleanedRoute}:{}),...(cleanedPins?.length?{pins:cleanedPins}:{}),
     ...(print?{print:{baseThickness:print.baseThickness,cuts:Object.fromEntries(
       ['columns','rows'].filter(key=>print.cuts[key]!==undefined).map(key=>[key,[...print.cuts[key]]]))}}:{}),

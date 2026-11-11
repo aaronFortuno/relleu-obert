@@ -41,12 +41,13 @@ classes existents. `output` de formulari no ha de flotar a la dreta.
 - Header de 58 px i footer de 32 px sempre visibles. Cap scroll de pàgina.
 - Sidebar esquerre: Territori, Vegetació, Vies i Edificis.
   Les quatre capçaleres es veuen sempre i només el contingut obert fa scroll.
-  En Relleu pur, Vies es converteix en Senders i límits i s’amaga Edificis.
+  Aigua i vies agrupa la hidrografia i les vies. En Relleu pur s’hi mostren
+  senders i fronteres, i s’amaga Edificis.
   A escriptori, la cerca i el mapa es mantenen sota la capçalera de Territori.
   La roda fa zoom dins del mapa i desplaça els ajustos dins del seu panell.
   L’acció del pas actiu acompanya el títol. Els títols permeten saltar
   directament a un altre pas; «Següent» no inicia un càlcul.
-- Sidebar dret: mètriques, impressió, materials i dades amb capçaleres visibles i
+- Sidebar dret: mètriques, mida/base/talls, materials i dades amb capçaleres visibles i
   scroll només al contingut obert. Descàrrega ancorada al peu, amb un
   botó principal i un selector de formats que aplica la tria.
 - «Marc exterior» i els complements ajornats no apareixen al sidebar;
@@ -54,6 +55,8 @@ classes existents. `output` de formulari no ha de flotar a la dreta.
   conserva per a un desenvolupament futur, sense controls buits a la UI.
 - Centre: selector de mida amb botons uniformes i una vista de les proporcions
   i els talls sobre una taula. Després, maqueta i controls flotants discrets.
+  Eines del visor separa correccions de senders, rutes i forats. El panell
+  deixa la maqueta a la vista i mostra el mode actiu i com sortir-ne.
 - Els canvis d’aparença o d’una capa conserven càmera/zoom. Restablir és una
   acció explícita; una regió o mida noves poden requerir enquadrament.
 

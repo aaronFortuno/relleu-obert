@@ -8,7 +8,7 @@ import {createPlaceMap,MAX_PROJECT_SCALE} from './place-map.js';
 import {createPlaceSearchScheduler} from './place-search.js';
 import {PURE_RELIEF_RESOLUTIONS} from './pure-relief-mesh.js';
 import {MAX_RELIEF_TRAIL_STROKES,RELIEF_TRAIL_WIDTH_MM,sameReliefTrailStrokes,validReliefTrailWidth} from './relief-trails.js';
-import {MAX_GPX_BYTES,parseUserRouteGPX} from './relief-user-route.js';
+import {MAX_GPX_BYTES,USER_ROUTE_WIDTH_MM,parseUserRouteGPX} from './relief-user-route.js';
 import {MAX_RELIEF_PINS,RELIEF_PIN_SPACING_MM} from './relief-pin-holes.js';
 import {pinProjection,pinFitsTile} from './relief-pin-placement.js';
 import {smoothTerrainNormals} from './terrain-normals.js';
@@ -42,6 +42,8 @@ import './usability.css';
 import './example-carousel.css';
 import './mobile-workshop.css';
 import './mobile-onboarding.css';
+import {createWorkshopGuide} from './workshop-guide.js';
+import './workshop-guide.css';
 const $=s=>document.querySelector(s),view=$('#viewport'),worker=new Worker(new URL('./worker.js',import.meta.url),{type:'module'});
 const text=(key,params)=>t('runtime.'+key,params);
 const boundaryControls=BOUNDARY_LEVELS.map(level=>{
@@ -133,6 +135,7 @@ function arrangeTerritory(){
 }
 arrangeTerritory();
 function showWorkshopPanel(panel,{focus=false}={}){
+  if(panel!=='preview'&&!$('#viewer-edit-panel').hidden)showViewerTools(false);
   const previous=layout.dataset.mobilePanel||'preview';
   const button=workshopButtons.find(item=>item.dataset.mobilePanel===panel);
   if(narrowWorkshop.matches&&panel!==previous){
@@ -168,17 +171,19 @@ document.addEventListener('keydown',event=>{
   }
 });
 let region,model,busy=false,selection,dirty=false,buildingSourceDirty=false,needsBuild=false,placeName='',strokes=[],brush='navigate',pendingVegetation=false,timer,job,drawing=false,lastPoint,gesture=0;
-const brushHistory=createProjectBrushHistory();
-const trailHistory=createProjectBrushHistory({breakOnClipped:true});
-let trailStrokes=[],pendingTrailFrame=null,trailStrokeStart=0;
-let userRoute=null,pins=[];
+let brushHistory=createProjectBrushHistory();
+let trailHistory=createProjectBrushHistory({breakOnClipped:true}),routeHistory=createProjectBrushHistory({breakOnClipped:true});
+let trailStrokes=[],drawnRouteStrokes=[],pendingTrailFrame=null,pendingRouteFrame=null,lineStrokeStart=0;
+let userRoute=null,pins=[],nextPinId=1,selectedPinId=null,removedPin=null,pinPointer=null;
 let pendingBrushFrame=null,transportTimer=null,reliefTimer=null;
 let exportFormat='bambu';
 let baseThickness=DEFAULT_BASE_THICKNESS_MM,cutPreviewFrame=null;
 const cutSettings=new Map(),sizeKey=(width,height)=>`${width}x${height}`;
 const printCuts=(width,height)=>cutSettings.get(sizeKey(width,height))??{};
 const printPlan=(width,height)=>tilePlan(width,height,printCuts(width,height));
-const cutEditor=bindPrintCutEditor($('#print-cuts-fields'),{text,formatNumber,onChange:applyPrintCuts});
+const cutEditor=bindPrintCutEditor($('#print-cuts-fields'),{
+  text,formatNumber,onChange:applyPrintCuts,onCommit:()=>{if(pins.length)refreshPinMarkers();}
+});
 let pendingFullRegion=null,lastValidBuildings=null,recoveryNotice='';
 let pendingCadastralBuild=false;
 let stagedBuild=null;
@@ -229,10 +234,14 @@ const isPure=m=>!!m?.provenance.options.pureRelief;
 const canUpdateVegetation=()=>!!model&&pureSelected()===isPure(model);
 const brushHasGeometry=()=>isPure(model)||!model?.provenance.treeRepresentation?.omittedBelowThreshold;
 const canPaint=()=>canUpdateVegetation()&&!busy&&!needsBuild&&reliefTimer===null&&$('#trees').checked&&brushHasGeometry();
-const canPaintTrails=()=>isPure(model)&&pureSelected()&&!busy&&!needsBuild&&reliefTimer===null&&$('#relief-trails').checked;
+const canEditRelief=()=>isPure(model)&&pureSelected()&&!busy&&!needsBuild&&reliefTimer===null&&!pendingVegetation;
+const canPaintTrails=()=>canEditRelief()&&$('#relief-trails').checked;
 const trailBrush=()=>brush.startsWith('trail-');
-const canPlacePin=()=>isPure(model)&&pureSelected()&&!busy&&!needsBuild&&reliefTimer===null&&!pendingVegetation;
-const canPaintWithBrush=()=>brush==='pin'?canPlacePin():trailBrush()?canPaintTrails():canPaint();
+const routeBrush=()=>brush.startsWith('route-');
+const lineBrush=()=>trailBrush()||routeBrush();
+const lineStrokes=()=>routeBrush()?drawnRouteStrokes:trailStrokes;
+const canPlacePin=canEditRelief;
+const canPaintWithBrush=()=>brush==='pin'||routeBrush()?canEditRelief():trailBrush()?canPaintTrails():canPaint();
 const trailWidthControl=$('#relief-trail-width'),trailEraserControl=$('#trail-eraser-radius');
 const reliefTrailWidth=()=>validReliefTrailWidth(trailWidthControl.valueAsNumber)?trailWidthControl.valueAsNumber:RELIEF_TRAIL_WIDTH_MM;
 const vegetation=()=>({trees:$('#trees').checked,density:2.5,brushDensity:Number($('#density').value),treeType:$('#tree-type').value,strokes,
@@ -290,6 +299,8 @@ function lock(value){
   if(workPending&&!drawing)$('#brush-cursor').hidden=true;
   editButtons();
   syncPresentationUI();
+  syncViewerTools();
+  workshopGuide.update();
 }
 function markDirty(){
   dirty=!!region&&!sameBounds(selection,region.meta.bbox);
@@ -560,9 +571,7 @@ function shownPrintPlan(){
 }
 function syncPrintSettings(locked=busy||pendingVegetation||reliefTimer!==null||drawing){
   $('#print-panel').hidden=!selectedSize;
-  $('#relief-pin-settings').hidden=!pureSelected();
   $('#pin-depth').disabled=locked;
-  syncPinList();
   if(!selectedSize)return;
   const [width,height]=size(),cuts=printCuts(width,height),plan=printPlan(width,height);
   $('#print-cuts-reset').disabled=!cuts.columns&&!cuts.rows;
@@ -633,9 +642,9 @@ function tiling(){
 }
 const pavementMode=new URLSearchParams(location.search).get('paviment');
 const surfaceRoads=pavementMode==='antic'?undefined:pavementMode==='rasant'?'independent':pavementMode==='regional'?'regional':'grade-first';
-function modelOptions(){const [widthMM,heightMM]=size(),pureRelief=pureSelected(),detail=Number($('#detail').value);return {pureRelief,surfaceRoads:pureRelief?undefined:surfaceRoads,streams:$('#streams').checked,streamWidth:Number($('#stream-width').value),reliefTrails:pureRelief&&$('#relief-trails').checked,reliefTrailWidth:pureRelief?reliefTrailWidth():RELIEF_TRAIL_WIDTH_MM,trailStrokes:pureRelief?trailStrokes:[],userRoute:pureRelief?userRoute:null,...(pureRelief?boundarySettings():{}),size:Math.max(widthMM,heightMM),widthMM,heightMM,baseThickness,exaggeration:Number($('#exag').value),resolution:pureRelief?PURE_RELIEF_RESOLUTIONS[detail]:LANDSCAPE_RESOLUTIONS[detail],roadRise:Number($('#road-rise').value),railRise:Number($('#rail-rise').value),trailWidth:Number($('#trail-width').value),estimatedTunnels:!pureRelief&&$('#estimated-tunnels').checked,majorRoads:!pureRelief&&$('#major-profiles').checked,smoothProfiles:true,targetScale:null,selectionPose:selectedPose,buildingMode:pureRelief?'none':$('#building-mode').value,maxBuildingHeight:Number($('#building-height').value),...vegetation()};}
+function modelOptions(){const [widthMM,heightMM]=size(),pureRelief=pureSelected(),detail=Number($('#detail').value);return {pureRelief,surfaceRoads:pureRelief?undefined:surfaceRoads,streams:$('#streams').checked,streamWidth:Number($('#stream-width').value),reliefTrails:pureRelief&&$('#relief-trails').checked,reliefTrailWidth:pureRelief?reliefTrailWidth():RELIEF_TRAIL_WIDTH_MM,trailStrokes:pureRelief?trailStrokes:[],drawnRouteStrokes:pureRelief?drawnRouteStrokes:[],userRoute:pureRelief?userRoute:null,...(pureRelief?boundarySettings():{}),size:Math.max(widthMM,heightMM),widthMM,heightMM,baseThickness,exaggeration:Number($('#exag').value),resolution:pureRelief?PURE_RELIEF_RESOLUTIONS[detail]:LANDSCAPE_RESOLUTIONS[detail],roadRise:Number($('#road-rise').value),railRise:Number($('#rail-rise').value),trailWidth:Number($('#trail-width').value),estimatedTunnels:!pureRelief&&$('#estimated-tunnels').checked,majorRoads:!pureRelief&&$('#major-profiles').checked,smoothProfiles:true,targetScale:null,selectionPose:selectedPose,buildingMode:pureRelief?'none':$('#building-mode').value,maxBuildingHeight:Number($('#building-height').value),...vegetation()};}
 
-function configurationKey(o){return JSON.stringify([!!o.pureRelief,o.widthMM,o.heightMM,o.baseThickness,o.exaggeration,o.resolution,o.streams,o.streamWidth,!!o.reliefTrails,o.reliefTrailWidth??RELIEF_TRAIL_WIDTH_MM,o.trailStrokes??[],o.userRoute??null,boundaryKey(o),o.roadRise??0,o.railRise??0,o.trailWidth??1,o.estimatedTunnels??true,o.majorRoads??false,o.targetScale,o.selectionPose?.center,o.selectionPose?.widthM,o.selectionPose?.heightM,o.selectionPose?.rotation,o.buildingMode,o.maxBuildingHeight]);}
+function configurationKey(o){return JSON.stringify([!!o.pureRelief,o.widthMM,o.heightMM,o.baseThickness,o.exaggeration,o.resolution,o.streams,o.streamWidth,!!o.reliefTrails,o.reliefTrailWidth??RELIEF_TRAIL_WIDTH_MM,o.trailStrokes??[],o.drawnRouteStrokes??[],o.userRoute??null,boundaryKey(o),o.roadRise??0,o.railRise??0,o.trailWidth??1,o.estimatedTunnels??true,o.majorRoads??false,o.targetScale,o.selectionPose?.center,o.selectionPose?.widthM,o.selectionPose?.heightM,o.selectionPose?.rotation,o.buildingMode,o.maxBuildingHeight]);}
 function sameTerrainFrame(options){
   const old=model?.provenance.options;
   if(!old||dirty||options.pureRelief!==!!old.pureRelief)return false;
@@ -644,12 +653,12 @@ function sameTerrainFrame(options){
     ['widthM','heightM','rotation'].every(key=>Math.abs(a[key]-b[key])<1e-6)&&
     a.center.every((value,index)=>Math.abs(value-b.center[index])<1e-10);
 }
-const reliefKeys=['baseThickness','exaggeration','streams','streamWidth','reliefTrails','reliefTrailWidth','trailStrokes','userRoute'];
+const reliefKeys=['baseThickness','exaggeration','streams','streamWidth','reliefTrails','reliefTrailWidth','trailStrokes','drawnRouteStrokes','userRoute'];
 function sameReliefField(key,options,old){
   if(key==='reliefTrails')return options[key]===!!old[key];
   if(key==='reliefTrailWidth')return options[key]===(old[key]??RELIEF_TRAIL_WIDTH_MM);
   if(key==='userRoute')return JSON.stringify(options[key])===JSON.stringify(old[key]??null);
-  if(key==='trailStrokes')return sameReliefTrailStrokes(options[key],old[key]??[]);
+  if(key==='trailStrokes'||key==='drawnRouteStrokes')return sameReliefTrailStrokes(options[key],old[key]??[]);
   return options[key]===old[key];
 }
 function sameTerrain(options,includeTransport=true){
@@ -712,6 +721,7 @@ function recoverRelief(error){
     $('#relief-trails').checked=!!reliefTrails;
     trailWidthControl.value=previousTrailWidth??RELIEF_TRAIL_WIDTH_MM;
     trailStrokes=(model.provenance.options.trailStrokes??[]).slice();
+    drawnRouteStrokes=(model.provenance.options.drawnRouteStrokes??[]).slice();
     userRoute=model.provenance.options.userRoute??null;
     setBoundarySettings(model.provenance.options);
     needsBuild=false;
@@ -737,7 +747,7 @@ async function generate(autoTransport=false){
     showWorkshopPanel('preview');
   }
   job=autoTransport?'transport':'build';lock(true);pendingVegetation=false;pendingBuildingLayer=null;pendingFullRegion=null;pendingCadastralBuild=false;recoveryNotice='';
-  pendingBrushFrame=null;pendingTrailFrame=null;
+  pendingBrushFrame=null;pendingTrailFrame=null;pendingRouteFrame=null;
   const options=modelOptions(),requestedName=placeName||text('status.region');
   pendingCatalogPlace=CURATED_EXAMPLES.find(example=>example.id===exampleSelection?.id&&
     (example.pureRelief!==false)===options.pureRelief)??null;
@@ -756,13 +766,18 @@ async function generate(autoTransport=false){
   }
   const incremental=!options.pureRelief&&!reload&&sameTerrain(options);
   if(!incremental){pendingBrushFrame=brushHistory.prepare(options,strokes);options.strokes=pendingBrushFrame.strokes;}
-  if(options.pureRelief){pendingTrailFrame=trailHistory.prepare(options,trailStrokes);options.trailStrokes=pendingTrailFrame.strokes;}
+  if(options.pureRelief){
+    pendingTrailFrame=trailHistory.prepare(options,trailStrokes);
+    pendingRouteFrame=routeHistory.prepare(options,drawnRouteStrokes);
+    options.trailStrokes=pendingTrailFrame.strokes;
+    options.drawnRouteStrokes=pendingRouteFrame.strokes;
+  }
   if(!incremental){
-    const {strokes:brushStrokes,trailStrokes:trailPoints,...settings}=options;
+    const {strokes:brushStrokes,trailStrokes:trailPoints,drawnRouteStrokes:routePoints,...settings}=options;
     processingRun={started:performance.now(),startedAt:new Date().toISOString(),schemaVersion:1,
       appVersion:$('#version-open').textContent.trim(),environment:'browser',
       selection:{name:requestedName,bbox:selection.slice(),mapZoom:placeMap.map.getZoom(),sample:useSample||null},
-      settings:{...settings,brushStrokeCount:brushStrokes.length,trailPointCount:trailPoints.length,requestedBuildingSource:options.pureRelief?null:$('#building-source').value},
+      settings:{...settings,brushStrokeCount:brushStrokes.length,trailPointCount:trailPoints.length,routePointCount:routePoints.length,requestedBuildingSource:options.pureRelief?null:$('#building-source').value},
       reusedRegion:!reload,sources:[]};
   }
   try{
@@ -814,7 +829,7 @@ function recoverBuildings(error){
   finishProcessing(error);
   clearBuildingPreview();
   restoreBuildPreview();
-  pendingFullRegion=null;pendingBuildingLayer=null;pendingBrushFrame=null;pendingTrailFrame=null;pendingCadastralBuild=false;
+  pendingFullRegion=null;pendingBuildingLayer=null;pendingBrushFrame=null;pendingTrailFrame=null;pendingRouteFrame=null;pendingCadastralBuild=false;
   if(job==='transport'&&model){
     const applied=model.provenance.options;
     $('#road-rise').value=applied.roadRise;
@@ -925,6 +940,7 @@ worker.onmessage=({data})=>{
     let startCadastre=false;
     if(!data.vegetation&&!data.buildings&&pendingBrushFrame){strokes=brushHistory.accept(pendingBrushFrame,strokes);pendingBrushFrame=null;}
     if(!data.vegetation&&!data.buildings&&pendingTrailFrame){trailStrokes=trailHistory.accept(pendingTrailFrame,trailStrokes);pendingTrailFrame=null;}
+    if(!data.vegetation&&!data.buildings&&pendingRouteFrame){drawnRouteStrokes=routeHistory.accept(pendingRouteFrame,drawnRouteStrokes);pendingRouteFrame=null;}
     if(pendingFullRegion&&!data.vegetation&&!data.buildings){
       region=pendingFullRegion;pendingFullRegion=null;buildingSourceDirty=false;
       startCadastre=pendingCadastralBuild;
@@ -1000,7 +1016,17 @@ worker.onmessage=({data})=>{
     if(processingRun&&data.timing)processingRun[processingRun.awaitingBuildings?'buildingWorker':'worker']=data.timing;
     pendingVegetation=false;
     if(job==='build'||job==='buildings'||job==='transport')recoverBuildings(Error(data.message));
-    else{lock(false);say(()=>translateEngineMessage(data.message),true);}
+    else{
+      lock(false);say(()=>translateEngineMessage(data.message),true);
+      if(job==='export'){
+        feedback('export-feedback',()=>translateEngineMessage(data.message));
+        if(/^Forat \d+ rebutjat:/.test(data.message)){
+          showViewerTools(true,{pane:'pins'});
+          const id=Number(data.message.match(/^Forat (\d+)/)?.[1]);selectPin(id);
+          feedback('pin-feedback',()=>translateEngineMessage(data.message));
+        }
+      }
+    }
     settleBuildings(Error(data.message));console.error(data.detail);
   }
   if(data.type==='download'){const zipped=data.archive||data.format==='stl',blob=new Blob([data.bytes],{type:zipped?'application/zip':'model/3mf'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=data.filename||`relleu-obert-${data.archive?'peces-':data.plateCount?'plaques-':''}${data.format}${zipped?'.zip':'.3mf'}`;a.click();setTimeout(()=>URL.revokeObjectURL(url),5000);lock(false);say(data.accessory?statusMessage('status.exportAccessory'):data.archive?statusMessage('status.exportArchive'):data.plateCount?statusMessage(data.plateCount===1?'status.exportPlateOne':'status.exportPlates',()=>({count:formatNumber(data.plateCount)})):statusMessage('status.exportReady'));flushTrees();scheduler.flush();}
@@ -1103,7 +1129,7 @@ const legacyReliefPilotId='pirineus-relleu';
 const legacyAnetoIds=[legacyReliefPilotId,'aneto-llacs'];
 const panoramicPilotAvailable=()=>panoramicSelected()&&Math.max(...size())>=900;
 function syncModelModeCopy(panoramic=panoramicSelected(),pure=pureSelected()){
-  $('#transport-title').textContent=pure?text('trail.section'):t('section.transport');
+  $('#transport-title').textContent=t(pure?'ui.tools.waterTrails':'ui.tools.waterWays');
   const range=(panoramic?PANORAMIC_SCALE_RANGE:PURE_SCALE_RANGE).map(stop=>'1:'+formatNumber(stop)).join('–');
   $('#model-mode-note').textContent=text(panoramic?'mode.panoramic':pure?'mode.relief':'mode.complete',{range});
   $('#vegetation-label').textContent=pure?text('vegetation.labelRelief'):text('vegetation.labelComplete');
@@ -1119,8 +1145,8 @@ function syncModelMode(){
   $('#mode-landscape').disabled=panoramic;
   $('#relief-texture-settings').hidden=!pure;
   $('#relief-trail-settings').hidden=!pure;
-  $('#relief-route-settings').hidden=!pure;
-  $('#relief-pin-settings').hidden=!pure;
+  $('#print-pins-link').hidden=!pure;
+  syncViewerTools();
   $('#landscape-transport-settings').hidden=pure;
   $('#relief-boundary-settings').hidden=!pure;
   $('#tree-type').hidden=$('label[for="tree-type"]').hidden=pure;
@@ -1155,7 +1181,8 @@ const requestTrailUpdate=()=>requestReliefUpdate(statusMessage('pending.reliefTr
 function syncRouteSettings(locked){
   $('#route-import').disabled=$('#route-remove').disabled=locked;
   $('#route-remove').hidden=!userRoute;
-  $('#route-summary').textContent=userRoute?.name??text('route.empty');
+  const out=userRoute&&model?.provenance.options.userRoute?.name===userRoute.name&&model.provenance.userRouteInCrop===false;
+  $('#route-summary').textContent=out?text('route.outside',{name:userRoute.name}):userRoute?.name??text('route.empty');
 }
 $('#route-import').onclick=()=>$('#route-file').click();
 $('#route-remove').onclick=()=>{
@@ -1205,6 +1232,7 @@ function syncWelcomeCopy(){
 function selectPieceSize(preset){
   const dimensions=pieceDimensions(preset);
   if(!dimensions)return;
+  const firstSize=!selectedSize;
   const [width,height]=dimensions;
   selectedSize=preset;
   resizeWidth.value=width/10;
@@ -1222,11 +1250,20 @@ function selectPieceSize(preset){
   openStep('place',{focus:true});
   syncPrintSettings();
   tiling();
+  workshopGuide.update();
+  if(firstSize)projectSnapshot=projectFingerprint();
 }
 initPiecePicker($('#piece-choice'),selectPieceSize);
 function selectCuratedExample(example){
   const {id,center,width,height,scale,rotation,pureRelief=true}=example;
   if(busy||pendingVegetation||drawing)return;
+  brushHistory=createProjectBrushHistory();
+  trailHistory=createProjectBrushHistory({breakOnClipped:true});
+  routeHistory=createProjectBrushHistory({breakOnClipped:true});
+  strokes=[];trailStrokes=[];drawnRouteStrokes=[];userRoute=null;pins=[];
+  nextPinId=1;selectedPinId=null;removedPin=null;
+  showViewerTools(false);
+  setPinFeedback('');
   regularPureRelief=pureRelief;
   selectPieceSize(`${width/10}x${height/10}`);
   applyPureRelief();
@@ -1267,9 +1304,10 @@ function selectCuratedExample(example){
   syncExaggerationLabel();
   syncPrintSettings();
   legend();
+  projectSnapshot=projectFingerprint();
   generate();
 }
-initExampleCarousel($('#example-carousel'),CURATED_EXAMPLES,selectCuratedExample);
+initExampleCarousel($('#example-carousel'),CURATED_EXAMPLES,example=>switchProject(()=>selectCuratedExample(example)));
 resizeForm.onsubmit=event=>{
   event.preventDefault();
   if(!selectedSize||busy||drawing||pendingVegetation||reliefTimer!==null)return;
@@ -1288,6 +1326,7 @@ resizeForm.onsubmit=event=>{
   const options=modelOptions();
   brushHistory.resize(previous,options,strokes);
   trailHistory.resize(previous,options,trailStrokes);
+  routeHistory.resize(previous,options,drawnRouteStrokes);
   openStep('place',{focus:true});
   scaleHint();
   if(!limited&&!dirty&&!buildingSourceDirty&&model&&configurationKey(options)===configurationKey(model.provenance.options)){
@@ -1300,7 +1339,7 @@ resizeForm.onsubmit=event=>{
   requireBuild(statusMessage('pending.resize'));
   if(!tooLargeRegion)say(limited?statusMessage('status.resizeLimited'):statusMessage('status.resizeApply'));
 };
-$('#new-project').onclick=()=>window.location.reload();
+$('#new-project').onclick=()=>switchProject(()=>window.location.reload());
 $('#reset').onclick=()=>{previewOrbit.pause(performance.now());home();};
 $('#top').onclick=()=>{setOrbitEnabled(false);home();const distance=camera.position.distanceTo(controls.target);camera.position.copy(controls.target).add(new THREE.Vector3(0,-.01,distance));controls.update();};
 function requireBuild(message){needsBuild=true;badge(tooLargeRegion?statusMessage('status.areaLarge'):message);say(tooLargeRegion?()=>$('#scale-info').textContent:()=>messageText(message)+'.',tooLargeRegion);lock(busy);}
@@ -1345,7 +1384,7 @@ function showScaleStops(limit){
   const ticks=$('#scale-ticks');
   const panoramic=panoramicSelected(),pure=pureSelected();
   const preferred=panoramic?[PANORAMIC_SCALE_RANGE[0],100000,150000,200000,300000,400000,450000]:
-    pure?[PURE_SCALE_RANGE[0],15000,20000,30000,50000,100000,150000,200000,300000,400000]:preferredScaleStops;
+    pure?[...new Set([PURE_SCALE_RANGE[0],...preferredScaleStops,20000,30000,50000,100000,150000,200000,300000,400000])]:preferredScaleStops;
   const next=[...preferred.filter(stop=>stop<limit),limit];
   if(ticks.children.length&&next.join()===scaleStops.join()&&ticks.dataset.locale===getLocale())return;
   scaleStops=next;
@@ -1390,7 +1429,7 @@ function syncStepActions(updating){
     const build=pending&&!autoApplying&&(step==='place'||pureSelected()&&step==='transport'||!!model&&['transport','buildings'].includes(step));
     button.hidden=!button.closest('.config-section').classList.contains('is-open')||(!build&&!next);
     const label=build?(step==='place'||!model?text('mode.generate'):step==='buildings'&&sameTerrain(modelOptions())?text('mode.applyBuildings'):text('mode.apply')) :
-      next?`${next==='transport'&&pureSelected()?text('trail.section'):t('section.'+next)} →`:'';
+      next?`${next==='transport'?t(pureSelected()?'ui.tools.waterTrails':'ui.tools.waterWays'):t('section.'+next)} →`:'';
     if(button.textContent!==label)button.textContent=label;
     button.classList.toggle('is-build',build);
     button.disabled=updating||invalid&&(build||step==='place')||!selectedSize;
@@ -1399,7 +1438,7 @@ function syncStepActions(updating){
 function openStep(id,{focus=false}={}){
   if(!selectedSize)return;
   if(id!=='vegetation'&&$('#step-vegetation').getAttribute('aria-expanded')==='true')endVegetationEditing();
-  if(id!=='transport'&&trailBrush())endVegetationEditing();
+  if(!$('#viewer-edit-panel').hidden)showViewerTools(false);
   for(const toggle of document.querySelectorAll('.sidebar-left .section-toggle')){
     const open=toggle.id==='step-'+id;
     toggle.setAttribute('aria-expanded',String(open));
@@ -1491,7 +1530,7 @@ for(const [id,unit] of textureSliders){
 const formatOptions=[...document.querySelectorAll('#export-options [data-format]')];
 function showExportFormat(format){
   for(const option of formatOptions)option.setAttribute('aria-pressed',String(option.dataset.format===format));
-  $('#export-model').textContent=formatOptions.find(option=>option.dataset.format===format).textContent+' ↓';
+  $('#export-model').textContent=formatOptions.find(option=>option.dataset.format===format).querySelector('[data-format-label]').textContent+' ↓';
 }
 function selectExportFormat(format){
   exportFormat=format;
@@ -1514,6 +1553,7 @@ function syncExport(disabled){
 }
 function exportModel(){
   if($('#export-model').disabled)return;
+  feedback('export-feedback','');
   job='export';
   lock(true);
   say(baseMessage('status.exporting'));
@@ -1547,7 +1587,7 @@ for(const toggle of infoToggles)toggle.onclick=()=>{
     document.getElementById(button.getAttribute('aria-controls')).hidden=!open;
     button.querySelector('i').textContent=open?'−':'+';
   }
-  if(brush==='pin'&&$('#info-print').hidden)selectNavigate();
+
 };
 $('#print-base').oninput=syncBaseAction;
 $('#print-base-form').onsubmit=event=>{
@@ -1578,6 +1618,7 @@ function applyPrintCuts(cuts,dragging=false){
     if(cutPreviewFrame!==null)cancelAnimationFrame(cutPreviewFrame);
     cutPreviewFrame=null;
     tiling();
+    if(pins.length)refreshPinMarkers();
   }
 }
 $('#print-cuts-reset').onclick=()=>applyPrintCuts({});
@@ -1592,16 +1633,65 @@ function syncVegetationControls(updating){
   const paintDisabled=updating||!canPaint();
   for(const button of document.querySelectorAll('[data-brush]')){
     const mode=button.dataset.brush;
-    button.disabled=mode!=='navigate'&&(mode==='pin'?updating||drawing||!canPlacePin():mode.startsWith('trail-')?updating||drawing||!canPaintTrails():paintDisabled);
+    const reliefBrush=mode==='pin'||mode.startsWith('route-')||mode.startsWith('trail-');
+    button.disabled=mode!=='navigate'&&(reliefBrush?updating||drawing||!(mode.startsWith('trail-')?canPaintTrails():canEditRelief()):paintDisabled);
   }
 }
 function editButtons(){
   $('#undo-brush').disabled=$('#clear-brush').disabled=!strokes.length||busy||pendingVegetation||drawing||needsBuild||!canUpdateVegetation()||!$('#trees').checked;
-  $('#undo-trail').disabled=$('#clear-trails').disabled=!trailStrokes.length||pendingVegetation||drawing||!canPaintTrails();
+  $('#undo-trail').disabled=$('#clear-trails').disabled=!trailStrokes.length||drawing||!canPaintTrails();
+  $('#undo-route').disabled=$('#clear-route').disabled=!drawnRouteStrokes.length||drawing||!canEditRelief();
 }
+const viewerToolsPanel=$('#viewer-edit-panel'),viewerToolsOpen=$('#viewer-tools-open');
+const viewerToolTabs=[...document.querySelectorAll('[data-viewer-tool]')];
+const viewerToolPanes=[...document.querySelectorAll('[data-viewer-pane]')];
+let viewerTool='trails';
+function syncViewerTools(){
+  const pure=pureSelected(),visible=!viewerToolsPanel.hidden;
+  $('#viewer-tools-content').hidden=!pure;
+  $('#viewer-tools-unavailable').hidden=pure;
+  viewerToolsOpen.setAttribute('aria-expanded',String(visible));
+  $('#enable-trails').hidden=$('#relief-trails').checked;
+  $('#enable-trails').disabled=busy||drawing||needsBuild||reliefTimer!==null;
+  $('#pin-coordinates-form').querySelector('button').disabled=!canPlacePin();
+  $('#pin-coordinates').disabled=!canPlacePin();
+  for(const control of document.querySelectorAll('#pin-list button, #pin-list select, #undo-pin'))control.disabled=busy||drawing;
+  const state=$('#viewer-tool-status');
+  state.textContent=pure&&(!isPure(model)||needsBuild)?text('tools.pending'):
+    brush==='pin'?text('pin.placeHint'):trailBrush()?text('tools.trailActive'):
+    routeBrush()?text('tools.routeActive'):'';
+  for(const tab of viewerToolTabs)tab.setAttribute('aria-pressed',String(tab.dataset.viewerTool===viewerTool));
+  for(const pane of viewerToolPanes)pane.hidden=pane.dataset.viewerPane!==viewerTool;
+}
+function showViewerTools(open,{pane,focus=false}={}){
+  if((!open||pane&&pane!==viewerTool)&&['pin','trail-add','trail-erase','route-add','route-erase'].includes(brush))selectNavigate();
+  viewerToolsPanel.hidden=!open;
+  if(pane)viewerTool=pane;
+  if(open&&narrowWorkshop.matches)showWorkshopPanel('preview');
+  syncViewerTools();
+  if(focus)(open?$('#viewer-edit-title'):viewerToolsOpen).focus({preventScroll:true});
+}
+viewerToolsOpen.onclick=()=>showViewerTools(viewerToolsPanel.hidden,{focus:true});
+$('#viewer-tools-close').onclick=()=>showViewerTools(false,{focus:true});
+$('#print-pins-link').onclick=()=>showViewerTools(true,{pane:'pins',focus:true});
+for(const tab of viewerToolTabs)tab.onclick=()=>showViewerTools(true,{pane:tab.dataset.viewerTool});
+$('#enable-trails').onclick=()=>{
+  $('#relief-trails').checked=true;
+  requestTrailUpdate();
+};
+document.addEventListener('keydown',event=>{
+  if(event.key!=='Escape'||event.defaultPrevented||viewerToolsPanel.hidden||document.querySelector('dialog[open]'))return;
+  event.preventDefault();
+  if(brush!=='navigate'){
+    selectNavigate();
+    viewerToolTabs.find(tab=>tab.dataset.viewerTool===viewerTool)?.focus({preventScroll:true});
+  }else showViewerTools(false,{focus:true});
+});
 $('#undo-brush').onclick=()=>{strokes=withoutLastGesture(strokes);editButtons();updateTrees();};$('#clear-brush').onclick=()=>{strokes=[];editButtons();updateTrees();};$('#brush-radius').oninput=()=>$('#brush-value').textContent=formatNumber(Number($('#brush-radius').value))+' mm';
 $('#undo-trail').onclick=()=>{trailStrokes=withoutLastGesture(trailStrokes);requestTrailUpdate();};
 $('#clear-trails').onclick=()=>{trailStrokes=[];requestTrailUpdate();};
+$('#undo-route').onclick=()=>{drawnRouteStrokes=withoutLastGesture(drawnRouteStrokes);requestTrailUpdate();};
+$('#clear-route').onclick=()=>{drawnRouteStrokes=[];requestTrailUpdate();};
 function setBrush(button){
   if(!button)return;
   finishStroke();brush=button.dataset.brush;
@@ -1613,6 +1703,7 @@ function setBrush(button){
     x.setAttribute('aria-pressed',String(selected));
   });
   syncViewerHint();
+  syncViewerTools();
   $('#brush-cursor').hidden=true;
 }
 function syncViewerHint(){
@@ -1626,78 +1717,155 @@ document.querySelectorAll('[data-brush]').forEach(b=>b.onclick=()=>setBrush(b));
 const ray=new THREE.Raycaster(),pointer=new THREE.Vector2();
 const brushGround=new Set(['terrain','forest','grass','rock','snow']);
 const brushSurfaces=new Set([...brushGround,'water','inland-water']);
+
 const pinGuides=new THREE.Group(),pinRay=new THREE.Raycaster();
-const pinMarker=new THREE.RingGeometry(.5,.83,24);
-const pinColor=new THREE.MeshBasicMaterial({color:0xae432e,side:THREE.DoubleSide,depthTest:false,depthWrite:false});
+const pinMarkers=new Map();
 scene.add(pinGuides);
-function syncPinList(){
-  const list=$('#pin-list');
-  const locked=busy||pendingVegetation||drawing;
-  list.replaceChildren(...pins.map((pin,index)=>{
-    const row=document.createElement('li'),remove=document.createElement('button');
-    const number=index+1;
-    row.append(text('pin.item',{number:formatNumber(number),depth:formatNumber(pin.depth)}));
-    remove.type='button';
-    remove.className='quiet-button';
-    remove.textContent=text('pin.remove');
-    remove.setAttribute('aria-label',text('pin.removeName',{number:formatNumber(number)}));
-    remove.disabled=locked;
-    remove.onclick=()=>{pins.splice(index,1);syncPinList();refreshPinMarkers();};
-    row.append(remove);
-    return row;
-  }));
+function setPinFeedback(key,params){
+  feedback('pin-feedback',key?statusMessage(key,params):'');
 }
-function refreshPinMarkers(){
-  pinGuides.clear();
-  if(isPure(model)&&pins.length){
-    group.updateMatrixWorld(true);
-    const {project}=pinProjection(model);
-    const top=group.children.reduce((z,mesh)=>{
-      if(!mesh.geometry.boundingBox)mesh.geometry.computeBoundingBox();
-      return Math.max(z,mesh.geometry.boundingBox.max.z);
-    },0)+1;
-    for(const pin of pins){
-      const [x,y]=project([pin.lon,pin.lat]);
-      if(x<0||x>model.width||y<0||y>model.height)continue;
-      pinRay.ray.origin.set(x-model.width/2,y-model.height/2,top);
-      pinRay.ray.direction.set(0,0,-1);
-      const [hit]=pinRay.intersectObjects(group.children);
-      if(!hit)continue;
-      const marker=new THREE.Mesh(pinMarker,pinColor);
-      marker.position.copy(hit.point);
-      marker.renderOrder=6;
-      pinGuides.add(marker);
-    }
-  }
+function selectPin(id){
+  selectedPinId=id;
+  for(const [key,marker] of pinMarkers)marker.material.color.set(key===id?0xffdb9f:0xffffff);
+  for(const button of document.querySelectorAll('[data-pin-select]'))
+    button.setAttribute('aria-pressed',String(Number(button.dataset.pinSelect)===id));
   invalidateView();
 }
+function pinProblem(pin,x,y,hit){
+  if(x<0||y<0||x>model.width||y>model.height)return 'pin.outside';
+  if(!pinFitsTile(x,y,shownPrintPlan()))return 'pin.edge';
+  if(!hit||hit.face.normal.z<=0||['water','inland-water'].includes(hit.object.name))return 'pin.landOnly';
+  if(hit.point.z<pin.depth+1)return 'pin.thin';
+  return '';
+}
+function pinSurface(x,y){
+  if(x<0||y<0||x>model.width||y>model.height)return null;
+  group.updateMatrixWorld(true);
+  const top=group.children.reduce((z,mesh)=>{
+    if(!mesh.geometry.boundingBox)mesh.geometry.computeBoundingBox();
+    return Math.max(z,mesh.geometry.boundingBox.max.z);
+  },0)+1;
+  pinRay.ray.origin.set(x-model.width/2,y-model.height/2,top);
+  pinRay.ray.direction.set(0,0,-1);
+  return pinRay.intersectObjects(group.children)[0];
+}
+function makePinMarker(id,point){
+  const canvas=document.createElement('canvas');canvas.width=canvas.height=96;
+  const ctx=canvas.getContext('2d');
+  ctx.beginPath();ctx.arc(48,48,42,0,Math.PI*2);
+  ctx.fillStyle='#963b23';ctx.fill();ctx.strokeStyle='#fff9ee';ctx.lineWidth=7;ctx.stroke();
+  ctx.font='600 45px Segoe UI, sans-serif';ctx.fillStyle='#fff9ee';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(String(id),48,49,76);
+  const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;
+  const marker=new THREE.Sprite(new THREE.SpriteMaterial({map:texture,depthTest:false,depthWrite:false,sizeAttenuation:false}));
+  marker.position.copy(point);
+  marker.scale.set(.031,.031,1);
+  marker.renderOrder=6;
+  return marker;
+}
+function refreshPinMarkers(){
+  for(const marker of pinMarkers.values()){marker.material.map.dispose();marker.material.dispose();}
+  pinMarkers.clear();pinGuides.clear();
+  const list=$('#pin-list');
+  const focusedId=document.activeElement?.closest('[data-pin-row]')?.dataset.pinRow;
+  const focusedKind=document.activeElement?.tagName;
+  if(!isPure(model)){
+    list.replaceChildren();
+    $('#viewer-pin-count').hidden=true;
+    $('#undo-pin').hidden=true;
+    invalidateView();
+    return;
+  }
+  const {project}=pinProjection(model);
+  const locations=pins.map(pin=>({pin,xy:project([pin.lon,pin.lat])}));
+  const rows=locations.map(({pin,xy:[x,y]})=>{
+    const hit=pinSurface(x,y);
+    const overlap=locations.some(other=>other.pin!==pin&&Math.hypot(other.xy[0]-x,other.xy[1]-y)<RELIEF_PIN_SPACING_MM);
+    const problem=pinProblem(pin,x,y,hit)||(overlap?'pin.overlap':'');
+    if(hit){
+      const marker=makePinMarker(pin.id,hit.point);
+      pinMarkers.set(pin.id,marker);pinGuides.add(marker);
+    }
+    const row=document.createElement('li'),choose=document.createElement('button'),depth=document.createElement('select'),remove=document.createElement('button');
+    const number=formatNumber(pin.id);
+    row.dataset.pinRow=String(pin.id);
+    choose.dataset.pinSelect=String(pin.id);
+    choose.type=remove.type='button';
+    choose.className=remove.className='quiet-button';
+    choose.textContent=text('tools.holeNumber',{number});
+    choose.onclick=()=>selectPin(pin.id);
+    depth.setAttribute('aria-label',text('tools.holeDepth',{number}));
+    depth.replaceChildren(...[7,8,9].map(value=>new Option(formatNumber(value)+' mm',value)));
+    depth.value=pin.depth;
+    depth.onchange=()=>{pin.depth=Number(depth.value);selectPin(pin.id);refreshPinMarkers();};
+    remove.textContent=text('pin.remove');
+    remove.setAttribute('aria-label',text('pin.removeName',{number}));
+    remove.onclick=()=>{
+      removedPin={pin,index:pins.indexOf(pin)};
+      pins.splice(removedPin.index,1);
+      if(selectedPinId===pin.id)selectedPinId=null;
+      setPinFeedback('tools.holeRemoved',{number});refreshPinMarkers();$('#undo-pin').focus();
+    };
+    row.append(choose,depth,remove);
+    if(problem){
+      const note=document.createElement('span');note.className='hint pin-problem';note.textContent=text(problem);row.append(note);
+    }
+    return row;
+  });
+  list.replaceChildren(...rows);
+  const oldRow=rows.find(row=>row.dataset.pinRow===focusedId);
+  oldRow?.querySelector(focusedKind==='SELECT'?'select':'button')?.focus({preventScroll:true});
+  $('#viewer-pin-count').textContent=formatNumber(pins.length);
+  $('#viewer-pin-count').hidden=!pins.length;
+  $('#undo-pin').hidden=!removedPin;
+  selectPin(selectedPinId);
+}
+$('#undo-pin').onclick=()=>{
+  if(!removedPin||pins.length>=MAX_RELIEF_PINS)return;
+  const {pin,index}=removedPin;removedPin=null;pins.splice(index,0,pin);
+  selectedPinId=pin.id;setPinFeedback('tools.holeAdded',{number:formatNumber(pin.id)});refreshPinMarkers();
+  $('#pin-list [data-pin-select="'+pin.id+'"]')?.focus({preventScroll:true});
+};
+function addPin(lon,lat,hit){
+  if(pins.length>=MAX_RELIEF_PINS){setPinFeedback('pin.limit',{count:MAX_RELIEF_PINS});return false;}
+  const {project}=pinProjection(model),[x,y]=project([lon,lat]),depth=Number($('#pin-depth').value);
+  const problem=pinProblem({depth},x,y,hit??pinSurface(x,y));
+  if(problem){setPinFeedback(problem);return false;}
+  if(pins.some(pin=>{
+    const [px,py]=project([pin.lon,pin.lat]);
+    return Math.hypot(x-px,y-py)<RELIEF_PIN_SPACING_MM;
+  })){setPinFeedback('pin.overlap');return false;}
+  const id=nextPinId++;
+  removedPin=null;
+  pins.push({id,lon,lat,depth});
+  selectedPinId=id;
+  setPinFeedback('tools.holeAdded',{number:formatNumber(id)});
+  refreshPinMarkers();
+  return true;
+}
 function placePin(event){
-  if(pins.length>=MAX_RELIEF_PINS){say(statusMessage('pin.limit',{count:MAX_RELIEF_PINS}),true);return;}
   const rect=renderer.domElement.getBoundingClientRect();
   pointer.set((event.clientX-rect.left)/rect.width*2-1,-(event.clientY-rect.top)/rect.height*2+1);
   ray.setFromCamera(pointer,camera);
   const [hit]=ray.intersectObjects(group.children);
-  if(!hit||hit.face.normal.z<=0||['water','inland-water'].includes(hit.object.name)){
-    say(statusMessage('pin.landOnly'),true);return;
-  }
+  if(!hit){setPinFeedback('pin.landOnly');return;}
   const x=hit.point.x+model.width/2,y=hit.point.y+model.height/2;
-  const depth=Number($('#pin-depth').value);
-  if(!pinFitsTile(x,y,shownPrintPlan())){say(statusMessage('pin.edge'),true);return;}
-  if(hit.point.z<depth+1){say(statusMessage('pin.thin'),true);return;}
-  const {project,unproject}=pinProjection(model);
-  if(pins.some(pin=>{
-    const [px,py]=project([pin.lon,pin.lat]);
-    return Math.hypot(x-px,y-py)<RELIEF_PIN_SPACING_MM;
-  })){say(statusMessage('pin.overlap'),true);return;}
-  const [lon,lat]=unproject([x,y]);
-  pins.push({lon,lat,depth});
-  syncPinList();
-  refreshPinMarkers();
-  say('');
+  const [lon,lat]=pinProjection(model).unproject([x,y]);
+  addPin(lon,lat,hit);
 }
+$('#pin-coordinates-form').onsubmit=event=>{
+  event.preventDefault();
+  if(!canPlacePin())return;
+  const input=$('#pin-coordinates'),parts=input.value.trim().split(/\s*,\s*/);
+  const [lat,lon]=parts.map(Number);
+  if(parts.length!==2||parts.some(part=>!part)||!Number.isFinite(lat)||!Number.isFinite(lon)||Math.abs(lat)>90||Math.abs(lon)>180){
+    setPinFeedback('tools.invalidCoordinates');return;
+  }
+  if(addPin(lon,lat))input.value='';
+};
 function paint(event){
   if(brush==='navigate'||brush==='pin'||!canPaintWithBrush()||pendingVegetation&&!drawing)return;
-  const trails=trailBrush(),erase=brush.endsWith('erase');
+  const trails=lineBrush(),erase=brush.endsWith('erase');
   const rect=renderer.domElement.getBoundingClientRect();
   pointer.set((event.clientX-rect.left)/rect.width*2-1,-(event.clientY-rect.top)/rect.height*2+1);
   ray.setFromCamera(pointer,camera);
@@ -1707,7 +1875,8 @@ function paint(event){
   const cursor=$('#brush-cursor');
   cursor.hidden=!hit||!(brushGround.has(hit.object.name)||textureMesh(hit.object)||trailMesh(hit.object))||hit.face.normal.z<=0;
   if(cursor.hidden){if(trails)lastPoint=null;return;}
-  const radius=trails?(erase?Math.max(2,Math.min(12,trailEraserControl.valueAsNumber||3)):reliefTrailWidth()/2):Number($('#brush-radius').value);
+  const radius=routeBrush()?(erase?3:USER_ROUTE_WIDTH_MM/2):trails?
+    (erase?Math.max(2,Math.min(12,trailEraserControl.valueAsNumber||3)):reliefTrailWidth()/2):Number($('#brush-radius').value);
   const p=hit.point;
   const screen=p.clone().project(camera),edge=p.clone().add(new THREE.Vector3(radius,0,0)).project(camera);
   const diameter=Math.max(8,Math.abs(edge.x-screen.x)*rect.width);
@@ -1717,9 +1886,10 @@ function paint(event){
   const x=p.x+model.width/2,y=p.y+model.height/2;
   if(lastPoint&&Math.hypot(x-lastPoint.x,y-lastPoint.y)<Math.max(trails ? .25 : 0,radius*.45))return;
   if(trails){
-    if(trailStrokes.length>=MAX_RELIEF_TRAIL_STROKES){say(statusMessage('trail.pointLimit'));return;}
-    const breakBefore=!lastPoint&&trailStrokes.length>trailStrokeStart;
-    trailStrokes.push({mode:erase?'erase':'add',x,y,radius,gesture,...(breakBefore?{breakBefore:true}:{})});
+    const path=lineStrokes();
+    if(path.length>=MAX_RELIEF_TRAIL_STROKES){say(statusMessage('trail.pointLimit'));return;}
+    const breakBefore=!lastPoint&&path.length>lineStrokeStart;
+    path.push({mode:erase?'erase':'add',x,y,radius,gesture,...(breakBefore?{breakBefore:true}:{})});
     lastPoint={x,y};
     return;
   }
@@ -1730,22 +1900,32 @@ function paint(event){
 function finishStroke(){
   if(!drawing)return;
   drawing=false;lastPoint=null;
-  if(trailBrush()&&trailStrokes.length>trailStrokeStart)requestTrailUpdate();
+  if(lineBrush()&&lineStrokes().length>lineStrokeStart)requestTrailUpdate();
   else if(pendingVegetation)updateTrees();
   else lock(busy);
 }
 renderer.domElement.addEventListener('pointerdown',event=>{
   if(brush==='navigate'||event.button!==0||drawing||pendingVegetation||!canPaintWithBrush())return;
-  if(brush==='pin'){placePin(event);return;}
+  if(brush==='pin'){
+    pinPointer={id:event.pointerId,x:event.clientX,y:event.clientY};
+    renderer.domElement.setPointerCapture(event.pointerId);
+    return;
+  }
   drawing=true;gesture++;lastPoint=null;
-  trailStrokeStart=trailStrokes.length;
+  lineStrokeStart=lineStrokes().length;
   renderer.domElement.setPointerCapture(event.pointerId);
-  if(trailBrush())lock(busy);
+  if(lineBrush())lock(busy);
   paint(event);
 });
 renderer.domElement.addEventListener('pointermove',paint);
-renderer.domElement.addEventListener('pointerup',finishStroke);
-renderer.domElement.addEventListener('pointercancel',finishStroke);
+renderer.domElement.addEventListener('pointerup',event=>{
+  if(pinPointer?.id===event.pointerId){
+    const start=pinPointer;pinPointer=null;
+    if(brush==='pin'&&canPlacePin()&&Math.hypot(event.clientX-start.x,event.clientY-start.y)<=8)placePin(event);
+  }
+  finishStroke();
+});
+renderer.domElement.addEventListener('pointercancel',()=>{pinPointer=null;finishStroke();});
 renderer.domElement.addEventListener('lostpointercapture',finishStroke);
 renderer.domElement.addEventListener('pointerleave',()=>$('#brush-cursor').hidden=true);
 const projectRestoreKey='relleu-obert.open-project';
@@ -1766,10 +1946,41 @@ function captureProject(){
   return {sizePreset:selectedSize,pose:selectedPose,pureRelief:pureSelected(),placeName:placeName||undefined,
     exampleId:exampleSelection?.id,materials:landscapeMaterials,reliefMaterials,options,print:{baseThickness,cuts:printCuts(...size())},
     strokes:brushHistory.prepare(modelOptions(),strokes).strokes,
-    ...(pureSelected()?{trailStrokes:trailHistory.prepare(modelOptions(),trailStrokes).strokes,userRoute,pins}:{})};
+    ...(pureSelected()?{trailStrokes:trailHistory.prepare(modelOptions(),trailStrokes).strokes,
+      drawnRouteStrokes:routeHistory.prepare(modelOptions(),drawnRouteStrokes).strokes,userRoute,pins}:{})};
 }
 const feedbackMessages=new Map();
 function feedback(id,message){feedbackMessages.set(id,message);$('#'+id).textContent=messageText(message);}
+const projectSwitchDialog=$('#switch-project-dialog');
+let projectSnapshot=null,pendingProjectAction=null;
+function projectFingerprint(){
+  return selectedSize&&selectedPose?JSON.stringify(captureProject()):null;
+}
+function switchProject(action){
+  if(!selectedSize||projectFingerprint()===projectSnapshot){action();return;}
+  pendingProjectAction=action;
+  $('#switch-project-name').value=placeName.slice(0,100);
+  $('#switch-project-error').hidden=true;
+  projectSwitchDialog.showModal();
+  $('#switch-project-name').select();
+}
+function continueProjectSwitch(){
+  const action=pendingProjectAction;
+  pendingProjectAction=null;
+  projectSwitchDialog.close();
+  action?.();
+}
+projectSwitchDialog.addEventListener('close',()=>{if(!projectSwitchDialog.open)pendingProjectAction=null;});
+$('#discard-project').onclick=continueProjectSwitch;
+$('#switch-project-form').onsubmit=event=>{
+  event.preventDefault();
+  try{
+    saveProject(localStorage,{name:$('#switch-project-name').value,settings:captureProject()});
+    continueProjectSwitch();
+  }catch(error){
+    const message=$('#switch-project-error');message.textContent=translateEngineMessage(error.message);message.hidden=false;
+  }
+};
 function renderProjectGallery(preserveConfirm=false){
   const list=$('#project-list');
   const confirmations=new Set(preserveConfirm?[...list.querySelectorAll('[data-confirm="true"]')].map(button=>button.dataset.projectId):[]);
@@ -1794,12 +2005,12 @@ function renderProjectGallery(preserveConfirm=false){
     };
     showRemoveState(confirmations.has(project.id));
     open.disabled=busy||drawing||pendingVegetation;
-    open.onclick=()=>{
+    open.onclick=()=>switchProject(()=>{
       try{
         sessionStorage.setItem(projectRestoreKey,project.id);
         location.reload();
       }catch(error){feedback('project-feedback',error.message);}
-    };
+    });
     remove.onclick=()=>{
       if(remove.dataset.confirm!=='true'){
         showRemoveState(true);
@@ -1822,9 +2033,10 @@ function restoreProject(){
   sessionStorage.removeItem(projectRestoreKey);
   const project=readProjects(localStorage).find(item=>item.id===id);
   if(!project)throw Error(text('project.notFound'));
-  const {sizePreset,pose,pureRelief,materials,reliefMaterials:savedReliefMaterials,options,print,historical,placeName:savedPlace,exampleId,strokes:savedStrokes,trailStrokes:savedTrails,userRoute:savedRoute,pins:savedPins}=project.settings;
+  const {sizePreset,pose,pureRelief,materials,reliefMaterials:savedReliefMaterials,options,print,historical,placeName:savedPlace,exampleId,strokes:savedStrokes,trailStrokes:savedTrails,drawnRouteStrokes:savedDrawnRoute,userRoute:savedRoute,pins:savedPins}=project.settings;
   userRoute=savedRoute??null;
-  pins=savedPins??[];
+  nextPinId=Math.max(0,...(savedPins??[]).map(pin=>pin.id??0))+1;
+  pins=(savedPins??[]).map(pin=>({...pin,id:pin.id??nextPinId++}));
   setBoundarySettings(options);
   if(print){
     baseThickness=print.baseThickness;
@@ -1855,11 +2067,14 @@ function restoreProject(){
   strokes=brushHistory.accept({...frame,strokes:savedStrokes},[]);
   const trailFrame=trailHistory.prepare(modelOptions(),[]);
   trailStrokes=trailHistory.accept({...trailFrame,strokes:savedTrails??[]},[]);
-  for(const stroke of [...strokes,...trailStrokes])gesture=Math.max(gesture,stroke.gesture??0);
+  const routeFrame=routeHistory.prepare(modelOptions(),[]);
+  drawnRouteStrokes=routeHistory.accept({...routeFrame,strokes:savedDrawnRoute??[]},[]);
+  for(const stroke of [...strokes,...trailStrokes,...drawnRouteStrokes])gesture=Math.max(gesture,stroke.gesture??0);
   syncExaggerationLabel();$('#density').oninput();$('#brush-radius').oninput();
   for(const [id,unit] of textureSliders)syncTextureLabel(id,unit);
   legend();tiling();buildingControls();
   requireBuild(statusMessage(historical?'pending.projectCurrentData':'pending.project'));
+  projectSnapshot=projectFingerprint();
 }
 initDialogs();
 const projectDialog=$('#projects-dialog'),gallerySections=[...projectDialog.querySelectorAll('.gallery-sections button')];
@@ -1889,9 +2104,11 @@ initExampleGallery(projectDialog,CURATED_EXAMPLES,example=>{
     feedback('gallery-feedback',statusMessage('project.wait'));
     return;
   }
-  projectDialog.close();
-  selectCuratedExample(example);
-  showWorkshopPanel('preview',{focus:true});
+  switchProject(()=>{
+    projectDialog.close();
+    selectCuratedExample(example);
+    showWorkshopPanel('preview',{focus:true});
+  });
 });
 $('#gallery-credits').append($('#example-carousel .example-credits').cloneNode(true));
 const projectImportFile=$('#project-import-file'),projectImport=$('#project-import');
@@ -1932,6 +2149,7 @@ $('#save-project').onsubmit=event=>{
   try{
     const input=$('#project-name');
     saveProject(localStorage,{name:input.value,settings:captureProject()});
+    projectSnapshot=projectFingerprint();
     input.value='';
     renderProjectGallery();
     feedback('project-feedback',statusMessage('project.saved'));
@@ -1970,6 +2188,9 @@ function refreshWorkshopLanguage(){
   legend();metrics();
   syncPrintSettings();
   syncRouteSettings(busy||drawing||pendingVegetation);
+  syncViewerTools();
+  if(pins.length)refreshPinMarkers();
+  workshopGuide.update();
   selectExportFormat(exportFormat);
   scaleHint();
   $('#status').textContent=messageText(currentStatus);
@@ -1980,6 +2201,28 @@ function refreshWorkshopLanguage(){
     try{renderProjectGallery(true);}catch(error){feedback('project-feedback',error.message);}
   }
 }
+function showPrintSetup(){
+  showWorkshopPanel('export');
+  if($('#info-print').hidden)$('[aria-controls="info-print"]').click();
+}
+const workshopGuide=createWorkshopGuide($('#workshop-guide'),{
+  fallbackFocus:$('#help-open'),
+  canAdvance:step=>step==='size'?!!selectedSize:step==='territory'?!!model&&!needsBuild&&!busy:true,
+  onStep(step){
+    if(step==='size'){
+      if(selectedSize)showPrintSetup();
+      else showWorkshopPanel('preview');
+    }else if(step==='territory')openStep('place');
+    else if(step==='layers')openStep('transport');
+    else if(step==='tools')showViewerTools(true);
+    else showPrintSetup();
+  }
+});
+$('#welcome-guide').onclick=()=>workshopGuide.start({returnFocus:selectedSize?$('#step-place'):$('#welcome-guide')});
+$('#start-workshop-guide').onclick=()=>{
+  $('#help-dialog').close();
+  workshopGuide.start({step:!selectedSize?'size':model&&!needsBuild?'layers':'territory',returnFocus:$('#help-open')});
+};
 onLocaleChange(refreshWorkshopLanguage);
 initI18n();
 try{restoreProject();}catch(error){say(error.message,true);}

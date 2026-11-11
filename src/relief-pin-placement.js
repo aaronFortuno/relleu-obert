@@ -3,11 +3,14 @@ import {MAX_RELIEF_PINS,RELIEF_PIN_MARGIN_MM,validReliefPinDepth} from './relief
 
 export function normalizeReliefPins(pins){
   if(!Array.isArray(pins)||pins.length>MAX_RELIEF_PINS)throw Error('Els punts de perforació no són vàlids.');
+  const ids=new Set();
   return Array.from(pins,pin=>{
-    const {lon,lat,depth}=pin??{};
-    if(!Number.isFinite(lon)||Math.abs(lon)>180||!Number.isFinite(lat)||Math.abs(lat)>90||!validReliefPinDepth(depth))
+    const {lon,lat,depth,id}=pin??{};
+    if(!Number.isFinite(lon)||Math.abs(lon)>180||!Number.isFinite(lat)||Math.abs(lat)>90||!validReliefPinDepth(depth)||
+      id!==undefined&&(!Number.isSafeInteger(id)||id<1||ids.has(id)))
       throw Error('Els punts de perforació no són vàlids.');
-    return {lon,lat,depth};
+    if(id!==undefined)ids.add(id);
+    return {lon,lat,depth,...(id===undefined?{}:{id})};
   });
 }
 
@@ -27,7 +30,7 @@ export function locateReliefPins(model,pins,plan){
     if(x<0||x>model.width||y<0||y>model.height)continue;
     const tileIndex=plan.tiles.findIndex(tile=>pinInsideTile(x,y,tile));
     const tile=plan.tiles[tileIndex];
-    assignments[tileIndex].push({id:index+1,depth:pin.depth,x:x-tile.x0,y:y-tile.y0});
+    assignments[tileIndex].push({id:pin.id??index+1,depth:pin.depth,x:x-tile.x0,y:y-tile.y0});
   }
   return assignments;
 }

@@ -70,9 +70,8 @@ function brushFootprint(points,radius,bounds){
 export function editReliefTrailStrips(base,{width,height,resolution},trailWidth,strokes){
   if(!validReliefTrailWidth(trailWidth)||!Array.isArray(strokes)||strokes.length>MAX_RELIEF_TRAIL_STROKES)
     throw Error('L’edició de senders supera el rang admès.');
-  if(!strokes.length)return {mapped:base,drawn:[]};
+  if(!strokes.length)return base;
   const strips=base.length?base.slice():Array.from({length:resolution},()=>[]);
-  const drawn=Array.from({length:resolution},()=>[]);
   let points=[],previous=null;
   const applyStroke=()=>{
     if(!points.length)return;
@@ -80,10 +79,10 @@ export function editReliefTrailStrips(base,{width,height,resolution},trailWidth,
     const edit=reliefStreamStrips([brushFootprint(points,radius,[width,height])],width,height,resolution);
     for(const [i,mask]of edit.entries()){
       if(!mask.length)continue;
+      const strip=strips[i];
       if(erase){
-        if(strips[i].length)strips[i]=pc.difference(strips[i],mask);
-        if(drawn[i].length)drawn[i]=pc.difference(drawn[i],mask);
-      }else drawn[i]=drawn[i].length?pc.union(drawn[i],mask):mask;
+        if(strip.length)strips[i]=pc.difference(strip,mask);
+      }else strips[i]=strip.length?pc.union(strip,mask):mask;
     }
     points=[];
   };
@@ -102,7 +101,7 @@ export function editReliefTrailStrips(base,{width,height,resolution},trailWidth,
     previous=stroke;
   }
   applyStroke();
-  return {mapped:strips.some(strip=>strip.length)?strips:[],drawn:drawn.some(strip=>strip.length)?drawn:[]};
+  return strips.some(strip=>strip.length)?strips:[];
 }
 
 export function sameReliefTrailStrokes(a,b){

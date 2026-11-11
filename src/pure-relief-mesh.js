@@ -8,7 +8,15 @@ export const PURE_RELIEF_RESOLUTIONS={24:240,36:384,56:540};
 const panoramicSteps={240:1.25,384:.9,540:.65};
 
 export function reliefGridSize(width,height,resolution,panoramic){
-  if(!panoramic)return {columns:resolution,rows:resolution};
+  if(!panoramic){
+    // Keep the existing sampling budget while reducing the widest cells in
+    // rectangular crops. Preserve print seams already aligned to the grid.
+    const {cols,rows}=tilePlan(width,height);
+    const xStep=resolution%cols?1:cols,yStep=resolution%rows?1:rows;
+    const budget=resolution**2,maxColumns=Math.floor(budget/Math.max(2,yStep)/xStep)*xStep;
+    const columns=Math.max(2,Math.min(maxColumns,xStep*Math.round(resolution*Math.sqrt(width/height)/xStep)));
+    return {columns,rows:Math.max(2,yStep*Math.floor(budget/columns/yStep))};
+  }
   const step=panoramicSteps[resolution]??1.25;
   const {cols,rows}=tilePlan(width,height);
   // Align the grid with the print seams while keeping the sampling step in mm.
@@ -40,11 +48,14 @@ export function reliefTreesPart(grid,bounds=wholeGrid(grid)){
 }
 
 function reliefBase(grid,bounds,layered){
-  const {resolution:n,rows:ny=n,heights,diagonals,width,height}=grid;
+  const {resolution:n,rows:ny=n,heights,diagonals,width,height,centreHeights}=grid;
   const {left,bottom,right,top}=bounds,cols=right-left,rows=top-bottom,stride=cols+1;
   const capacity=stride*(rows+1),edges=2*(cols+rows);
-  const vertices=new Float32Array((capacity+edges+1)*3);
-  const faces=new Uint32Array((2*cols*rows+3*edges)*3);
+  let centres=0;
+  if(centreHeights)for(let y=bottom;y<top;y++)for(let x=left;x<right;x++)
+    if(Number.isFinite(centreHeights[y*n+x]))centres++;
+  const vertices=new Float32Array((capacity+edges+1+centres)*3);
+  const faces=new Uint32Array((2*(cols*rows+centres)+3*edges)*3);
   const slots=new Uint32Array(capacity),floor=new Uint32Array(capacity);
   let nv=0,nf=0;
   const vertex=(x,y,z)=>{
@@ -69,7 +80,11 @@ function reliefBase(grid,bounds,layered){
   for(let y=bottom;y<top;y++)for(let x=left;x<right;x++){
     const ids=corners.map(([dx,dy])=>topIndex(x+dx,y+dy));
     const [a,b,c,d]=ids;
-    if(diagonals[y*n+x]){triangle(a,b,d);triangle(b,c,d);}
+    const middle=centreHeights?.[y*n+x];
+    if(Number.isFinite(middle)){
+      const e=vertex(x+.5,y+.5,middle-(layered?RELIEF_SKIN_DEPTH:0));
+      triangle(a,b,e);triangle(b,c,e);triangle(c,d,e);triangle(d,a,e);
+    }else if(diagonals[y*n+x]){triangle(a,b,d);triangle(b,c,d);}
     else{triangle(a,b,c);triangle(a,c,d);}
     if(x>left&&x+1<right&&y>bottom&&y+1<top)continue;
     for(let side=0;side<4;side++){

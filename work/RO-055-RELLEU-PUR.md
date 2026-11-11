@@ -1,6 +1,10 @@
 # RO-055 · Pilot de Relleu pur
 
-A Territori, el mode Relleu pur permet treballar d’1:10.000 a 1:500.000 en formats quadrats i rectangulars. El format panoràmic admet d’1:50.000 a 1:500.000. El navegador pot sol·licitar fins a 96 tessel·les d’elevació en retalls petits i fins a 144 en retalls amplis, amb un pressupost de 32 MiB per a les mostres que conserva. En retalls amplis s’ajusta el detall de les fonts a l’extensió. Relleu pur omet les consultes de vies i edificis. El mode complet conserva els seus límits.
+A Territori, el mode Relleu pur permet treballar d’1:100 a 1:500.000 en formats quadrats i rectangulars. El format panoràmic admet d’1:50.000 a 1:500.000. El navegador pot sol·licitar fins a 96 tessel·les d’elevació en retalls petits i fins a 144 en retalls amplis, amb un pressupost de 32 MiB per a les mostres que conserva. En retalls amplis s’ajusta el detall de les fonts a l’extensió. Relleu pur omet les consultes de vies i edificis. El mode complet conserva els seus límits.
+
+Des de la v0.23.52, el retall proper es conserva quan es canvia a Relleu pur. Els formats rectangulars reparteixen les mostres de forma més uniforme en totes dues direccions. Les cel·les seques que perden més detall amb una sola diagonal poden conservar la cota del seu centre, amb un màxim del 8 % de cel·les refinades i sense moure’n les vores.
+
+Al Cavall Bernat, s’han comparat 21.413 punts amb el mateix MET5 i una peça de 120 × 100 mm girada 17°. En detall Equilibrat, l’error al percentil 95 és de 0,10 m en Relleu pur i 3,22 m en Model complet a 1:5.000. A 1:2.000 és de 0,03 m i 1,07 m, respectivament. Són diferències respecte del ràster font. En detall Alt a 1:5.000, el pitjor punt de Relleu pur passa de 2,49 a 3,50 m amb el canvi, mentre que el percentil 95 es manté a 0,054 m. Queda comparar el sector de les Agulles.
 
 ## Font dels colors
 

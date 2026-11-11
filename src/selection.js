@@ -1,7 +1,8 @@
 export const SIZE_PRESETS={'10x10':[100,100],'15x15':[150,150],'18x18':[180,180],'20x20':[200,200],'20x15':[200,150],'30x30':[300,300],'40x40':[400,400]};
 export const MAX_MODEL_SIDE_MM=500;
 export const MAX_PRINT_TILE_MM=250;
-export const PURE_SCALE_RANGE=[10000,500000];
+export const MIN_PROJECT_SCALE=100;
+export const PURE_SCALE_RANGE=[MIN_PROJECT_SCALE,500000];
 export const PANORAMIC_SCALE_RANGE=[50000,PURE_SCALE_RANGE[1]];
 
 export function isPanoramicSize(width,height){
@@ -60,7 +61,7 @@ export function coveringSelectionBox(pose,widthMM,heightMM){
   const metresPerMillimetre=Math.max(pose.widthM/widthMM,pose.heightM/heightMM);
   return physicalBBox(pose.center,widthMM*metresPerMillimetre/1000,heightMM*metresPerMillimetre/1000);
 }
-export function validateScale(value,[minimum,maximum]=[100,100000]){
+export function validateScale(value,[minimum,maximum]=[MIN_PROJECT_SCALE,100000]){
   const scale=Number(value);
   if(!Number.isFinite(scale)||scale<minimum||scale>maximum)
     throw Error(`L’escala ha de ser entre 1:${minimum.toLocaleString('ca')} i 1:${maximum.toLocaleString('ca')}.`);
