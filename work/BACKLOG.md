@@ -107,4 +107,4 @@ La v0.23.51 destaca en taronja les rutes dibuixades i importades al visor. Tenen
 
 ### RO-058 — Auditoria del taller abans de la v0.24
 
-Seguir tres recorreguts de principi a fi en escriptori, amb teclat i en mòbil: crear una maqueta des de zero, obrir-ne una de la galeria i afegir-hi capes o marques, i preparar peces, materials i descàrrega. Anotar quins controls costen de trobar, en quins punts es perd la vista del model i com es recupera una acció fallida. Prioritzar les correccions abans d’anunciar la v0.24.
+**P1. Auditoria feta sobre la v0.23.51.** Recuperar l’edició de senders blancs i separar-la de dibuixar una ruta taronja i d’importar un GPX. Donar un accés visible als forats i millorar la sortida de les eines i la recuperació d’errors. Després, ordenar els controls per tasca i provar els tres recorreguts amb una persona nova abans de la v0.24. [Troballes, distribució i criteris d’acceptació](RO-058-AUDITORIA-UX.md)
