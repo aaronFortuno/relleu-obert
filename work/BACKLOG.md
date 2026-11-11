@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Revisat el **2026-11-11** amb la v0.23.47. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
+Revisat el **2026-11-11** amb la v0.23.48. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
 
 ## Ordre de treball
 
@@ -96,6 +96,8 @@ La cerca amb fletxes i Retorn, el tancament amb Esc i l’entrada directa de coo
 **P2.** Comprovar en un retall pirinenc la llegibilitat de senders i fronteres i el seu comportament al laminador a dues escales. Relleu pur inclou estils independents per a fronteres estatals i divisions interiors de Catalunya, amb els quatre nivells ocults per defecte. Els talls i la migració de projectes tenen proves locals. Queda valorar altres fonts administratives i les fronteres en Model complet. [Fonts](../SOURCES.md#cartografia)
 
 Controls de malla a la Cerdanya i al Pedraforca, amb retalls de 6 × 6 km i peces de 100 × 100 mm a 1:60.000. La frontera amb França, els tres nivells administratius interiors i els senders es generen amb dades reals entre els dos retalls. Les malles passen l’auditoria al detall de la prova. Pendent de laminat.
+
+La v0.23.48 incorpora els patrons amb creu, l’amplada per nivell i el pinzell de senders amb goma per a traços dibuixats i cartografiats. Comprovat en malles de tall fraccionari i còpies de projectes. Al visor, dos retalls de la Cerdanya amb una peça de 100 mm mostren les creus negres i els senders blancs. El dibuix, la goma, Desfés i Restableix s’han comprovat sobre la maqueta. Pendent de laminat. La goma i el dibuix s’apliquen en Relleu pur, sobre la seva capa independent de senders.
 
 1. Ressaltar una ruta a partir d’un GPX local, respectant els trams i els talls entre peces.
 2. Fer un cupó de perforacions verticals de Ø1 mm i 7–9 mm de fondària. Desar els punts geogràfics i comprovar el gruix disponible, la distància a les vores i als talls, i les cavitats existents abans d’exportar. El gruix de base per defecte és de 5 mm. Els banderins personalitzats es deixen per a una fase posterior.

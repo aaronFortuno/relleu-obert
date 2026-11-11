@@ -4,7 +4,9 @@ import {validBaseThickness} from './print-settings.js';
 import {TRAIL_WIDTH_MULTIPLIERS} from './transport-width.js';
 import {RELIEF_VEGETATION_DEFAULTS,validVegetationHeight,validVegetationNoise} from './relief-vegetation-options.js';
 import {validHistoricalChoice} from './historical-layers.js';
-import {BOUNDARY_LEVELS,BOUNDARY_STYLES,defaultBoundaryStyles} from './relief-boundary-options.js';
+import {MAX_RELIEF_TRAIL_STROKES,RELIEF_TRAIL_WIDTH_MM,validReliefTrailWidth} from './relief-trails.js';
+import {BOUNDARY_LEVELS,BOUNDARY_STYLES,BOUNDARY_SAMPLES,DEFAULT_BOUNDARY_WIDTHS,
+  defaultBoundaryStyles,boundaryPattern,validBoundaryWidth} from './relief-boundary-options.js';
 
 export const PROJECT_LIBRARY_KEY='relleu-obert.projects';
 const VERSION=1;
@@ -17,7 +19,7 @@ const text=(value,max)=>typeof value==='string'&&value.trim().length>0&&value.le
 const timestamp=value=>typeof value==='string'&&Number.isFinite(Date.parse(value));
 
 const optionRules={
-  detail:oneOf(24,36,56),streams:boolean,streamWidth:oneOf(0,1,1.5,2,3),reliefTrails:boolean,
+  detail:oneOf(24,36,56),streams:boolean,streamWidth:oneOf(0,1,1.5,2,3),reliefTrails:boolean,reliefTrailWidth:validReliefTrailWidth,
   exaggeration:value=>range(value,1,3),roadRise:oneOf(0,.5,1),railRise:oneOf(0,.5,1),trailWidth:oneOf(...TRAIL_WIDTH_MULTIPLIERS),
   estimatedTunnels:boolean,majorRoads:boolean,buildingSource:oneOf('osm','osm3d','icgc','catastre'),
   buildingMode:oneOf('limited','source','flat','none'),maxBuildingHeight:value=>range(value,1,1200),
@@ -25,14 +27,14 @@ const optionRules={
   vegetationHeight:validVegetationHeight,vegetationNoise:validVegetationNoise,
   brushRadius:value=>Number.isInteger(value)&&range(value,2,12),split:boolean,exportFormat:oneOf('bambu','bambu-zip','3mf','stl')
 };
-const optionDefaults={trailWidth:1,reliefTrails:false,...RELIEF_VEGETATION_DEFAULTS};
+const optionDefaults={trailWidth:1,reliefTrails:false,reliefTrailWidth:RELIEF_TRAIL_WIDTH_MM,...RELIEF_VEGETATION_DEFAULTS};
 
 function validatedSettings(settings){
   const invalid=()=>Error('La configuració del projecte desat no és vàlida.');
   if(!object(settings)||!pieceDimensions(settings.sizePreset)||!boolean(settings.pureRelief)||
     !object(settings.pose)||!object(settings.materials)||!object(settings.options)||!Array.isArray(settings.strokes))
     throw invalid();
-  const {sizePreset,pureRelief,pose,materials,reliefMaterials,options,strokes,print,historical,placeName,exampleId}=settings;
+  const {sizePreset,pureRelief,pose,materials,reliefMaterials,options,strokes,trailStrokes,print,historical,placeName,exampleId}=settings;
   const {center,widthM,heightM,rotation}=pose,[width,height]=pieceDimensions(sizePreset);
   const panoramic=isPanoramicSize(width,height);
   const [minScale,maxScale]=panoramic?PANORAMIC_SCALE_RANGE:[0,pureRelief?PURE_SCALE_RANGE[1]:100000];
@@ -52,6 +54,12 @@ function validatedSettings(settings){
   const boundaryStyles=options.boundaryStyles??defaultBoundaryStyles();
   if(!object(boundaryStyles)||!BOUNDARY_LEVELS.every(level=>BOUNDARY_STYLES.includes(boundaryStyles[level])))throw invalid();
   cleanedOptions.boundaryStyles=Object.fromEntries(BOUNDARY_LEVELS.map(level=>[level,boundaryStyles[level]]));
+  const {boundaryPatterns,boundaryWidths=DEFAULT_BOUNDARY_WIDTHS}=options;
+  if(boundaryPatterns!==undefined&&(!object(boundaryPatterns)||
+    !BOUNDARY_LEVELS.every(level=>Object.hasOwn(BOUNDARY_SAMPLES,boundaryPatterns[level]))))throw invalid();
+  if(!object(boundaryWidths)||!BOUNDARY_LEVELS.every(level=>validBoundaryWidth(boundaryWidths[level])))throw invalid();
+  cleanedOptions.boundaryPatterns=Object.fromEntries(BOUNDARY_LEVELS.map(level=>[level,boundaryPattern(level,boundaryStyles,boundaryPatterns)]));
+  cleanedOptions.boundaryWidths=Object.fromEntries(BOUNDARY_LEVELS.map(level=>[level,boundaryWidths[level]]));
   if(!oneOf(1,2,4,8)(materials.count)||!Array.isArray(materials.assignments))throw invalid();
   let assignments,cleanedReliefMaterials;
   try{
@@ -71,8 +79,21 @@ function validatedSettings(settings){
       density!=null&&!range(density,.25,5))throw invalid();
     return {mode,x,y,radius,...(gesture!=null?{gesture}:{}),...(density!=null?{density}:{})};
   });
+  let cleanedTrails;
+  if(trailStrokes!==undefined){
+    if(!pureRelief||!Array.isArray(trailStrokes)||trailStrokes.length>MAX_RELIEF_TRAIL_STROKES)throw invalid();
+    cleanedTrails=Array.from(trailStrokes,stroke=>{
+      if(!object(stroke))throw invalid();
+      const {mode,x,y,radius,gesture,breakBefore}=stroke;
+      if(!oneOf('add','erase')(mode)||!range(x,-.01,width+.01)||!range(y,-.01,height+.01)||
+        !range(radius,.001,30)||!Number.isSafeInteger(gesture)||gesture<0||
+        breakBefore!==undefined&&!boolean(breakBefore))throw invalid();
+      return {mode,x,y,radius,gesture,...(breakBefore?{breakBefore:true}:{})};
+    });
+  }
   return {sizePreset,pureRelief,pose:{center:center.slice(),widthM,heightM,rotation},
     materials:{count:materials.count,assignments},options:cleanedOptions,strokes:cleanedStrokes,
+    ...(cleanedTrails?{trailStrokes:cleanedTrails}:{}),
     ...(print?{print:{baseThickness:print.baseThickness,cuts:Object.fromEntries(
       ['columns','rows'].filter(key=>print.cuts[key]!==undefined).map(key=>[key,[...print.cuts[key]]]))}}:{}),
     ...(cleanedReliefMaterials?{reliefMaterials:cleanedReliefMaterials}:{}),

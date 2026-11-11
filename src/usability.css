@@ -227,3 +227,26 @@
 .umbrella-brand svg{width:22px;height:22px;flex:none}
 .umbrella-dot{color:var(--umbrella-accent)}
 .app-footer .umbrella-brand:hover{text-decoration:underline;text-underline-offset:3px}
+
+.boundary-controls {display:grid;gap:6px}
+.boundary-control-row {
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:8px;align-items:center;
+}
+.boundary-control-row .check-row {margin:0;gap:6px;cursor:pointer}
+.boundary-switch {
+  appearance:none;position:relative;flex:none;border:1px solid var(--muted);
+  border-radius:10px;background:var(--ui-control-bg);cursor:pointer;
+}
+.boundary-control-row input.boundary-switch {width:24px;height:14px}
+.boundary-switch::before {
+  content:'';position:absolute;width:8px;height:8px;top:2px;left:2px;border-radius:50%;
+  background:var(--muted);
+}
+.boundary-switch:checked {background:var(--green);border-color:var(--green)}
+.boundary-switch:checked::before {left:12px;background:var(--paper)}
+.boundary-control-fields {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.9fr);gap:5px;align-items:center}
+.boundary-control-fields select {padding-inline:4px}
+.boundary-width-field {display:flex;align-items:center;gap:3px;margin:0}
+.sidebar .boundary-width-field input[type=number] {padding-inline:4px;appearance:textfield;font-variant-numeric:tabular-nums}
+.boundary-width-field input::-webkit-inner-spin-button {appearance:none}
+.boundary-control-fields :is(select,input):disabled {opacity:.58}

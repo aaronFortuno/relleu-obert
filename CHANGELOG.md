@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.23.48 — 2026-11-11
+
+- Relleu pur agrupa la cartografia imprimible a «Senders i límits». Els límits tenen interruptor, patró i amplada propis. Els patrons inicials fan servir creus, punts i ratlles, amb amplades de 3, 2,5, 2 i 1,5 mm segons el nivell. El visor mostra els límits en negre i els senders en blanc. Els filaments es continuen assignant al menú de materials.
+- Els senders es poden dibuixar i esborrar sobre la maqueta, inclosos els trams cartografiats. L’amplada és ajustable. Els traços tenen desfer i restabliment, es desen amb el projecte i es conserven en dividir la maqueta.
+
 ## v0.23.47 — 2026-11-11
 
 - El mapa de Model complet es pot allunyar més enllà de l’escala imprimible. El marc s’encongeix i conserva l’extensió màxima de la maqueta. Clicar fora de la cerca tanca els resultats.

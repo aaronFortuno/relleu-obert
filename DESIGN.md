@@ -41,6 +41,7 @@ classes existents. `output` de formulari no ha de flotar a la dreta.
 - Header de 58 px i footer de 32 px sempre visibles. Cap scroll de pàgina.
 - Sidebar esquerre: Territori, Vegetació, Vies i Edificis.
   Les quatre capçaleres es veuen sempre i només el contingut obert fa scroll.
+  En Relleu pur, Vies es converteix en Senders i límits i s’amaga Edificis.
   A escriptori, la cerca i el mapa es mantenen sota la capçalera de Territori.
   La roda fa zoom dins del mapa i desplaça els ajustos dins del seu panell.
   L’acció del pas actiu acompanya el títol. Els títols permeten saltar

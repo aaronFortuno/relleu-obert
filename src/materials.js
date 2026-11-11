@@ -17,8 +17,8 @@ export const RELIEF_MATERIALS=[
   CATEGORIES.find(category=>category.id==='inland-water'),
   CATEGORIES.find(category=>category.id==='forest'),
   CATEGORIES.find(category=>category.id==='water'),
-  {id:'trails',name:'Senders',color:'#787d82'},
-  {id:'boundaries',name:'Fronteres i límits',color:'#787d82'}
+  {id:'trails',name:'Senders',color:'#ffffff'},
+  {id:'boundaries',name:'Fronteres i límits',color:'#000000'}
 ];
 export const reliefMaterialId=id=>id==='trees'?'forest':id;
 const nativeReliefColors=RELIEF_MATERIALS.slice(0,6).map(category=>category.color);

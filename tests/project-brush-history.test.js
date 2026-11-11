@@ -86,3 +86,15 @@ test('a capped radius never replaces the original radius when resizing again',()
   history.resize(large,medium,resized);
   assert.equal(history.prepare(medium,resized).strokes[0].radius,24);
 });
+
+test('cropping a trail gesture never joins retained samples across an omitted section',()=>{
+  const history=createProjectBrushHistory({breakOnClipped:true});
+  const narrower={...frame,widthMM:100,selectionPose:{...frame.selectionPose,widthM:1000}};
+  history.accept(history.prepare(frame,[]),[]);
+  const current=[{...stroke,x:35},{...stroke,x:10},{...stroke,x:75}];
+  history.resize(frame,narrower,current);
+  const candidate=history.prepare(narrower,current);
+  assert.deepEqual(candidate.strokes,[{...stroke,x:10},{...stroke,x:50,breakBefore:true}]);
+  const trimmed=history.accept(candidate,current);
+  assert.deepEqual(history.prepare(frame,trimmed).strokes,current);
+});

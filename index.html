@@ -53,12 +53,6 @@
         <label class="check-row"><input id="streams" type="checkbox" checked><span data-i18n="ui.place.streams">Rius i rierols</span></label>
         <label for="stream-width" data-i18n="ui.place.streamWidth">Amplada mínima dels cursos d’aigua</label>
         <select id="stream-width"><option value="1" data-i18n="ui.place.streamWidth1">×1 · 0,45 mm</option><option value="1.5" data-i18n="ui.place.streamWidth15">×1,5 · 0,68 mm</option><option value="2" data-i18n="ui.place.streamWidth2">×2 · 0,90 mm</option><option value="3" data-i18n="ui.place.streamWidth3">×3 · 1,35 mm</option><option value="0" data-i18n="example.streamWidthSurfaces">Només superfícies cartografiades</option></select>
-        <div id="relief-trail-settings" hidden><label class="check-row"><input id="relief-trails" type="checkbox"><span data-i18n="ui.place.reliefTrails">Senders cartografiats</span></label></div>
-        <details id="relief-boundary-settings" hidden>
-          <summary data-i18n="ui.place.boundaries">Fronteres i límits</summary>
-          <div id="relief-boundary-controls" class="two-fields"></div>
-          <p class="hint" data-i18n="ui.place.boundaryCoverage">Límits interiors de l’ICGC a Catalunya.</p>
-        </details>
       </div>
     </section>
     <section class="config-section" data-step="vegetation">
@@ -80,14 +74,31 @@
       </div>
     </section>
     <section class="config-section" data-step="transport">
-      <div class="step-header"><h2 class="config-heading"><button type="button" class="section-toggle" id="step-transport" aria-expanded="false" aria-controls="panel-transport"><span aria-hidden="true">03</span><span data-i18n="section.transport">Vies</span><i aria-hidden="true">+</i></button></h2><button type="button" class="secondary step-action" data-step-action="transport" hidden data-i18n="ui.action.buildingsNext">Edificis →</button></div>
-      <div id="panel-transport" class="config-content" role="region" aria-labelledby="step-transport" hidden><label for="road-rise" data-i18n-text="ui.transport.roadRise">Relleu dels camins <span class="unit" data-i18n="ui.transport.modelMM">mm de maqueta</span></label><select id="road-rise"><option value="0" data-i18n="ui.transport.flush">Arran de terreny</option><option value="0.5" data-i18n="ui.transport.raiseHalf">Realç de 0,5 mm</option><option value="1" data-i18n="ui.transport.raiseOne">Realç d’1 mm</option></select>
+      <div class="step-header"><h2 class="config-heading"><button type="button" class="section-toggle" id="step-transport" aria-expanded="false" aria-controls="panel-transport"><span aria-hidden="true">03</span><span id="transport-title" data-i18n="section.transport">Vies</span><i aria-hidden="true">+</i></button></h2><button type="button" class="secondary step-action" data-step-action="transport" hidden data-i18n="ui.action.buildingsNext">Edificis →</button></div>
+      <div id="panel-transport" class="config-content" role="region" aria-labelledby="step-transport" hidden>
+      <div id="relief-trail-settings" hidden>
+        <label class="check-row"><input id="relief-trails" type="checkbox" role="switch"><span data-i18n="ui.transport.showReliefTrails">Mostra els senders</span></label>
+        <div class="two-fields">
+          <div><label for="relief-trail-width" data-i18n="ui.transport.reliefTrailWidth">Amplada (mm)</label><input id="relief-trail-width" type="number" min=".3" max="3" step=".01" value=".42" inputmode="decimal"></div>
+          <div><label for="trail-eraser-radius" data-i18n="ui.transport.trailEraser">Radi de goma (mm)</label><input id="trail-eraser-radius" type="number" min="2" max="12" step="1" value="3" inputmode="numeric"></div>
+        </div>
+        <div class="brush-tools" role="group" aria-label="Edició de senders" data-i18n-aria="ui.transport.trailEdit"><button data-brush="navigate" class="selected" aria-pressed="true" data-i18n="ui.vegetation.navigate">↖ Navega</button><button data-brush="trail-add" aria-pressed="false" data-i18n="ui.transport.trailDraw">＋ Dibuixa</button><button data-brush="trail-erase" aria-pressed="false" data-i18n="ui.vegetation.erase">− Goma</button></div>
+        <div class="edit-actions"><button id="undo-trail" class="quiet-button" disabled data-i18n="ui.action.undo">↶ Desfés</button><button id="clear-trails" class="quiet-button" disabled data-i18n="ui.transport.trailReset">Restableix els senders</button></div>
+        <p class="hint" data-i18n="ui.transport.trailEditNote">Dibuixa o esborra sobre la maqueta. Els canvis s’apliquen en aixecar el punter.</p>
+      </div>
+      <details id="relief-boundary-settings" hidden>
+        <summary data-i18n="ui.place.boundaries">Fronteres i límits</summary>
+        <div id="relief-boundary-controls" class="boundary-controls"></div>
+        <p class="hint" data-i18n="ui.place.boundaryCoverage">Límits interiors de l’ICGC a Catalunya.</p>
+      </details>
+      <div id="landscape-transport-settings"><label for="road-rise" data-i18n-text="ui.transport.roadRise">Relleu dels camins <span class="unit" data-i18n="ui.transport.modelMM">mm de maqueta</span></label><select id="road-rise"><option value="0" data-i18n="ui.transport.flush">Arran de terreny</option><option value="0.5" data-i18n="ui.transport.raiseHalf">Realç de 0,5 mm</option><option value="1" data-i18n="ui.transport.raiseOne">Realç d’1 mm</option></select>
       <label for="rail-rise" data-i18n-text="ui.transport.railRise">Relleu de ferrocarrils <span class="unit" data-i18n="ui.transport.aboveRoads">sobre els camins</span></label><select id="rail-rise"><option value="0" selected data-i18n="ui.transport.sameAsRoads">Igual que els camins</option><option value="0.5" data-i18n="ui.transport.railHalf">+0,5 mm</option><option value="1">+1 mm</option></select>
       <label for="trail-width" data-i18n="ui.transport.trailWidth">Amplada dels senders</label><select id="trail-width"><option value="0.75" data-i18n="ui.transport.trailWidth075">×0,75 · mín. 0,23 mm</option><option value="1" selected data-i18n="ui.transport.trailWidth1">×1 · mín. 0,30 mm</option><option value="1.5" data-i18n="ui.transport.trailWidth15">×1,5 · mín. 0,45 mm</option><option value="2" data-i18n="ui.transport.trailWidth2">×2 · mín. 0,60 mm</option></select>
       <label class="check-row"><input id="estimated-tunnels" type="checkbox" checked aria-describedby="tunnel-note"><span data-i18n="ui.transport.tunnels">Túnels estimats · experimental</span></label><p id="tunnel-note" class="hint" data-i18n="ui.transport.tunnelNote">Perfil arquejat i paviment de camí. Revisa els portals i el laminat.</p>
       <label class="check-row"><input id="major-profiles" type="checkbox" checked aria-describedby="major-profiles-note"><span data-i18n="ui.transport.smooth">Perfils suaus de vies principals i ferrocarrils · experimental</span></label>
       <p id="major-profiles-note" class="hint" data-i18n="ui.transport.smoothNote">Suavitza els canvis de pendent. Pot allargar el càlcul.</p>
       <p class="hint" data-i18n="ui.transport.autoNote">Els ajustos s’apliquen automàticament a la maqueta generada.</p>
+      </div>
       </div>
     </section>
     <section class="config-section" data-step="buildings">
@@ -250,7 +261,7 @@
       <path d="m27 9 7-6" stroke="var(--umbrella-accent)" stroke-width="4.5"/>
     </svg><span>ortogra<span class="umbrella-dot">.</span>fi</span>
   </a></p>
-  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer" data-i18n-text="ui.footer.openSource"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions" data-i18n-aria="ui.releases.title">v0.23.47</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V" data-i18n-aria="ui.footer.about"><span class="desktop-copy" data-i18n="ui.footer.aboutDesktop">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
+  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer" data-i18n-text="ui.footer.openSource"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions" data-i18n-aria="ui.releases.title">v0.23.48</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V" data-i18n-aria="ui.footer.about"><span class="desktop-copy" data-i18n="ui.footer.aboutDesktop">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
 </footer>
 
 <dialog id="projects-dialog" aria-labelledby="projects-title">

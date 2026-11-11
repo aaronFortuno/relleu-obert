@@ -1,8 +1,12 @@
 import {lineBuffer} from './roads.js';
 
-// Lengths along the centreline in printed mm. Round caps extend by a
-// radius on either side, so even the shortest gap stays visibly open.
-const patterns={solid:null,dashed:[2.4,1.3],dotted:[.08,1.2],'dash-dot':[2.4,1.3,.08,1.3]};
+// Length and following gap at the reference width, in printed mm.
+// The two arms of a cross span the selected width with a narrower stem.
+const dash=['line',2.4,1.3],dot=['line',.08,1.2];
+const cross=['cross',.54,.26],shortDash=['line',.4,.26],shortDot=['line',.02,.26];
+const patterns={solid:null,dashed:[dash],dotted:[dot],'dash-dot':[dash,['line',.08,1.3]],
+  cross:[cross],'cross-dot':[cross,shortDot],'cross-dash':[cross,shortDash],
+  'cross-double-dash':[cross,shortDash,shortDash]};
 const EPS=1e-5,MAX_SOURCE_SEGMENTS=120000,MAX_STROKE_SEGMENTS=12000;
 
 function visibleInterval(a,b,width,height,margin){
@@ -21,11 +25,20 @@ function visibleInterval(a,b,width,height,margin){
   return [enter,exit];
 }
 
+function crossMark([x,y],ux,uy,width,stem){
+  const a=width/2,b=stem/2;
+  const ring=[[-a,-b],[-b,-b],[-b,-a],[b,-a],[b,-b],[a,-b],[a,b],[b,b],[b,a],[-b,a],[-b,b],[-a,b],[-a,-b]];
+  return [[ring.map(([u,v])=>[x+u*ux-v*uy,y+u*uy+v*ux])]];
+}
+
 export function boundaryStrokePolygons(lines,project,{width,height,style,lineWidth=.54}){
   if(!Object.hasOwn(patterns,style)||![width,height,lineWidth].every(v=>Number.isFinite(v)&&v>0)||lineWidth>10)
     throw Error('Estil o amplada de frontera invàlids.');
-  const radius=lineWidth/2,pattern=patterns[style]?.map(length=>length*Math.max(1,lineWidth/.54));
-  const period=pattern?.reduce((sum,length)=>sum+length,0);
+  const source=patterns[style],hasCross=source?.some(([kind])=>kind==='cross');
+  const scale=hasCross?lineWidth/.54:Math.max(1,lineWidth/.54),stem=Math.min(lineWidth*.6,Math.max(.3,lineWidth*.33));
+  const radius=(hasCross?stem:lineWidth)/2,margin=hasCross?lineWidth*.55:radius;
+  const pattern=source?.map(([kind,length,gap])=>[kind,length*scale,gap*scale]);
+  const period=pattern?.reduce((sum,[,length,gap])=>sum+length+gap,0);
   const polygons=[],seen=new Set();
   let examined=0,generated=0;
   for(const line of lines){
@@ -55,7 +68,7 @@ export function boundaryStrokePolygons(lines,project,{width,height,style,lineWid
       station+=length;
       // Keep cap geometry outside the real cut. In particular, an off-map
       // approach can affect phase but does not generate off-map dashes.
-      const visible=visibleInterval(a,b,width,height,radius+EPS);
+      const visible=visibleInterval(a,b,width,height,margin+EPS);
       if(!visible)continue;
       const from=start+length*visible[0],to=start+length*visible[1];
       const pointAt=s=>s===start?a:s===station?b:[a[0]+dx*(s-start)/length,a[1]+dy*(s-start)/length];
@@ -78,10 +91,16 @@ export function boundaryStrokePolygons(lines,project,{width,height,style,lineWid
         throw Error('La frontera supera el límit de segments imprimibles.');
       for(let cycle=first;cycle<=last;cycle++){
         let cursor=cycle*period;
-        for(let step=0;step<pattern.length;step+=2){
-          const end=cursor+pattern[step];
-          emit(Math.max(from,cursor),Math.min(to,end));
-          cursor=end+pattern[step+1];
+        for(const [kind,markLength,gap]of pattern){
+          const end=cursor+markLength;
+          if(kind==='cross'){
+            const centre=(cursor+end)/2;
+            if(centre>=from&&centre<=to&&centre<station){
+              if(++generated>MAX_STROKE_SEGMENTS)throw Error('La frontera supera el límit de segments imprimibles.');
+              polygons.push(crossMark(pointAt(centre),dx/length,dy/length,lineWidth,stem));
+            }
+          }else emit(Math.max(from,cursor),Math.min(to,end));
+          cursor=end+gap;
         }
       }
     }

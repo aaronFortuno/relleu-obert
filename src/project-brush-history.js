@@ -15,7 +15,7 @@ function projectStroke({stroke,frame:source},target){
   return {...stroke,x:Math.max(0,Math.min(x,target.widthMM)),y:Math.max(0,Math.min(y,target.heightMM)),radius};
 }
 
-export function createProjectBrushHistory(){
+export function createProjectBrushHistory({breakOnClipped=false}={}){
   // Frames explicitly resized from one another share edits in their original
   // coordinates. A normal map move or rotation still gets its own history.
   const byFrame=new Map();
@@ -56,9 +56,14 @@ export function createProjectBrushHistory(){
       syncActive(current);
       const edits=byFrame.get(frame.key)??{records:[]};
       const visible=new Map();
+      let skipped=null;
       for(const record of edits.records){
         const stroke=projectStroke(record,frame);
-        if(stroke)visible.set(stroke,record);
+        if(stroke){
+          const separated=breakOnClipped&&skipped&&skipped.gesture===stroke.gesture&&skipped.mode===stroke.mode;
+          visible.set(separated?{...stroke,breakBefore:true}:stroke,record);
+          skipped=null;
+        }else skipped=record.stroke;
       }
       return {key:frame.key,strokes:[...visible.keys()],frame,edits,visible};
     },

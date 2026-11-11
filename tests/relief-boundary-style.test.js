@@ -24,6 +24,28 @@ test('boundary stroke styles leave visible gaps between printed marks',()=>{
   }
 });
 
+test('crosses span the selected width and leave room for distinct dot and dash patterns',()=>{
+  const lines=[[[0,5],[24,5]]];
+  const ink=(style,lineWidth)=>polygonTester(boundaryStrokePolygons(lines,project,{width,height,style,lineWidth}).flat());
+  const national=ink('cross',3);
+  assert(national([1.5,6.49]));
+  assert(!national([1.5,6.51]));
+  assert(!national([.2,6.4]),'the transverse arm has a thinner stem');
+  assert(!national([3.6,5]),'crosses have a clear gap');
+  for(const style of ['cross-dot','cross-dash','cross-double-dash']){
+    const marked=ink(style,1.62);
+    assert(marked([.81,5.8]));
+    assert(!marked([.81,5.82]));
+    assert(!marked([1.9,5]));
+    assert(marked([2.42,5]));
+    assert.equal(marked([3.05,5]),style!=='cross-dot');
+    if(style==='cross-double-dash'){
+      assert(!marked([3.99,5]));
+      assert(marked([4.8,5]));
+    }
+  }
+});
+
 test('a mark turns the original corner and the reversed duplicate draws only once',()=>{
   const line=[[0,5],[1,5],[1,15]],reverse=line.slice().reverse();
   assert.deepEqual(polygons([reverse,line],'dashed'),polygons([line],'dashed'));
@@ -43,14 +65,10 @@ test('a long segment outside the plate keeps its phase without generating off-pl
   for(const x of [.1,.8,2,3,5,9,14,17,23.9])assert.equal(ink([x,5]),local([x,5]),'phase at '+x);
 });
 
-test('a dash spanning a fractional plate cut keeps the same closed cross section',()=>{
+test('dashes and crosses spanning fractional plate cuts keep closed, aligned cross sections',()=>{
   const resolution=12,step=width/resolution;
   const grid={resolution,width,height,diagonals:new Uint8Array(resolution**2),
     heights:Float64Array.from({length:(resolution+1)**2},(_,i)=>8+i%(resolution+1)*.1+Math.floor(i/(resolution+1))*.2)};
-  const strips=reliefStreamStrips(polygons([[[5,0],[5,8],[8,20]]],'dashed'),width,height,resolution);
-  const cut=2.25;
-  const south=reliefStreamPart(grid,{left:0,bottom:0,right:resolution,top:cut},strips);
-  const north=reliefStreamPart(grid,{left:0,bottom:cut,right:resolution,top:resolution},strips);
   const seam=(part,y)=>{
     const vertices=new Set();
     for(let i=0;i<part.vertices.length;i+=3){
@@ -59,7 +77,13 @@ test('a dash spanning a fractional plate cut keeps the same closed cross section
     }
     return [...vertices].sort();
   };
-  for(const part of [south,north])assert.deepEqual(auditPart(part).errors,[]);
-  assert(seam(south,cut*step).length>0);
-  assert.deepEqual(seam(south,cut*step),seam(north,0));
+  for(const [style,lineWidth,cut] of [['dashed',.54,2.25],['cross',3,.75]]){
+    const outlines=boundaryStrokePolygons([[[5,0],[5,8],[8,20]]],project,{width,height,style,lineWidth});
+    const strips=reliefStreamStrips(outlines,width,height,resolution);
+    const south=reliefStreamPart(grid,{left:0,bottom:0,right:resolution,top:cut},strips);
+    const north=reliefStreamPart(grid,{left:0,bottom:cut,right:resolution,top:resolution},strips);
+    for(const part of [south,north])assert.deepEqual(auditPart(part).errors,[]);
+    assert(seam(south,cut*step).length>0);
+    assert.deepEqual(seam(south,cut*step),seam(north,0));
+  }
 });
