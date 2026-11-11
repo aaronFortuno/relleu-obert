@@ -16,22 +16,24 @@ export const RELIEF_MATERIALS=[
   {id:'snow',name:'Neu o gel cartografiat',color:'#f7f8fa'},
   CATEGORIES.find(category=>category.id==='inland-water'),
   CATEGORIES.find(category=>category.id==='forest'),
-  CATEGORIES.find(category=>category.id==='water')
+  CATEGORIES.find(category=>category.id==='water'),
+  {id:'trails',name:'Senders',color:'#787d82'},
+  {id:'boundaries',name:'Fronteres i límits',color:'#787d82'}
 ];
 export const reliefMaterialId=id=>id==='trees'?'forest':id;
-const nativeReliefColors=RELIEF_MATERIALS.map(category=>category.color);
+const nativeReliefColors=RELIEF_MATERIALS.slice(0,6).map(category=>category.color);
 const [ground,rock,snow,,forest,sea]=nativeReliefColors;
 export const RELIEF_PALETTES={
   1:[ground],2:[ground,sea],3:[ground,sea,forest],
   4:[ground,sea,forest,snow],5:[ground,sea,forest,snow,rock],6:nativeReliefColors
 };
 const reliefAssignments={
-  1:[0,0,0,0,0,0],
-  2:[0,0,0,1,0,1],
-  3:[0,0,0,1,2,1],
-  4:[0,0,3,1,2,1],
-  5:[0,4,3,1,2,1],
-  6:[0,1,2,3,4,5]
+  1:[0,0,0,0,0,0,0,0],
+  2:[0,0,0,1,0,1,0,0],
+  3:[0,0,0,1,2,1,2,2],
+  4:[0,0,3,1,2,1,3,3],
+  5:[0,4,3,1,2,1,4,4],
+  6:[0,1,2,3,4,5,1,1]
 };
 export function defaultReliefAssignments(count){
   if(!Number.isInteger(count)||!Object.hasOwn(reliefAssignments,count))throw Error('Tria entre 1 i 6 materials.');
@@ -39,9 +41,9 @@ export function defaultReliefAssignments(count){
 }
 export function normalizeReliefAssignments(count,assignments=defaultReliefAssignments(count)){
   if(!Number.isInteger(count)||!Object.hasOwn(RELIEF_PALETTES,count)||!Array.isArray(assignments)||
-     assignments.length!==RELIEF_MATERIALS.length||assignments.some(i=>!Number.isInteger(i)||i<0||i>=count))
+     ![6,RELIEF_MATERIALS.length].includes(assignments.length)||assignments.some(i=>!Number.isInteger(i)||i<0||i>=count))
     throw Error('L’assignació de materials del relleu no és vàlida.');
-  return assignments.slice();
+  return [...assignments,...reliefAssignments[count].slice(assignments.length)];
 }
 
 export function groupReliefMaterials(model,count=6,assignments,{paletteOnly=false}={}){

@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.23.47 — 2026-11-11
+
+- El mapa de Model complet es pot allunyar més enllà de l’escala imprimible. El marc s’encongeix i conserva l’extensió màxima de la maqueta. Clicar fora de la cerca tanca els resultats.
+- Relleu pur pot imprimir senders estrets i fronteres amb quatre estils de línia. Les fronteres estatals terrestres venen d’OpenStreetMap i els límits provincials, comarcals i municipals interiors de Catalunya venen de l’ICGC. Les dues capes són opcionals i tenen assignació de filament al menú de materials.
+
 ## v0.23.46 — 2026-11-09
 
 - El catàleg admet traçats ferroviaris amb cotes pròpies. El Cremallera de Núria comparteix la rasant entre la via, els ponts i els túnels, des del Roc del Dui fins a l’estació. Els túnels s’obren amb l’opció d’estimar túnels de Model complet.

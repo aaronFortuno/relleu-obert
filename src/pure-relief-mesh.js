@@ -113,12 +113,20 @@ export function reliefParts(grid,bounds=wholeGrid(grid)){
   const parts=[];
   if(terrain)parts.push({...RELIEF_MATERIALS[0],...terrain});
   for(let kind=1;kind<3;kind++)if(skins[kind])parts.push({...RELIEF_MATERIALS[kind],...skins[kind]});
-  const stream=reliefStreamPart(grid,bounds),lake=skins[3];
+  const stream=reliefStreamPart(grid,bounds,grid.streamStrips,undefined,[grid.boundaryStrips]),lake=skins[3];
   if(lake||stream)parts.push({...RELIEF_MATERIALS[3],...(lake?combine(lake,stream):stream)});
   if(skins[4])parts.push({...RELIEF_MATERIALS[4],...skins[4]});
   const trees=reliefTreesPart(grid,bounds);
   if(trees)parts.push(trees);
   if(skins[5])parts.push({...RELIEF_MATERIALS[5],...skins[5]});
+  if(grid.trailStrips?.length){
+    const trails=reliefStreamPart(grid,bounds,grid.trailStrips,.20,[grid.streamStrips,grid.boundaryStrips]);
+    if(trails)parts.push({...RELIEF_MATERIALS[6],...trails});
+  }
+  if(grid.boundaryStrips?.length){
+    const boundaries=reliefStreamPart(grid,bounds,grid.boundaryStrips,.28);
+    if(boundaries)parts.push({...RELIEF_MATERIALS[7],...boundaries});
+  }
   return parts;
 }
 
@@ -168,7 +176,7 @@ export function reliefInlandWater(grid,lakes,panoramic){
 export function previewReliefPieces(grid,emit){
   const plan=tilePlan(grid.width,grid.height),total=plan.tiles.length;
   if(total<2||grid.resolution%plan.cols||(grid.rows??grid.resolution)%plan.rows)return false;
-  const previewGrid={...grid,scores:null,lakeWeights:null,forestWeights:null,streamStrips:null,vegetationTexture:null};
+  const previewGrid={...grid,scores:null,lakeWeights:null,forestWeights:null,streamStrips:null,trailStrips:null,boundaryStrips:null,vegetationTexture:null};
   for(const [i,tile] of plan.tiles.entries()){
     const parts=reliefParts(previewGrid,tileBounds(grid,tile));
     emit(parts.map(part=>placeInAssembly(part,tile)),{index:i+1,total});

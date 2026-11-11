@@ -6,6 +6,8 @@ import {reliefVegetationTexture} from '../src/relief-vegetation-texture.js';
 import {levelReliefLakes} from '../src/relief-lakes.js';
 import {reliefStreamPart,reliefStreamStrips} from '../src/relief-streams.js';
 import {auditPart} from '../src/solid-audit.js';
+import {prepareReliefTrails} from '../src/relief-trails.js';
+import {reliefParts} from '../src/pure-relief-mesh.js';
 
 const resolution=4,rows=8,width=40,height=80,stride=resolution+1;
 const box=(left,bottom,right,top)=>[[left,bottom],[right,bottom],[right,top],[left,top],[left,bottom]];
@@ -53,6 +55,29 @@ test('a stream on a rectangular grid keeps the same height on both sides of a pr
   const seamSouth=seam(southStream.vertices,40);
   assert(seamSouth.length>0);
   assert.deepEqual(seamSouth,seam(northStream.vertices,0));
+});
+
+test('a narrow trail follows the slope and remains printable at a piece seam',()=>{
+  const path=[[16,-5],[16,85]],feature=(coordinates,properties={})=>({properties:{class:'path',...properties},
+    geometry:{type:'LineString',coordinates}});
+  const {strips:trailStrips,count}=prepareReliefTrails([
+    feature(path),feature(path.slice().reverse()),feature([[30,0],[30,80]],{brunnel:'tunnel'}),
+    feature([[32,0],[32,80]],{subclass:'cycleway'}),feature([[33,0],[33,80]],{class:'primary'})
+  ],p=>p,grid);
+  assert.equal(count,1);
+  const streamStrips=reliefStreamStrips([[[box(0,22,40,24)]]],width,height,resolution);
+  const withTrail={...grid,trailStrips,streamStrips};
+  const a=reliefParts(withTrail,south).find(p=>p.id==='trails'),b=reliefParts(withTrail,north).find(p=>p.id==='trails');
+  for(const part of [a,b]){
+    assert.deepEqual(auditPart(part).errors,[]);
+    for(let i=0;i<part.vertices.length;i+=3)assert(Math.abs(part.vertices[i]-16)<=.211);
+  }
+  assert(seam(a.vertices,40).length>0);
+  assert.deepEqual(seam(a.vertices,40),seam(b.vertices,0));
+  for(let i=1;i<a.vertices.length;i+=3)assert(a.vertices[i]<=22||a.vertices[i]>=24);
+  const forestWeights=new Float32Array(grid.heights.length).fill(1);
+  const texture=reliefVegetationTexture({...withTrail,forestWeights},{scale:.1,waterPolygons:[]});
+  assert(texture.coverage[4*stride+1]<=0&&texture.coverage[4*stride+2]<=0);
 });
 
 test('continuous vegetation follows sloping rectangular terrain across its horizontal print cut',()=>{

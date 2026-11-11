@@ -53,6 +53,12 @@
         <label class="check-row"><input id="streams" type="checkbox" checked><span data-i18n="ui.place.streams">Rius i rierols</span></label>
         <label for="stream-width" data-i18n="ui.place.streamWidth">Amplada mínima dels cursos d’aigua</label>
         <select id="stream-width"><option value="1" data-i18n="ui.place.streamWidth1">×1 · 0,45 mm</option><option value="1.5" data-i18n="ui.place.streamWidth15">×1,5 · 0,68 mm</option><option value="2" data-i18n="ui.place.streamWidth2">×2 · 0,90 mm</option><option value="3" data-i18n="ui.place.streamWidth3">×3 · 1,35 mm</option><option value="0" data-i18n="example.streamWidthSurfaces">Només superfícies cartografiades</option></select>
+        <div id="relief-trail-settings" hidden><label class="check-row"><input id="relief-trails" type="checkbox"><span data-i18n="ui.place.reliefTrails">Senders cartografiats</span></label></div>
+        <details id="relief-boundary-settings" hidden>
+          <summary data-i18n="ui.place.boundaries">Fronteres i límits</summary>
+          <div id="relief-boundary-controls" class="two-fields"></div>
+          <p class="hint" data-i18n="ui.place.boundaryCoverage">Límits interiors de l’ICGC a Catalunya.</p>
+        </details>
       </div>
     </section>
     <section class="config-section" data-step="vegetation">
@@ -244,7 +250,7 @@
       <path d="m27 9 7-6" stroke="var(--umbrella-accent)" stroke-width="4.5"/>
     </svg><span>ortogra<span class="umbrella-dot">.</span>fi</span>
   </a></p>
-  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer" data-i18n-text="ui.footer.openSource"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions" data-i18n-aria="ui.releases.title">v0.23.46</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V" data-i18n-aria="ui.footer.about"><span class="desktop-copy" data-i18n="ui.footer.aboutDesktop">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
+  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer" data-i18n-text="ui.footer.openSource"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions" data-i18n-aria="ui.releases.title">v0.23.47</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V" data-i18n-aria="ui.footer.about"><span class="desktop-copy" data-i18n="ui.footer.aboutDesktop">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
 </footer>
 
 <dialog id="projects-dialog" aria-labelledby="projects-title">
@@ -364,7 +370,7 @@
         <h3 id="about-sources-title" tabindex="-1" data-i18n="ui.about.sources">Fonts de dades</h3>
         <dl>
           <dt data-i18n="ui.about.maps">Mapa i vies</dt>
-          <dd>© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> (ODbL) · © <a href="https://openmaptiles.org/" target="_blank" rel="noreferrer">OpenMapTiles</a> · <a href="https://openfreemap.org/" target="_blank" rel="noreferrer">OpenFreeMap</a></dd>
+          <dd>© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> (ODbL) · © <a href="https://openmaptiles.org/" target="_blank" rel="noreferrer">OpenMapTiles</a> · <a href="https://openfreemap.org/" target="_blank" rel="noreferrer">OpenFreeMap</a> · © <a href="https://www.icgc.cat/ca/Geoinformacio-i-mapes/Dades-i-productes/Geoinformacio-cartografica/Divisions-administratives" target="_blank" rel="noreferrer" data-i18n="ui.about.icgcBoundaries">ICGC · Divisions administratives</a> (CC BY 4.0)</dd>
           <dt data-i18n="ui.about.elevation">Relleu</dt>
           <dd>© <a href="https://www.icgc.cat/ca/Geoinformacio-i-mapes/Dades-i-productes/Elevacions/Elevacions-territorial/Models-delevacions" target="_blank" rel="noreferrer">ICGC MET5</a> · © <a href="https://mapterhorn.com/attribution/" target="_blank" rel="noreferrer">Mapterhorn</a> · <a href="https://github.com/tilezen/joerd/blob/master/docs/attribution.md" target="_blank" rel="noreferrer">Mapzen / Tilezen</a></dd>
           <dt data-i18n="ui.about.buildings">Edificis i ponts</dt>

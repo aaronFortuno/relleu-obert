@@ -22,7 +22,7 @@ test('explicit pure relief exports group geometry for every count and native mod
     assert.equal(grouped.parts.reduce((sum,part)=>sum+part.faces.length,0),categories.length*3);
     assert(grouped.parts.every(part=>part.faces.every(index=>index<part.vertices.length/3)));
   }
-  assert.deepEqual([...groupMaterials(model,1).parts[0].faces],Array.from({length:18},(_,i)=>i));
+  assert.deepEqual([...groupMaterials(model,1).parts[0].faces],Array.from({length:categories.length*3},(_,i)=>i));
   assert.equal(groupMaterials(model,6).parts[0].vertices,categories[0].vertices);
   const custom=defaultReliefAssignments(4);
   custom[1]=3;

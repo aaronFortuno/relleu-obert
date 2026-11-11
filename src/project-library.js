@@ -4,6 +4,7 @@ import {validBaseThickness} from './print-settings.js';
 import {TRAIL_WIDTH_MULTIPLIERS} from './transport-width.js';
 import {RELIEF_VEGETATION_DEFAULTS,validVegetationHeight,validVegetationNoise} from './relief-vegetation-options.js';
 import {validHistoricalChoice} from './historical-layers.js';
+import {BOUNDARY_LEVELS,BOUNDARY_STYLES,defaultBoundaryStyles} from './relief-boundary-options.js';
 
 export const PROJECT_LIBRARY_KEY='relleu-obert.projects';
 const VERSION=1;
@@ -16,7 +17,7 @@ const text=(value,max)=>typeof value==='string'&&value.trim().length>0&&value.le
 const timestamp=value=>typeof value==='string'&&Number.isFinite(Date.parse(value));
 
 const optionRules={
-  detail:oneOf(24,36,56),streams:boolean,streamWidth:oneOf(0,1,1.5,2,3),
+  detail:oneOf(24,36,56),streams:boolean,streamWidth:oneOf(0,1,1.5,2,3),reliefTrails:boolean,
   exaggeration:value=>range(value,1,3),roadRise:oneOf(0,.5,1),railRise:oneOf(0,.5,1),trailWidth:oneOf(...TRAIL_WIDTH_MULTIPLIERS),
   estimatedTunnels:boolean,majorRoads:boolean,buildingSource:oneOf('osm','osm3d','icgc','catastre'),
   buildingMode:oneOf('limited','source','flat','none'),maxBuildingHeight:value=>range(value,1,1200),
@@ -24,7 +25,7 @@ const optionRules={
   vegetationHeight:validVegetationHeight,vegetationNoise:validVegetationNoise,
   brushRadius:value=>Number.isInteger(value)&&range(value,2,12),split:boolean,exportFormat:oneOf('bambu','bambu-zip','3mf','stl')
 };
-const optionDefaults={trailWidth:1,...RELIEF_VEGETATION_DEFAULTS};
+const optionDefaults={trailWidth:1,reliefTrails:false,...RELIEF_VEGETATION_DEFAULTS};
 
 function validatedSettings(settings){
   const invalid=()=>Error('La configuració del projecte desat no és vàlida.');
@@ -48,6 +49,9 @@ function validatedSettings(settings){
     if(!valid(value))throw invalid();
     cleanedOptions[key]=value;
   }
+  const boundaryStyles=options.boundaryStyles??defaultBoundaryStyles();
+  if(!object(boundaryStyles)||!BOUNDARY_LEVELS.every(level=>BOUNDARY_STYLES.includes(boundaryStyles[level])))throw invalid();
+  cleanedOptions.boundaryStyles=Object.fromEntries(BOUNDARY_LEVELS.map(level=>[level,boundaryStyles[level]]));
   if(!oneOf(1,2,4,8)(materials.count)||!Array.isArray(materials.assignments))throw invalid();
   let assignments,cleanedReliefMaterials;
   try{

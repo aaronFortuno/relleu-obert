@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {PROJECT_LIBRARY_KEY,deleteProject,exportProjectLibrary,importProjectLibrary,readProjects,saveProject} from '../src/project-library.js';
 import {defaultAssignments} from '../src/materials.js';
+import {defaultBoundaryStyles} from '../src/relief-boundary-options.js';
 
 const settings={
   sizePreset:'15x20',pose:{center:[42.165671,1.751211],widthM:3000,heightM:4000,rotation:-37.5},pureRelief:false,
@@ -9,7 +10,7 @@ const settings={
     {mode:'add',x:20,y:40,radius:5,gesture:1,density:.5},
     {mode:'erase',x:70,y:90,radius:8,gesture:2,density:1}
   ],
-  options:{detail:36,streams:true,streamWidth:1.5,exaggeration:1.5,roadRise:.5,railRise:1,trailWidth:1.5,
+  options:{detail:36,streams:true,streamWidth:1.5,reliefTrails:false,boundaryStyles:defaultBoundaryStyles(),exaggeration:1.5,roadRise:.5,railRise:1,trailWidth:1.5,
     estimatedTunnels:true,majorRoads:true,buildingSource:'catastre',buildingMode:'limited',maxBuildingHeight:5,
     trees:true,treeType:'mixed',brushDensity:.5,brushRadius:5,vegetationHeight:1.3,vegetationNoise:65,split:false,exportFormat:'bambu'},
   placeName:'Rasos de Peguera'
@@ -90,23 +91,28 @@ test('a square pure relief project at 1:500,000 can be saved and restored',()=>{
 test('saved projects store pure relief assignments separately from landscape materials',()=>{
   const storage=memoryStorage();
   const reliefMaterials={count:3,assignments:[0,0,2,1,2,1]};
-  const mixed={...settings,pureRelief:true,reliefMaterials};
+  const mixed={...settings,pureRelief:true,reliefMaterials,options:{...settings.options,reliefTrails:true,
+    boundaryStyles:{...defaultBoundaryStyles(),national:'dash-dot',county:'dotted'}}};
   saveProject(storage,{name:'Relleu amb tres filaments',settings:mixed},firstDate);
-  assert.deepEqual(readProjects(storage)[0].settings,mixed);
+  assert.deepEqual(readProjects(storage)[0].settings,{...mixed,reliefMaterials:{count:3,assignments:[...reliefMaterials.assignments,2,2]}});
   assert.throws(()=>saveProject(storage,{name:'Invàlid',settings:{...mixed,
     reliefMaterials:{...reliefMaterials,count:7}}}),/no és vàlida/);
 });
 
 test('older projects use the default trail width and texture controls, and new choices persist',()=>{
-  const storage=memoryStorage(),{trailWidth,vegetationHeight,vegetationNoise,...options}=settings.options;
+  const storage=memoryStorage(),{trailWidth,reliefTrails,vegetationHeight,vegetationNoise,...options}=settings.options;
   const old=saveProject(storage,{name:'Anterior',settings:{...settings,options}},firstDate);
   const stored=JSON.parse(storage.getItem(PROJECT_LIBRARY_KEY));
   delete stored.projects[0].settings.options.trailWidth;
+  delete stored.projects[0].settings.options.reliefTrails;
+  delete stored.projects[0].settings.options.boundaryStyles;
   delete stored.projects[0].settings.options.vegetationHeight;
   delete stored.projects[0].settings.options.vegetationNoise;
   storage.setItem(PROJECT_LIBRARY_KEY,JSON.stringify(stored));
   const restored=readProjects(storage)[0].settings.options;
   assert.deepEqual([restored.trailWidth,restored.vegetationHeight,restored.vegetationNoise],[1,.8,45]);
+  assert.equal(restored.reliefTrails,false);
+  assert.deepEqual(restored.boundaryStyles,defaultBoundaryStyles());
   saveProject(storage,{id:old.id,name:old.name,settings},secondDate);
   const updated=readProjects(storage)[0].settings.options;
   assert.deepEqual([updated.trailWidth,updated.vegetationHeight,updated.vegetationNoise],[trailWidth,vegetationHeight,vegetationNoise]);

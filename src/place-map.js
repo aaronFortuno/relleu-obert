@@ -6,9 +6,10 @@ import {maxRegionScale,regionTileCount,MAX_REGION_TILES} from './region-limits.j
 import {formatNumber,onLocaleChange,t} from './i18n.js';
 
 export const MAX_PROJECT_SCALE=20000;
+const MIN_MAP_ZOOM=4;
 
 export function createPlaceMap(container,{onChange,onName,width=150,height=150}){
-  const map=L.map(container,{zoomControl:true,attributionControl:true,zoomSnap:0,zoomAnimation:false,scrollWheelZoom:false,minZoom:4,maxZoom:18}).setView(recommendedPlace(DEFAULT_PLACE).center,15);
+  const map=L.map(container,{zoomControl:true,attributionControl:true,zoomSnap:0,zoomAnimation:false,scrollWheelZoom:false,minZoom:MIN_MAP_ZOOM,maxZoom:18}).setView(recommendedPlace(DEFAULT_PLACE).center,15);
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'}).addTo(map);
   const frame=document.createElement('div');frame.className='selection-frame';container.appendChild(frame);
   const handle=document.createElement('button');
@@ -65,9 +66,11 @@ export function createPlaceMap(container,{onChange,onName,width=150,height=150})
     if(regionTileCount(envelope)<=MAX_REGION_TILES)return MAX_PROJECT_SCALE;
     return Math.min(MAX_PROJECT_SCALE,maxRegionScale(center,...physical,rotation)||MAX_PROJECT_SCALE);
   }
-  function limitBox(bbox){
-    const p=selectionPose(bbox),scale=p.widthM*1000/physical[0],maximum=getScaleLimit(p.center);
-    if(scale>maximum+1e-6)return scaleBox(p.center,maximum);
+  function limitBox(bbox,center){
+    const p=selectionPose(bbox),scale=p.widthM*1000/physical[0];
+    center??=p.center;
+    const maximum=getScaleLimit(center);
+    if(scale>maximum+1e-6)return scaleBox(center,maximum);
     if(pureRelief&&scale<reliefScaleRange()[0]-1e-6)return scaleBox(p.center,reliefScaleRange()[0]);
     return bbox;
   }
@@ -80,14 +83,14 @@ export function createPlaceMap(container,{onChange,onName,width=150,height=150})
     };
     const prior=restoring;
     restoring=true;
-    map.setMinZoom(Math.max(4,zoomAt(getScaleLimit(center))));
+    map.setMinZoom(pureRelief?Math.max(MIN_MAP_ZOOM,zoomAt(getScaleLimit(center))):MIN_MAP_ZOOM);
     map.setMaxZoom(pureRelief?Math.min(18,zoomAt(reliefScaleRange()[0])):18);
     restoring=prior;
   }
   function baseSelection(){
     if(!container.clientWidth||!container.clientHeight)return pendingFit||lastBase;
     function drawBounds([w,s,e,n]){
-      const a=map.latLngToContainerPoint([s,w]),b=map.latLngToContainerPoint([n,e]);
+      const a=map.project([s,w]),b=map.project([n,e]);
       frame.style.width=Math.abs(b.x-a.x)+'px';frame.style.height=Math.abs(b.y-a.y)+'px';
     }
     if(retainedBase){
@@ -99,12 +102,14 @@ export function createPlaceMap(container,{onChange,onName,width=150,height=150})
     frame.style.width=fw+'px';frame.style.height=fh+'px';
     const a=map.containerPointToLatLng([(w-fw)/2,(h+fh)/2]),b=map.containerPointToLatLng([(w+fw)/2,(h-fh)/2]);
     let bounds=[a.lng,a.lat,b.lng,b.lat];
+    const {lat,lng}=map.getCenter(),center=[lat,lng];
     if(pureRelief){
-      const {lat,lng}=map.getCenter();
       // Keep a single horizontal scale in both directions despite the map projection.
-      bounds=scaleBox([lat,lng],selectionPose(bounds).widthM*1000/physical[0]);
+      bounds=scaleBox(center,selectionPose(bounds).widthM*1000/physical[0]);
     }
-    const limited=limitBox(bounds);
+    // The wide view can show more than the model. Centre the capped footprint
+    // on the map so that another zoom-out alone does not move the selection.
+    const limited=limitBox(bounds,center);
     if(pureRelief||limited!==bounds)drawBounds(limited);
     return limited;
   }
@@ -123,21 +128,22 @@ export function createPlaceMap(container,{onChange,onName,width=150,height=150})
     if(Math.abs(lat-old.center[0])>1e-12||Math.abs(lng-old.center[1])>1e-12)retainedBase=physicalBBox([lat,lng],old.widthM/1000,old.heightM/1000);
   });
   map.on('moveend zoomend',changed);
-  function fit(bbox){
+  function fit(bbox,zoomCeiling=Infinity){
     const p=selectionPose(bbox);
     bbox=limitBox(bbox);
     retainedBase=bbox;if(!container.clientWidth||!container.clientHeight){pendingFit=bbox;changed();return;}
     const w=container.clientWidth,h=container.clientHeight,[fw,fh]=frameSize();
     const prior=restoring;restoring=true;pendingFit=null;
     limitZoom(p.center);
-    map.fitBounds([[bbox[1],bbox[0]],[bbox[3],bbox[2]]],{padding:[(w-fw)/2,(h-fh)/2],animate:false});
-    map.setView(p.center,map.getZoom(),{animate:false});restoring=prior;changed();
+    const bounds=[[bbox[1],bbox[0]],[bbox[3],bbox[2]]],zoom=map.getBoundsZoom(bounds,false,[w-fw,h-fh]);
+    map.setView(p.center,Math.min(zoom,zoomCeiling),{animate:false});restoring=prior;changed();
   }
-  new ResizeObserver(()=>{if(!container.clientWidth||!container.clientHeight)return;const previous=pendingFit||lastBase;restoring=true;map.invalidateSize({pan:false});if(previous)fit(previous);restoring=false;changed();}).observe(container);
+  const editZoomCeiling=()=>pureRelief?Infinity:map.getZoom();
+  new ResizeObserver(()=>{if(!container.clientWidth||!container.clientHeight)return;const previous=pendingFit||lastBase,zoomCeiling=pendingFit?Infinity:editZoomCeiling();restoring=true;map.invalidateSize({pan:false});if(previous)fit(previous,zoomCeiling);restoring=false;changed();}).observe(container);
   function setRotation(value){
     const previous=baseSelection();
     rotation=value;
-    fit(previous);
+    fit(previous,editZoomCeiling());
   }
   function resizePiece(width,height,pure=pureRelief){
     const current=pose();
@@ -148,7 +154,7 @@ export function createPlaceMap(container,{onChange,onName,width=150,height=150})
     const sameAspect=width*reference.height===height*reference.width;
     const requested=sameAspect?reference.base:coveringSelectionBox(reference.pose,width,height);
     const bounded=limitBox(requested);
-    fit(bounded);
+    fit(bounded,editZoomCeiling());
     resizeReference=reference;
     return bounded!==requested;
   }

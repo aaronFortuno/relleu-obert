@@ -47,7 +47,7 @@ function landPolygon(polygon,weightIndex){
   return result;
 }
 
-function extrudePatch(poly,heightAt,offset,result){
+function extrudePatch(poly,heightAt,offset,result,raise){
   const xy=[],holes=[];
   for(const [i,ring]of poly.entries()){
     if(i)holes.push(xy.length/2);
@@ -58,7 +58,7 @@ function extrudePatch(poly,heightAt,offset,result){
   const {vertices,faces}=result,edges=new Map(),top=[];
   const vertex=i=>{
     const x=xy[i*2],y=xy[i*2+1],z=heightAt(x,y),index=vertices.length/3;
-    vertices.push(x-offset[0],y-offset[1],z+STREAM_RAISE,x-offset[0],y-offset[1],z-STREAM_EMBED);
+    vertices.push(x-offset[0],y-offset[1],z+raise,x-offset[0],y-offset[1],z-STREAM_EMBED);
     return index;
   };
   const surface=(a,b,c)=>faces.push(a,b,c,a+1,c+1,b+1);
@@ -93,9 +93,9 @@ function extrudePatch(poly,heightAt,offset,result){
   for(const {u,v} of boundary)wall(indices[u],indices[v]);
 }
 
-export function reliefStreamPart(grid,bounds){
-  const {resolution:n,rows=n,width,height,heights,diagonals,lakeWeights,oceanWeights,streamStrips}=grid;
-  if(!streamStrips?.length)return null;
+export function reliefStreamPart(grid,bounds,strips=grid.streamStrips,raise=STREAM_RAISE,exclusions=[]){
+  const {resolution:n,rows=n,width,height,heights,diagonals,lakeWeights,oceanWeights}=grid;
+  if(!strips?.length)return null;
   const {left,bottom,right,top}=sampleBounds(bounds);
   const dy=height/rows,stride=n+1;
   const x=i=>i*width/n,y=i=>i*height/rows,offset=[x(bounds.left),y(bounds.bottom)],result={vertices:[],faces:[]};
@@ -105,10 +105,11 @@ export function reliefStreamPart(grid,bounds){
     return [x(i),y(j),heights[index],lakeWeights?.[index]??-1,oceanWeights?.[index]??-1];
   };
   for(let i=left;i<right;i++){
-    const strips=streamStrips[i];
-    if(!strips.length)continue;
+    const column=strips[i];
+    if(!column.length)continue;
+    const blocked=exclusions.flatMap(layer=>layer?.[i]?.length?[layer[i]]:[]);
     const stripsByRow=new Map();
-    for(const strip of strips){
+    for(const strip of column){
       let min=Infinity,max=-Infinity;
       for(const [,py]of strip[0]){min=Math.min(min,py);max=Math.max(max,py);}
       const from=Math.max(bottom,Math.floor(min/dy)),to=Math.min(top,Math.ceil(max/dy));
@@ -124,14 +125,15 @@ export function reliefStreamPart(grid,bounds){
         const dry=oceanWeights?landPolygon(land,4):land;
         if(dry.length<3)continue;
         const needsClip=clip&&(i<bounds.left||i+1>bounds.right||j<bounds.bottom||j+1>bounds.top);
-        const clipped=pc.intersection(candidates,[[dry.map(([px,py])=>[px,py])]],...(needsClip?[clip]:[]));
+        let clipped=pc.intersection(candidates,[[dry.map(([px,py])=>[px,py])]],...(needsClip?[clip]:[]));
+        if(clipped.length&&blocked.length)clipped=pc.difference(clipped,...blocked);
         if(!clipped.length)continue;
         const [p,q,r]=triangle;
         const determinant=(q[0]-p[0])*(r[1]-p[1])-(q[1]-p[1])*(r[0]-p[0]);
         const sx=((q[2]-p[2])*(r[1]-p[1])-(r[2]-p[2])*(q[1]-p[1]))/determinant;
         const sy=((r[2]-p[2])*(q[0]-p[0])-(q[2]-p[2])*(r[0]-p[0]))/determinant;
         const heightAt=(px,py)=>p[2]+sx*(px-p[0])+sy*(py-p[1]);
-        for(const patch of clipped)extrudePatch(patch,heightAt,offset,result);
+        for(const patch of clipped)extrudePatch(patch,heightAt,offset,result,raise);
       }
     }
   }

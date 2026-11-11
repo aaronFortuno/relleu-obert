@@ -10,6 +10,8 @@ import {reliefDiagonals,reliefParts,splitPureRelief} from '../src/pure-relief-me
 import {reliefStreamPart,reliefStreamStrips} from '../src/relief-streams.js';
 import {lineBuffer} from '../src/roads.js';
 import {polygonTester} from '../src/polygon-index.js';
+import {buildRequest} from '../src/build-request.js';
+import {defaultBoundaryStyles} from '../src/relief-boundary-options.js';
 
 const bbox=physicalBBox([0,0],10,10);
 const dem=[{z:0,x:0,y:0,size:2,elev:new Float32Array([100,200,500,650])}];
@@ -58,6 +60,29 @@ test('regional land cover uses only printable raster detail and leaves the relie
   assert.deepEqual(filtered.reliefGrid.diagonals,neutral.reliefGrid.diagonals);
   const adequate={...regional,width:64,height:64,values:new Uint8Array(64*64).fill(60)};
   assert(buildModel({...data,coverage:[adequate]},options).categories.some(part=>part.id==='rock'));
+});
+
+test('printable trails and boundaries use the existing terrain and survive a split',()=>{
+  const [w,s,e,n]=bbox,lon=(w+e)/2,lat=(s+n)/2;
+  const national=[[w,lat],[e,lat]],trail=[[lon,s],[lon,n]];
+  const settings={...options,size:400,widthMM:400,heightMM:400,resolution:16,
+    boundaryStyles:{...defaultBoundaryStyles(),national:'dashed',province:'solid'}};
+  const target={meta:{bbox},dem,trails:[{properties:{class:'path'},geometry:{type:'LineString',coordinates:trail}}],
+    boundaryLayer:{lines:{national:[national],province:[national]}}};
+  const {region}=buildRequest(target,settings),before=buildModel(region,settings);
+  assert(before.categories.some(part=>part.id==='boundaries'));
+  assert(!before.categories.some(part=>part.id==='trails'));
+  assert.equal(before.provenance.boundaries.province,0,'a coincident provincial line must preserve gaps in the national line');
+  const after=updatePureRelief(before,{reliefTrails:true});
+  assert.equal(after.reliefGrid.heights,before.reliefGrid.heights);
+  assert(after.categories.some(part=>part.id==='trails'));
+  for(const part of after.categories)assert.deepEqual(auditPart(part).errors,[]);
+  const pieces=splitPureRelief(after);
+  assert.equal(pieces.length,4);
+  const marks=pieces.flatMap(piece=>piece.parts.filter(part=>['boundaries','trails'].includes(part.id)));
+  assert(marks.some(part=>part.id==='boundaries')&&marks.some(part=>part.id==='trails'));
+  for(const part of marks)assert.deepEqual(auditPart(part).errors,[]);
+  assert(!updatePureRelief(after,{reliefTrails:false}).categories.some(part=>part.id==='trails'));
 });
 
 test('mapped sea remains 5 mm deep despite bathymetry beyond its footprint',()=>{
