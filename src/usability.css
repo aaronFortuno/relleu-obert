@@ -229,6 +229,8 @@
 .app-footer .umbrella-brand:hover{text-decoration:underline;text-underline-offset:3px}
 
 .boundary-controls {display:grid;gap:6px}
+#relief-boundary-settings {border-top:1px solid var(--line);margin-top:12px;padding-top:10px}
+#relief-boundary-settings .section-heading {margin:0 0 8px}
 .boundary-control-row {
   display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:8px;align-items:center;
 }

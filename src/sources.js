@@ -141,16 +141,22 @@ async function loadReliefVectors(bbox,sample,progress,forestOnly,wide){
 }
 const administrativeLayers=new WeakMap();
 export async function loadBoundaryLayer(region,styles,scale){
-  const levels=['province','county','municipality'].filter(level=>styles[level]!=='off');
+  const levels=['province','county','municipality'].filter(level=>styles[level]&&styles[level]!=='off');
+  const lines={national:styles.national&&styles.national!=='off'?region.nationalBoundaries||[]:[]};
+  if(!levels.length)return {lines,warnings:[]};
   let cache=administrativeLayers.get(region);
-  if(!cache){cache=new Map();administrativeLayers.set(region,cache);}
-  const key=levels.join(',');
-  let official=levels.length?cache.get(key):null;
-  if(levels.length&&!official){
-    official=await fetchOfficialBoundaries(region.meta.bbox,{levels,scale});
-    if(!official.metadata.failed.length)cache.set(key,official);
+  if(!cache||cache.scale!==scale){
+    cache={scale,lines:new Map()};
+    administrativeLayers.set(region,cache);
   }
-  return {lines:{national:region.nationalBoundaries||[],...official?.lines},metadata:official?.metadata,warnings:official?.warnings||[]};
+  const missing=levels.filter(level=>!cache.lines.has(level));
+  const official=missing.length?await fetchOfficialBoundaries(region.meta.bbox,{levels:missing,scale}):null;
+  if(official){
+    cache.metadata={...official.metadata,failed:[]};
+    for(const level of missing)if(!official.metadata.failed.includes(level))cache.lines.set(level,official.lines[level]);
+  }
+  for(const level of levels)lines[level]=cache.lines.get(level)||[];
+  return {lines,metadata:official?.metadata??cache.metadata,warnings:official?.warnings||[]};
 }
 async function decodeDEM(blob,t){
   const decoder=await import('./dem-browser.js');return decoder.decodeDEM(blob,t);

@@ -85,6 +85,27 @@ test('printable trails and boundaries use the existing terrain and survive a spl
   assert(!updatePureRelief(after,{reliefTrails:false}).categories.some(part=>part.id==='trails'));
 });
 
+test('live boundaries keep the existing terrain mesh, restore overlapping trails and survive print cuts',()=>{
+  const [w,s,e,n]=bbox,lon=(w+e)/2,lat=(s+n)/2;
+  const data={meta:{bbox},dem,trails:[{properties:{class:'path'},geometry:{type:'LineString',coordinates:[[w,lat],[e,lat]]}}]};
+  const settings={...options,size:400,widthMM:400,heightMM:400,resolution:16,reliefTrails:true};
+  const original=buildModel(data,settings),terrain=original.categories.find(part=>part.id==='terrain');
+  const changes={boundaryStyles:{...defaultBoundaryStyles(),national:'solid'},boundaryWidths:{national:3}};
+  const layer={lines:{national:[[[w,lat],[e,lat]]]}};
+  const withBoundary=updatePureRelief(original,changes,undefined,layer);
+  assert.equal(withBoundary.categories.find(part=>part.id==='terrain'),terrain);
+  assert.equal(withBoundary.reliefGrid.heights,original.reliefGrid.heights);
+  assert(!withBoundary.categories.some(part=>part.id==='trails'));
+  assert(splitPureRelief(withBoundary).some(piece=>piece.parts.some(part=>part.id==='boundaries')));
+  const restyled=updatePureRelief(withBoundary,{...changes,boundaryStyles:{national:'cross'}},undefined,layer);
+  assert.equal(restyled.categories.find(part=>part.id==='terrain'),terrain);
+  assert(restyled.categories.some(part=>part.id==='trails'),'the gaps in the pattern should expose the trail');
+  const disabled=updatePureRelief(restyled,{boundaryStyles:defaultBoundaryStyles()},undefined,{lines:{}});
+  assert.equal(disabled.categories.find(part=>part.id==='terrain'),terrain);
+  assert(!disabled.categories.some(part=>part.id==='boundaries'));
+  assert.deepEqual(disabled.categories.find(part=>part.id==='trails').faces,original.categories.find(part=>part.id==='trails').faces);
+});
+
 test('mapped sea remains 5 mm deep despite bathymetry beyond its footprint',()=>{
   const row=[-2500,-2500,-2500,60,120];
   const terrainRaster=rasterFixture([row,row,row]);

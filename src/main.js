@@ -83,7 +83,7 @@ const boundaryControls=BOUNDARY_LEVELS.map(level=>{
   row.append(toggleLabel,fields);
   $('#relief-boundary-controls').append(row);
   select.disabled=width.disabled=true;
-  const changed=()=>requireBuild(statusMessage('pending.boundaries'));
+  const changed=()=>requestReliefUpdate(statusMessage('pending.boundaries'));
   enabled.onchange=()=>{
     select.disabled=width.disabled=!enabled.checked;
     changed();
@@ -644,10 +644,11 @@ function sameReliefField(key,options,old){
 function sameTerrain(options,includeTransport=true){
   const old=model?.provenance.options;
   const keys=includeTransport?[...reliefKeys,'roadRise','railRise','trailWidth','estimatedTunnels','majorRoads']:reliefKeys;
-  return sameTerrainFrame(options)&&keys.every(key=>sameReliefField(key,options,old));
+  return sameTerrainFrame(options)&&(!options.pureRelief||boundaryKey(options)===boundaryKey(old))&&
+    keys.every(key=>sameReliefField(key,options,old));
 }
 const canUpdateElevation=options=>!!region&&!tooLargeRegion&&sameTerrainFrame(options);
-const canUpdateRelief=options=>options.pureRelief&&canUpdateElevation(options)&&boundaryKey(options)===boundaryKey(model?.provenance.options);
+const canUpdateRelief=options=>options.pureRelief&&canUpdateElevation(options);
 function cancelReliefUpdate(){
   clearTimeout(reliefTimer);
   reliefTimer=null;
@@ -661,7 +662,7 @@ function requestReliefUpdate(message,allowLandscape=false){
   reliefTimer=setTimeout(flushReliefUpdate,options.pureRelief?150:250);
   lock(busy);
 }
-function flushReliefUpdate(){
+async function flushReliefUpdate(){
   if(busy||pendingVegetation||drawing){reliefTimer=setTimeout(flushReliefUpdate,100);return;}
   reliefTimer=null;
   const options=modelOptions();
@@ -677,8 +678,16 @@ function flushReliefUpdate(){
   }
   job='relief';
   lock(true);
-  const changes=Object.fromEntries(reliefKeys.map(key=>[key,options[key]]));
-  worker.postMessage({type:'relief',options:changes});
+  try{
+    const changes=Object.fromEntries(reliefKeys.map(key=>[key,options[key]]));
+    let boundaryLayer;
+    if(boundaryKey(options)!==boundaryKey(model.provenance.options)){
+      Object.assign(changes,boundarySettings());
+      say('Carregant les fronteres i els límits…');
+      boundaryLayer=await loadBoundaryLayer(region,options.boundaryStyles,options.selectionPose.widthM*1000/options.widthMM);
+    }
+    worker.postMessage({type:'relief',options:changes,boundaryLayer});
+  }catch(error){recoverRelief(error);}
 }
 function recoverRelief(error){
   if(reliefTimer===null&&canUpdateRelief(modelOptions())){
@@ -692,6 +701,7 @@ function recoverRelief(error){
     $('#relief-trails').checked=!!reliefTrails;
     trailWidthControl.value=previousTrailWidth??RELIEF_TRAIL_WIDTH_MM;
     trailStrokes=(model.provenance.options.trailStrokes??[]).slice();
+    setBoundarySettings(model.provenance.options);
     needsBuild=false;
     badge('');
   }

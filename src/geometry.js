@@ -1,6 +1,6 @@
 import {printableReliefCoverage,sampleCoverage} from './relief-contours.js';
 import {levelReliefLakes} from './relief-lakes.js';
-import {reliefDiagonals,reliefParts,reliefGridSize,reliefTreesPart,previewReliefPieces,assemblePanoramicRelief,reliefInlandWater,assembleReliefTrails,PURE_RELIEF_RESOLUTIONS} from './pure-relief-mesh.js';
+import {reliefDiagonals,reliefParts,reliefGridSize,reliefTreesPart,previewReliefPieces,assemblePanoramicRelief,reliefInlandWater,assembleReliefTrails,assembleReliefBoundaries,PURE_RELIEF_RESOLUTIONS} from './pure-relief-mesh.js';
 import {reliefStreamStrips} from './relief-streams.js';
 import {prepareReliefTrails,editReliefTrailStrips,sameReliefTrailStrokes,RELIEF_TRAIL_WIDTH_MM,MAX_RELIEF_TRAIL_STROKES,validReliefTrailWidth} from './relief-trails.js';
 import {boundaryStrokePolygons} from './relief-boundary-style.js';
@@ -897,11 +897,11 @@ function buildPureRelief(data,options,progress,preview,api){
     coverageCells:{bare:cells[0],snow:cells[1],total:columns*rows},lakeCount:lakes?.count??0,
     streamCount:water.streamCount,flowingWaterAreaCount:water.flowingWaterAreaCount,trailCount:trailData?.count??0,
     boundaries:boundaryData.counts,administrativeSource:data.boundaryLayer?.metadata,forestSamples:forest?.cells??0};
-  const warnings=[...(data.meta.sourceWarnings||[]),...boundaryData.warnings];
+  const warnings=[...(data.meta.sourceWarnings||[])];
   if(coverage.length<sourceCoverage.length)
     warnings.push('S’ha omès la coberta regional perquè els píxels són massa grans per a l’escala de la maqueta.');
   return renderPureRelief({width,height,scale:Math.round(1000/scale),buildingCount:0,reliefGrid,
-    warnings,elevationDiagnostics:prepared.diagnostics,provenance},{...context,landforms,api,sourceWarnings:warnings,trails:data.trails||[],trailData},progress,preview);
+    warnings,elevationDiagnostics:prepared.diagnostics,provenance},{...context,landforms,api,sourceWarnings:warnings,trails:data.trails||[],trailData,boundaryData},progress,preview);
 }
 
 function scaleReliefGrid(grid,metres,scale,exaggeration,baseThickness){
@@ -987,7 +987,7 @@ function reliefBoundaryGeometry(layer,{boundaryStyles:styles,boundaryWidths},pro
 
 function renderPureRelief(model,context,progress,preview,texture){
   const {width,height,reliefGrid}=model;
-  const bareGrid={...reliefGrid,streamStrips:null,trailStrips:null,vegetationTexture:null};
+  const bareGrid={...reliefGrid,streamStrips:null,trailStrips:null,boundaryStrips:null,vegetationTexture:null};
   const panoramic=isPanoramicSize(width,height);
   progress('Construint el sòlid del relleu…');
   const ground=panoramic?assemblePanoramicRelief(bareGrid,(completed,total)=>{
@@ -997,7 +997,9 @@ function renderPureRelief(model,context,progress,preview,texture){
   let categories=replaceReliefWater(ground,reliefInlandWater(reliefGrid,lakePart,panoramic));
   const trails=assembleReliefTrails(reliefGrid,panoramic);
   if(trails)categories.push(trails);
-  model={...model,warnings:[...context.sourceWarnings,...reliefTrailWarnings(categories,context,model.provenance.options)]};
+  const boundaries=assembleReliefBoundaries(reliefGrid,panoramic);
+  if(boundaries)categories.push(boundaries);
+  model={...model,warnings:[...context.sourceWarnings,...context.boundaryData.warnings,...reliefTrailWarnings(categories,context,model.provenance.options)]};
   if(context.landforms.length){
     const cut=carveCatalogueLandforms(categories,context.landforms,context.api,model.provenance.verticalReference,context.scale*reliefGrid.exaggeration);
     categories=cut.parts;
@@ -1017,7 +1019,7 @@ function replaceReliefWater(categories,water){
   return next;
 }
 
-export function updatePureRelief(previous,changes={},progress=()=>{}){
+export function updatePureRelief(previous,changes={},progress=()=>{},boundaryLayer){
   const context=previous?.reliefVegetationContext;
   if(!context)throw Error('Cal generar primer el relleu.');
   const before=previous.provenance.options;
@@ -1031,36 +1033,39 @@ export function updatePureRelief(previous,changes={},progress=()=>{}){
   if(!Number.isFinite(exaggeration)||exaggeration<1||exaggeration>5||typeof streams!=='boolean'||
       (streamWidth!==0&&(!Number.isFinite(streamWidth)||streamWidth<1||streamWidth>3)))throw Error('Els ajustos de relleu queden fora del rang admès.');
   const vertical=exaggeration!==before.exaggeration||baseThickness!==before.baseThickness,wide=streamWidth!==before.streamWidth;
-  if(!vertical&&!wide&&streams===before.streams&&!trailChange)return previous;
+  const boundaryChange=boundaryLayer!==undefined;
+  if(!vertical&&!wide&&streams===before.streams&&!trailChange&&!boundaryChange)return previous;
   const grid=previous.reliefGrid;
   let nextContext=wide?prepareReliefWaterways(context,grid,streamWidth):context;
   if(trailChange)nextContext={...nextContext,trailData:reliefTrails?
     reliefTrailLayer(context.trails,context.project,grid,reliefTrailWidth,trailStrokes,progress,context.trailData):null};
+  if(boundaryChange)nextContext={...nextContext,boundaryData:reliefBoundaryGeometry(boundaryLayer,changes,context.project,grid,progress)};
   const water=wide||streams!==before.streams?reliefHydrology(grid,nextContext,streams,progress):null;
   const reliefGrid=vertical?scaleReliefGrid(grid,context.metres,context.scale,exaggeration,baseThickness):{...grid};
   if(water)reliefGrid.streamStrips=water.streamStrips;
   if(trailChange)reliefGrid.trailStrips=nextContext.trailData?.strips;
-  const provenance={...previous.provenance,options:{...before,exaggeration,streams,streamWidth,reliefTrails,reliefTrailWidth,trailStrokes,baseThickness},verticalExaggeration:exaggeration,
+  if(boundaryChange)reliefGrid.boundaryStrips=nextContext.boundaryData.strips;
+  const boundaryOptions=boundaryChange?{boundaryStyles:changes.boundaryStyles,boundaryPatterns:changes.boundaryPatterns,boundaryWidths:changes.boundaryWidths}:{};
+  const provenance={...previous.provenance,options:{...before,...boundaryOptions,exaggeration,streams,streamWidth,reliefTrails,reliefTrailWidth,trailStrokes,baseThickness},verticalExaggeration:exaggeration,
     verticalReference:verticalDatum(reliefGrid.originMeters,baseThickness,!!reliefGrid.oceanWeights),
     streamCount:water?.streamCount??previous.provenance.streamCount,trailCount:nextContext.trailData?.count??0,
-    flowingWaterAreaCount:water?.flowingWaterAreaCount??previous.provenance.flowingWaterAreaCount};
+    flowingWaterAreaCount:water?.flowingWaterAreaCount??previous.provenance.flowingWaterAreaCount,
+    ...(boundaryChange?{boundaries:nextContext.boundaryData.counts,administrativeSource:boundaryLayer.metadata}:{})};
   const next={...previous,reliefGrid,provenance};
-  if(vertical||trailChange&&context.landforms.length||water&&(trailChange||reliefTrails||grid.boundaryStrips?.length))
-    return renderPureRelief(next,nextContext,progress,undefined,wide||trailChange?undefined:grid.vegetationTexture);
-  if(trailChange){
-    const categories=previous.categories.filter(part=>part.id!=='trails'&&part.id!=='trees');
-    const trails=assembleReliefTrails(reliefGrid,isPanoramicSize(grid.width,grid.height));
-    if(trails)categories.push(trails);
-    const staleWarnings=reliefTrailWarnings(previous.categories,context,before);
-    const warnings=[...previous.warnings.filter(message=>!staleWarnings.includes(message)),...reliefTrailWarnings(categories,nextContext,provenance.options)];
-    return finishReliefVegetation({...next,categories,warnings},nextContext);
-  }
-  const waterPart=reliefInlandWater(reliefGrid,context.lakePart,isPanoramicSize(grid.width,grid.height));
-  const carvedWater=waterPart&&context.activeLandforms.length?carveCatalogueLandforms([waterPart],context.activeLandforms,context.api,
-    provenance.verticalReference,context.scale*exaggeration).parts[0]:waterPart;
-  const categories=replaceReliefWater(previous.categories,carvedWater);
-  if(wide)return finishReliefVegetation({...next,categories:categories.filter(part=>part.id!=='trees')},nextContext);
-  return finalizePureRelief({...next,categories},nextContext);
+  const refreshTrees=wide||trailChange||boundaryChange;
+  if(vertical)return renderPureRelief(next,nextContext,progress,undefined,refreshTrees?undefined:grid.vegetationTexture);
+  const panoramic=isPanoramicSize(grid.width,grid.height),layers=new Map();
+  if(water||boundaryChange)layers.set('inland-water',reliefInlandWater(reliefGrid,context.lakePart,panoramic));
+  if(trailChange||(water||boundaryChange)&&reliefTrails)layers.set('trails',assembleReliefTrails(reliefGrid,panoramic));
+  if(boundaryChange)layers.set('boundaries',assembleReliefBoundaries(reliefGrid,panoramic));
+  let parts=[...layers.values()].filter(Boolean);
+  if(parts.length&&context.activeLandforms.length)parts=carveCatalogueLandforms(parts,context.activeLandforms,context.api,
+    provenance.verticalReference,context.scale*exaggeration).parts;
+  const categories=[...previous.categories.filter(part=>!layers.has(part.id)&&!(refreshTrees&&part.id==='trees')),...parts];
+  const warnings=[...context.sourceWarnings,...nextContext.boundaryData.warnings,...reliefTrailWarnings(categories,nextContext,provenance.options),
+    ...landformWarnings({applied:provenance.catalogueLandforms??[],skipped:provenance.catalogueLandformOmissions??[]})];
+  const model={...next,categories,warnings};
+  return refreshTrees?finishReliefVegetation(model,nextContext):finalizePureRelief(model,nextContext);
 }
 
 function finishReliefVegetation(model,context,vegetationTexture=reliefVegetationTexture(model.reliefGrid,context,model.provenance.options)){

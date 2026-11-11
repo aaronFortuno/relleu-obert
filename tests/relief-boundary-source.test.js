@@ -1,6 +1,21 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {fetchOfficialBoundaries,isNationalBoundary,joinNationalBoundaryLines} from '../src/relief-boundary-source.js';
+import {loadBoundaryLayer} from '../src/sources.js';
+
+test('live style changes and enabling another level reuse the successful boundary queries',async()=>{
+  const region={meta:{bbox:[2,41.6,2.05,41.65]}},requests=[],original=globalThis.fetch;
+  globalThis.fetch=async url=>{requests.push(String(url));return Response.json({type:'FeatureCollection',features:[]});};
+  try{
+    await loadBoundaryLayer(region,{county:'solid'},10000);
+    await loadBoundaryLayer(region,{county:'dotted',municipality:'cross'},10000);
+    await loadBoundaryLayer(region,{county:'dashed'},10000);
+    await loadBoundaryLayer(region,{},10000);
+    assert.equal(requests.length,2);
+    assert(requests[0].includes('/8/query'));
+    assert(requests[1].includes('/2/query'));
+  }finally{globalThis.fetch=original;}
+});
 
 const bbox=[1,41,2,42];
 const square=(id,west,east)=>({type:'Feature',id,properties:{},geometry:{type:'Polygon',

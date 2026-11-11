@@ -73,7 +73,7 @@ try{
     current=observer?buildModel(data.region,data.options,observer.progress,api,timing.detail,observer):updateVegetation(current,data.options,progress);self.postMessage({type:'model',model:{...current,parts:undefined,reliefGrid:undefined,categories:data.type==='vegetation'?current.categories.filter(p=>p.id==='trees'):current.categories},vegetation:data.type==='vegetation',timing:timing?.finish()});
   }
   if(data.type==='relief'){
-    postChangedModel(updatePureRelief(current,data.options,progress),{relief:true});
+    postChangedModel(updatePureRelief(current,data.options,progress,data.boundaryLayer),{relief:true});
   }
   if(data.type==='buildings'){
     const report=message=>{timing?.mark('buildings',message);progress(message);};

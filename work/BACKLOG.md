@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Revisat el **2026-11-11** amb la v0.23.48. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
+Revisat el **2026-11-11** amb la v0.23.49. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
 
 ## Ordre de treball
 
@@ -101,3 +101,9 @@ La v0.23.48 incorpora els patrons amb creu, l’amplada per nivell i el pinzell 
 
 1. Ressaltar una ruta a partir d’un GPX local, respectant els trams i els talls entre peces.
 2. Fer un cupó de perforacions verticals de Ø1 mm i 7–9 mm de fondària. Desar els punts geogràfics i comprovar el gruix disponible, la distància a les vores i als talls, i les cavitats existents abans d’exportar. El gruix de base per defecte és de 5 mm. Els banderins personalitzats es deixen per a una fase posterior.
+
+La v0.23.49 actualitza els límits sobre la malla carregada i reutilitza les dades ja consultades per nivell. El control verifica l’activació, el canvi de patró, la retirada i la recuperació dels senders sota la línia.
+
+### RO-058 — Auditoria del taller abans de la v0.24
+
+Després de les rutes i les perforacions de RO-057, revisar la ubicació i els noms dels controls, els passos per crear i exportar una maqueta, i l’ús amb teclat i mòbil. Fer servir recorreguts reals d’un usuari nou abans de reorganitzar els menús i anunciar la v0.24.

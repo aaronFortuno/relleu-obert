@@ -121,10 +121,8 @@ export function reliefParts(grid,bounds=wholeGrid(grid)){
   if(skins[5])parts.push({...RELIEF_MATERIALS[5],...skins[5]});
   const trails=trailMesh(grid,bounds);
   if(trails)parts.push({...RELIEF_MATERIALS[6],...trails});
-  if(grid.boundaryStrips?.length){
-    const boundaries=reliefStreamPart(grid,bounds,grid.boundaryStrips,.28);
-    if(boundaries)parts.push({...RELIEF_MATERIALS[7],...boundaries});
-  }
+  const boundaries=boundaryMesh(grid,bounds);
+  if(boundaries)parts.push({...RELIEF_MATERIALS[7],...boundaries});
   return parts;
 }
 
@@ -182,6 +180,16 @@ export function assembleReliefTrails(grid,panoramic){
   if(!grid.trailStrips?.length)return null;
   const mesh=assembleReliefLayer(grid,panoramic,trailMesh);
   return mesh?{...RELIEF_MATERIALS[6],...mesh}:null;
+}
+
+function boundaryMesh(grid,bounds){
+  return grid.boundaryStrips?.length?reliefStreamPart(grid,bounds,grid.boundaryStrips,.28):null;
+}
+
+export function assembleReliefBoundaries(grid,panoramic){
+  if(!grid.boundaryStrips?.length)return null;
+  const mesh=assembleReliefLayer(grid,panoramic,boundaryMesh);
+  return mesh?{...RELIEF_MATERIALS[7],...mesh}:null;
 }
 
 export function previewReliefPieces(grid,emit){

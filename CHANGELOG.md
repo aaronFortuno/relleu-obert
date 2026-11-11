@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.23.49 — 2026-11-11
+
+- «Fronteres i límits» es mostra directament a «Senders i límits». L’activació, el patró i l’amplada s’apliquen sobre el model carregat. Es reutilitza el terreny i s’actualitzen els límits i les capes que hi coincideixen.
+
 ## v0.23.48 — 2026-11-11
 
 - Relleu pur agrupa la cartografia imprimible a «Senders i límits». Els límits tenen interruptor, patró i amplada propis. Els patrons inicials fan servir creus, punts i ratlles, amb amplades de 3, 2,5, 2 i 1,5 mm segons el nivell. El visor mostra els límits en negre i els senders en blanc. Els filaments es continuen assignant al menú de materials.
