@@ -874,7 +874,8 @@ function buildPureRelief(data,options,progress,preview,api){
   const trailData=reliefTrails?reliefTrailLayer(data.trails,project,reliefGrid,reliefTrailWidth,trailStrokes,progress):null;
   const boundaryData=reliefBoundaryGeometry(data.boundaryLayer,options,project,reliefGrid,progress);
   const userRoute=normalizeUserRoute(options.userRoute);
-  const routeStrips=prepareUserRouteStrips(userRoute,project,reliefGrid);
+  const gpxStrips=prepareUserRouteStrips(userRoute,project,reliefGrid);
+  const routeStrips=mergeRouteStrips(gpxStrips,trailData?.drawn);
   let forestPolygons=(data.forests||[]).flatMap(feature=>geoPolys(feature,project));
   if(forestPolygons.length>1){
     // Tile fragments can overlap. Feather the forest outline, not each fragment.
@@ -895,7 +896,7 @@ function buildPureRelief(data,options,progress,preview,api){
   if(coverage.length<sourceCoverage.length)
     warnings.push('S’ha omès la coberta regional perquè els píxels són massa grans per a l’escala de la maqueta.');
   return renderPureRelief({width,height,scale:Math.round(1000/scale),buildingCount:0,reliefGrid,
-    warnings,elevationDiagnostics:prepared.diagnostics,provenance},{...context,landforms,api,sourceWarnings:warnings,trails:data.trails||[],trailData,boundaryData},progress,preview);
+    warnings,elevationDiagnostics:prepared.diagnostics,provenance},{...context,landforms,api,sourceWarnings:warnings,trails:data.trails||[],trailData,boundaryData,gpxStrips},progress,preview);
 }
 
 function scaleReliefGrid(grid,metres,scale,exaggeration,baseThickness){
@@ -933,13 +934,20 @@ function reliefTrailLayer(features,project,grid,width,strokes,progress,previous)
       catch{mapped.failed=true;}
     }
   }
-  const strips=editReliefTrailStrips(mapped.strips,grid,width,strokes);
-  return {...mapped,mapped,width,strips};
+  const {mapped:strips,drawn}=editReliefTrailStrips(mapped.strips,grid,width,strokes);
+  return {...mapped,mapped,width,strips,drawn};
+}
+
+function mergeRouteStrips(gpx,drawn){
+  if(!drawn?.length)return gpx;
+  if(!gpx.length)return drawn;
+  return gpx.map((strip,i)=>strip.length&&drawn[i].length?pc.union(strip,drawn[i]):strip.length?strip:drawn[i]);
 }
 
 function reliefTrailWarnings(categories,context,options){
   const warnings=[];
-  if(options.userRoute&&!categories.some(part=>part.id==='route'))warnings.push('La ruta GPX no té trams visibles dins d’aquest retall.');
+  if(options.userRoute&&(!context.gpxStrips.length||!categories.some(part=>part.id==='route')))
+    warnings.push('La ruta GPX no té trams visibles dins d’aquest retall.');
   if(context.trailData?.failed)warnings.push('No s’ha pogut preparar la capa de senders. Es conserva el relleu.');
   else if(context.trailData&&options.reliefTrails){
     if(!options.trailStrokes?.length&&!categories.some(part=>part.id==='trails'))
@@ -1038,13 +1046,15 @@ export function updatePureRelief(previous,changes={},progress=()=>{},boundaryLay
   if(trailChange)nextContext={...nextContext,trailData:reliefTrails?
     reliefTrailLayer(context.trails,context.project,grid,reliefTrailWidth,trailStrokes,progress,context.trailData):null};
   if(boundaryChange)nextContext={...nextContext,boundaryData:reliefBoundaryGeometry(boundaryLayer,changes,context.project,grid,progress)};
+  const route=routeChange?normalizeUserRoute(userRoute):before.userRoute??null;
+  if(routeChange)nextContext={...nextContext,gpxStrips:prepareUserRouteStrips(route,context.project,grid)};
+  const routeGeometryChange=routeChange||trailChange&&!!(nextContext.trailData?.drawn.length||context.trailData?.drawn.length);
   const water=wide||streams!==before.streams?reliefHydrology(grid,nextContext,streams,progress):null;
   const reliefGrid=vertical?scaleReliefGrid(grid,context.metres,context.scale,exaggeration,baseThickness):{...grid};
   if(water)reliefGrid.streamStrips=water.streamStrips;
   if(trailChange)reliefGrid.trailStrips=nextContext.trailData?.strips;
   if(boundaryChange)reliefGrid.boundaryStrips=nextContext.boundaryData.strips;
-  const route=routeChange?normalizeUserRoute(userRoute):before.userRoute??null;
-  if(routeChange)reliefGrid.routeStrips=prepareUserRouteStrips(route,context.project,grid);
+  if(routeGeometryChange)reliefGrid.routeStrips=mergeRouteStrips(nextContext.gpxStrips,nextContext.trailData?.drawn);
   const boundaryOptions=boundaryChange?{boundaryStyles:changes.boundaryStyles,boundaryPatterns:changes.boundaryPatterns,boundaryWidths:changes.boundaryWidths}:{};
   const provenance={...previous.provenance,options:{...before,...boundaryOptions,exaggeration,streams,streamWidth,reliefTrails,reliefTrailWidth,trailStrokes,userRoute:route,baseThickness},verticalExaggeration:exaggeration,
     verticalReference:verticalDatum(reliefGrid.originMeters,baseThickness,!!reliefGrid.oceanWeights),
@@ -1055,10 +1065,10 @@ export function updatePureRelief(previous,changes={},progress=()=>{},boundaryLay
   const refreshTrees=wide||trailChange||boundaryChange||routeChange;
   if(vertical)return renderPureRelief(next,nextContext,progress,undefined,refreshTrees?undefined:grid.vegetationTexture);
   const panoramic=isPanoramicSize(grid.width,grid.height),layers=new Map();
-  if(water||boundaryChange||routeChange)layers.set('inland-water',reliefInlandWater(reliefGrid,context.lakePart,panoramic));
-  if(trailChange||(water||boundaryChange||routeChange)&&reliefTrails)layers.set('trails',assembleReliefTrails(reliefGrid,panoramic));
+  if(water||boundaryChange||routeGeometryChange)layers.set('inland-water',reliefInlandWater(reliefGrid,context.lakePart,panoramic));
+  if(trailChange||(water||boundaryChange||routeGeometryChange)&&reliefTrails)layers.set('trails',assembleReliefTrails(reliefGrid,panoramic));
   if(boundaryChange)layers.set('boundaries',assembleReliefBoundaries(reliefGrid,panoramic));
-  if(boundaryChange||routeChange)layers.set('route',assembleUserRoute(reliefGrid,panoramic));
+  if(boundaryChange||routeGeometryChange)layers.set('route',assembleUserRoute(reliefGrid,panoramic));
   let parts=[...layers.values()].filter(Boolean);
   if(parts.length&&context.activeLandforms.length)parts=carveCatalogueLandforms(parts,context.activeLandforms,context.api,
     provenance.verticalReference,context.scale*exaggeration).parts;

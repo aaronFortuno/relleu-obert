@@ -19,7 +19,7 @@ export const RELIEF_MATERIALS=[
   CATEGORIES.find(category=>category.id==='water'),
   {id:'trails',name:'Senders',color:'#ffffff'},
   {id:'boundaries',name:'Fronteres i límits',color:'#000000'},
-  {id:'route',name:'Ruta GPX',color:'#ae432e'}
+  {id:'route',name:'Rutes d’usuari',color:'#f27516'}
 ];
 export const reliefMaterialId=id=>id==='trees'?'forest':id;
 const nativeReliefColors=RELIEF_MATERIALS.slice(0,6).map(category=>category.color);

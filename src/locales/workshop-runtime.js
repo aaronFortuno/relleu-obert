@@ -94,7 +94,7 @@ export default {
   'runtime.material.railways': ["Ferrocarrils","Ferrocarriles","Ferrocarrís","Trenbideak","Railways"],
   'runtime.material.rock': ["Sòl nu cartografiat","Suelo desnudo cartografiado","Solo espido cartografado","Mapako lur biluzia","Mapped bare ground"],
   'runtime.material.trails': ["Senders","Senderos","Sendeiros","Bidezidorrak","Trails"],
-  'runtime.material.route': ["Ruta GPX","Ruta GPX","Ruta GPX","GPX ibilbidea","GPX route"],
+  'runtime.material.route': ["Rutes d’usuari","Rutas de usuario","Rutas de usuario","Erabiltzailearen ibilbideak","User routes"],
   'runtime.route.empty': ["Importa un traçat per ressaltar-lo sobre el relleu.","Importa un trazado para resaltarlo sobre el relieve.","Importa un trazado para resaltalo sobre o relevo.","Inportatu trazadura bat erliebean nabarmentzeko.","Import a track to highlight it on the terrain."],
   'runtime.pin.placeHint': ["Tria un punt sobre la maqueta.","Elige un punto sobre la maqueta.","Escolle un punto sobre a maqueta.","Aukeratu puntu bat maketan.","Choose a point on the model."],
   'runtime.pin.item': ["Forat {number} · {depth} mm","Agujero {number} · {depth} mm","Burato {number} · {depth} mm","{number}. zuloa · {depth} mm","Hole {number} · {depth} mm"],

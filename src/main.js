@@ -1702,7 +1702,7 @@ function paint(event){
   pointer.set((event.clientX-rect.left)/rect.width*2-1,-(event.clientY-rect.top)/rect.height*2+1);
   ray.setFromCamera(pointer,camera);
   const textureMesh=mesh=>isPure(model)&&mesh.name==='trees';
-  const trailMesh=mesh=>trails&&mesh.name==='trails';
+  const trailMesh=mesh=>trails&&(mesh.name==='trails'||mesh.name==='route');
   const [hit]=ray.intersectObjects(group.children.filter(mesh=>brushSurfaces.has(mesh.name)||textureMesh(mesh)||trailMesh(mesh)));
   const cursor=$('#brush-cursor');
   cursor.hidden=!hit||!(brushGround.has(hit.object.name)||textureMesh(hit.object)||trailMesh(hit.object))||hit.face.normal.z<=0;

@@ -17,12 +17,14 @@ test('width is measured in model millimetres on mapped and freehand paths',()=>{
   const mapped=width=>prepareReliefTrails(source,p=>p,grid,width).strips;
   const thin=editReliefTrailStrips(mapped(.42),grid,.42,strokes);
   const wide=editReliefTrailStrips(mapped(2),grid,2,strokes);
-  for(const y of [30,60]){
-    assert(contains(thin,42,y+.15));
-    assert(!contains(thin,42,y+.4));
-    assert(contains(wide,42,y+.8));
-    assert(!contains(wide,42,y+1.2));
+  for(const [layer,y] of [['mapped',30],['drawn',60]]){
+    assert(contains(thin[layer],42,y+.15));
+    assert(!contains(thin[layer],42,y+.4));
+    assert(contains(wide[layer],42,y+.8));
+    assert(!contains(wide[layer],42,y+1.2));
   }
+  assert(!contains(wide.mapped,42,60));
+  assert(!contains(wide.drawn,42,30));
 });
 
 test('a swept eraser removes mapped and drawn paths, and a later stroke can redraw',()=>{
@@ -31,14 +33,14 @@ test('a swept eraser removes mapped and drawn paths, and a later stroke can redr
   const erased=[...drawn,stroke('erase',45,12,2),stroke('erase',45,90,2)];
   const redrawn=[...erased,stroke('add',35,60,3),stroke('add',55,60,3)];
   const withErase=editReliefTrailStrips(base,grid,.42,erased);
-  for(const y of [30,60]){
-    assert(!contains(withErase,45,y));
-    assert(contains(withErase,35,y));
-    assert(contains(withErase,55,y));
+  for(const [layer,y] of [['mapped',30],['drawn',60]]){
+    assert(!contains(withErase[layer],45,y));
+    assert(contains(withErase[layer],35,y));
+    assert(contains(withErase[layer],55,y));
   }
   const withRedraw=editReliefTrailStrips(base,grid,.42,redrawn);
-  assert(contains(withRedraw,45,60));
-  assert(!contains(withRedraw,45,30));
+  assert(contains(withRedraw.drawn,45,60));
+  assert(!contains(withRedraw.mapped,45,30));
   assert(contains(base,45,30),'undo must be able to replay from untouched cartography');
   assert(!contains(base,45,60));
 });
@@ -46,11 +48,11 @@ test('a swept eraser removes mapped and drawn paths, and a later stroke can redr
 test('re-entering after a gap starts a new subpath and validates the point budget',()=>{
   const strokes=[stroke('add',5,20,1),stroke('add',20,20,1),
     stroke('add',70,20,1,2,true),stroke('add',90,20,1)];
-  const edited=editReliefTrailStrips([],grid,.42,strokes);
+  const {drawn:edited}=editReliefTrailStrips([],grid,.42,strokes);
   assert(contains(edited,12,20));
   assert(!contains(edited,45,20));
   assert(contains(edited,75,20));
-  assert(contains(editReliefTrailStrips([],grid,.42,[stroke('add',10,20,1)]),10.1,20));
+  assert(contains(editReliefTrailStrips([],grid,.42,[stroke('add',10,20,1)]).drawn,10.1,20));
   assert.throws(()=>editReliefTrailStrips([],grid,3.1,strokes),/rang/);
   assert.throws(()=>editReliefTrailStrips([],grid,1,Array(MAX_RELIEF_TRAIL_STROKES+1).fill(strokes[0])),/rang/);
   assert.throws(()=>editReliefTrailStrips([],grid,1,[stroke('erase',20,20,1,31)]),/no és vàlid/);
@@ -71,7 +73,8 @@ test('trail-only updates reuse the terrain and export closed solids through a fr
   const pieces=splitPureRelief(edited,tilePlan(400,150,{columns:[193,207]}));
   assert.equal(pieces.length,2);
   assert.equal(pieces[0].width,193);
-  const parts=pieces.map(piece=>piece.parts.find(part=>part.id==='trails'));
+  const parts=pieces.map(piece=>piece.parts.find(part=>part.id==='route'));
+  assert(pieces.every(piece=>piece.parts.some(part=>part.id==='trails')));
   for(const part of parts){
     assert(part);
     assert.deepEqual(auditPart(part).errors,[]);
@@ -87,7 +90,23 @@ test('trail-only updates reuse the terrain and export closed solids through a fr
   assert(seamYs(parts[0],pieces[0].width).length>0);
   assert.deepEqual(seamYs(parts[0],pieces[0].width),seamYs(parts[1],0));
   const hidden=updatePureRelief(edited,{reliefTrails:false});
-  assert(!hidden.categories.some(part=>part.id==='trails'));
+  assert(!hidden.categories.some(part=>part.id==='trails'||part.id==='route'));
   assert.equal(hidden.provenance.options.trailStrokes,trailStrokes);
-  assert(updatePureRelief(hidden,{reliefTrails:true}).categories.some(part=>part.id==='trails'));
+  assert(updatePureRelief(hidden,{reliefTrails:true}).categories.some(part=>part.id==='route'));
+});
+
+test('drawn and GPX routes share one material while retaining their own removal controls',()=>{
+  const bbox=physicalBBox([0,0],1,1),[w,s,e,n]=bbox,lon=w+(e-w)*.45;
+  const dem=[{z:0,x:0,y:0,size:2,elev:new Float32Array([100,200,500,650])}];
+  const model=buildModel({meta:{bbox},dem},{size:100,pureRelief:true,resolution:12,reliefTrails:true});
+  const userRoute={name:'Ruta de prova',paths:[[[lon,s],[lon,n]]]};
+  const trailStrokes=[stroke('add',15,55,1),stroke('add',80,55,1)];
+  const imported=updatePureRelief(model,{userRoute});
+  const combined=updatePureRelief(imported,{trailStrokes});
+  const routes=combined.parts.filter(part=>part.id==='route');
+  assert.equal(routes.length,1);
+  assert.deepEqual(auditPart(routes[0]).errors,[]);
+  assert.deepEqual(updatePureRelief(combined,{trailStrokes:[]}).reliefGrid.routeStrips,imported.reliefGrid.routeStrips);
+  assert(updatePureRelief(combined,{userRoute:null}).parts.some(part=>part.id==='route'));
+  assert(updatePureRelief(combined,{reliefTrails:false}).parts.some(part=>part.id==='route'));
 });

@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.23.51 — 2026-11-11
+
+- Les rutes dibuixades i les importades en GPX es destaquen en taronja al visor. Els senders cartografiats es mantenen blancs i el material d’impressió de les rutes es pot assignar per separat.
+
 ## v0.23.50 — 2026-11-11
 
 - Relleu pur pot ressaltar rutes GPX locals sobre la maqueta carregada, amb una assignació de material pròpia. Es conserven els trams separats i els talls entre peces.

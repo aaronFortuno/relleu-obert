@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Revisat el **2026-11-11** amb la v0.23.50. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
+Revisat el **2026-11-11** amb la v0.23.51. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
 
 ## Ordre de treball
 
@@ -102,6 +102,8 @@ La v0.23.48 incorpora els patrons amb creu, l’amplada per nivell i el pinzell 
 La v0.23.49 actualitza els límits sobre la malla carregada i reutilitza les dades ja consultades per nivell. El control verifica l’activació, el canvi de patró, la retirada i la recuperació dels senders sota la línia.
 
 La v0.23.50 incorpora rutes GPX locals i perforacions verticals de Ø1 mm i 7–9 mm de fondària en Relleu pur. Les proves cobreixen projectes desats, actualització de la ruta i talls entre peces, i el sòlid perforat amb diversos materials i cavitats. Pendent de validació al laminador i d’impressió física. Els banderins personalitzats queden per a una fase posterior.
+
+La v0.23.51 destaca en taronja les rutes dibuixades i importades al visor. Tenen una assignació de material pròpia i els senders cartografiats es mantenen blancs.
 
 ### RO-058 — Auditoria del taller abans de la v0.24
 
