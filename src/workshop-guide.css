@@ -13,7 +13,12 @@
   pointer-events:none;
 }
 .workshop-guide-mask {
-  fill:rgb(27 31 27 / 65%);
+  fill:rgb(27 31 27 / 60%);
+}
+.workshop-guide-frame {fill:var(--ui-control-border);fill-opacity:.8}
+.workshop-guide-previous {opacity:0}
+.workshop-guide-hit {
+  fill:transparent;
   pointer-events:fill;
   touch-action:none;
 }
@@ -21,7 +26,7 @@
   position:absolute;
   left:12px;
   top:12px;
-  width:310px;
+  width:336px;
   padding:12px;
   overflow:auto;
   overscroll-behavior:contain;
@@ -30,12 +35,12 @@
   border-radius:5px;
   pointer-events:auto;
 }
-.workshop-guide-card h2 {margin:0;font-size:var(--ui-title)}
+.workshop-guide-card h2 {margin:0;font-size:16px;line-height:1.3}
 .workshop-guide-card h2:focus {outline:none}
 .workshop-guide-card .hint {
   margin:4px 0 10px;
   color:var(--ui-control-text);
-  font-size:var(--ui-control);
+  font-size:14px;
   line-height:1.4;
 }
 .workshop-guide-actions {display:flex;align-items:center;justify-content:flex-end;gap:4px}
@@ -43,13 +48,13 @@
   width:auto;
   margin:0;
   padding:6px 8px;
-  min-height:28px;
-  font-size:var(--ui-control);
+  min-height:34px;
+  font-size:13px;
 }
 .workshop-guide-actions .quiet-button {margin-inline-end:auto}
 .workshop-guide-actions button:disabled {cursor:default}
 
 @media(max-width:900px) {
-  .workshop-guide-card {width:min(310px,calc(100vw - 24px))}
+  .workshop-guide-card {width:min(336px,calc(100vw - 24px))}
   .workshop-guide-actions :is(.primary,.secondary,.quiet-button) {min-height:44px}
 }

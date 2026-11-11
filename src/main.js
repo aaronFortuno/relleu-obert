@@ -42,6 +42,7 @@ import './usability.css';
 import './example-carousel.css';
 import './mobile-workshop.css';
 import './mobile-onboarding.css';
+import './tour-welcome.css';
 import {createWorkshopGuide} from './workshop-guide.js';
 import {bindFieldCommit,committedFieldValue} from './field-commit.js';
 import './workshop-guide.css';
@@ -209,7 +210,7 @@ function downloadFile(blob,filename){
 $('#download-processing').onclick=()=>{
   if(!lastProcessingReport)return;
   const blob=new Blob([JSON.stringify(lastProcessingReport,null,2)+'\n'],{type:'application/json'});
-  downloadFile(blob,'relleu-obert-temps-'+lastProcessingReport.startedAt.replaceAll(':','-')+'.json');
+  downloadFile(blob,'relleu-obert-informe-'+lastProcessingReport.startedAt.replaceAll(':','-')+'.json');
 };
 let presentationMode,demandRenderer;let contextLost=false,presentationReduced=false;
 let landscapeMaterials={count:4,assignments:defaultAssignments(4)};
@@ -306,7 +307,7 @@ function lock(value){
   editButtons();
   syncPresentationUI();
   syncViewerTools();
-  workshopGuide.update();
+  updateWorkshopGuide();
 }
 function markDirty(){
   dirty=!!region&&!sameBounds(selection,region.meta.bbox);
@@ -340,6 +341,7 @@ const placeMap=createPlaceMap($('#place-map'),{
 narrowWorkshop.addEventListener('change',()=>{
   arrangeTerritory();
   placeMap.setLocked(busy||pendingVegetation,!narrowWorkshop.matches);
+  workshopGuide.update();
 });
 const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(34,1,.1,6000);camera.up.set(0,0,1);
 const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;view.appendChild(renderer.domElement);
@@ -2257,21 +2259,44 @@ const guideLayers={vegetation:'vegetation',transport:'transport',buildings:'buil
 const guideOutputs={piece:'info-print',materials:'info-materials',data:'info-data'};
 const buildForGuide=()=>busy&&job==='build';
 const guideModelReady=()=>!!model&&!needsBuild&&!busy;
+const slowGuideBuildDelay=30_000;
+let guideBuildTimer=null,slowGuideBuild=false;
+function updateWorkshopGuide(){
+  if(!buildForGuide()||workshopGuide.current()!=='territory'){
+    clearTimeout(guideBuildTimer);
+    guideBuildTimer=null;
+    slowGuideBuild=false;
+  }else if(guideBuildTimer===null&&!slowGuideBuild){
+    guideBuildTimer=setTimeout(()=>{
+      guideBuildTimer=null;
+      if(!buildForGuide()||workshopGuide.current()!=='territory')return;
+      slowGuideBuild=true;
+      workshopGuide.update();
+    },slowGuideBuildDelay);
+  }
+  workshopGuide.update();
+}
 const workshopGuide=createWorkshopGuide($('#workshop-guide'),{
   fallbackFocus:$('#help-open'),
-  getSteps:()=>['size','territory','vegetation','transport',...(pureSelected()?[]:['buildings']),'piece','materials','data','download'],
+  getSteps:()=>['size','territory','vegetation','transport',...(pureSelected()?[]:['buildings']),'piece','materials','data','download','preview'],
   canAdvance:step=>step==='size'?!!selectedSize:step==='territory'?guideModelReady():true,
   autoAdvance:step=>step==='size'?!!selectedSize:step==='territory'&&guideModelReady(),
   titleKey:step=>step==='transport'&&pureSelected()?'guide.workshop.transport.reliefTitle':undefined,
-  instructionKey:step=>step==='territory'&&buildForGuide()?'guide.workshop.territory.wait':
+  instructionKey:step=>step==='territory'&&buildForGuide()?(slowGuideBuild?'guide.workshop.territory.slow':'guide.workshop.territory.wait'):
+    step==='territory'&&guideModelReady()?'guide.workshop.territory.existing':
     step==='transport'&&pureSelected()?'guide.workshop.transport.relief':
+    step==='preview'&&narrowWorkshop.matches?'guide.workshop.preview.touch':
     step==='size'&&selectedSize?'guide.workshop.size.existing':undefined,
   onStep(step){
     if(step==='size'){
       if(selectedSize)showTourOutput('info-print');
       else showWorkshopPanel('preview');
-    }else if(step==='territory')openStep('place');
+    }else if(step==='territory'){
+      openStep('place');
+      updateWorkshopGuide();
+    }
     else if(Object.hasOwn(guideLayers,step))openStep(guideLayers[step]);
+    else if(step==='preview')showWorkshopPanel('preview');
     else showTourOutput(guideOutputs[step]);
   },
   targets(step){
@@ -2286,26 +2311,52 @@ const workshopGuide=createWorkshopGuide($('#workshop-guide'),{
         return [controls,viewerToolsPanel,renderer.domElement];
       return step==='vegetation'?[controls,renderer.domElement]:[controls];
     }
+    if(step==='preview')return [view];
     return [step==='download'?$('.download-panel'):document.getElementById(guideOutputs[step])];
   }
 });
 function startWorkshopTour(returnFocus){
-  workshopGuide.start({step:!selectedSize?'size':model&&!needsBuild?'vegetation':'territory',returnFocus});
+  workshopGuide.start({step:'size',returnFocus});
+  updateWorkshopGuide();
 }
 $('#welcome-guide').onclick=()=>startWorkshopTour($('#welcome-guide'));
 $('#start-workshop-guide').onclick=()=>{
   $('#help-dialog').close();
-  startWorkshopTour($('#help-open'));
+  openWorkshopWelcome($('#help-open'));
 };
 const welcomeTour=$('#workshop-welcome'),welcomeTourKey='relleu-obert.workshop-welcome';
+const welcomeExamples=['tamariu','montserrat','amsterdam-singelgracht'].map(id=>CURATED_EXAMPLES.find(example=>example.id===id));
+let welcomeExampleIndex=0,welcomeTourOpener;
+function showWelcomeExample(index){
+  welcomeExampleIndex=(index+welcomeExamples.length)%welcomeExamples.length;
+  const example=welcomeExamples[welcomeExampleIndex],image=$('#welcome-tour-image');
+  const {title,description}=localizeExample(example);
+  image.src=example.image;
+  image.alt=description;
+  $('#welcome-tour-example-name').textContent=title;
+  $('#welcome-tour-example-position').textContent=formatNumber(welcomeExampleIndex+1)+' / '+formatNumber(welcomeExamples.length);
+  if(!reducedMotion.matches){
+    for(const animation of image.getAnimations())animation.cancel();
+    image.animate([{opacity:.55},{opacity:1}],{duration:180,easing:'ease-out'});
+  }
+}
+function openWorkshopWelcome(opener){
+  welcomeTourOpener=opener;
+  showWelcomeExample(0);
+  welcomeTour.showModal();
+}
+$('#tour-open').onclick=()=>openWorkshopWelcome($('#tour-open'));
+for(const button of welcomeTour.querySelectorAll('[data-welcome-slide]')){
+  button.onclick=()=>showWelcomeExample(welcomeExampleIndex+Number(button.dataset.welcomeSlide));
+}
 welcomeTour.addEventListener('close',()=>{try{localStorage.setItem(welcomeTourKey,'seen');}catch{}});
 $('#welcome-start-tour').onclick=()=>{
   welcomeTour.close();
-  startWorkshopTour($('#welcome-guide'));
+  startWorkshopTour(welcomeTourOpener);
 };
 onLocaleChange(refreshWorkshopLanguage);
 initI18n();
 try{restoreProject();}catch(error){say(error.message,true);}
 let firstWorkshopVisit=true;
 try{firstWorkshopVisit=!localStorage.getItem(welcomeTourKey);}catch{}
-if(firstWorkshopVisit&&!selectedSize)welcomeTour.showModal();
+if(firstWorkshopVisit&&!selectedSize)openWorkshopWelcome($('#welcome-guide'));

@@ -1,0 +1,45 @@
+#tour-open {
+  border-color:var(--ui-control-border);
+  background:var(--ui-control-bg);
+  font-weight:600;
+}
+#tour-open:hover {border-color:var(--green)}
+#workshop-welcome {width:min(760px,calc(100% - 32px));max-height:calc(100dvh - 32px)}
+#workshop-welcome-title {font-size:clamp(18px,2.3vw,26px);font-weight:650;line-height:1.25}
+#workshop-welcome .dialog-heading {padding-block:12px}
+.welcome-tour-content {padding:12px 24px 20px}
+#workshop-welcome .welcome-tour-intro {margin:0 0 12px;font-size:15px;line-height:1.5}
+.welcome-tour-examples {min-width:0}
+#welcome-tour-image {
+  display:block;width:100%;height:min(43dvh,380px);object-fit:contain;
+  border:1px solid var(--line);border-radius:5px;background:#edf1e6;
+}
+.welcome-tour-carousel {display:grid;grid-template-columns:44px minmax(0,1fr) 44px;align-items:center;gap:6px}
+#workshop-welcome .welcome-tour-carousel p {
+  display:flex;flex-wrap:wrap;align-items:baseline;justify-content:center;gap:0 10px;margin:0;
+  color:var(--ui-control-text);font-size:14px;line-height:1.4;text-align:center;
+}
+.welcome-tour-carousel .quiet-button {min-height:44px;margin:0;font-size:22px;line-height:1}
+#welcome-tour-example-position {color:var(--muted);font-size:12px}
+.welcome-tour-credits {display:block;font-size:var(--ui-control);text-align:center;line-height:1.35}
+.welcome-tour-actions {
+  display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:14px;
+}
+.welcome-tour-actions :is(.primary,.secondary) {
+  width:auto;min-height:44px;margin:0;padding:8px 16px;font-size:15px;line-height:1.25;white-space:normal;
+}
+#welcome-guide {font-size:var(--ui-control)}
+#start-workshop-guide {width:auto;min-height:36px;padding-inline:12px}
+
+@media(max-width:1079px){
+  .app-header:has(#tour-open) .tagline {display:none}
+}
+@media(max-width:900px){
+  #workshop-welcome {width:min(100%,580px);max-height:calc(100dvh - 20px)}
+  .welcome-tour-content {padding:10px 16px max(14px,env(safe-area-inset-bottom))}
+  #workshop-welcome .welcome-tour-intro {font-size:14px}
+  #welcome-tour-image {height:min(52vw,39dvh,340px)}
+}
+@media(max-width:374px){
+  #tour-open {display:none}
+}

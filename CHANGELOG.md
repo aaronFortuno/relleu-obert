@@ -1,5 +1,11 @@
 # Canvis
 
+## v0.23.54 — 2026-11-11
+
+- Benvinguda amb imatges grans de tres maquetes de la galeria i accés a la visita guiada des de la capçalera i l’ajuda.
+- La visita deixa marge al voltant dels controls ressaltats, anima els canvis de pas i acaba amb una introducció al visor. Les generacions llargues suggereixen un retall més petit.
+- Dades i limitacions identifica l’informe de generació i explica com adjuntar-lo per comunicar problemes.
+
 ## v0.23.53 — 2026-11-11
 
 - La benvinguda del primer accés convida a una visita interactiva. La guia ressalta els controls del pas actiu, adapta el recorregut al mode de maqueta i acompanya fins a la descàrrega.

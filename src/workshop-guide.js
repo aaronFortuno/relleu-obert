@@ -2,8 +2,13 @@ import {formatNumber,t} from './i18n.js';
 
 const focusable='a[href],button,input:not([type=hidden]),select,textarea,summary,iframe,[tabindex],[contenteditable=true]';
 const clipping=/^(auto|hidden|scroll|clip|overlay)$/;
-const margin=12,highlightPadding=3;
+const margin=12,frameWidth=1.5,stepDuration=180;
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
+
+function padRect({left,top,right,bottom},viewport,padding){
+  return {left:Math.max(0,left-padding),top:Math.max(0,top-padding),
+    right:Math.min(viewport.width,right+padding),bottom:Math.min(viewport.height,bottom+padding)};
+}
 
 function spotlightRect(element,win,viewport){
   if(!element?.getClientRects().length||win.getComputedStyle(element).visibility!=='visible')return null;
@@ -17,15 +22,13 @@ function spotlightRect(element,win,viewport){
     if(clipping.test(overflowY)){top=Math.max(top,bounds.top);bottom=Math.min(bottom,bounds.bottom);}
   }
   if(right<=left||bottom<=top||right<=0||bottom<=0||left>=viewport.width||top>=viewport.height)return null;
-  return {left:Math.max(0,left-highlightPadding),top:Math.max(0,top-highlightPadding),
-    right:Math.min(viewport.width,right+highlightPadding),bottom:Math.min(viewport.height,bottom+highlightPadding)};
+  return padRect({left,top,right,bottom},viewport,0);
 }
 
 function shadePath(width,height,cutouts){
   const rows=[...new Set([0,height,...cutouts.flatMap(({top,bottom})=>[top,bottom])])].sort((a,b)=>a-b);
   const rect=(left,top,right,bottom)=>`M${left},${top}H${right}V${bottom}H${left}Z`;
-  // Disjoint shaded rectangles keep overlapping targets open and let SVG hit
-  // testing send pointer events to the original controls through every cutout.
+  // Disjoint shaded rectangles keep overlapping targets open.
   let path='';
   for(let row=1;row<rows.length;row++){
     const top=rows[row-1],bottom=rows[row];
@@ -40,7 +43,13 @@ function shadePath(width,height,cutouts){
   return path;
 }
 
-function placeCard(card,viewport,cutouts,focused){
+function controlsIn(elements){
+  return [...new Set(elements.flatMap(element=>[
+    ...(element.matches(focusable)?[element]:[]),...element.querySelectorAll(focusable)
+  ]))];
+}
+
+function placeCard(card,viewport,cutouts,controls,focused){
   const {left,top,width,height}=viewport;
   card.style.maxWidth=`${Math.max(0,width-margin*2)}px`;
   card.style.maxHeight=`${Math.max(0,height-margin*2)}px`;
@@ -48,7 +57,7 @@ function placeCard(card,viewport,cutouts,focused){
   const xMin=left+margin,yMin=top+margin;
   const xMax=left+width-w-margin,yMax=top+height-h-margin;
   const xs=[xMin,xMax,left+(width-w)/2],ys=[yMin,yMax,top+(height-h)/2];
-  for(const cut of cutouts){
+  for(const cut of focused?[...cutouts,focused]:cutouts){
     xs.push(cut.left-w-margin,cut.right+margin,cut.left);
     ys.push(cut.top-h-margin,cut.bottom+margin,cut.top);
   }
@@ -59,7 +68,8 @@ function placeCard(card,viewport,cutouts,focused){
   for(const offsetX of xs)for(const offsetY of ys){
     const x=clamp(offsetX,xMin,xMax),y=clamp(offsetY,yMin,yMax);
     const covered=cutouts.reduce((area,cut)=>area+overlap(x,y,cut),0);
-    const score=(covered+(focused?3*overlap(x,y,focused):0))*100+
+    const coveredControls=controls.reduce((area,control)=>area+overlap(x,y,control),0);
+    const score=(covered+4*coveredControls+(focused?8*overlap(x,y,focused):0))*100+
       (cutouts.length?Math.min(...cutouts.map(cut=>distance(x,y,cut))):0)+Math.abs(y-yMin)*.01;
     if(score<best.score)best={x,y,score};
   }
@@ -71,7 +81,17 @@ export function createWorkshopGuide(root,{getSteps,onStep=()=>{},targets=()=>[],
   autoAdvance=()=>false,titleKey,instructionKey,fallbackFocus}){
   const doc=root.ownerDocument,win=doc.defaultView;
   root.innerHTML=`
-    <svg class="workshop-guide-shade" aria-hidden="true" focusable="false"><path class="workshop-guide-mask"/></svg>
+    <svg class="workshop-guide-shade" aria-hidden="true" focusable="false">
+      <g class="workshop-guide-previous">
+        <path class="workshop-guide-mask"/>
+        <path class="workshop-guide-frame" fill-rule="evenodd"/>
+      </g>
+      <g class="workshop-guide-current">
+        <path class="workshop-guide-mask"/>
+        <path class="workshop-guide-frame" fill-rule="evenodd"/>
+      </g>
+      <path class="workshop-guide-hit"/>
+    </svg>
     <section class="workshop-guide-card" aria-labelledby="workshop-guide-heading">
       <h2 id="workshop-guide-heading" tabindex="-1" aria-describedby="workshop-guide-instruction"></h2>
       <p id="workshop-guide-instruction" class="hint"></p>
@@ -81,13 +101,31 @@ export function createWorkshopGuide(root,{getSteps,onStep=()=>{},targets=()=>[],
         <button type="button" class="primary" data-guide-action="next"></button>
       </div>
     </section>`;
-  const mask=root.querySelector('path'),card=root.querySelector('section');
+  const previousShade=root.querySelector('.workshop-guide-previous'),currentShade=root.querySelector('.workshop-guide-current');
+  const hit=root.querySelector('.workshop-guide-hit'),card=root.querySelector('section');
+  const reducedMotion=win.matchMedia('(prefers-reduced-motion: reduce)');
   const title=card.querySelector('h2'),instruction=card.querySelector('p');
   const exit=root.querySelector('[data-guide-action="exit"]');
   const back=root.querySelector('[data-guide-action="back"]');
   const next=root.querySelector('[data-guide-action="next"]');
   let step,opener,flow=[],ready=false,transitioning=false,frame=0,observed=[];
+  let animateStep=false,paintedPaths,animations=[];
   const resizeObserver=new win.ResizeObserver(scheduleLayout);
+
+  function setShade(group,paths){
+    for(const [index,path] of [...group.children].entries())path.setAttribute('d',paths[index]);
+  }
+  function animateChange(previousPaths){
+    for(const animation of animations)animation.cancel();
+    if(reducedMotion.matches){animations=[];return;}
+    const options={duration:stepDuration,easing:'ease-out'};
+    animations=[card.animate([{opacity:.65},{opacity:1}],options)];
+    if(previousPaths){
+      setShade(previousShade,previousPaths);
+      animations.push(previousShade.animate([{opacity:1},{opacity:0}],options));
+      animations.push(currentShade.animate([{opacity:0},{opacity:1}],options));
+    }
+  }
 
   function layout(){
     frame=0;
@@ -101,11 +139,26 @@ export function createWorkshopGuide(root,{getSteps,onStep=()=>{},targets=()=>[],
     }
     const viewport={width:win.innerWidth,height:win.innerHeight};
     const cutouts=elements.map(element=>spotlightRect(element,win,viewport)).filter(Boolean);
-    mask.setAttribute('d',shadePath(viewport.width,viewport.height,cutouts));
+    const padding=viewport.width<=900?8:10;
+    const padded=cutouts.map(rect=>padRect(rect,viewport,padding));
+    const shade=shadePath(viewport.width,viewport.height,padded);
+    const inner=cutouts.map(rect=>padRect(rect,viewport,padding-frameWidth));
+    // Both paths enclose the shaded area. Their even-odd fill leaves the
+    // outline of the union, including where neighbouring targets overlap.
+    const paths=[shade,shade+shadePath(viewport.width,viewport.height,inner)];
+    const previousPaths=paintedPaths;
+    setShade(currentShade,paths);
+    paintedPaths=paths;
+    hit.setAttribute('d',shadePath(viewport.width,viewport.height,cutouts));
     const visual=win.visualViewport;
-    const focused=elements.some(element=>element.contains(doc.activeElement))?doc.activeElement.getBoundingClientRect():null;
+    const controls=controlsIn(elements).map(element=>spotlightRect(element,win,viewport)).filter(Boolean);
+    const focused=elements.some(element=>element.contains(doc.activeElement))?spotlightRect(doc.activeElement,win,viewport):null;
     placeCard(card,visual?{left:visual.offsetLeft,top:visual.offsetTop,width:visual.width,height:visual.height}:
-      {left:0,top:0,...viewport},cutouts,focused);
+      {left:0,top:0,...viewport},padded,controls,focused);
+    if(animateStep){
+      animateStep=false;
+      animateChange(previousPaths);
+    }
   }
   function scheduleLayout(){
     if(step&&!frame)frame=win.requestAnimationFrame(layout);
@@ -131,6 +184,7 @@ export function createWorkshopGuide(root,{getSteps,onStep=()=>{},targets=()=>[],
     transitioning=true;
     try{onStep(id);}finally{transitioning=false;}
     ready=!!autoAdvance(id)&&canAdvance(id);
+    animateStep=true;
     render();
     title.focus({preventScroll:true});
   }
@@ -141,6 +195,10 @@ export function createWorkshopGuide(root,{getSteps,onStep=()=>{},targets=()=>[],
     opener=undefined;
     observed=[];
     resizeObserver.disconnect();
+    animateStep=false;
+    paintedPaths=undefined;
+    for(const animation of animations)animation.cancel();
+    animations=[];
     if(frame)win.cancelAnimationFrame(frame);
     frame=0;
   }
@@ -172,8 +230,7 @@ export function createWorkshopGuide(root,{getSteps,onStep=()=>{},targets=()=>[],
     else render();
   }
   function tabStops(){
-    const controls=[...new Set([...targets(step).filter(Boolean),card].flatMap(element=>
-      [...(element.matches(focusable)?[element]:[]),...element.querySelectorAll(focusable)]))]
+    const controls=controlsIn([...targets(step).filter(Boolean),card])
       .filter(element=>element.tabIndex>=0&&!element.matches(':disabled')&&!element.closest('[hidden],[inert]')&&
         element.getClientRects().length&&win.getComputedStyle(element).visibility==='visible');
     return controls.filter(control=>control.type!=='radio'||!control.name||control===
@@ -203,7 +260,7 @@ export function createWorkshopGuide(root,{getSteps,onStep=()=>{},targets=()=>[],
   win.addEventListener('resize',scheduleLayout);
   win.visualViewport?.addEventListener('resize',scheduleLayout);
   win.visualViewport?.addEventListener('scroll',scheduleLayout);
-  mask.addEventListener('wheel',event=>event.preventDefault(),{passive:false});
+  hit.addEventListener('wheel',event=>event.preventDefault(),{passive:false});
   exit.onclick=dismiss;
   back.onclick=()=>{if(step&&flow.indexOf(step)>0)show(flow[flow.indexOf(step)-1]);};
   next.onclick=()=>{if(step&&canAdvance(step))advance();};

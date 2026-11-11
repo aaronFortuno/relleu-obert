@@ -20,6 +20,7 @@ Els valors canònics són a [ui-tokens.css](src/ui-tokens.css).
 
 Els diàlegs conserven la seva jerarquia existent (cos de 13 px). La marca i
 les mètriques són excepcions explícites, no precedents per engrandir controls.
+La benvinguda i la visita guiada fan servir text de 14–15 px i accions més visibles.
 Els selectors compactes ja existents, com el de font d’edificis, fan 10 px;
 no s’han d’engrandir per uniformitzar-los amb els camps principals d’11 px.
 No confiar en mides natives d’`h2`, `summary`, `input` o `output`: aplicar les

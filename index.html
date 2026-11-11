@@ -8,6 +8,7 @@
   <span class="header-spacer" aria-hidden="true"></span>
   <button id="new-project" type="button" class="header-button header-action" hidden aria-label="Projecte nou" data-i18n-aria="ui.action.new" title="Projecte nou" data-i18n-title="ui.action.new"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15h6m-3-3v6"/></svg><span class="desktop-copy" data-i18n="ui.action.new">Projecte nou</span></button>
   <button id="projects-open" type="button" class="header-button header-action" aria-haspopup="dialog" aria-controls="projects-dialog" aria-label="Galeria de maquetes" data-i18n-aria="header.gallery" title="Galeria de maquetes" data-i18n-title="header.gallery"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="6" y="3" width="15" height="15" rx="2"/><path d="M3 8v11a2 2 0 0 0 2 2h11"/><circle cx="11" cy="8" r="1.5"/><path d="m7 15 4-4 3 3 2-2 4 4"/></svg><span class="desktop-copy" data-i18n="header.gallery">Galeria de maquetes</span></button>
+  <button id="tour-open" type="button" class="header-button header-action" aria-haspopup="dialog" aria-controls="workshop-welcome" aria-label="Visita guiada" data-i18n-aria="guide.workshopTour" title="Visita guiada" data-i18n-title="guide.workshopTour"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="5" cy="18" r="2"/><circle cx="19" cy="6" r="2"/><path d="M7 18h8a4 4 0 0 0 0-8H9a2 2 0 0 1 0-4h8"/></svg><span class="desktop-copy" data-i18n="guide.workshopTour">Visita guiada</span></button>
   <button id="help-open" type="button" class="header-button header-action" aria-haspopup="dialog" aria-controls="help-dialog" aria-label="Com funciona" data-i18n-aria="header.help" title="Com funciona" data-i18n-title="header.help"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg><span class="desktop-copy" data-i18n="header.help">Com funciona</span></button>
   <details class="language-control" id="language-control">
     <summary id="language-open" class="header-button header-action" aria-label="Idioma" data-i18n-aria="header.language" title="Idioma" data-i18n-title="header.language">
@@ -261,7 +262,7 @@
     </section>
     <section class="info-panel">
       <h2><button type="button" class="section-toggle" aria-expanded="false" aria-controls="info-data" data-i18n-text="ui.data.title">Dades i limitacions <i aria-hidden="true">+</i></button></h2>
-      <div class="config-content data-notes" id="info-data" hidden><p class="hint" data-i18n-text="ui.data.relief">Relleu: <span id="terrain-source-name">Mapterhorn / Mapzen</span></p><p id="building-info" class="hint"></p><button id="download-processing" class="quiet-button" type="button" disabled data-i18n="ui.data.downloadTiming">Descarrega els temps de generació ↓</button><p class="hint" data-i18n="ui.data.timingNote">El JSON de la darrera generació inclou coordenades, ajustos i temps.</p><div id="warnings"></div><p class="hint" data-i18n="ui.data.treesNote">Els arbres són procedimentals. Revisa les malles i el laminat abans d’imprimir.</p></div>
+      <div class="config-content data-notes" id="info-data" hidden><p class="hint" data-i18n-text="ui.data.relief">Relleu: <span id="terrain-source-name">Mapterhorn / Mapzen</span></p><p id="building-info" class="hint"></p><button id="download-processing" class="quiet-button" type="button" disabled aria-describedby="generation-report-note" data-i18n="ui.data.downloadTiming">Informe de generació ↓</button><p class="hint" id="generation-report-note" data-i18n="ui.data.timingNote">Aquest JSON inclou el retall, els ajustos i els temps. Adjunta’l si ens comuniques un problema.</p><div id="warnings"></div><p class="hint" data-i18n="ui.data.treesNote">Els arbres són procedimentals. Revisa les malles i el laminat abans d’imprimir.</p></div>
     </section>
     <section class="download-panel">
       <p id="export-feedback" class="hint" role="alert"></p>
@@ -294,7 +295,7 @@
       <path d="m27 9 7-6" stroke="var(--umbrella-accent)" stroke-width="4.5"/>
     </svg><span>ortogra<span class="umbrella-dot">.</span>fi</span>
   </a></p>
-  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer" data-i18n-text="ui.footer.openSource"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions" data-i18n-aria="ui.releases.title">v0.23.53</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V" data-i18n-aria="ui.footer.about"><span class="desktop-copy" data-i18n="ui.footer.aboutDesktop">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
+  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer" data-i18n-text="ui.footer.openSource"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions" data-i18n-aria="ui.releases.title">v0.23.54</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V" data-i18n-aria="ui.footer.about"><span class="desktop-copy" data-i18n="ui.footer.aboutDesktop">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
 </footer>
 
 <dialog id="projects-dialog" aria-labelledby="projects-title">
@@ -382,11 +383,20 @@
 </dialog>
 <dialog id="workshop-welcome" aria-labelledby="workshop-welcome-title">
   <div class="dialog-heading"><h2 id="workshop-welcome-title" data-i18n="guide.workshopWelcome">Benvingut a Relleu Obert</h2><button type="button" data-close aria-label="Tanca" data-i18n-aria="dialog.close">×</button></div>
-  <div class="dialog-content">
-    <p data-i18n="guide.workshopWelcomeText">Converteix un lloc real en una maqueta de relleu per imprimir en 3D. La visita guiada t’acompanya des de la mida fins a la descàrrega.</p>
-    <div class="edit-actions">
+  <div class="dialog-content welcome-tour-content">
+    <p class="welcome-tour-intro" data-i18n="guide.workshopWelcomeText">Converteix un lloc real en una maqueta de relleu per imprimir en 3D. La visita guiada t’acompanya des de la mida fins a la descàrrega.</p>
+    <section class="welcome-tour-examples" aria-label="Exemples de maquetes" data-i18n-aria="ui.examples.title">
+      <img id="welcome-tour-image" width="720" height="450" alt="">
+      <div class="welcome-tour-carousel">
+        <button type="button" class="quiet-button" data-welcome-slide="-1" aria-label="Exemple anterior" data-i18n-aria="ui.examples.previous">‹</button>
+        <p role="status"><strong id="welcome-tour-example-name"></strong><span id="welcome-tour-example-position"></span></p>
+        <button type="button" class="quiet-button" data-welcome-slide="1" aria-label="Exemple següent" data-i18n-aria="ui.examples.next">›</button>
+      </div>
+      <small class="welcome-tour-credits">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> · © <a href="https://openmaptiles.org/" target="_blank" rel="noreferrer">OpenMapTiles</a></small>
+    </section>
+    <div class="welcome-tour-actions">
       <button type="button" id="welcome-start-tour" class="primary" data-i18n="guide.workshopStart" autofocus>Inicia el recorregut</button>
-      <button type="button" class="quiet-button" data-close data-i18n="guide.workshopLater">Ara no</button>
+      <button type="button" class="secondary" data-close data-i18n="guide.workshopLater">Ara no</button>
     </div>
   </div>
 </dialog>
@@ -397,6 +407,7 @@
   </header>
   <div class="dialog-content help-guide">
     <p class="guide-intro" data-i18n="guide.intro">Crea una maqueta 3D d’un lloc real per estudiar-ne el relleu i els accidents geogràfics a l’aula. Explora-la al navegador o imprimeix-la.</p>
+    <button type="button" id="start-workshop-guide" class="secondary" aria-haspopup="dialog" aria-controls="workshop-welcome" data-i18n="guide.workshopTour">Visita guiada</button>
     <section aria-labelledby="guide-start">
       <h3 id="guide-start" data-i18n="guide.start">Primera maqueta</h3>
       <ol class="help-steps">
@@ -421,7 +432,6 @@
 <dialog id="about-dialog" aria-labelledby="about-title">
   <div class="dialog-heading"><h2 id="about-title" data-i18n="ui.about.title">Sobre Relleu Obert</h2><button data-close aria-label="Tanca" data-i18n-aria="dialog.close">×</button></div>
   <div class="dialog-content">
-    <button type="button" id="start-workshop-guide" class="secondary" data-i18n="guide.workshopStart">Inicia el recorregut</button>
     <div class="about-intro">
       <a class="lightning-qr" href="lightning:LNURL1DP68GURN8GHJ7AMPD3KX2AR0VEEKZAR0WD5XJTNRDAKJ7TNHV4KXCTTTDEHHWM30D3H82UNVWQHKZUR5WDMKJMFEXQESLJTDDS" aria-label="Obre la cartera Lightning" data-i18n-aria="ui.about.openWallet"><img src="./assets/lightning.svg" width="128" height="128" alt="Codi QR per fer una aportació voluntària amb Lightning" data-i18n-alt="ui.about.qrAlt"></a>
       <div>
