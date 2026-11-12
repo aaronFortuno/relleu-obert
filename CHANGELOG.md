@@ -1,5 +1,11 @@
 # Canvis
 
+## v0.24.0 — 2026-11-12
+
+- El quadre V4V distribueix en quatre blocs el projecte i l’autor, les aportacions amb Lightning, la privacitat i les fonts.
+- Umami compta les generacions i descàrregues i l’ús de fonts, eines, talls i materials. Les mides es compten per franges.
+- Els punts destacats tornen a tenir un anell buit en perspectiva i es poden treure des del visor o del llistat. Retirada l’escena de presentació.
+
 ## v0.23.57 — 2026-11-12
 
 - El quadre V4V explica què es desa al navegador, quines consultes reben els serveis cartogràfics i l’estat d’Umami.

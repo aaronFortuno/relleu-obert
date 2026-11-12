@@ -116,7 +116,6 @@
   }
   .preview-toolbar .viewer-help summary {min-width:38px;line-height:42px;border-radius:5px}
   .preview-toolbar .viewer-help p {top:48px;left:auto;right:0;width:min(190px,55vw)}
-  .preview-toolbar #presentation-toggle {display:none}
   .viewer-tools #preview-orbit {gap:4px}
   #preview-orbit span {min-inline-size:0}
   #model-badge {max-width:42vw;text-align:right;white-space:normal}
@@ -135,8 +134,9 @@
   .dialog-content input:not([type=range]):not([type=checkbox]) {font-size:16px}
   .dialog-content :is(button,.primary,.secondary) {min-height:44px}
   .help-questions summary {min-height:44px;padding-block:12px}
-  .about-intro {flex-wrap:wrap;gap:12px}
-  .about-bottom {grid-template-columns:1fr}
+  .about-grid {grid-template-columns:1fr;gap:16px}
+  .about-grid > section + section {border-top:1px solid var(--line);padding-top:16px}
+  .about-value-body .lightning-qr img {width:80px;height:80px}
   .lightning-address code {overflow-wrap:anywhere}
 }
 

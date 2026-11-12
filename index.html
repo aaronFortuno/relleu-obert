@@ -110,7 +110,7 @@
   <section class="workspace" aria-label="Model tridimensional" data-i18n-aria="ui.preview.title">
     <div id="viewport" aria-label="Previsualització tridimensional del model" data-i18n-aria="ui.preview.viewport">
       <div id="brush-cursor" hidden></div>
-      <div class="preview-toolbar" hidden><div class="viewer-tools"><button id="reset" title="Restablir la vista" data-i18n-title="ui.preview.resetTitle" data-i18n="ui.preview.reset">↺ Restablir</button><button id="top" aria-label="Vista zenital ↑" data-i18n-aria="ui.preview.topView"><span class="desktop-copy" data-i18n="ui.preview.topView">Vista zenital ↑</span><span class="mobile-copy" data-i18n="ui.preview.topShort">Zenital ↑</span></button><button id="viewer-tools-open" type="button" aria-expanded="false" aria-controls="viewer-edit-panel" data-i18n="ui.tools.title">Eines</button><button id="presentation-toggle" type="button" aria-pressed="false" data-i18n="preview.presentation" disabled>Presentació</button><details class="viewer-help"><summary aria-label="Ajuda dels controls del model" data-i18n-aria="ui.preview.help">?</summary><p id="viewer-hint"><span class="desktop-copy" data-i18n="ui.preview.controls">Arrossega per girar · Roda per apropar · Botó dret per desplaçar</span><span class="mobile-copy" data-i18n="ui.preview.controlsMobile">Un dit per girar. Amb dos dits pots fer zoom i desplaçar la maqueta.</span></p></details></div>
+      <div class="preview-toolbar" hidden><div class="viewer-tools"><button id="reset" title="Restablir la vista" data-i18n-title="ui.preview.resetTitle" data-i18n="ui.preview.reset">↺ Restablir</button><button id="top" aria-label="Vista zenital ↑" data-i18n-aria="ui.preview.topView"><span class="desktop-copy" data-i18n="ui.preview.topView">Vista zenital ↑</span><span class="mobile-copy" data-i18n="ui.preview.topShort">Zenital ↑</span></button><button id="viewer-tools-open" type="button" aria-expanded="false" aria-controls="viewer-edit-panel" data-i18n="ui.tools.title">Eines</button><details class="viewer-help"><summary aria-label="Ajuda dels controls del model" data-i18n-aria="ui.preview.help">?</summary><p id="viewer-hint"><span class="desktop-copy" data-i18n="ui.preview.controls">Arrossega per girar · Roda per apropar · Botó dret per desplaçar</span><span class="mobile-copy" data-i18n="ui.preview.controlsMobile">Un dit per girar. Amb dos dits pots fer zoom i desplaçar la maqueta.</span></p></details></div>
         <div class="preview-options">
           <div class="viewer-tools"><button id="preview-orbit" type="button" role="switch" aria-checked="false" disabled data-i18n-text="ui.preview.orbit">Gir automàtic <span aria-hidden="true" data-i18n="ui.preview.off">Desactivat</span></button></div>
           <span id="model-badge" role="status" aria-live="polite" hidden></span>
@@ -144,7 +144,6 @@
 </div></div>
         <p id="viewer-tool-status" class="hint" role="status"></p>
       </section>
-      <span id="presentation-note" class="presentation-note" hidden data-i18n="preview.presentationNote">Escena il·lustrativa · els acabats de la impressió poden variar.</span>
       <div id="work-indicator" role="status" aria-live="polite" hidden><span class="work-spinner" aria-hidden="true"></span><span id="work-label" data-i18n="ui.preview.preparing">Preparant el model…</span></div>
       <div id="welcome">
         <button type="button" id="welcome-guide" class="quiet-button" data-i18n="guide.workshopStart">Inicia el recorregut</button>
@@ -295,7 +294,7 @@
       <path d="m27 9 7-6" stroke="var(--umbrella-accent)" stroke-width="4.5"/>
     </svg><span>ortogra<span class="umbrella-dot">.</span>fi</span>
   </a></p>
-  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer" data-i18n-text="ui.footer.openSource"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions" data-i18n-aria="ui.releases.title">v0.23.57</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V" data-i18n-aria="ui.footer.about"><span class="desktop-copy" data-i18n="ui.footer.aboutDesktop">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
+  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer" data-i18n-text="ui.footer.openSource"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions" data-i18n-aria="ui.releases.title">v0.24.0</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V" data-i18n-aria="ui.footer.about"><span class="desktop-copy" data-i18n="ui.footer.aboutDesktop">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
 </footer>
 
 <dialog id="projects-dialog" aria-labelledby="projects-title">
@@ -431,20 +430,37 @@
 
 <dialog id="about-dialog" aria-labelledby="about-title">
   <div class="dialog-heading"><h2 id="about-title" data-i18n="ui.about.title">Sobre Relleu Obert</h2><button data-close aria-label="Tanca" data-i18n-aria="dialog.close">×</button></div>
-  <div class="dialog-content">
-    <div class="about-intro">
-      <a class="lightning-qr" href="lightning:LNURL1DP68GURN8GHJ7AMPD3KX2AR0VEEKZAR0WD5XJTNRDAKJ7TNHV4KXCTTTDEHHWM30D3H82UNVWQHKZUR5WDMKJMFEXQESLJTDDS" aria-label="Obre la cartera Lightning" data-i18n-aria="ui.about.openWallet"><img src="./assets/lightning.svg" width="128" height="128" alt="Codi QR per fer una aportació voluntària amb Lightning" data-i18n-alt="ui.about.qrAlt"></a>
-      <div>
-        <p data-i18n="ui.about.intro">Relleu Obert és un projecte educatiu, gratuït i de codi obert. Les maquetes de llocs reals ajuden a estudiar el relleu i els accidents geogràfics a l’aula.</p>
-        <p data-i18n="ui.about.value">Si et resulta útil, pots donar suport al projecte amb una aportació voluntària per Lightning (Value for Value). Recomanar-lo també ajuda.</p>
-        <span class="small-label">LIGHTNING NETWORK</span>
-        <div class="lightning-address"><code>aptswim903@walletofsatoshi.com</code><button id="copy-lightning" aria-label="Copia l’adreça Lightning" data-i18n-aria="ui.about.copyAddress" data-i18n="ui.action.copy">Copia</button></div>
-        <p id="copy-status" class="hint" role="status"></p>
+  <div class="dialog-content about-grid">
+    <section class="about-author" aria-labelledby="about-author-title">
+      <h3 id="about-author-title" data-i18n="ui.about.author">Sobre l’autor · Aarón Fortuño</h3>
+      <div class="author-note">
+        <img src="./assets/aaron-fortuno.png" width="64" height="64" alt="Aarón Fortuño">
+        <div>
+          <p data-i18n="ui.about.bio">Soc docent i creo aplicacions educatives i altres projectes de codi obert. Si tens curiositat, els trobaràs al meu portfoli.</p>
+          <a href="https://aaronfortuno.github.io/portfolio/" target="_blank" rel="noreferrer" data-i18n="ui.about.portfolio">Explora el meu portfoli ↗</a>
+        </div>
       </div>
-    </div>
-    <div class="about-bottom">
-      <div class="author-note"><img src="./assets/aaron-fortuno.png" width="64" height="64" alt="Aarón Fortuño"><div><h3 data-i18n="ui.about.author">Sobre l’autor · Aarón Fortuño</h3><p data-i18n="ui.about.bio">Soc docent i creo aplicacions educatives i altres projectes de codi obert. Si tens curiositat, els trobaràs al meu portfoli.</p><a href="https://aaronfortuno.github.io/portfolio/" target="_blank" rel="noreferrer" data-i18n="ui.about.portfolio">Explora el meu portfoli ↗</a></div></div>
-      <section class="about-sources" aria-labelledby="about-sources-title">
+      <p data-i18n="ui.about.intro">Relleu Obert és un projecte educatiu, gratuït i de codi obert. Les maquetes de llocs reals ajuden a estudiar el relleu i els accidents geogràfics a l’aula.</p>
+    </section>
+    <section class="about-value" aria-labelledby="about-value-title">
+      <h3 id="about-value-title">Value for Value (V4V)</h3>
+      <div class="about-value-body">
+        <a class="lightning-qr" href="lightning:LNURL1DP68GURN8GHJ7AMPD3KX2AR0VEEKZAR0WD5XJTNRDAKJ7TNHV4KXCTTTDEHHWM30D3H82UNVWQHKZUR5WDMKJMFEXQESLJTDDS" aria-label="Obre la cartera Lightning" data-i18n-aria="ui.about.openWallet"><img src="./assets/lightning.svg" width="128" height="128" alt="Codi QR per fer una aportació voluntària amb Lightning" data-i18n-alt="ui.about.qrAlt"></a>
+        <div>
+          <p data-i18n="ui.about.value">Si et resulta útil, pots donar suport al projecte amb una aportació voluntària per Lightning (Value for Value). Recomanar-lo també ajuda.</p>
+          <span class="small-label">LIGHTNING NETWORK</span>
+          <div class="lightning-address"><code>aptswim903@walletofsatoshi.com</code><button id="copy-lightning" aria-label="Copia l’adreça Lightning" data-i18n-aria="ui.about.copyAddress" data-i18n="ui.action.copy">Copia</button></div>
+          <p id="copy-status" class="hint" role="status"></p>
+        </div>
+      </div>
+    </section>
+    <section class="about-privacy" aria-labelledby="about-privacy-title">
+      <h3 id="about-privacy-title" data-i18n="ui.about.privacy">Privacitat i estadístiques</h3>
+      <p data-i18n="ui.about.privacyLocal">Les maquetes es calculen i s’exporten al navegador. Els projectes desats i les preferències es guarden en aquest navegador.</p>
+      <p data-i18n="ui.about.privacyMaps">El navegador consulta les fonts cartogràfiques d’aquest quadre per mostrar el mapa i obtenir les dades del retall. Quan cerques un lloc o una adreça, envia a Photon el text i el centre del mapa.</p>
+      <p data-i18n="ui.about.privacyUmami">A relleu.ortogra.fi, Umami compta les visites, les obertures de la galeria, les generacions i descàrregues, i l’ús d’eines i ajustos. Les estadístiques inclouen el mode, la franja de mida, la font d’edificis triada, el format i el nombre de peces o materials. Exclouen les cerques, les coordenades i el contingut de projectes i fitxers. El servidor rep la IP de la connexió i el seguiment respecta Do Not Track i Global Privacy Control.</p>
+    </section>
+    <section class="about-sources" aria-labelledby="about-sources-title">
         <h3 id="about-sources-title" tabindex="-1" data-i18n="ui.about.sources">Fonts de dades</h3>
         <dl>
           <dt data-i18n="ui.about.maps">Mapa i vies</dt>
@@ -459,16 +475,8 @@
           <dd><a href="https://github.com/komoot/photon" target="_blank" rel="noreferrer">Photon</a></dd>
         </dl>
         <a href="https://github.com/aaronFortuno/relleu-obert/blob/main/SOURCES.md" target="_blank" rel="noreferrer" data-i18n="ui.about.licenses">Fonts i llicències completes ↗</a>
-      </section>
-    </div>
-    <section class="about-sources" aria-labelledby="about-privacy-title">
-      <h3 id="about-privacy-title" data-i18n="ui.about.privacy">Privacitat i estadístiques</h3>
-      <p data-i18n="ui.about.privacyLocal">Les maquetes es calculen i s’exporten al navegador. Els projectes desats i les preferències es guarden en aquest navegador.</p>
-      <p data-i18n="ui.about.privacyMaps">El navegador consulta els serveis cartogràfics indicats més amunt per mostrar el mapa i obtenir les dades del retall. Quan cerques un lloc o una adreça, envia a Photon el text i el centre del mapa.</p>
-      <p data-i18n="ui.about.privacyUmami">A relleu.ortogra.fi, l’Umami d’ortogra.fi compta les visites i les obertures de la galeria. El servidor d’estadístiques rep l’adreça IP de la connexió. El seguiment respecta Do Not Track i Global Privacy Control. Les dades d’ús exclouen les cerques, les coordenades dels retalls i el contingut dels projectes i fitxers.</p>
     </section>
   </div>
 </dialog>
-<script type="module" src="./src/analytics.js"></script>
 <script type="module" src="./src/main.js"></script>
 </body></html>

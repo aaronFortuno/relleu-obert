@@ -1,0 +1,33 @@
+.preview-pin-layer {position:absolute;inset:0;z-index:3;pointer-events:none}
+.preview-pin {position:absolute;left:0;top:0}
+.preview-pin::before {
+  content:'';position:absolute;inset:-30px -40px -16px -12px;pointer-events:auto;
+}
+.preview-pin.is-left::before {inset-inline:-40px -12px}
+.preview-pin.is-below::before {inset-block:-12px -40px}
+.preview-pin button {
+  position:absolute;right:auto;left:11px;display:grid;place-items:center;
+  margin:0;padding:0;border:1px solid var(--line);border-radius:4px;
+  color:var(--green);background:var(--paper);pointer-events:auto;
+}
+.preview-pin .preview-pin-number {
+  top:1px;min-width:18px;height:18px;padding-inline:3px;
+  font-size:var(--ui-control);line-height:1;font-weight:650;
+}
+.preview-pin .preview-pin-remove {
+  top:-29px;width:24px;height:24px;font-size:18px;line-height:1;
+  opacity:0;pointer-events:none;
+}
+.preview-pin.is-left button {right:11px;left:auto}
+.preview-pin.is-below .preview-pin-remove {top:23px}
+.preview-pin:is(:hover,:focus-within) {z-index:1}
+.preview-pin:is(:hover,:focus-within) .preview-pin-remove {
+  opacity:1;pointer-events:auto;
+}
+.preview-pin .preview-pin-remove:hover {color:#963b23;border-color:currentColor}
+@media(hover:none) {
+  .preview-pin.is-selected .preview-pin-remove {
+    opacity:1;pointer-events:auto;width:32px;height:32px;top:-34px;
+  }
+  .preview-pin.is-selected.is-below .preview-pin-remove {top:23px}
+}

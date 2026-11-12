@@ -58,6 +58,9 @@ classes existents. `output` de formulari no ha de flotar a la dreta.
   i els talls sobre una taula. Després, maqueta i controls flotants discrets.
   Eines del visor separa correccions de senders, rutes i punts destacats. El panell
   deixa la maqueta a la vista i mostra el mode actiu i com sortir-ne.
+  Els punts destacats es veuen com un anell en perspectiva amb el número al
+  costat. La creu apareix en passar-hi el punter, amb el focus o en seleccionar
+  el punt en una pantalla tàctil. Es pot desfer la retirada des del llistat.
 - Els canvis d’aparença o d’una capa conserven càmera/zoom. Restablir és una
   acció explícita; una regió o mida noves poden requerir enquadrament.
 - La visita guiada ressalta els controls originals de cada pas i permet

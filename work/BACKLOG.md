@@ -1,13 +1,13 @@
 # Backlog actiu de Relleu Obert
 
-Revisat el **2026-11-12** amb la v0.23.57. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
+Revisat el **2026-11-12** amb la v0.24.0. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
 
-## Abans de la v0.24
+## Validacions de la v0.24
 
 - [x] Visita guiada validada per l’usuari.
 - [ ] Fer una prova curta amb una persona nova. Generar des de zero, adaptar una maqueta de la galeria i preparar una descàrrega de diverses peces. [RO-058](#ro-058--auditoria-del-taller-abans-de-la-v024)
 - [ ] Comprovar al laminador una peça amb un punt destacat i al taller la recuperació d’un punt mal situat. [RO-057](#ro-057--cartografia-excursionista-i-marques-imprimibles)
-- [ ] Confirmar al tauler d’Umami la visita i l’obertura de galeria. Decidir si convé afegir més esdeveniments després d’aquest primer recompte. [RO-059](#ro-059--privacitat-i-estadístiques-dús)
+- [ ] Confirmar al tauler d’Umami les visites, les obertures de galeria i els nous esdeveniments d’ús. [RO-059](#ro-059--privacitat-i-estadístiques-dús)
 
 Les comprovacions de llocs concrets, la revisió del catàleg i la impressió física continuen a les seves fitxes de seguiment.
 
@@ -112,7 +112,7 @@ La v0.23.49 actualitza els límits sobre la malla carregada i reutilitza les dad
 
 La v0.23.50 incorpora rutes GPX locals i perforacions verticals de Ø1 mm i 7–9 mm de fondària en Relleu pur. Les proves cobreixen projectes desats, actualització de la ruta i talls entre peces, i el sòlid perforat amb diversos materials i cavitats. Pendent de validació al laminador i d’impressió física. Els banderins personalitzats queden per a una fase posterior.
 
-La v0.23.51 destaca en taronja les rutes dibuixades i importades al visor. Tenen una assignació de material pròpia i els senders cartografiats es mantenen blancs.
+La v0.23.51 destaca en taronja les rutes dibuixades i importades al visor. Tenen una assignació de material pròpia i els senders cartografiats es mantenen blancs. La v0.24.0 recupera els anells en perspectiva i permet retirar un punt directament del visor, amb desfer al llistat.
 
 ### RO-058 — Auditoria del taller abans de la v0.24
 
@@ -120,15 +120,18 @@ La v0.23.51 destaca en taronja les rutes dibuixades i importades al visor. Tenen
 
 ### RO-059 — Privacitat i estadístiques d’ús
 
-**P1.** Umami compta visites i obertures de galeria (`obre_galeria`) a `relleu.ortogra.fi`. L’avís del V4V descriu aquest seguiment, el desament local i les consultes cartogràfiques. Queda confirmar que els dos recomptes arriben al tauler.
+**P1.** Umami compta visites, obertures de galeria i els esdeveniments següents a `relleu.ortogra.fi`. L’avís del V4V descriu aquest seguiment, el desament local i les consultes cartogràfiques. Queda confirmar els recomptes al tauler.
 
-| Esdeveniment proposat | Quan es comptaria | Camps |
+| Esdeveniment | Quan es compta | Camps |
 | --- | --- | --- |
-| `genera_model` | La generació demanada arriba a un resultat utilitzable. | Mode de maqueta |
+| `genera_model` | La generació arriba a un resultat utilitzable. | Mode i franja del costat més llarg (fins a 15 cm, fins a 25 cm, fins a 50 cm o més de 50 cm) |
 | `error_generacio` | La generació demanada acaba amb un error que l’usuari ha de resoldre. | Mode de maqueta |
-| `descarrega_model` | L’exportació genera el fitxer i el navegador inicia la descàrrega. | Mode de maqueta i format |
-| `inicia_visita` i `completa_visita` | La persona inicia la visita o en confirma l’últim pas. | Cap |
+| `descarrega_model` | L’exportació genera el fitxer i el navegador inicia la descàrrega. | Mode, format i nombre de peces |
+| `canvia_font_edificis` | Es tria una font diferent al selector. | Font |
+| `usa_eina` | S’acaba un traç de sender o ruta, s’importa un GPX vàlid o es marca un punt. | Eina |
+| `ajusta_talls` | S’aplica un canvi a la divisió o s’acaba d’arrossegar un tall. | Nombre de peces |
+| `canvia_materials` | Es canvia el nombre de materials. | Mode i nombre de materials |
 
-Els recomptes serveixen per detectar fricció entre generació, exportació i visita. El fitxer lliurat al navegador és l’últim resultat observable de l’exportació. Les actualitzacions de capes, les cancel·lacions i els errors recuperats queden fora del recompte.
+El fitxer lliurat al navegador és l’últim resultat observable de l’exportació. El recompte de generacions exclou els recàlculs de capes i els errors recuperats. Les obertures de la galeria es compten amb `obre_galeria`.
 
-Si s’amplia el seguiment, enviar els nous esdeveniments de forma explícita amb noms fixos i camps de valors tancats. Mantenir el filtre d’adreces i de procedència i excloure coordenades, noms de lloc i de projecte, text de cerca, fitxers, informes, missatges d’error i identificadors propis. Comprovar els camps enviats i actualitzar el V4V si canvia l’abast. [Configuració d’Umami](https://umami.is/docs/tracker-configuration)
+Els esdeveniments admeten noms fixos i camps de valors tancats. El filtre exclou coordenades, noms de lloc i de projecte, text de cerca, fitxers, informes, missatges d’error, identificadors propis i adreces de procedència. Actualitzar el V4V si canvia l’abast. [Configuració d’Umami](https://umami.is/docs/tracker-configuration)

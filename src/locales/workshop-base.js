@@ -7,8 +7,6 @@ export default {
   'header.help': ['Com funciona', 'Cómo funciona', 'Como funciona', 'Nola dabil', 'How it works'],
   'header.language': ['Idioma', 'Idioma', 'Idioma', 'Hizkuntza', 'Language'],
   'header.gallery': ['Galeria de maquetes', 'Galería de maquetas', 'Galería de maquetas', 'Maketen galeria', 'Model gallery'],
-  'preview.presentation': ['Presentació', 'Presentación', 'Presentación', 'Aurkezpena', 'Presentation'],
-  'preview.presentationNote': ['Escena il·lustrativa · els acabats de la impressió poden variar.', 'Escena ilustrativa · el acabado de la impresión puede variar.', 'Escena ilustrativa · o acabado da impresión pode variar.', 'Ilustraziorako eszena · inprimaketaren akabera alda daiteke.', 'Illustrative scene · the printed finish may vary.'],
   'section.place': ['Territori', 'Territorio', 'Territorio', 'Lurraldea', 'Area'],
   'section.size': ['Peça', 'Pieza', 'Peza', 'Pieza', 'Piece'],
   'section.terrain': ['Terreny', 'Terreno', 'Terreo', 'Lurzorua', 'Terrain'],

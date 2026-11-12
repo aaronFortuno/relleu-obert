@@ -27,9 +27,9 @@ import {initDialogs} from './dialogs.js';
 import {prependReleases,releasesAfter} from './release-history.js';
 import changelog from '../CHANGELOG.md?raw';
 import {formatNumber,getLocale,initI18n,onLocaleChange,t,translateEngineMessage} from './i18n.js';
-import {createPresentationMode} from './presentation-scene.js';
-import {createDemandRenderer} from './render-scheduler.js';
 import {createPreviewOrbit} from './preview-orbit.js';
+import {createPreviewPins} from './preview-pins.js';
+import {trackWorkshopEvent,workshopMode,workshopSize} from './analytics.js';
 import {createBuildingUpdateScheduler} from './building-update-scheduler.js';
 import {createProjectBrushHistory} from './project-brush-history.js';
 import {withoutLastGesture} from './brush-coverage.js';
@@ -180,12 +180,16 @@ let trailStrokes=[],drawnRouteStrokes=[],pendingTrailFrame=null,pendingRouteFram
 let userRoute=null,pins=[],nextPinId=1,selectedPinId=null,removedPin=null,pinPointer=null;
 let pendingBrushFrame=null,transportTimer=null,reliefTimer=null;
 let exportFormat='bambu';
-let baseThickness=DEFAULT_BASE_THICKNESS_MM,cutPreviewFrame=null;
+let baseThickness=DEFAULT_BASE_THICKNESS_MM,cutPreviewFrame=null,cutChangedDuringDrag=false;
 const cutSettings=new Map(),sizeKey=(width,height)=>`${width}x${height}`;
 const printCuts=(width,height)=>cutSettings.get(sizeKey(width,height))??{};
 const printPlan=(width,height)=>tilePlan(width,height,printCuts(width,height));
 const cutEditor=bindPrintCutEditor($('#print-cuts-fields'),{
-  text,formatNumber,onChange:applyPrintCuts,onCommit:()=>{if(pins.length)refreshPinMarkers();}
+  text,formatNumber,onChange:applyPrintCuts,onCommit:()=>{
+    if(cutChangedDuringDrag)trackWorkshopEvent('ajusta_talls',{peces:printPlan(...size()).tiles.length});
+    cutChangedDuringDrag=false;
+    if(pins.length)refreshPinMarkers();
+  }
 });
 let pendingFullRegion=null,lastValidBuildings=null,recoveryNotice='';
 let pendingCadastralBuild=false;
@@ -212,7 +216,7 @@ $('#download-processing').onclick=()=>{
   const blob=new Blob([JSON.stringify(lastProcessingReport,null,2)+'\n'],{type:'application/json'});
   downloadFile(blob,'relleu-obert-informe-'+lastProcessingReport.startedAt.replaceAll(':','-')+'.json');
 };
-let presentationMode,demandRenderer;let contextLost=false,presentationReduced=false;
+let contextLost=false;
 let landscapeMaterials={count:4,assignments:defaultAssignments(4)};
 let reliefMaterials={count:6,assignments:defaultReliefAssignments(6)};
 let selectedSize=null,exampleSelection=null,regularPureRelief=false;
@@ -305,7 +309,7 @@ function lock(value){
   view.classList.toggle('is-working',workPending&&!drawing);
   if(workPending&&!drawing)$('#brush-cursor').hidden=true;
   editButtons();
-  syncPresentationUI();
+  syncOrbitControl();
   syncViewerTools();
   updateWorkshopGuide();
 }
@@ -390,31 +394,37 @@ function home(){
   camera.position.copy(new THREE.Vector3(.75,-1,.85).normalize().multiplyScalar(distance).add(sphere.center));
   controls.update();
 }
-new ResizeObserver(()=>{const w=view.clientWidth,h=view.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();invalidateView();}).observe(view);
+new ResizeObserver(()=>{const w=view.clientWidth,h=view.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}).observe(view);
 const renderWorkshop=time=>{
   orbitOffset.subVectors(camera.position,controls.target);
   const horizontal=Math.hypot(orbitOffset.x,orbitOffset.y);
   const motion=previewOrbit.step(time,Math.atan2(orbitOffset.z,horizontal),
-    orbitEnabled&&!!model&&!stagedBuild?.preview&&!orbitPointers.size&&brush==='navigate');
+    orbitEnabled&&!!model&&!stagedBuild?.preview&&!orbitPointers.size&&brush==='navigate'&&!previewPins.interacting());
   if(motion){
     const distance=orbitOffset.length(),heading=Math.atan2(orbitOffset.y,orbitOffset.x)+motion.turn;
     const radius=distance*Math.cos(motion.elevation);
     camera.position.copy(controls.target).add(orbitOffset.set(radius*Math.cos(heading),radius*Math.sin(heading),distance*Math.sin(motion.elevation)));
   }
   controls.update();
+  previewPins.render(!stagedBuild?.preview);
   renderer.render(scene,camera);
 };
 home();
-function invalidateView(){if(presentationMode?.isActive()&&!contextLost)demandRenderer?.invalidate();}
-function syncPresentationUI(){const button=$('#presentation-toggle');if(!button)return;const active=!!presentationMode?.isActive();button.disabled=!model||busy||pendingVegetation||drawing||contextLost;button.setAttribute('aria-pressed',String(active));$('#presentation-note').hidden=!active;orbitButton.hidden=active;orbitButton.disabled=!model||contextLost;}
-function refreshPresentation(m,resetCamera=false){if(m&&presentationMode?.isActive()){presentationMode.refreshBounds(m,{resetCamera});invalidateView();}syncPresentationUI();}
-function leavePresentation(error){demandRenderer?.stop();try{presentationMode?.exit();}catch(e){error??=e;}if(!contextLost)renderer.setAnimationLoop(renderWorkshop);syncPresentationUI();say(error?statusMessage('status.presentationError',()=>({error:messageText(error.uiMessage??error.message)})):statusMessage('status.presentationReturn'),!!error);}
-presentationMode=createPresentationMode({scene,camera,renderer,controls,group,light,ground,getSeams:()=>seams,onReset:home});
-demandRenderer=createDemandRenderer({update:()=>controls.update(),render:()=>renderer.render(scene,camera),onError:leavePresentation,onSlow:()=>{if(!presentationMode.isActive()||presentationReduced)return;presentationReduced=true;renderer.shadowMap.enabled=false;renderer.setPixelRatio(1);say(statusMessage('status.presentationSimplified'));invalidateView();}});
-controls.addEventListener('change',invalidateView);
-$('#presentation-toggle').onclick=()=>{if(!model||busy||pendingVegetation||drawing||contextLost)return;try{if(presentationMode.isActive()){leavePresentation();return;}endVegetationEditing();renderer.setAnimationLoop(null);presentationMode.enter(model);presentationReduced=false;demandRenderer.start();syncPresentationUI();say(statusMessage('status.presentationActive'));}catch(e){leavePresentation(e);}};
-renderer.domElement.addEventListener('webglcontextlost',event=>{event.preventDefault();contextLost=true;demandRenderer.stop();renderer.setAnimationLoop(null);syncPresentationUI();say(statusMessage('status.previewRecovering'),true);});
-renderer.domElement.addEventListener('webglcontextrestored',()=>{contextLost=false;if(presentationMode.isActive()){presentationMode.refreshBounds(stagedBuild?.preview||model);demandRenderer.start();}else if(model||stagedBuild?.preview)renderer.setAnimationLoop(renderWorkshop);syncPresentationUI();say(statusMessage('status.previewRecovered'));});
+function syncOrbitControl(){orbitButton.disabled=!model||contextLost;}
+renderer.domElement.addEventListener('webglcontextlost',event=>{
+  event.preventDefault();
+  contextLost=true;
+  renderer.setAnimationLoop(null);
+  previewPins.render(false);
+  syncOrbitControl();
+  say(statusMessage('status.previewRecovering'),true);
+});
+renderer.domElement.addEventListener('webglcontextrestored',()=>{
+  contextLost=false;
+  if(model||stagedBuild?.preview)renderer.setAnimationLoop(renderWorkshop);
+  syncOrbitControl();
+  say(statusMessage('status.previewRecovered'));
+});
 const shownMaterialMode=()=>stagedBuild?.preview?stagedBuild.pureRelief:model?isPure(model):pureSelected();
 function materialProfile(pure){
   const settings=pure?reliefMaterials:landscapeMaterials;
@@ -434,7 +444,6 @@ function recolor(updateLegend=true){
   }
   if(updateLegend)legend();
   metrics();
-  invalidateView();
 }
 function legend(){
   const root=$('#material-legend'),picker=$('#material-count'),pure=shownMaterialMode();
@@ -521,7 +530,7 @@ function showBuildPreview({categories,width,height,mode,piece}){
     $('#welcome').hidden=true;
     $('.preview-toolbar').hidden=false;
     showCatalogPlace(pendingCatalogPlace);
-    if(!contextLost&&!presentationMode.isActive())renderer.setAnimationLoop(renderWorkshop);
+    if(!contextLost)renderer.setAnimationLoop(renderWorkshop);
   }
   if(first||mode!=='append')for(const mesh of [...group.children])dispose(mesh);
   for(const part of categories)addModelMesh(part);
@@ -531,7 +540,6 @@ function showBuildPreview({categories,width,height,mode,piece}){
   if(first)legend();
   const refit=first&&needsCameraFit(width,height,stagedBuild.bbox,stagedBuild.pose);
   if(refit)home();
-  refreshPresentation(stagedBuild.preview,refit);
   if(first&&processingRun)processingRun.firstTerrainPreviewMilliseconds=performance.now()-processingRun.started;
 }
 function needsCameraFit(width,height,bbox,pose){
@@ -557,12 +565,11 @@ function restoreBuildPreview(){
   camera.zoom=saved.zoom;
   camera.updateProjectionMatrix();
   controls.update();
-  invalidateView();
 }
 function display(m,changedCategories=null,refit=true){
   for(const mesh of [...group.children])if(!changedCategories||changedCategories.includes(mesh.name))dispose(mesh);
   for(const part of m.categories)if(!changedCategories||changedCategories.includes(part.id))addModelMesh(part);
-  group.position.set(-m.width/2,-m.height/2,0);recolor();tiling();if(refit)home();refreshPresentation(m,refit);
+  group.position.set(-m.width/2,-m.height/2,0);recolor();tiling();if(refit)home();
   showModelNotes(m);
   refreshPinMarkers();
   if(!brushHasGeometry()&&brush!=='navigate')selectNavigate();
@@ -644,9 +651,7 @@ function tiling(){
     seamModel=model;
     seamPlanKey=planKey;
   }
-  if(seams&&!presentationMode?.isActive())seams.visible=!stagedBuild?.preview;
-  refreshPresentation(stagedBuild?.preview||model);
-  invalidateView();
+  if(seams)seams.visible=!stagedBuild?.preview;
 }
 const pavementMode=new URLSearchParams(location.search).get('paviment');
 const surfaceRoads=pavementMode==='antic'?undefined:pavementMode==='rasant'?'independent':pavementMode==='regional'?'regional':'grade-first';
@@ -836,6 +841,7 @@ function acceptBuildings(){
   lastValidBuildings={source:region.meta.buildingSource,mode:model.provenance.options.buildingMode,height:model.provenance.options.maxBuildingHeight};
 }
 function recoverBuildings(error){
+  if(job==='build')trackWorkshopEvent('error_generacio',{mode:workshopMode(pureSelected())});
   finishProcessing(error);
   clearBuildingPreview();
   restoreBuildPreview();
@@ -883,7 +889,6 @@ function clearBuildingPreview(){
   if(previewRequest.mesh)dispose(previewRequest.mesh);
   if(previewRequest.original)previewRequest.original.visible=true;
   previewRequest=null;
-  invalidateView();
 }
 function flushBuildingPreview(request){
   if(request!==previewRequest||request.working||!request.next||!request.isCurrent())return;
@@ -915,7 +920,6 @@ function showBuildingPreview(data){
     if(request.original)request.original.visible=false;
     request.mesh=data.part.faces.length?addModelMesh(data.part):null;
     badge(statusMessage('status.cadastrePreview',()=>({completed:formatNumber(data.completed),total:formatNumber(data.total)})));
-    invalidateView();
   }
   flushBuildingPreview(request);
 }
@@ -1001,6 +1005,9 @@ worker.onmessage=({data})=>{
     if(!data.vegetation){if(!isPure(model))acceptBuildings();buildingInfo();buildingControls();}
     const displayStarted=performance.now();
     display(model,changed,refit);
+    if(job==='build'&&!data.buildings)trackWorkshopEvent('genera_model',{
+      mode:workshopMode(isPure(model)),mida:workshopSize(model.width,model.height)
+    });
     if(processingRun&&data.timing){
       const report=processingRun;
       if(data.buildings)report.buildingWorker=data.timing;
@@ -1052,6 +1059,11 @@ worker.onmessage=({data})=>{
     settleBuildings(Error(data.message));console.error(data.detail);
   }
   if(data.type==='download'){const zipped=data.archive||data.format==='stl',blob=new Blob([data.bytes],{type:zipped?'application/zip':'model/3mf'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=data.filename||`relleu-obert-${data.archive?'peces-':data.plateCount?'plaques-':''}${data.format}${zipped?'.zip':'.3mf'}`;a.click();setTimeout(()=>URL.revokeObjectURL(url),5000);lock(false);say(data.accessory?statusMessage('status.exportAccessory'):data.archive?statusMessage('status.exportArchive'):data.plateCount?statusMessage(data.plateCount===1?'status.exportPlateOne':'status.exportPlates',()=>({count:formatNumber(data.plateCount)})):statusMessage('status.exportReady'));flushTrees();scheduler.flush();}
+  if(data.type==='download'&&!data.accessory)trackWorkshopEvent('descarrega_model',{
+    mode:workshopMode(isPure(model)),
+    format:data.archive&&data.format==='bambu'?'bambu-zip':data.format,
+    peces:shownPrintPlan().tiles.length
+  });
 };
 worker.onerror=event=>{
   const error=Error('No s’ha pogut actualitzar la maqueta: '+event.message);
@@ -1225,6 +1237,7 @@ $('#route-file').onchange=async event=>{
     const route=parseUserRouteGPX(await file.text(),file.name.replace(/\.gpx$/i,''));
     if(!pureSelected())return;
     userRoute=route;
+    trackWorkshopEvent('usa_eina',{eina:'importa_gpx'});
     syncRouteSettings(busy);
     requestReliefUpdate(statusMessage('pending.reliefTrails'));
   }catch(error){say(translateEngineMessage(error.message),true);}
@@ -1532,7 +1545,11 @@ function requestTransport(){
     requireBuild(statusMessage('pending.transportQueued'));
   }else requireBuild(statusMessage('pending.transport'));
 }
-$('#building-source').onchange=()=>{buildingSourceExplicit=true;buildingSourceDirty=true;buildingControls();requestBuildingsAuto(statusMessage('pending.buildingsSource'));};
+$('#building-source').onchange=()=>{
+  trackWorkshopEvent('canvia_font_edificis',{font:$('#building-source').value});
+  buildingSourceExplicit=true;buildingSourceDirty=true;buildingControls();
+  requestBuildingsAuto(statusMessage('pending.buildingsSource'));
+};
 function lockBuildingControls(updating=busy||pendingVegetation){
   $('#building-source').disabled=$('#building-mode').disabled=updating;
   $('#building-height').disabled=updating||$('#building-mode').value!=='limited';
@@ -1545,8 +1562,10 @@ bindFieldCommit(buildingHeight,before=>{
   if(buildingHeight.valueAsNumber!==Number(before))requestBuildingsAuto(statusMessage('pending.buildingHeight'));
 });
 $('#material-count').onchange=()=>{
-  const count=Number($('#material-count').value);
-  if(shownMaterialMode())reliefMaterials={count,assignments:defaultReliefAssignments(count)};
+  const count=Number($('#material-count').value),pure=shownMaterialMode();
+  if(count!==materialProfile(pure).settings.count)
+    trackWorkshopEvent('canvia_materials',{mode:workshopMode(pure),materials:count});
+  if(pure)reliefMaterials={count,assignments:defaultReliefAssignments(count)};
   else landscapeMaterials={count,assignments:defaultAssignments(count)};
   recolor();
 };
@@ -1647,15 +1666,20 @@ function applyPrintCuts(cuts,dragging=false){
   if(!selectedSize||$('#print-cuts-fields').disabled)return;
   const [width,height]=size();
   if(!validPrintCuts(cuts,width,height))return;
+  const previous=printPlan(width,height);
   cutSettings.set(sizeKey(width,height),cuts);
+  const next=printPlan(width,height);
+  const changed=previous.xCuts.join()!==next.xCuts.join()||previous.yCuts.join()!==next.yCuts.join();
   syncPrintSettings();
   if(dragging){
+    cutChangedDuringDrag||=changed;
     if(cutPreviewFrame!==null)return;
     cutPreviewFrame=requestAnimationFrame(()=>{
       cutPreviewFrame=null;
       tiling();
     });
   }else{
+    if(changed)trackWorkshopEvent('ajusta_talls',{peces:next.tiles.length});
     if(cutPreviewFrame!==null)cancelAnimationFrame(cutPreviewFrame);
     cutPreviewFrame=null;
     tiling();
@@ -1697,6 +1721,7 @@ function syncViewerTools(){
   $('#pin-coordinates-form').querySelector('button').disabled=!canPlacePin();
   $('#pin-coordinates').disabled=!canPlacePin();
   for(const control of document.querySelectorAll('#pin-list button, #pin-list select, #undo-pin'))control.disabled=busy||drawing;
+  previewPins.setDisabled(busy||drawing);
   const state=$('#viewer-tool-status');
   state.textContent=pure&&(!isPure(model)||needsBuild)?text('tools.pending'):
     brush==='pin'?text('pin.placeHint'):trailBrush()?text('tools.trailActive'):
@@ -1768,18 +1793,28 @@ const ray=new THREE.Raycaster(),pointer=new THREE.Vector2();
 const brushGround=new Set(['terrain','forest','grass','rock','snow']);
 const brushSurfaces=new Set([...brushGround,'water','inland-water']);
 
-const pinGuides=new THREE.Group(),pinRay=new THREE.Raycaster();
-const pinMarkers=new Map();
-scene.add(pinGuides);
+const pinRay=new THREE.Raycaster();
+const previewPins=createPreviewPins(view,scene,camera,{onSelect:selectPin,onRemove:id=>removePin(id,true)});
 function setPinFeedback(key,params){
   feedback('pin-feedback',key?statusMessage(key,params):'');
 }
 function selectPin(id){
   selectedPinId=id;
-  for(const [key,marker] of pinMarkers)marker.material.color.set(key===id?0xffdb9f:0xffffff);
+  previewPins.select(id);
   for(const button of document.querySelectorAll('[data-pin-select]'))
     button.setAttribute('aria-pressed',String(Number(button.dataset.pinSelect)===id));
-  invalidateView();
+}
+function removePin(id,fromPreview=false){
+  if(busy||drawing)return;
+  const index=pins.findIndex(pin=>pin.id===id);
+  if(index<0)return;
+  const [pin]=pins.splice(index,1);
+  removedPin={pin,index};
+  if(selectedPinId===id)selectedPinId=null;
+  setPinFeedback('tools.holeRemoved',{number:formatNumber(id)});
+  refreshPinMarkers();
+  if(!fromPreview)$('#undo-pin').focus();
+  else if(!previewPins.focus(pins[Math.min(index,pins.length-1)]?.id))viewerToolsOpen.focus({preventScroll:true});
 }
 function pinProblem(pin,x,y,hit){
   if(x<0||y<0||x>model.width||y>model.height)return 'pin.outside';
@@ -1799,23 +1834,9 @@ function pinSurface(x,y){
   pinRay.ray.direction.set(0,0,-1);
   return pinRay.intersectObjects(group.children)[0];
 }
-function makePinMarker(id,point){
-  const canvas=document.createElement('canvas');canvas.width=canvas.height=96;
-  const ctx=canvas.getContext('2d');
-  ctx.beginPath();ctx.arc(48,48,42,0,Math.PI*2);
-  ctx.fillStyle='#963b23';ctx.fill();ctx.strokeStyle='#fff9ee';ctx.lineWidth=7;ctx.stroke();
-  ctx.font='600 45px Segoe UI, sans-serif';ctx.fillStyle='#fff9ee';ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillText(String(id),48,49,76);
-  const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;
-  const marker=new THREE.Sprite(new THREE.SpriteMaterial({map:texture,depthTest:false,depthWrite:false,sizeAttenuation:false}));
-  marker.position.copy(point);
-  marker.scale.set(.031,.031,1);
-  marker.renderOrder=6;
-  return marker;
-}
 function refreshPinMarkers(){
-  for(const marker of pinMarkers.values()){marker.material.map.dispose();marker.material.dispose();}
-  pinMarkers.clear();pinGuides.clear();
+  const focusedMarker=previewPins.focusedId();
+  previewPins.clear();
   const list=$('#pin-list');
   const focusedId=document.activeElement?.closest('[data-pin-row]')?.dataset.pinRow;
   const focusedKind=document.activeElement?.tagName;
@@ -1823,7 +1844,6 @@ function refreshPinMarkers(){
     list.replaceChildren();
     $('#viewer-pin-count').hidden=true;
     $('#undo-pin').hidden=true;
-    invalidateView();
     return;
   }
   const {project}=pinProjection(model);
@@ -1832,30 +1852,23 @@ function refreshPinMarkers(){
     const hit=pinSurface(x,y);
     const overlap=locations.some(other=>other.pin!==pin&&Math.hypot(other.xy[0]-x,other.xy[1]-y)<RELIEF_PIN_SPACING_MM);
     const problem=pinProblem(pin,x,y,hit)||(overlap?'pin.overlap':'');
-    if(hit){
-      const marker=makePinMarker(pin.id,hit.point);
-      pinMarkers.set(pin.id,marker);pinGuides.add(marker);
-    }
     const row=document.createElement('li'),choose=document.createElement('button'),depth=document.createElement('select'),remove=document.createElement('button');
     const number=formatNumber(pin.id);
+    const label=text('tools.holeNumber',{number}),removeLabel=text('pin.removeName',{number});
+    if(hit)previewPins.add(pin.id,hit.point,{number,label,removeLabel});
     row.dataset.pinRow=String(pin.id);
     choose.dataset.pinSelect=String(pin.id);
     choose.type=remove.type='button';
     choose.className=remove.className='quiet-button';
-    choose.textContent=text('tools.holeNumber',{number});
+    choose.textContent=label;
     choose.onclick=()=>selectPin(pin.id);
     depth.setAttribute('aria-label',text('tools.holeDepth',{number}));
     depth.replaceChildren(...[7,8,9].map(value=>new Option(formatNumber(value)+' mm',value)));
     depth.value=pin.depth;
     depth.onchange=()=>{pin.depth=Number(depth.value);selectPin(pin.id);refreshPinMarkers();};
     remove.textContent=text('pin.remove');
-    remove.setAttribute('aria-label',text('pin.removeName',{number}));
-    remove.onclick=()=>{
-      removedPin={pin,index:pins.indexOf(pin)};
-      pins.splice(removedPin.index,1);
-      if(selectedPinId===pin.id)selectedPinId=null;
-      setPinFeedback('tools.holeRemoved',{number});refreshPinMarkers();$('#undo-pin').focus();
-    };
+    remove.setAttribute('aria-label',removeLabel);
+    remove.onclick=()=>removePin(pin.id);
     row.append(choose,depth,remove);
     if(problem){
       const note=document.createElement('span');note.className='hint pin-problem';note.textContent=text(problem);row.append(note);
@@ -1869,6 +1882,8 @@ function refreshPinMarkers(){
   $('#viewer-pin-count').hidden=!pins.length;
   $('#undo-pin').hidden=!removedPin;
   selectPin(selectedPinId);
+  previewPins.render(!contextLost&&!stagedBuild?.preview);
+  previewPins.focus(focusedMarker);
 }
 $('#undo-pin').onclick=()=>{
   if(!removedPin||pins.length>=MAX_RELIEF_PINS)return;
@@ -1888,6 +1903,7 @@ function addPin(lon,lat,hit){
   const id=nextPinId++;
   removedPin=null;
   pins.push({id,lon,lat,depth});
+  trackWorkshopEvent('usa_eina',{eina:'marca_punt'});
   selectedPinId=id;
   setPinFeedback('tools.holeAdded',{number:formatNumber(id)});
   refreshPinMarkers();
@@ -1950,8 +1966,11 @@ function paint(event){
 function finishStroke(){
   if(!drawing)return;
   drawing=false;lastPoint=null;
-  if(lineBrush()&&lineStrokes().length>lineStrokeStart)requestTrailUpdate();
-  else if(pendingVegetation)updateTrees();
+  if(lineBrush()&&lineStrokes().length>lineStrokeStart){
+    const eina={'trail-add':'dibuixa_sender','trail-erase':'esborra_sender','route-add':'dibuixa_ruta','route-erase':'esborra_ruta'}[brush];
+    trackWorkshopEvent('usa_eina',{eina});
+    requestTrailUpdate();
+  }else if(pendingVegetation)updateTrees();
   else lock(busy);
 }
 renderer.domElement.addEventListener('pointerdown',event=>{
@@ -2315,7 +2334,7 @@ const workshopGuide=createWorkshopGuide($('#workshop-guide'),{
       return step==='vegetation'?[controls,renderer.domElement]:[controls];
     }
     if(step==='tools')return viewerToolsPanel.hidden?[viewerToolsOpen]:
-      [viewerToolsOpen,viewerToolsPanel,...(pureSelected()?[renderer.domElement]:[])];
+      [viewerToolsOpen,viewerToolsPanel,...(pureSelected()?[renderer.domElement,previewPins.element]:[])];
     if(step==='preview')return [view];
     return [step==='download'?$('.download-panel'):document.getElementById(guideOutputs[step])];
   }
