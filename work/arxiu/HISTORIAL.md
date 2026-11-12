@@ -1,6 +1,10 @@
 # Historial i validacions de Relleu Obert
 
-Actualitzat el 2026-11-09. Les entrades validades surten del [backlog actiu](../BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
+Actualitzat el 2026-11-12. Les entrades validades surten del [backlog actiu](../BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
+
+## v0.23.55 — Visita guiada validada
+
+L’usuari dona la visita guiada per bona el 2026-11-12. Les versions 0.23.52 a 0.23.55 separen les eines del visor, incorporen la benvinguda interactiva, permeten reobrir la visita i hi inclouen Eines i els controls del visor. Els camps numèrics apliquen els canvis en acabar l’edició i canviar el retall manté la generació manual. Queda la prova del taller amb una persona nova. [RO-058](../BACKLOG.md#ro-058--auditoria-del-taller-abans-de-la-v024)
 
 ## v0.23.46 — Traçat ferroviari del catàleg
 

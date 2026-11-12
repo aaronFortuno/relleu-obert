@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.23.56 — 2026-11-12
+
+- El quadre V4V explica què es desa al navegador, quines consultes reben els serveis cartogràfics i l’estat d’Umami.
+
 ## v0.23.55 — 2026-11-11
 
 - La visita guiada ressalta **Eines** abans dels ajustos d’impressió i mostra com editar senders, dibuixar o importar rutes i marcar llocs en Relleu pur.

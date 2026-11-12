@@ -1,6 +1,15 @@
 # Backlog actiu de Relleu Obert
 
-Revisat el **2026-11-11** amb la v0.23.55. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
+Revisat el **2026-11-12** amb la v0.23.56. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
+
+## Abans de la v0.24
+
+- [x] Visita guiada validada per l’usuari.
+- [ ] Fer una prova curta amb una persona nova. Generar des de zero, adaptar una maqueta de la galeria i preparar una descàrrega de diverses peces. [RO-058](#ro-058--auditoria-del-taller-abans-de-la-v024)
+- [ ] Comprovar al laminador una peça amb un punt destacat i al taller la recuperació d’un punt mal situat. [RO-057](#ro-057--cartografia-excursionista-i-marques-imprimibles)
+- [ ] Decidir si s’activa Umami en aquesta versió. Si s’activa, confirmar els esdeveniments, revisar les dades efectivament enviades i actualitzar l’avís del V4V. [RO-059](#ro-059--privacitat-i-estadístiques-dús)
+
+Les comprovacions de llocs concrets, la revisió del catàleg i la impressió física continuen a les seves fitxes de seguiment.
 
 ## Ordre de treball
 
@@ -107,10 +116,19 @@ La v0.23.51 destaca en taronja les rutes dibuixades i importades al visor. Tenen
 
 ### RO-058 — Auditoria del taller abans de la v0.24
 
-**P1.** La v0.23.52 separa les tres eines de senders i rutes, porta els forats al visor i incorpora una guia opcional. L’aigua passa al bloc de capes i la mida queda al costat de la base i els talls. El canvi de projecte protegeix els ajustos sense desar. Abans de la v0.24, validar els tres recorreguts amb una persona nova i comprovar els errors de perforació en una peça laminada. [Troballes, distribució i criteris d’acceptació](RO-058-AUDITORIA-UX.md)
+**P1.** L’usuari dona la visita guiada per bona. Queda la prova del taller amb una persona nova. Ha de poder identificar què s’està generant, adaptar un exemple i saber quina maqueta es descarregarà en preparar diverses peces. [Troballes, distribució i criteris d’acceptació](RO-058-AUDITORIA-UX.md) · [Validació de la visita](arxiu/HISTORIAL.md#v02355--visita-guiada-validada)
 
-La v0.23.53 convida a una visita interactiva al primer accés. La visita passa de mida i territori a cada capa i apartat d’impressió, amb els controls reals ressaltats. Els camps numèrics esperen el final de l’edició i canviar el detall o una capa d’un retall pendent conserva la generació manual.
+### RO-059 — Privacitat i estadístiques d’ús
 
-La v0.23.54 amplia la benvinguda amb tres imatges de la galeria, fa visible l’accés a la visita, espacia i anima el ressaltat, i afegeix una pràctica del visor després de la descàrrega. Dades i limitacions indica quin informe cal adjuntar per comunicar un problema.
+**P1.** L’avís del V4V descriu el desament local, les consultes cartogràfiques i l’estat d’Umami. El seguiment queda desactivat fins que es decideixi si s’activa i amb quin abast.
 
-La v0.23.55 dedica un pas a Eines abans de preparar la impressió. Punts destacats explica com marcar un lloc per exportar un forat per a una xinxeta o un banderí.
+| Esdeveniment proposat | Quan es comptaria | Camps |
+| --- | --- | --- |
+| `model_generated` | La generació demanada arriba a un resultat utilitzable. | Mode de maqueta |
+| `model_generation_failed` | La generació demanada acaba amb un error que l’usuari ha de resoldre. | Mode de maqueta |
+| `model_exported` | L’exportació genera el fitxer i el navegador inicia la descàrrega. | Mode de maqueta i format |
+| `tour_started` i `tour_completed` | La persona inicia la visita o en confirma l’últim pas. | Cap |
+
+Els recomptes serveixen per detectar fricció entre generació, exportació i visita. El fitxer lliurat al navegador és l’últim resultat observable de l’exportació. Les actualitzacions de capes, les cancel·lacions i els errors recuperats queden fora del recompte.
+
+Si s’activa, enviar aquests esdeveniments de forma explícita amb noms fixos i camps de valors tancats. Excloure coordenades, noms de lloc i de projecte, text de cerca, fitxers, informes, missatges d’error i identificadors propis. Desactivar el seguiment automàtic i excloure els paràmetres i fragments de l’URL. Revisar també els camps que afegeix el tracker, com ara l’adreça de procedència. [Configuració d’Umami](https://umami.is/docs/tracker-configuration)

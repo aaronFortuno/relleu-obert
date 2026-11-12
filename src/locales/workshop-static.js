@@ -214,4 +214,26 @@ export default {
   "ui.about.icgcCover": ["ICGC · Cobertes de Catalunya","ICGC · Cubiertas de Cataluña","ICGC · Cubertas de Cataluña","ICGC · Kataluniako lurzoruaren estaldura","ICGC · Land cover of Catalonia"],
   "ui.about.search": ["Cerca","Búsqueda","Busca","Bilaketa","Search"],
   "ui.about.licenses": ["Fonts i llicències completes ↗","Fuentes y licencias completas ↗","Fontes e licenzas completas ↗","Iturri eta lizentzia guztiak ↗","Full sources and licences ↗"],
+  "ui.about.privacy": ["Privacitat i estadístiques","Privacidad y estadísticas","Privacidade e estatísticas","Pribatutasuna eta estatistikak","Privacy and statistics"],
+  "ui.about.privacyLocal": [
+    "Les maquetes es calculen i s’exporten al navegador. Els projectes desats i les preferències es guarden en aquest navegador.",
+    "Las maquetas se calculan y se exportan en el navegador. Los proyectos guardados y las preferencias se almacenan en este navegador.",
+    "As maquetas calcúlanse e expórtanse no navegador. Os proxectos gardados e as preferencias almacénanse neste navegador.",
+    "Maketak nabigatzailean kalkulatu eta esportatzen dira. Gordetako proiektuak eta hobespenak nabigatzaile honetan gordetzen dira.",
+    "Models are generated and exported in your browser. Saved projects and preferences are stored in this browser.",
+  ],
+  "ui.about.privacyMaps": [
+    "El navegador consulta els serveis cartogràfics indicats més amunt per mostrar el mapa i obtenir les dades del retall. Quan cerques un lloc o una adreça, envia a Photon el text i el centre del mapa.",
+    "El navegador consulta los servicios cartográficos indicados más arriba para mostrar el mapa y obtener los datos de la zona. Al buscar un lugar o una dirección, envía a Photon el texto y el centro del mapa.",
+    "O navegador consulta os servizos cartográficos indicados máis arriba para mostrar o mapa e obter os datos da zona. Cando buscas un lugar ou un enderezo, envíalle a Photon o texto e o centro do mapa.",
+    "Nabigatzaileak goian aipatutako kartografia-zerbitzuak kontsultatzen ditu mapa erakusteko eta aukeratutako eremuaren datuak lortzeko. Leku edo helbide bat bilatzean, testua eta maparen erdigunea bidaltzen dizkio Photoni.",
+    "Your browser contacts the map services listed above to display the map and fetch data for the selected area. When you search for a place or address, it sends the search text and map centre to Photon.",
+  ],
+  "ui.about.privacyUmami": [
+    "El seguiment amb Umami està desactivat. Si s’activa, comptarà accions com generar o descarregar una maqueta. Les dades enviades a Umami exclouran les cerques, les coordenades dels retalls i el contingut dels projectes i fitxers.",
+    "El seguimiento con Umami está desactivado. Si se activa, contará acciones como generar o descargar una maqueta. Los datos enviados a Umami excluirán las búsquedas, las coordenadas de la zona y el contenido de los proyectos y archivos.",
+    "O seguimento con Umami está desactivado. Se se activa, contará accións como xerar ou descargar unha maqueta. Os datos enviados a Umami excluirán as buscas, as coordenadas da zona e o contido dos proxectos e ficheiros.",
+    "Umami bidezko jarraipena desaktibatuta dago. Aktibatuz gero, maketa sortzea edo deskargatzea bezalako ekintzak zenbatuko ditu. Umamira bidalitako datuetatik kanpo geratuko dira bilaketak, eremuen koordenatuak eta proiektu eta fitxategien edukia.",
+    "Umami analytics is disabled. If enabled, it will count actions such as generating or downloading a model. Data sent to Umami will exclude searches, model-area coordinates, and the contents of projects and files.",
+  ],
 };
