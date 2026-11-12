@@ -4,6 +4,8 @@ Relleu Obert és una eina educativa per crear i imprimir maquetes 3D de llocs re
 
 [Obre Relleu Obert](https://aaronFortuno.github.io/relleu-obert/)
 
+Al domini públic, l’Umami propi d’ortogra.fi compta visites i obertures de la galeria (`obre_galeria`). No recull coordenades, seleccions, ajustos ni paràmetres dels enllaços. El seguiment respecta Do Not Track i Global Privacy Control.
+
 ## Crear una maqueta
 
 1. Tria una mida o obre una fitxa de la galeria.

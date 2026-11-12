@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Revisat el **2026-11-11** amb la v0.23.55. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
+Revisat el **2026-11-12** amb la v0.23.56. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
 
 ## Ordre de treball
 
@@ -10,6 +10,8 @@ Revisat el **2026-11-11** amb la v0.23.55. [Historial i validacions](arxiu/HISTO
 4. Contrastar la Foradada r3 al visor i reprendre els controls de relleu rocós. [RO-035](#ro-035--cavitats-i-relleus-amb-voladissos) · [RO-023](#ro-023--relleu-local-i-fonts-vectorials-de-més-precisió)
 
 ## Desenvolupament i proves
+
+**Analítica inicial (v0.23.56).** Umami compta visites i l’obertura de la galeria (`obre_galeria`) al domini públic, sense coordenades, configuracions ni paràmetres de l’URL. Següent pas: confirmar el senyal al tauler i definir els esdeveniments i avisos de privadesa amb el projecte.
 
 ### RO-046 — Catàleg de llocs recomanats
 

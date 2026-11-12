@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.23.56 — 2026-11-12
+
+- L’Umami propi d’ortogra.fi compta visites i obertures de la galeria, sense recollir el lloc triat ni els ajustos de la maqueta.
+
 ## v0.23.55 — 2026-11-11
 
 - La visita guiada ressalta **Eines** abans dels ajustos d’impressió i mostra com editar senders, dibuixar o importar rutes i marcar llocs en Relleu pur.
