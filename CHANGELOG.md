@@ -1,8 +1,12 @@
 # Canvis
 
-## v0.23.56 — 2026-11-12
+## v0.23.57 — 2026-11-12
 
 - El quadre V4V explica què es desa al navegador, quines consultes reben els serveis cartogràfics i l’estat d’Umami.
+
+## v0.23.56 — 2026-11-12
+
+- L’Umami propi d’ortogra.fi compta visites i obertures de la galeria, sense recollir el lloc triat ni els ajustos de la maqueta.
 
 ## v0.23.55 — 2026-11-11
 

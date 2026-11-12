@@ -1,13 +1,13 @@
 # Backlog actiu de Relleu Obert
 
-Revisat el **2026-11-12** amb la v0.23.56. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
+Revisat el **2026-11-12** amb la v0.23.57. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
 
 ## Abans de la v0.24
 
 - [x] Visita guiada validada per l’usuari.
 - [ ] Fer una prova curta amb una persona nova. Generar des de zero, adaptar una maqueta de la galeria i preparar una descàrrega de diverses peces. [RO-058](#ro-058--auditoria-del-taller-abans-de-la-v024)
 - [ ] Comprovar al laminador una peça amb un punt destacat i al taller la recuperació d’un punt mal situat. [RO-057](#ro-057--cartografia-excursionista-i-marques-imprimibles)
-- [ ] Decidir si s’activa Umami en aquesta versió. Si s’activa, confirmar els esdeveniments, revisar les dades efectivament enviades i actualitzar l’avís del V4V. [RO-059](#ro-059--privacitat-i-estadístiques-dús)
+- [ ] Confirmar al tauler d’Umami la visita i l’obertura de galeria. Decidir si convé afegir més esdeveniments després d’aquest primer recompte. [RO-059](#ro-059--privacitat-i-estadístiques-dús)
 
 Les comprovacions de llocs concrets, la revisió del catàleg i la impressió física continuen a les seves fitxes de seguiment.
 
@@ -120,15 +120,15 @@ La v0.23.51 destaca en taronja les rutes dibuixades i importades al visor. Tenen
 
 ### RO-059 — Privacitat i estadístiques d’ús
 
-**P1.** L’avís del V4V descriu el desament local, les consultes cartogràfiques i l’estat d’Umami. El seguiment queda desactivat fins que es decideixi si s’activa i amb quin abast.
+**P1.** Umami compta visites i obertures de galeria (`obre_galeria`) a `relleu.ortogra.fi`. L’avís del V4V descriu aquest seguiment, el desament local i les consultes cartogràfiques. Queda confirmar que els dos recomptes arriben al tauler.
 
 | Esdeveniment proposat | Quan es comptaria | Camps |
 | --- | --- | --- |
-| `model_generated` | La generació demanada arriba a un resultat utilitzable. | Mode de maqueta |
-| `model_generation_failed` | La generació demanada acaba amb un error que l’usuari ha de resoldre. | Mode de maqueta |
-| `model_exported` | L’exportació genera el fitxer i el navegador inicia la descàrrega. | Mode de maqueta i format |
-| `tour_started` i `tour_completed` | La persona inicia la visita o en confirma l’últim pas. | Cap |
+| `genera_model` | La generació demanada arriba a un resultat utilitzable. | Mode de maqueta |
+| `error_generacio` | La generació demanada acaba amb un error que l’usuari ha de resoldre. | Mode de maqueta |
+| `descarrega_model` | L’exportació genera el fitxer i el navegador inicia la descàrrega. | Mode de maqueta i format |
+| `inicia_visita` i `completa_visita` | La persona inicia la visita o en confirma l’últim pas. | Cap |
 
 Els recomptes serveixen per detectar fricció entre generació, exportació i visita. El fitxer lliurat al navegador és l’últim resultat observable de l’exportació. Les actualitzacions de capes, les cancel·lacions i els errors recuperats queden fora del recompte.
 
-Si s’activa, enviar aquests esdeveniments de forma explícita amb noms fixos i camps de valors tancats. Excloure coordenades, noms de lloc i de projecte, text de cerca, fitxers, informes, missatges d’error i identificadors propis. Desactivar el seguiment automàtic i excloure els paràmetres i fragments de l’URL. Revisar també els camps que afegeix el tracker, com ara l’adreça de procedència. [Configuració d’Umami](https://umami.is/docs/tracker-configuration)
+Si s’amplia el seguiment, enviar els nous esdeveniments de forma explícita amb noms fixos i camps de valors tancats. Mantenir el filtre d’adreces i de procedència i excloure coordenades, noms de lloc i de projecte, text de cerca, fitxers, informes, missatges d’error i identificadors propis. Comprovar els camps enviats i actualitzar el V4V si canvia l’abast. [Configuració d’Umami](https://umami.is/docs/tracker-configuration)

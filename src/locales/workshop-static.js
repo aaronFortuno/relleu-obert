@@ -230,10 +230,10 @@ export default {
     "Your browser contacts the map services listed above to display the map and fetch data for the selected area. When you search for a place or address, it sends the search text and map centre to Photon.",
   ],
   "ui.about.privacyUmami": [
-    "El seguiment amb Umami està desactivat. Si s’activa, comptarà accions com generar o descarregar una maqueta. Les dades enviades a Umami exclouran les cerques, les coordenades dels retalls i el contingut dels projectes i fitxers.",
-    "El seguimiento con Umami está desactivado. Si se activa, contará acciones como generar o descargar una maqueta. Los datos enviados a Umami excluirán las búsquedas, las coordenadas de la zona y el contenido de los proyectos y archivos.",
-    "O seguimento con Umami está desactivado. Se se activa, contará accións como xerar ou descargar unha maqueta. Os datos enviados a Umami excluirán as buscas, as coordenadas da zona e o contido dos proxectos e ficheiros.",
-    "Umami bidezko jarraipena desaktibatuta dago. Aktibatuz gero, maketa sortzea edo deskargatzea bezalako ekintzak zenbatuko ditu. Umamira bidalitako datuetatik kanpo geratuko dira bilaketak, eremuen koordenatuak eta proiektu eta fitxategien edukia.",
-    "Umami analytics is disabled. If enabled, it will count actions such as generating or downloading a model. Data sent to Umami will exclude searches, model-area coordinates, and the contents of projects and files.",
+    "A relleu.ortogra.fi, l’Umami d’ortogra.fi compta les visites i les obertures de la galeria. El servidor d’estadístiques rep l’adreça IP de la connexió. El seguiment respecta Do Not Track i Global Privacy Control. Les dades d’ús exclouen les cerques, les coordenades dels retalls i el contingut dels projectes i fitxers.",
+    "En relleu.ortogra.fi, el Umami de ortogra.fi cuenta las visitas y las aperturas de la galería. El servidor de estadísticas recibe la dirección IP de la conexión. El seguimiento respeta Do Not Track y Global Privacy Control. Los datos de uso excluyen las búsquedas, las coordenadas de la zona y el contenido de los proyectos y archivos.",
+    "En relleu.ortogra.fi, o Umami de ortogra.fi conta as visitas e as aperturas da galería. O servidor de estatísticas recibe o enderezo IP da conexión. O seguimento respecta Do Not Track e Global Privacy Control. Os datos de uso exclúen as buscas, as coordenadas da zona e o contido dos proxectos e ficheiros.",
+    "Relleu.ortogra.fi webgunean, ortogra.fi-ren Umamik bisitak eta galeria irekitzen den aldiak zenbatzen ditu. Estatistika-zerbitzariak konexioaren IP helbidea jasotzen du. Jarraipenak Do Not Track eta Global Privacy Control ezarpenak errespetatzen ditu. Erabilera-datuetatik kanpo geratzen dira bilaketak, eremuen koordenatuak eta proiektu eta fitxategien edukia.",
+    "On relleu.ortogra.fi, ortogra.fi’s Umami counts visits and gallery opens. The analytics server receives your connection’s IP address. Tracking respects Do Not Track and Global Privacy Control. Usage data excludes searches, model-area coordinates, and the contents of projects and files.",
   ],
 };
