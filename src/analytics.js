@@ -1,3 +1,5 @@
+import {CURATED_EXAMPLES} from './curated-examples.js';
+
 const host = 'relleu.ortogra.fi';
 const website = 'a98eb37f-7201-4258-ba38-3fe42b6f7560';
 const modes = ['model_complet', 'relleu_pur'];
@@ -5,6 +7,7 @@ const pieces = Array.from({length:16}, (_, index) => index + 1);
 const events = {
   obre_galeria: {},
   copia_enllac: {},
+  copia_enllac_galeria: {exemple:CURATED_EXAMPLES.map(({id})=>id)},
   genera_model: {mode:modes, mida:['fins_15_cm','15_a_25_cm','25_a_50_cm','mes_de_50_cm']},
   error_generacio: {mode:modes},
   descarrega_model: {mode:modes, format:['bambu','bambu-zip','3mf','stl'], peces:pieces},

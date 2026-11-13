@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Revisat el **2026-11-13** amb la v0.24.3. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
+Revisat el **2026-11-13** amb la v0.24.4. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
 
 ## Validacions de la v0.24
 
@@ -96,6 +96,8 @@ La cerca amb fletxes i Retorn, el tancament amb Esc i l’entrada directa de coo
 
 Els enllaços compartits carreguen el retall, el zoom i els ajustos i generen la maqueta en obrir-los. La còpia JSON permet traslladar també les edicions manuals. Queda comprovar l’enllaç compartit entre dispositius.
 
+Les fitxes públiques de la galeria es poden compartir abans de generar. L’enllaç conserva la referència de l’exemple i aplica els ajustos del catàleg quan s’obre.
+
 **P2.** Exportar i recuperar en un altre navegador un projecte girat, amb traços i materials, en tots dos modes. El JSON conserva la configuració i permet regenerar la maqueta. [Format i validació](arxiu/HISTORIAL.md#v0237--còpia-del-catàleg-local)
 
 ### RO-055 — Mode de relleu pur
@@ -134,6 +136,7 @@ La v0.23.51 destaca en taronja les rutes dibuixades i importades al visor. Tenen
 | `ajusta_talls` | S’aplica un canvi a la divisió o s’acaba d’arrossegar un tall. | Nombre de peces |
 | `canvia_materials` | Es canvia el nombre de materials. | Mode i nombre de materials |
 | `copia_enllac` | Es prem «Copia l’enllaç» de la configuració compartida. | Cap |
+| `copia_enllac_galeria` | Es prem «Copia l’enllaç» d’una fitxa de la galeria. | Identificador públic de l’exemple |
 
 El fitxer lliurat al navegador és l’últim resultat observable de l’exportació. El recompte de generacions exclou els recàlculs de capes i els errors recuperats. Les obertures de la galeria es compten amb `obre_galeria`.
 

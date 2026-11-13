@@ -91,7 +91,7 @@ function setFilterOptions(select, options) {
   select.value = selected;
 }
 
-export function initExampleGallery(container, examples, onSelect) {
+export function initExampleGallery(container, examples, onSelect, onShare) {
   const search = container.querySelector('#gallery-search');
   const mode = container.querySelector('#gallery-mode');
   const size = container.querySelector('#gallery-size');
@@ -102,9 +102,19 @@ export function initExampleGallery(container, examples, onSelect) {
   const entries = examples.map(example => {
     const card = createCard({gallery:true});
     card.button.onclick = () => onSelect(example);
-    cards.append(card.button);
+    const tile = document.createElement('div');
+    tile.className = 'gallery-card';
+    const share = document.createElement('button');
+    share.type = 'button';
+    share.className = 'secondary gallery-share';
+    share.setAttribute('aria-haspopup', 'dialog');
+    share.setAttribute('aria-controls', 'share-project-dialog');
+    share.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#share-icon"/></svg>';
+    share.onclick = () => onShare(example);
+    tile.append(card.button, share);
+    cards.append(tile);
     return {
-      example, card,
+      example, card, tile, share,
       mode: example.pureRelief === false ? 'complete' : 'relief',
       size: sizeKey(example),
       landforms: example.landforms ?? [],
@@ -128,7 +138,7 @@ export function initExampleGallery(container, examples, onSelect) {
         (!selectedSize || entry.size === selectedSize) &&
         (!selectedLandform || entry.landforms.includes(selectedLandform)) &&
         words.every(word => entry.searchText.includes(word));
-      entry.card.button.hidden = !matches;
+      entry.tile.hidden = !matches;
       if (matches) count++;
     }
     const key = count === 0 ? 'example.gallery.none' : count === 1 ? 'example.gallery.one' : 'example.gallery.many';
@@ -146,6 +156,9 @@ export function initExampleGallery(container, examples, onSelect) {
     for (const entry of entries) {
       const {example} = entry;
       const label = entry.card.populate(example);
+      const shareLabel = t('ui.share.exampleName', {name:label.title});
+      entry.share.setAttribute('aria-label', shareLabel);
+      entry.share.title = shareLabel;
       const groupLabels = entry.landforms.flatMap(group => {
         const key = landformKey(group);
         return [exampleStrings[key][0], t(key)];

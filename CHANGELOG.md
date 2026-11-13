@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.24.4 — 2026-11-13
+
+- Cada fitxa de la galeria té una icona de compartir. L’enllaç genera la maqueta amb els ajustos de l’exemple. Umami compta les pulsacions de còpia amb l’identificador públic de la fitxa.
+
 ## v0.24.3 — 2026-11-13
 
 - Els enllaços compartits carreguen els ajustos i generen la maqueta en obrir-los.

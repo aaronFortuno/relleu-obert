@@ -2,6 +2,7 @@
 <html lang="ca">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content"><meta name="description" content="Projecte educatiu gratuït i de codi obert per explorar a l’aula el relleu de llocs reals amb maquetes 3D." data-i18n-content="ui.app.description"><link rel="icon" type="image/svg+xml" href="./assets/favicon.svg"><title data-i18n="ui.app.title">Relleu Obert — Geografia que pots tocar</title></head>
 <body>
+<svg class="shared-icons" width="0" height="0" aria-hidden="true" focusable="false"><symbol id="share-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4m-6.8 7 6.8 4"/></symbol></svg>
 <header class="app-header">
   <a class="brand" href="./" aria-label="Relleu Obert"><svg viewBox="0 0 38 32" aria-hidden="true"><path d="M3 27 18 3l17 24H3Z"/><path d="m8 23 10-15 11 15H8Zm5-4 5-7 5 7H13Z"/></svg><span>relleu<span class="brand-light">obert</span></span></a>
   <span class="tagline"><span data-i18n="app.tagline">Geografia que pots tocar.</span> <span data-i18n="ui.app.education">Un projecte per a l’aula.</span></span>
@@ -277,7 +278,7 @@
             <button type="button" data-format="stl" aria-pressed="false"><span data-i18n="ui.tools.downloadIn">Descarrega en</span> <span data-format-label data-i18n="ui.export.stl">STL per material</span></button>
           </div>
         </div>
-        <button type="button" id="share-project" class="secondary" aria-haspopup="dialog" aria-controls="share-project-dialog" aria-label="Comparteix la configuració" title="Comparteix la configuració" data-i18n-aria="ui.share.open" data-i18n-title="ui.share.open" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4m-6.8 7 6.8 4"/></svg></button>
+        <button type="button" id="share-project" class="secondary" aria-haspopup="dialog" aria-controls="share-project-dialog" aria-label="Comparteix la configuració" title="Comparteix la configuració" data-i18n-aria="ui.share.open" data-i18n-title="ui.share.open" disabled><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#share-icon"/></svg></button>
       </div>
       <p id="export-hint" class="hint" data-i18n="ui.export.bambuHint">Obre el 3MF com a projecte i comprova els filaments i el laminat.</p>
     </section>
@@ -297,7 +298,7 @@
       <path d="m27 9 7-6" stroke="var(--umbrella-accent)" stroke-width="4.5"/>
     </svg><span>ortogra<span class="umbrella-dot">.</span>fi</span>
   </a></p>
-  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer" data-i18n-text="ui.footer.openSource"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions" data-i18n-aria="ui.releases.title">v0.24.3</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V" data-i18n-aria="ui.footer.about"><span class="desktop-copy" data-i18n="ui.footer.aboutDesktop">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
+  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer" data-i18n-text="ui.footer.openSource"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions" data-i18n-aria="ui.releases.title">v0.24.4</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V" data-i18n-aria="ui.footer.about"><span class="desktop-copy" data-i18n="ui.footer.aboutDesktop">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
 </footer>
 
 <dialog id="projects-dialog" aria-labelledby="projects-title">
@@ -371,9 +372,10 @@
   </div>
 </dialog>
 <dialog id="share-project-dialog" aria-labelledby="share-project-title">
-  <div class="dialog-heading"><h2 id="share-project-title" data-i18n="ui.share.open">Comparteix la configuració</h2><button type="button" data-close aria-label="Tanca" data-i18n-aria="dialog.close">×</button></div>
+  <div class="dialog-heading"><h2 id="share-project-title">Comparteix la configuració</h2><button type="button" data-close aria-label="Tanca" data-i18n-aria="dialog.close">×</button></div>
   <div class="dialog-content">
     <p id="share-project-note" data-i18n="ui.share.note">L’enllaç inclou les coordenades del retall i els ajustos actuals. Els traços, les rutes i els punts destacats queden al teu projecte.</p>
+    <p id="share-example-note" data-i18n="ui.share.exampleNote" hidden>En obrir l’enllaç, la maqueta es generarà amb els ajustos de la galeria.</p>
     <label for="share-project-link" data-i18n="ui.share.link">Enllaç a la configuració</label>
     <div class="share-project-row">
       <input id="share-project-link" type="url" readonly dir="ltr" aria-describedby="share-project-note" spellcheck="false">
@@ -474,7 +476,7 @@
       <p data-i18n="ui.about.privacyLocal">Les maquetes es calculen i s’exporten al navegador. Els projectes desats i les preferències es guarden en aquest navegador.</p>
       <p data-i18n="ui.about.privacyMaps">El navegador consulta les fonts cartogràfiques d’aquest quadre per mostrar el mapa i obtenir les dades del retall. Quan cerques un lloc o una adreça, envia a Photon el text i el centre del mapa.</p>
       <p data-i18n="ui.about.privacyUmami">A relleu.ortogra.fi, Umami compta les visites, les obertures de la galeria, les generacions i descàrregues, i l’ús d’eines i ajustos. Les estadístiques inclouen el mode, la franja de mida, la font d’edificis triada, el format i el nombre de peces o materials. Exclouen les cerques, les coordenades i el contingut de projectes i fitxers. El servidor rep la IP de la connexió i el seguiment respecta Do Not Track i Global Privacy Control.</p>
-      <p data-i18n="ui.share.analytics">Umami compta les pulsacions de «Copia l’enllaç». L’enllaç compartit i el seu contingut queden fora de les estadístiques.</p>
+      <p data-i18n="ui.share.analytics">Umami compta les pulsacions de «Copia l’enllaç». En compartir un exemple, també compta quin exemple públic s’ha triat. Els enllaços i els ajustos personals queden fora de les estadístiques.</p>
     </section>
     <section class="about-sources" aria-labelledby="about-sources-title">
         <h3 id="about-sources-title" tabindex="-1" data-i18n="ui.about.sources">Fonts de dades</h3>

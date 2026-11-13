@@ -11,6 +11,7 @@ test('Umami receives only the public page address and the fields allowed for eac
   const cases=[
     ['obre_galeria',{}],
     ['copia_enllac',{}],
+    ['copia_enllac_galeria',{exemple:'tamariu'}],
     ['genera_model',{mode:'relleu_pur',mida:'25_a_50_cm'}],
     ['error_generacio',{mode:'model_complet'}],
     ['descarrega_model',{mode:'relleu_pur',format:'bambu-zip',peces:4}],
@@ -31,6 +32,7 @@ test('Umami receives only the public page address and the fields allowed for eac
 test('rejects unknown event names and values outside the declared categories',()=>{
   assert.equal(analyticsPayload('identify',{name:'obre_galeria'}),false);
   assert.equal(analyticsPayload('event',{name:'__proto__'}),false);
+  assert.equal(analyticsPayload('event',{name:'copia_enllac_galeria',data:{exemple:'private project'}}),false);
   assert.equal(analyticsPayload('event',{name:'canvia_font_edificis',data:{font:'a private address'}}),false);
   assert.equal(analyticsPayload('event',{name:'genera_model',data:{mode:'model_complet',mida:151}}),false);
   assert.equal(analyticsPayload('event',{name:'ajusta_talls',data:{peces:17}}),false);

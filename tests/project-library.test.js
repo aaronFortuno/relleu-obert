@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {PROJECT_LIBRARY_KEY,deleteProject,exportProjectLibrary,importProjectLibrary,readProjects,saveProject} from '../src/project-library.js';
 import {defaultAssignments} from '../src/materials.js';
 import {defaultBoundaryStyles,DEFAULT_BOUNDARY_PATTERNS,DEFAULT_BOUNDARY_WIDTHS} from '../src/relief-boundary-options.js';
-import {projectLink,readProjectLink} from '../src/project-link.js';
+import {exampleLink,isSharedLink,projectLink,readExampleLink,readProjectLink} from '../src/project-link.js';
 
 const settings={
   sizePreset:'15x20',pose:{center:[42.165671,1.751211],widthM:3000,heightM:4000,rotation:-37.5},pureRelief:false,
@@ -36,7 +36,20 @@ test('project links preserve the crop and print settings while dropping private 
   assert.equal(url.pathname,'/relleu-obert/');
   assert.equal(url.search,'');
   assert.match(url.hash,/^#maqueta=1\.[A-Za-z0-9_-]+$/);
+  assert.equal(isSharedLink(url.hash),true);
   assert.deepEqual(readProjectLink(url.hash),{...shared,strokes:[]});
+});
+
+test('gallery links resolve a public example and keep the application path',()=>{
+  const url=new URL(exampleLink('https://example.test/relleu-obert/?debug=1#old','tamariu'));
+  assert.equal(url.href,'https://example.test/relleu-obert/#exemple=tamariu');
+  assert.equal(isSharedLink(url.hash),true);
+  assert.equal(isSharedLink('#about'),false);
+  assert.equal(readExampleLink(url.hash).id,'tamariu');
+  assert.equal(readExampleLink('#maqueta=1.invalid'),null);
+  assert.equal(readProjectLink(url.hash),null);
+  assert.throws(()=>readExampleLink('#exemple=private-project'));
+  assert.throws(()=>exampleLink(url.href,'../tamariu'));
 });
 
 test('unknown, oversized and malformed links fail before settings are used',()=>{

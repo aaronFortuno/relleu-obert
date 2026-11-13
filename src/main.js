@@ -21,7 +21,7 @@ import {initPiecePicker,bindPieceDimensions} from './piece-picker.js';
 import {CURATED_EXAMPLES,CURATED_EXAMPLE_DETAIL,localizeExample} from './curated-examples.js';
 import {initExampleCarousel,initExampleGallery} from './example-carousel.js';
 import {readProjects,saveProject,deleteProject,exportProjectLibrary,importProjectLibrary} from './project-library.js';
-import {isProjectLink,projectLink,readProjectLink} from './project-link.js';
+import {exampleLink,isSharedLink,projectLink,readExampleLink,readProjectLink} from './project-link.js';
 import {cutGuideSegments} from './cut-guides.js';
 import {regionLimitMessage} from './region-limits.js';
 import {initDialogs} from './dialogs.js';
@@ -1294,10 +1294,10 @@ function selectPieceSize(preset){
   if(firstSize)projectSnapshot=projectFingerprint();
 }
 initPiecePicker($('#piece-choice'),selectPieceSize);
-function selectCuratedExample(example){
+function selectCuratedExample(example,{keepLink=false}={}){
   const {id,center,width,height,scale,rotation,pureRelief=true}=example;
   if(busy||pendingVegetation||drawing)return;
-  clearProjectLink();
+  if(!keepLink)clearSharedLink();
   brushHistory=createProjectBrushHistory();
   trailHistory=createProjectBrushHistory({breakOnClipped:true});
   routeHistory=createProjectBrushHistory({breakOnClipped:true});
@@ -1388,7 +1388,7 @@ resizeForm.onsubmit=event=>{
 resizeForm.addEventListener('focusout',event=>{
   if(!resizeForm.contains(event.relatedTarget))setTimeout(commitResize,0);
 });
-$('#new-project').onclick=()=>switchProject(reloadWithoutProjectLink);
+$('#new-project').onclick=()=>switchProject(reloadWithoutSharedLink);
 $('#reset').onclick=()=>{previewOrbit.pause(performance.now());home();};
 $('#top').onclick=()=>{setOrbitEnabled(false);home();const distance=camera.position.distanceTo(controls.target);camera.position.copy(controls.target).add(new THREE.Vector3(0,-.01,distance));controls.update();};
 function requireBuild(message){needsBuild=true;badge(tooLargeRegion?statusMessage('status.areaLarge'):message);say(tooLargeRegion?()=>$('#scale-info').textContent:()=>messageText(message)+'.',tooLargeRegion);lock(busy);}
@@ -2026,10 +2026,17 @@ function captureProject({includeAnnotations=true}={}){
 const feedbackMessages=new Map();
 function feedback(id,message){feedbackMessages.set(id,message);$('#'+id).textContent=messageText(message);}
 const shareDialog=$('#share-project-dialog'),shareLink=$('#share-project-link'),shareCopy=$('#share-project-copy');
-$('#share-project').onclick=()=>{
+let sharedExampleId;
+function openShareDialog(example){
+  sharedExampleId=example?.id;
+  feedback('share-project-title',()=>example?t('ui.share.exampleName',{name:localizeExample(example).title}):t('ui.share.open'));
+  $('#share-project-note').hidden=!!example;
+  $('#share-example-note').hidden=!example;
+  shareLink.setAttribute('aria-describedby',example?'share-example-note':'share-project-note');
   feedback('share-project-feedback','');
   try{
-    shareLink.value=projectLink(location.href,captureProject({includeAnnotations:false}));
+    shareLink.value=example?exampleLink(location.href,example.id):
+      projectLink(location.href,captureProject({includeAnnotations:false}));
     shareCopy.disabled=false;
   }catch{
     shareLink.value='';
@@ -2037,10 +2044,12 @@ $('#share-project').onclick=()=>{
     feedback('share-project-feedback',statusMessage('share.unavailable'));
   }
   shareDialog.showModal();
-};
+}
+$('#share-project').onclick=()=>openShareDialog();
 shareLink.onclick=()=>shareLink.select();
 shareCopy.onclick=async()=>{
-  trackWorkshopEvent('copia_enllac');
+  if(sharedExampleId)trackWorkshopEvent('copia_enllac_galeria',{exemple:sharedExampleId});
+  else trackWorkshopEvent('copia_enllac');
   try{
     await navigator.clipboard.writeText(shareLink.value);
     feedback('share-project-feedback',statusMessage('share.copied'));
@@ -2050,22 +2059,22 @@ shareCopy.onclick=async()=>{
     feedback('share-project-feedback',statusMessage('share.manual'));
   }
 };
-function clearProjectLink(){
-  if(isProjectLink(location.hash)){
+function clearSharedLink(){
+  if(isSharedLink(location.hash)){
     const url=new URL(location.href);
     url.hash='';
     history.replaceState(history.state,'',url);
   }
 }
-function reloadWithoutProjectLink(){
-  clearProjectLink();
+function reloadWithoutSharedLink(){
+  clearSharedLink();
   location.reload();
 }
 window.addEventListener('hashchange',event=>{
   const next=new URL(event.newURL),previous=new URL(event.oldURL);
-  if(!isProjectLink(next.hash)&&!isProjectLink(previous.hash))return;
-  if(isProjectLink(next.hash)){
-    try{readProjectLink(next.hash);}catch{
+  if(!isSharedLink(next.hash)&&!isSharedLink(previous.hash))return;
+  if(isSharedLink(next.hash)){
+    try{readExampleLink(next.hash)??readProjectLink(next.hash);}catch{
       history.replaceState(history.state,'',previous);
       say(statusMessage('share.invalid'),true);
       return;
@@ -2134,7 +2143,7 @@ function renderProjectGallery(preserveConfirm=false){
     open.onclick=()=>switchProject(()=>{
       try{
         sessionStorage.setItem(projectRestoreKey,project.id);
-        reloadWithoutProjectLink();
+        reloadWithoutSharedLink();
       }catch(error){feedback('project-feedback',error.message);}
     });
     remove.onclick=()=>{
@@ -2240,7 +2249,7 @@ initExampleGallery(projectDialog,CURATED_EXAMPLES,example=>{
     selectCuratedExample(example);
     showWorkshopPanel('preview',{focus:true});
   });
-});
+},openShareDialog);
 $('#gallery-credits').append($('#example-carousel .example-credits').cloneNode(true));
 const projectImportFile=$('#project-import-file'),projectImport=$('#project-import');
 const maxProjectBackupBytes=16*1024*1024;
@@ -2442,13 +2451,17 @@ $('#welcome-start-tour').onclick=()=>{
 };
 onLocaleChange(refreshWorkshopLanguage);
 initI18n();
-const openingProjectLink=isProjectLink(location.hash);
+const openingSharedLink=isSharedLink(location.hash);
 try{
-  if(openingProjectLink){
-    applyProjectSettings(readProjectLink(location.hash));
-    generate();
+  if(openingSharedLink){
+    const example=readExampleLink(location.hash);
+    if(example)selectCuratedExample(example,{keepLink:true});
+    else{
+      applyProjectSettings(readProjectLink(location.hash));
+      generate();
+    }
   }else restoreProject();
-}catch(error){say(openingProjectLink?statusMessage('share.invalid'):error.message,true);}
+}catch(error){say(openingSharedLink?statusMessage('share.invalid'):error.message,true);}
 let firstWorkshopVisit=true;
 try{firstWorkshopVisit=!localStorage.getItem(welcomeTourKey);}catch{}
-if(firstWorkshopVisit&&!selectedSize&&!openingProjectLink)openWorkshopWelcome($('#welcome-guide'));
+if(firstWorkshopVisit&&!selectedSize&&!openingSharedLink)openWorkshopWelcome($('#welcome-guide'));

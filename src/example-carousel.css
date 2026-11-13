@@ -274,6 +274,12 @@
 
 #gallery-cards .example-card.secondary { grid-template-rows: auto 1fr; }
 #gallery-cards .example-card-image { aspect-ratio: 8 / 5; }
+.gallery-card {position:relative;display:grid;min-width:0}
+.gallery-share.secondary {
+  position:absolute;z-index:1;inset:8px 8px auto auto;
+  display:grid;place-items:center;width:36px;height:36px;margin:0;padding:0;
+  background:var(--paper);
+}
 
 #gallery-cards .example-card-caption {
   gap: 4px;
@@ -303,6 +309,7 @@
     padding-inline: max(16px, env(safe-area-inset-left)) max(16px, env(safe-area-inset-right));
   }
   #gallery-cards { gap: 12px; }
+  .gallery-share.secondary {width:44px;height:44px}
 }
 
 @media (max-width: 600px) {
