@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.24.6 — 2026-11-13
+
+- La icona de compartir del taller copia l’enllaç de la configuració en un clic i mostra «Enllaç copiat».
+
 ## v0.24.5 — 2026-11-13
 
 - La icona de compartir de cada fitxa copia l’enllaç en un clic i mostra una confirmació breu.

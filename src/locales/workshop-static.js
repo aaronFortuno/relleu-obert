@@ -192,6 +192,7 @@ export default {
   "ui.project.backupHint": ["Desa una còpia dels ajustos per recuperar-los en un altre navegador o dispositiu.","Guarda una copia de los ajustes para recuperarlos en otro navegador o dispositivo.","Garda unha copia dos axustes para recuperalos noutro navegador ou dispositivo.","Gorde ezarpenen kopia bat beste nabigatzaile edo gailu batean berreskuratzeko.","Save a copy of your settings to restore them in another browser or on another device."],
   "ui.action.saveSettings": ["Desa els ajustos","Guarda los ajustes","Garda os axustes","Gorde ezarpenak","Save settings"],
   "ui.share.open": ["Comparteix la configuració","Compartir la configuración","Compartir a configuración","Partekatu konfigurazioa","Share settings"],
+  "ui.share.copyProject": ["Copia l’enllaç a la configuració","Copiar el enlace a la configuración","Copiar a ligazón á configuración","Kopiatu konfigurazioaren esteka","Copy settings link"],
   "ui.share.exampleName": ["Comparteix {name}","Compartir {name}","Compartir {name}","Partekatu {name}","Share {name}"],
   "ui.share.copyExample": ["Copia l’enllaç de {name}","Copiar el enlace de {name}","Copiar a ligazón de {name}","Kopiatu {name} adibidearen esteka","Copy link to {name}"],
   "ui.share.exampleNote": [

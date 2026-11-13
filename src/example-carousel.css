@@ -257,21 +257,7 @@
 #gallery-example-status .hint { margin: 0; font-size: var(--ui-control); }
 #gallery-feedback:empty { display: none; }
 
-#gallery-copy-status {
-  position:absolute;
-  inset:auto 16px 16px auto;
-  z-index:2;
-  margin:0;
-  padding:8px 12px;
-  border:1px solid var(--ui-control-border);
-  border-radius:5px;
-  background:var(--paper);
-  color:var(--green);
-  font-size:var(--ui-control);
-  pointer-events:none;
-}
-
-#gallery-copy-status:empty {clip-path:inset(50%);}
+#gallery-copy-status {inset:auto 16px 16px auto}
 
 #gallery-body {
   overflow: auto;

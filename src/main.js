@@ -2026,27 +2026,50 @@ function captureProject({includeAnnotations=true}={}){
 const feedbackMessages=new Map();
 function feedback(id,message){feedbackMessages.set(id,message);$('#'+id).textContent=messageText(message);}
 const shareDialog=$('#share-project-dialog'),shareLink=$('#share-project-link'),shareCopy=$('#share-project-copy');
-function openShareDialog(example){
+function openShareDialog(url,example){
   feedback('share-project-title',()=>example?t('ui.share.exampleName',{name:localizeExample(example).title}):t('ui.share.open'));
   $('#share-project-note').hidden=!!example;
   $('#share-example-note').hidden=!example;
   shareLink.setAttribute('aria-describedby',example?'share-example-note':'share-project-note');
-  feedback('share-project-feedback','');
-  try{
-    shareLink.value=example?exampleLink(location.href,example.id):
-      projectLink(location.href,captureProject({includeAnnotations:false}));
-    shareCopy.disabled=false;
-  }catch{
-    shareLink.value='';
-    shareCopy.disabled=true;
-    feedback('share-project-feedback',statusMessage('share.unavailable'));
-  }
+  shareLink.value=url;
+  shareCopy.disabled=!url;
+  feedback('share-project-feedback',statusMessage(url?'share.manual':'share.unavailable'));
   shareDialog.showModal();
+  if(url){
+    shareLink.focus();
+    shareLink.select();
+  }
 }
-$('#share-project').onclick=()=>openShareDialog();
+function directShare(statusId,dialog){
+  let timer,request=0;
+  function clear(){
+    clearTimeout(timer);
+    feedback(statusId,'');
+  }
+  dialog?.addEventListener('close',()=>{request++;clear();});
+  return async (example)=>{
+    const current=++request;
+    clear();
+    if(example)trackWorkshopEvent('copia_enllac_galeria',{exemple:example.id});
+    else trackWorkshopEvent('copia_enllac');
+    let url='';
+    try{
+      url=example?exampleLink(location.href,example.id):
+        projectLink(location.href,captureProject({includeAnnotations:false}));
+      await navigator.clipboard.writeText(url);
+    }catch{
+      if(current===request&&(!dialog||dialog.open)&&!shareDialog.open)openShareDialog(url,example);
+      return;
+    }
+    if(current!==request||dialog&&!dialog.open)return;
+    feedback(statusId,statusMessage('share.copied'));
+    timer=setTimeout(clear,2500);
+  };
+}
+const copyProjectLink=directShare('project-copy-status');
+$('#share-project').onclick=()=>copyProjectLink();
 shareLink.onclick=()=>shareLink.select();
 shareCopy.onclick=async()=>{
-  if($('#share-example-note').hidden)trackWorkshopEvent('copia_enllac');
   try{
     await navigator.clipboard.writeText(shareLink.value);
     feedback('share-project-feedback',statusMessage('share.copied'));
@@ -2216,32 +2239,7 @@ function applyProjectSettings(settings,name=''){
 initDialogs();
 const projectDialog=$('#projects-dialog'),gallerySections=[...projectDialog.querySelectorAll('.gallery-sections button')];
 const galleryBody=$('#gallery-body');
-let galleryCopyTimer,galleryCopyRequest=0;
-projectDialog.addEventListener('close',()=>{
-  galleryCopyRequest++;
-  clearTimeout(galleryCopyTimer);
-  feedback('gallery-copy-status','');
-});
-async function copyGalleryLink(example){
-  const request=++galleryCopyRequest;
-  clearTimeout(galleryCopyTimer);
-  feedback('gallery-copy-status','');
-  trackWorkshopEvent('copia_enllac_galeria',{exemple:example.id});
-  try{
-    await navigator.clipboard.writeText(exampleLink(location.href,example.id));
-  }catch{
-    if(request!==galleryCopyRequest||!projectDialog.open)return;
-    openShareDialog(example);
-    if(!shareLink.value)return;
-    shareLink.focus();
-    shareLink.select();
-    feedback('share-project-feedback',statusMessage('share.manual'));
-    return;
-  }
-  if(request!==galleryCopyRequest||!projectDialog.open)return;
-  feedback('gallery-copy-status',statusMessage('share.copied'));
-  galleryCopyTimer=setTimeout(()=>feedback('gallery-copy-status',''),2500);
-}
+const copyGalleryLink=directShare('gallery-copy-status',projectDialog);
 function showGallerySection(active){
   for(const button of gallerySections){
     button.setAttribute('aria-pressed',String(button===active));

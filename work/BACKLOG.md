@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Revisat el **2026-11-13** amb la v0.24.5. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
+Revisat el **2026-11-13** amb la v0.24.6. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
 
 ## Validacions de la v0.24
 
@@ -135,7 +135,7 @@ La v0.23.51 destaca en taronja les rutes dibuixades i importades al visor. Tenen
 | `usa_eina` | S’acaba un traç de sender o ruta, s’importa un GPX vàlid o es marca un punt. | Eina |
 | `ajusta_talls` | S’aplica un canvi a la divisió o s’acaba d’arrossegar un tall. | Nombre de peces |
 | `canvia_materials` | Es canvia el nombre de materials. | Mode i nombre de materials |
-| `copia_enllac` | Es prem «Copia l’enllaç» de la configuració compartida. | Cap |
+| `copia_enllac` | Es prem la icona de compartir al costat de la descàrrega. | Cap |
 | `copia_enllac_galeria` | Es prem la icona de compartir d’una fitxa de la galeria. | Identificador públic de l’exemple |
 
 El fitxer lliurat al navegador és l’últim resultat observable de l’exportació. El recompte de generacions exclou els recàlculs de capes i els errors recuperats. Les obertures de la galeria es compten amb `obre_galeria`.

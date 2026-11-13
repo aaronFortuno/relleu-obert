@@ -17,7 +17,7 @@ Les dades i el detall disponible varien segons el lloc i l’escala. Els ponts, 
 
 «Projectes desats» permet guardar els ajustos al navegador i exportar o importar una còpia JSON.
 
-La icona «Comparteix la configuració», al costat de la descàrrega, crea un enllaç amb el retall i els ajustos actuals. En obrir-lo, la maqueta es genera automàticament al navegador. Els traços, les rutes i els punts destacats es poden conservar a la còpia JSON del projecte.
+La icona de compartir al costat de la descàrrega copia l’enllaç amb el retall i els ajustos actuals en un clic. En obrir-lo, la maqueta es genera automàticament al navegador. Els traços, les rutes i els punts destacats es poden conservar a la còpia JSON del projecte.
 
 La icona de compartir de cada fitxa de la galeria copia l’enllaç en un clic. En obrir-lo, la maqueta es genera amb els ajustos del catàleg.
 
