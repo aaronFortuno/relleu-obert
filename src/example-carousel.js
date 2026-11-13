@@ -107,8 +107,6 @@ export function initExampleGallery(container, examples, onSelect, onShare) {
     const share = document.createElement('button');
     share.type = 'button';
     share.className = 'secondary gallery-share';
-    share.setAttribute('aria-haspopup', 'dialog');
-    share.setAttribute('aria-controls', 'share-project-dialog');
     share.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#share-icon"/></svg>';
     share.onclick = () => onShare(example);
     tile.append(card.button, share);
@@ -156,7 +154,7 @@ export function initExampleGallery(container, examples, onSelect, onShare) {
     for (const entry of entries) {
       const {example} = entry;
       const label = entry.card.populate(example);
-      const shareLabel = t('ui.share.exampleName', {name:label.title});
+      const shareLabel = t('ui.share.copyExample', {name:label.title});
       entry.share.setAttribute('aria-label', shareLabel);
       entry.share.title = shareLabel;
       const groupLabels = entry.landforms.flatMap(group => {

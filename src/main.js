@@ -2026,9 +2026,7 @@ function captureProject({includeAnnotations=true}={}){
 const feedbackMessages=new Map();
 function feedback(id,message){feedbackMessages.set(id,message);$('#'+id).textContent=messageText(message);}
 const shareDialog=$('#share-project-dialog'),shareLink=$('#share-project-link'),shareCopy=$('#share-project-copy');
-let sharedExampleId;
 function openShareDialog(example){
-  sharedExampleId=example?.id;
   feedback('share-project-title',()=>example?t('ui.share.exampleName',{name:localizeExample(example).title}):t('ui.share.open'));
   $('#share-project-note').hidden=!!example;
   $('#share-example-note').hidden=!example;
@@ -2048,8 +2046,7 @@ function openShareDialog(example){
 $('#share-project').onclick=()=>openShareDialog();
 shareLink.onclick=()=>shareLink.select();
 shareCopy.onclick=async()=>{
-  if(sharedExampleId)trackWorkshopEvent('copia_enllac_galeria',{exemple:sharedExampleId});
-  else trackWorkshopEvent('copia_enllac');
+  if($('#share-example-note').hidden)trackWorkshopEvent('copia_enllac');
   try{
     await navigator.clipboard.writeText(shareLink.value);
     feedback('share-project-feedback',statusMessage('share.copied'));
@@ -2219,6 +2216,32 @@ function applyProjectSettings(settings,name=''){
 initDialogs();
 const projectDialog=$('#projects-dialog'),gallerySections=[...projectDialog.querySelectorAll('.gallery-sections button')];
 const galleryBody=$('#gallery-body');
+let galleryCopyTimer,galleryCopyRequest=0;
+projectDialog.addEventListener('close',()=>{
+  galleryCopyRequest++;
+  clearTimeout(galleryCopyTimer);
+  feedback('gallery-copy-status','');
+});
+async function copyGalleryLink(example){
+  const request=++galleryCopyRequest;
+  clearTimeout(galleryCopyTimer);
+  feedback('gallery-copy-status','');
+  trackWorkshopEvent('copia_enllac_galeria',{exemple:example.id});
+  try{
+    await navigator.clipboard.writeText(exampleLink(location.href,example.id));
+  }catch{
+    if(request!==galleryCopyRequest||!projectDialog.open)return;
+    openShareDialog(example);
+    if(!shareLink.value)return;
+    shareLink.focus();
+    shareLink.select();
+    feedback('share-project-feedback',statusMessage('share.manual'));
+    return;
+  }
+  if(request!==galleryCopyRequest||!projectDialog.open)return;
+  feedback('gallery-copy-status',statusMessage('share.copied'));
+  galleryCopyTimer=setTimeout(()=>feedback('gallery-copy-status',''),2500);
+}
 function showGallerySection(active){
   for(const button of gallerySections){
     button.setAttribute('aria-pressed',String(button===active));
@@ -2249,7 +2272,7 @@ initExampleGallery(projectDialog,CURATED_EXAMPLES,example=>{
     selectCuratedExample(example);
     showWorkshopPanel('preview',{focus:true});
   });
-},openShareDialog);
+},copyGalleryLink);
 $('#gallery-credits').append($('#example-carousel .example-credits').cloneNode(true));
 const projectImportFile=$('#project-import-file'),projectImport=$('#project-import');
 const maxProjectBackupBytes=16*1024*1024;

@@ -19,7 +19,7 @@ Les dades i el detall disponible varien segons el lloc i l’escala. Els ponts, 
 
 La icona «Comparteix la configuració», al costat de la descàrrega, crea un enllaç amb el retall i els ajustos actuals. En obrir-lo, la maqueta es genera automàticament al navegador. Els traços, les rutes i els punts destacats es poden conservar a la còpia JSON del projecte.
 
-Les fitxes de la galeria permeten copiar l’enllaç a un exemple abans de generar-lo. L’enllaç obre la fitxa amb els ajustos del catàleg i genera la maqueta.
+La icona de compartir de cada fitxa de la galeria copia l’enllaç en un clic. En obrir-lo, la maqueta es genera amb els ajustos del catàleg.
 
 ## Desenvolupament local
 
