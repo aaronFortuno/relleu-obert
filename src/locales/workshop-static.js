@@ -191,6 +191,23 @@ export default {
   "ui.project.restore": ["Importa un JSON","Importar un JSON","Importar un JSON","Inportatu JSON bat","Import JSON"],
   "ui.project.backupHint": ["Desa una còpia dels ajustos per recuperar-los en un altre navegador o dispositiu.","Guarda una copia de los ajustes para recuperarlos en otro navegador o dispositivo.","Garda unha copia dos axustes para recuperalos noutro navegador ou dispositivo.","Gorde ezarpenen kopia bat beste nabigatzaile edo gailu batean berreskuratzeko.","Save a copy of your settings to restore them in another browser or on another device."],
   "ui.action.saveSettings": ["Desa els ajustos","Guarda los ajustes","Garda os axustes","Gorde ezarpenak","Save settings"],
+  "ui.share.open": ["Comparteix la configuració","Compartir la configuración","Compartir a configuración","Partekatu konfigurazioa","Share settings"],
+  "ui.share.note": [
+    "L’enllaç inclou les coordenades del retall i els ajustos actuals. Els traços, les rutes i els punts destacats queden al teu projecte.",
+    "El enlace incluye las coordenadas de la zona y los ajustes actuales. Los trazos, las rutas y los puntos destacados se quedan en tu proyecto.",
+    "A ligazón inclúe as coordenadas da zona e os axustes actuais. Os trazos, as rutas e os puntos destacados quedan no teu proxecto.",
+    "Estekak eremuaren koordenatuak eta uneko ezarpenak jasotzen ditu. Trazuak, ibilbideak eta leku nabarmenak zure proiektuan geratzen dira.",
+    "The link includes the area coordinates and current settings. Strokes, routes and points of interest stay in your project.",
+  ],
+  "ui.share.link": ["Enllaç a la configuració","Enlace a la configuración","Ligazón á configuración","Konfigurazioaren esteka","Link to settings"],
+  "ui.share.copy": ["Copia l’enllaç","Copiar enlace","Copiar a ligazón","Kopiatu esteka","Copy link"],
+  "ui.share.analytics": [
+    "Umami compta les pulsacions de «Copia l’enllaç». L’enllaç compartit i el seu contingut queden fora de les estadístiques.",
+    "Umami cuenta las pulsaciones de «Copiar enlace». El enlace compartido y su contenido quedan fuera de las estadísticas.",
+    "Umami conta as pulsacións de «Copiar a ligazón». A ligazón compartida e o seu contido quedan fóra das estatísticas.",
+    "Umamik «Kopiatu esteka» botoia zenbat aldiz sakatzen den zenbatzen du. Partekatutako esteka eta haren edukia estatistiketatik kanpo geratzen dira.",
+    "Umami counts clicks on “Copy link”. The shared link and its contents are excluded from analytics.",
+  ],
   "ui.releases.title": ["Historial de versions","Historial de versiones","Historial de versións","Bertsioen historia","Version history"],
   "ui.releases.changelog": ["Changelog complet ↗","Registro completo de cambios ↗","Rexistro completo de cambios ↗","Aldaketen erregistro osoa ↗","Full changelog ↗"],
 

@@ -30,7 +30,7 @@ export function createPlaceMap(container,{onChange,onName,width=150,height=150})
   north.addTo(map);
   L.DomEvent.disableClickPropagation(handle);
   let physical=[width,height],lastBBox,lastBase=placeSelection(DEFAULT_PLACE,width,height),pendingFit,rotation=0,lastRotation,restoring=false,retainedBase=null,gesture=null,locked=false,pureRelief=false;
-  let resizeReference=null;
+  let resizeReference=null,retainedZoom;
   const zoom=map.zoomControl.getContainer();
   function updateRotationLabel(value){
     handle.setAttribute('aria-valuetext',t(Math.abs(value)===1?'example.map.degree':'example.map.degrees',{value:formatNumber(value)}));
@@ -51,7 +51,9 @@ export function createPlaceMap(container,{onChange,onName,width=150,height=150})
   }
   onLocaleChange(updateMapLabels);
   updateMapLabels();
-  map.on('zoomstart',()=>{if(!restoring)retainedBase=null;});
+  map.on('zoomstart',()=>{
+    if(!restoring){retainedBase=null;retainedZoom=undefined;}
+  });
   function frameSize(){const w=container.clientWidth,h=container.clientHeight,r=physical[0]/physical[1],a=rotation*Math.PI/180,c=Math.abs(Math.cos(a)),s=Math.abs(Math.sin(a)),fw=Math.min((w-46)/(c+s/r),(h-54)/(s+c/r));return [fw,fw/r];}
   function scaleBox(center,denominator){
     return physicalBBox(center,physical[0]*denominator/1e6,physical[1]*denominator/1e6);
@@ -129,18 +131,19 @@ export function createPlaceMap(container,{onChange,onName,width=150,height=150})
     if(Math.abs(lat-old.center[0])>1e-12||Math.abs(lng-old.center[1])>1e-12)retainedBase=physicalBBox([lat,lng],old.widthM/1000,old.heightM/1000);
   });
   map.on('moveend zoomend',changed);
-  function fit(bbox,zoomCeiling=Infinity){
+  function fit(bbox,zoomCeiling=Infinity,viewZoom){
     const p=selectionPose(bbox);
     bbox=limitBox(bbox);
+    retainedZoom=viewZoom;
     retainedBase=bbox;if(!container.clientWidth||!container.clientHeight){pendingFit=bbox;changed();return;}
     const w=container.clientWidth,h=container.clientHeight,[fw,fh]=frameSize();
     const prior=restoring;restoring=true;pendingFit=null;
     limitZoom(p.center);
     const bounds=[[bbox[1],bbox[0]],[bbox[3],bbox[2]]],zoom=map.getBoundsZoom(bounds,false,[w-fw,h-fh]);
-    map.setView(p.center,Math.min(zoom,zoomCeiling),{animate:false});restoring=prior;changed();
+    map.setView(p.center,viewZoom??Math.min(zoom,zoomCeiling),{animate:false});restoring=prior;changed();
   }
   const editZoomCeiling=()=>pureRelief?Infinity:map.getZoom();
-  new ResizeObserver(()=>{if(!container.clientWidth||!container.clientHeight)return;const previous=pendingFit||lastBase,zoomCeiling=pendingFit?Infinity:editZoomCeiling();restoring=true;map.invalidateSize({pan:false});if(previous)fit(previous,zoomCeiling);restoring=false;changed();}).observe(container);
+  new ResizeObserver(()=>{if(!container.clientWidth||!container.clientHeight)return;const previous=pendingFit||lastBase,zoomCeiling=pendingFit?Infinity:editZoomCeiling();restoring=true;map.invalidateSize({pan:false});if(previous)fit(previous,zoomCeiling,retainedZoom);restoring=false;changed();}).observe(container);
   function setRotation(value){
     const previous=baseSelection();
     rotation=value;
@@ -206,7 +209,7 @@ export function createPlaceMap(container,{onChange,onName,width=150,height=150})
     if(wheelZoom&&!value)map.scrollWheelZoom.enable();
     else map.scrollWheelZoom.disable();
   }
-  return {map,getBBox:selection,getPose:pose,getScaleLimit,setRotation,resizePiece,setSize,setLocked,setPureRelief(value){const previous=baseSelection();pureRelief=value;fit(previous);},setScale(value){fit(scaledBBox(pose().center,...physical,value,pureRelief?reliefScaleRange():undefined));},setRegion:fit,async search(text,signal){
+  return {map,getBBox:selection,getPose:pose,getScaleLimit,setRotation,resizePiece,setSize,setLocked,setPureRelief(value){const previous=baseSelection();pureRelief=value;fit(previous);},setScale(value){fit(scaledBBox(pose().center,...physical,value,pureRelief?reliefScaleRange():undefined));},setRegion(bbox,viewZoom){fit(bbox,Infinity,viewZoom);},async search(text,signal){
     const coordinate=parseCoordinates(text);if(coordinate){map.setView([coordinate.lat,coordinate.lon],map.getZoom(),{animate:false});onName(text);return null;}
     const cacheKey='relleu-search:'+text.trim().toLowerCase();let cached;try{cached=JSON.parse(sessionStorage.getItem(cacheKey));}catch{}
     if(cached)return cached;

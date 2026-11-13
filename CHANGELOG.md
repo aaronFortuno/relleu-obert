@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.24.1 — 2026-11-13
+
+- Comparteix la configuració de la maqueta amb un enllaç. Conserva el retall, el zoom i els ajustos perquè es puguin revisar i generar en un altre navegador.
+- Umami compta les pulsacions de «Copia l’enllaç». El contingut de l’enllaç queda fora de les estadístiques.
+
 ## v0.24.0 — 2026-11-12
 
 - El quadre V4V distribueix en quatre blocs el projecte i l’autor, les aportacions amb Lightning, la privacitat i les fonts.

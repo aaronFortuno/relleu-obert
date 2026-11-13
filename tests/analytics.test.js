@@ -10,6 +10,7 @@ const privateFields={
 test('Umami receives only the public page address and the fields allowed for each event',()=>{
   const cases=[
     ['obre_galeria',{}],
+    ['copia_enllac',{}],
     ['genera_model',{mode:'relleu_pur',mida:'25_a_50_cm'}],
     ['error_generacio',{mode:'model_complet'}],
     ['descarrega_model',{mode:'relleu_pur',format:'bambu-zip',peces:4}],

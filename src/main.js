@@ -21,6 +21,7 @@ import {initPiecePicker,bindPieceDimensions} from './piece-picker.js';
 import {CURATED_EXAMPLES,CURATED_EXAMPLE_DETAIL,localizeExample} from './curated-examples.js';
 import {initExampleCarousel,initExampleGallery} from './example-carousel.js';
 import {readProjects,saveProject,deleteProject,exportProjectLibrary,importProjectLibrary} from './project-library.js';
+import {isProjectLink,projectLink,readProjectLink} from './project-link.js';
 import {cutGuideSegments} from './cut-guides.js';
 import {regionLimitMessage} from './region-limits.js';
 import {initDialogs} from './dialogs.js';
@@ -300,6 +301,7 @@ function lock(value){
   resizeFields.disabled=workPending||drawing;
   syncPrintSettings(workPending||drawing);
   syncExport(workPending||!model);
+  $('#share-project').disabled=workPending||drawing||!selectedSize||!selectedPose||tooLargeRegion;
   syncVegetationControls(workPending);
   view.setAttribute('aria-busy',String(workPending));
   $('#work-indicator').hidden=!workPending;
@@ -1295,6 +1297,7 @@ initPiecePicker($('#piece-choice'),selectPieceSize);
 function selectCuratedExample(example){
   const {id,center,width,height,scale,rotation,pureRelief=true}=example;
   if(busy||pendingVegetation||drawing)return;
+  clearProjectLink();
   brushHistory=createProjectBrushHistory();
   trailHistory=createProjectBrushHistory({breakOnClipped:true});
   routeHistory=createProjectBrushHistory({breakOnClipped:true});
@@ -1385,7 +1388,7 @@ resizeForm.onsubmit=event=>{
 resizeForm.addEventListener('focusout',event=>{
   if(!resizeForm.contains(event.relatedTarget))setTimeout(commitResize,0);
 });
-$('#new-project').onclick=()=>switchProject(()=>window.location.reload());
+$('#new-project').onclick=()=>switchProject(reloadWithoutProjectLink);
 $('#reset').onclick=()=>{previewOrbit.pause(performance.now());home();};
 $('#top').onclick=()=>{setOrbitEnabled(false);home();const distance=camera.position.distanceTo(controls.target);camera.position.copy(controls.target).add(new THREE.Vector3(0,-.01,distance));controls.update();};
 function requireBuild(message){needsBuild=true;badge(tooLargeRegion?statusMessage('status.areaLarge'):message);say(tooLargeRegion?()=>$('#scale-info').textContent:()=>messageText(message)+'.',tooLargeRegion);lock(busy);}
@@ -2005,21 +2008,75 @@ const projectControls={
   trees:'trees',treeType:'tree-type',brushDensity:'density',brushRadius:'brush-radius',
   vegetationHeight:'vegetation-height',vegetationNoise:'vegetation-noise'
 };
-function captureProject(){
+function captureProject({includeAnnotations=true}={}){
   const options={exportFormat,split:printPlan(...size()).tiles.length>1,...boundarySettings()};
   for(const [key,id] of Object.entries(projectControls)){
     const control=$('#'+id);
     options[key]=control.type==='checkbox'?control.checked:
       ['buildingSource','buildingMode','treeType'].includes(key)?control.value:Number(control.value);
   }
-  return {sizePreset:selectedSize,pose:selectedPose,pureRelief:pureSelected(),placeName:placeName||undefined,
-    exampleId:exampleSelection?.id,materials:landscapeMaterials,reliefMaterials,options,print:{baseThickness,cuts:printCuts(...size())},
+  const settings={sizePreset:selectedSize,pose:selectedPose,pureRelief:pureSelected(),exampleId:exampleSelection?.id,
+    materials:landscapeMaterials,reliefMaterials,options,print:{baseThickness,cuts:printCuts(...size())}};
+  if(!includeAnnotations)return {...settings,mapZoom:placeMap.map.getZoom()};
+  return {...settings,placeName:placeName||undefined,
     strokes:brushHistory.prepare(modelOptions(),strokes).strokes,
     ...(pureSelected()?{trailStrokes:trailHistory.prepare(modelOptions(),trailStrokes).strokes,
       drawnRouteStrokes:routeHistory.prepare(modelOptions(),drawnRouteStrokes).strokes,userRoute,pins}:{})};
 }
 const feedbackMessages=new Map();
 function feedback(id,message){feedbackMessages.set(id,message);$('#'+id).textContent=messageText(message);}
+const shareDialog=$('#share-project-dialog'),shareLink=$('#share-project-link'),shareCopy=$('#share-project-copy');
+$('#share-project').onclick=()=>{
+  feedback('share-project-feedback','');
+  try{
+    shareLink.value=projectLink(location.href,captureProject({includeAnnotations:false}));
+    shareCopy.disabled=false;
+  }catch{
+    shareLink.value='';
+    shareCopy.disabled=true;
+    feedback('share-project-feedback',statusMessage('share.unavailable'));
+  }
+  shareDialog.showModal();
+};
+shareLink.onclick=()=>shareLink.select();
+shareCopy.onclick=async()=>{
+  trackWorkshopEvent('copia_enllac');
+  try{
+    await navigator.clipboard.writeText(shareLink.value);
+    feedback('share-project-feedback',statusMessage('share.copied'));
+  }catch{
+    shareLink.focus();
+    shareLink.select();
+    feedback('share-project-feedback',statusMessage('share.manual'));
+  }
+};
+function clearProjectLink(){
+  if(isProjectLink(location.hash)){
+    const url=new URL(location.href);
+    url.hash='';
+    history.replaceState(history.state,'',url);
+  }
+}
+function reloadWithoutProjectLink(){
+  clearProjectLink();
+  location.reload();
+}
+window.addEventListener('hashchange',event=>{
+  const next=new URL(event.newURL),previous=new URL(event.oldURL);
+  if(!isProjectLink(next.hash)&&!isProjectLink(previous.hash))return;
+  if(isProjectLink(next.hash)){
+    try{readProjectLink(next.hash);}catch{
+      history.replaceState(history.state,'',previous);
+      say(statusMessage('share.invalid'),true);
+      return;
+    }
+  }
+  history.replaceState(history.state,'',previous);
+  switchProject(()=>{
+    history.replaceState(history.state,'',next);
+    location.reload();
+  });
+});
 const projectSwitchDialog=$('#switch-project-dialog');
 let projectSnapshot=null,pendingProjectAction=null;
 function projectFingerprint(){
@@ -2077,7 +2134,7 @@ function renderProjectGallery(preserveConfirm=false){
     open.onclick=()=>switchProject(()=>{
       try{
         sessionStorage.setItem(projectRestoreKey,project.id);
-        location.reload();
+        reloadWithoutProjectLink();
       }catch(error){feedback('project-feedback',error.message);}
     });
     remove.onclick=()=>{
@@ -2102,7 +2159,12 @@ function restoreProject(){
   sessionStorage.removeItem(projectRestoreKey);
   const project=readProjects(localStorage).find(item=>item.id===id);
   if(!project)throw Error(text('project.notFound'));
-  const {sizePreset,pose,pureRelief,materials,reliefMaterials:savedReliefMaterials,options,print,historical,placeName:savedPlace,exampleId,strokes:savedStrokes,trailStrokes:savedTrails,drawnRouteStrokes:savedDrawnRoute,userRoute:savedRoute,pins:savedPins}=project.settings;
+  applyProjectSettings(project.settings,project.name);
+}
+function applyProjectSettings(settings,name=''){
+  const {sizePreset,pose,pureRelief,materials,reliefMaterials:savedReliefMaterials,options,print,historical,
+    placeName:savedPlace,exampleId,mapZoom,strokes:savedStrokes,trailStrokes:savedTrails,
+    drawnRouteStrokes:savedDrawnRoute,userRoute:savedRoute,pins:savedPins}=settings;
   userRoute=savedRoute??null;
   nextPinId=Math.max(0,...(savedPins??[]).map(pin=>pin.id??0))+1;
   pins=(savedPins??[]).map(pin=>({...pin,id:pin.id??nextPinId++}));
@@ -2115,8 +2177,8 @@ function restoreProject(){
   regularPureRelief=pureRelief&&!isPanoramicSize(...pieceDimensions(sizePreset));
   selectPieceSize(sizePreset);
   placeMap.setRotation(pose.rotation);
-  placeMap.setRegion(physicalBBox(pose.center,pose.widthM/1000,pose.heightM/1000));
-  placeName=savedPlace||project.name;
+  placeMap.setRegion(physicalBBox(pose.center,pose.widthM/1000,pose.heightM/1000),mapZoom);
+  placeName=savedPlace||name;
   const knownExample=CURATED_EXAMPLES.some(example=>example.id===exampleId)||legacyAnetoIds.includes(exampleId)||
     (exampleId===panoramicPilotId&&panoramicPilotAvailable());
   if(knownExample||recommendedPlace(exampleId)){
@@ -2142,7 +2204,7 @@ function restoreProject(){
   syncExaggerationLabel();$('#density').oninput();$('#brush-radius').oninput();
   for(const [id,unit] of textureSliders)syncTextureLabel(id,unit);
   legend();tiling();buildingControls();
-  requireBuild(statusMessage(historical?'pending.projectCurrentData':'pending.project'));
+  requireBuild(statusMessage(mapZoom!==undefined?'share.loaded':historical?'pending.projectCurrentData':'pending.project'));
   projectSnapshot=projectFingerprint();
 }
 initDialogs();
@@ -2380,7 +2442,11 @@ $('#welcome-start-tour').onclick=()=>{
 };
 onLocaleChange(refreshWorkshopLanguage);
 initI18n();
-try{restoreProject();}catch(error){say(error.message,true);}
+const openingProjectLink=isProjectLink(location.hash);
+try{
+  if(openingProjectLink)applyProjectSettings(readProjectLink(location.hash));
+  else restoreProject();
+}catch(error){say(openingProjectLink?statusMessage('share.invalid'):error.message,true);}
 let firstWorkshopVisit=true;
 try{firstWorkshopVisit=!localStorage.getItem(welcomeTourKey);}catch{}
-if(firstWorkshopVisit&&!selectedSize)openWorkshopWelcome($('#welcome-guide'));
+if(firstWorkshopVisit&&!selectedSize&&!openingProjectLink)openWorkshopWelcome($('#welcome-guide'));

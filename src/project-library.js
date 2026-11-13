@@ -31,7 +31,7 @@ const optionRules={
 };
 const optionDefaults={trailWidth:1,reliefTrails:false,reliefTrailWidth:RELIEF_TRAIL_WIDTH_MM,...RELIEF_VEGETATION_DEFAULTS};
 
-function validatedSettings(settings){
+export function validatedSettings(settings){
   const invalid=()=>Error('La configuració del projecte desat no és vàlida.');
   if(!object(settings)||!pieceDimensions(settings.sizePreset)||!boolean(settings.pureRelief)||
     !object(settings.pose)||!object(settings.materials)||!object(settings.options)||!Array.isArray(settings.strokes))

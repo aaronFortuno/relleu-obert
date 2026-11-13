@@ -17,6 +17,8 @@ Les dades i el detall disponible varien segons el lloc i l’escala. Els ponts, 
 
 «Projectes desats» permet guardar els ajustos al navegador i exportar o importar una còpia JSON.
 
+«Comparteix la configuració», sota la descàrrega, crea un enllaç amb el retall i els ajustos actuals. Qui el rep pot revisar-los i generar la maqueta al seu navegador. Els traços, les rutes i els punts destacats es poden conservar a la còpia JSON del projecte.
+
 ## Desenvolupament local
 
 El desplegament fa servir Node.js 24 i pnpm 11. Amb les dependències instal·lades, a Windows també pots obrir la previsualització amb `Obre-preview.ps1`.

@@ -131,6 +131,15 @@ body:has(#workshop-guide[data-guide-step="territory"]) [data-step-action="place"
 #catalog-place-description {margin:0;font-size:var(--ui-control)}
 .sidebar-right .download-panel {flex:none;margin-top:auto;padding:12px 0 14px}
 .download-panel .section-heading {margin-bottom:8px}
+#share-project {margin-top:8px;padding:4px 0;font-size:var(--ui-control)}
+.share-project-row {display:flex;align-items:stretch;gap:8px}
+.share-project-row input {
+  flex:1;min-width:0;padding:8px;border:1px solid var(--ui-control-border);
+  border-radius:5px;background:var(--ui-control-bg);color:var(--ui-control-text);
+}
+.share-project-row button {width:auto;flex:none}
+#share-project-feedback {margin:8px 0 0}
+#share-project-feedback:empty {display:none}
 .download-control {position:relative;display:flex;gap:2px}
 .download-control #export-model {min-width:0;border-radius:5px 0 0 5px}
 .download-control #export-formats {flex:0 0 32px;width:32px;padding:0;border-radius:0 5px 5px 0}

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {PROJECT_LIBRARY_KEY,deleteProject,exportProjectLibrary,importProjectLibrary,readProjects,saveProject} from '../src/project-library.js';
 import {defaultAssignments} from '../src/materials.js';
 import {defaultBoundaryStyles,DEFAULT_BOUNDARY_PATTERNS,DEFAULT_BOUNDARY_WIDTHS} from '../src/relief-boundary-options.js';
+import {projectLink,readProjectLink} from '../src/project-link.js';
 
 const settings={
   sizePreset:'15x20',pose:{center:[42.165671,1.751211],widthM:3000,heightM:4000,rotation:-37.5},pureRelief:false,
@@ -21,6 +22,32 @@ function memoryStorage(){
   return {getItem:key=>values.get(key)??null,setItem:(key,value)=>values.set(key,value)};
 }
 const firstDate=new Date('2026-11-03T12:00:00Z'),secondDate=new Date('2026-11-03T12:01:00Z');
+
+test('project links preserve the crop and print settings while dropping private annotations',()=>{
+  const {placeName,strokes,...publicSettings}=settings;
+  const shared={...publicSettings,pureRelief:true,mapZoom:10.625,
+    exampleId:'example',sizePreset:'100x20',
+    pose:{center:[42.165671234567,1.751211234567],widthM:150000,heightM:30000,rotation:-37.5},
+    reliefMaterials:{count:2,assignments:[0,1,0,1,0,1,0,0,1]},
+    print:{baseThickness:7,cuts:{columns:[210,220,230,240,100],rows:[200]}}};
+  const url=new URL(projectLink('https://example.test/relleu-obert/?debug=1#old',{
+    ...shared,placeName,strokes,trailStrokes:strokes,drawnRouteStrokes:strokes,userRoute:{name:'private'},pins:[{id:1}]
+  }));
+  assert.equal(url.pathname,'/relleu-obert/');
+  assert.equal(url.search,'');
+  assert.match(url.hash,/^#maqueta=1\.[A-Za-z0-9_-]+$/);
+  assert.deepEqual(readProjectLink(url.hash),{...shared,strokes:[]});
+});
+
+test('unknown, oversized and malformed links fail before settings are used',()=>{
+  assert.equal(readProjectLink('#about'),null);
+  for(const hash of ['#maqueta=2.eyJ9','#maqueta=1.','#maqueta=1.%3D',
+    '#maqueta=1.'+'A'.repeat(2049),'#maqueta=1.e30']){
+    assert.throws(()=>readProjectLink(hash));
+  }
+  assert.throws(()=>projectLink('https://example.test/',{...settings,mapZoom:19}));
+  assert.throws(()=>projectLink('https://example.test/',{...settings,mapZoom:15,pose:{...settings.pose,rotation:900}}));
+});
 
 test('save and read preserve the settings with detached copies',()=>{
   const storage=memoryStorage(),input=structuredClone(settings);
