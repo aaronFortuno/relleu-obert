@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Revisat el **2026-11-13** amb la v0.24.2. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
+Revisat el **2026-11-13** amb la v0.24.3. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
 
 ## Validacions de la v0.24
 
@@ -94,7 +94,7 @@ La cerca amb fletxes i Retorn, el tancament amb Esc i l’entrada directa de coo
 
 ### RO-054 — Galeria local de projectes
 
-La v0.24.1 permet compartir el retall, el zoom i els ajustos amb un enllaç que obre la configuració abans de generar. La còpia JSON continua disponible per traslladar també les edicions manuals. Queda comprovar l’enllaç compartit entre dispositius.
+Els enllaços compartits carreguen el retall, el zoom i els ajustos i generen la maqueta en obrir-los. La còpia JSON permet traslladar també les edicions manuals. Queda comprovar l’enllaç compartit entre dispositius.
 
 **P2.** Exportar i recuperar en un altre navegador un projecte girat, amb traços i materials, en tots dos modes. El JSON conserva la configuració i permet regenerar la maqueta. [Format i validació](arxiu/HISTORIAL.md#v0237--còpia-del-catàleg-local)
 

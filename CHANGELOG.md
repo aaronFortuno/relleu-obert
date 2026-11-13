@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.24.3 — 2026-11-13
+
+- Els enllaços compartits carreguen els ajustos i generen la maqueta en obrir-los.
+
 ## v0.24.2 — 2026-11-13
 
 - La icona de compartir és a la mateixa fila que el botó de descàrrega.

@@ -2204,7 +2204,7 @@ function applyProjectSettings(settings,name=''){
   syncExaggerationLabel();$('#density').oninput();$('#brush-radius').oninput();
   for(const [id,unit] of textureSliders)syncTextureLabel(id,unit);
   legend();tiling();buildingControls();
-  requireBuild(statusMessage(mapZoom!==undefined?'share.loaded':historical?'pending.projectCurrentData':'pending.project'));
+  requireBuild(statusMessage(historical?'pending.projectCurrentData':'pending.project'));
   projectSnapshot=projectFingerprint();
 }
 initDialogs();
@@ -2444,8 +2444,10 @@ onLocaleChange(refreshWorkshopLanguage);
 initI18n();
 const openingProjectLink=isProjectLink(location.hash);
 try{
-  if(openingProjectLink)applyProjectSettings(readProjectLink(location.hash));
-  else restoreProject();
+  if(openingProjectLink){
+    applyProjectSettings(readProjectLink(location.hash));
+    generate();
+  }else restoreProject();
 }catch(error){say(openingProjectLink?statusMessage('share.invalid'):error.message,true);}
 let firstWorkshopVisit=true;
 try{firstWorkshopVisit=!localStorage.getItem(welcomeTourKey);}catch{}
