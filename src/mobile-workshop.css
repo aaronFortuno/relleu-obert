@@ -85,7 +85,7 @@
   #info-print :is(.secondary,.quiet-button) {min-height:44px}
   .sidebar-right .download-panel {padding:4px 0 8px}
   .sidebar-right .download-panel .section-heading {display:none}
-  #share-project {min-height:32px}
+  #share-project {flex-basis:44px;min-height:44px}
   #export-hint {margin:4px 0 0}
   .download-control :is(#export-model,#export-formats) {min-height:44px}
   .download-control #export-formats {flex-basis:44px}

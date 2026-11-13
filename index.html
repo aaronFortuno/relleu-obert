@@ -266,18 +266,20 @@
     <section class="download-panel">
       <p id="export-feedback" class="hint" role="alert"></p>
       <div class="section-heading"><h2 data-i18n="ui.export.title">Descarrega el model</h2></div>
-      <div class="download-control">
-        <button type="button" id="export-model" class="primary" disabled data-i18n="ui.export.bambuDownload">3MF per a Bambu Studio ↓</button>
-        <button type="button" id="export-formats" class="primary" aria-label="Formats de descàrrega" aria-expanded="false" aria-controls="export-options" disabled data-i18n-aria="ui.export.formats">▾</button>
-        <div id="export-options" hidden>
-          <button type="button" data-format="bambu" aria-pressed="true"><span data-i18n="ui.tools.downloadIn">Descarrega en</span> <span data-format-label data-i18n="ui.export.bambu">3MF per a Bambu Studio</span></button>
-          <button type="button" data-format="bambu-zip" aria-pressed="false" hidden><span data-i18n="ui.tools.downloadIn">Descarrega en</span> <span data-format-label data-i18n="ui.export.bambuZip">3MF Bambu · peces en ZIP</span></button>
-          <button type="button" data-format="3mf" aria-pressed="false"><span data-i18n="ui.tools.downloadIn">Descarrega en</span> <span data-format-label data-i18n="ui.export.standard">3MF estàndard</span></button>
-          <button type="button" data-format="stl" aria-pressed="false"><span data-i18n="ui.tools.downloadIn">Descarrega en</span> <span data-format-label data-i18n="ui.export.stl">STL per material</span></button>
+      <div class="download-row">
+        <div class="download-control">
+          <button type="button" id="export-model" class="primary" disabled data-i18n="ui.export.bambuDownload">3MF per a Bambu Studio ↓</button>
+          <button type="button" id="export-formats" class="primary" aria-label="Formats de descàrrega" aria-expanded="false" aria-controls="export-options" disabled data-i18n-aria="ui.export.formats">▾</button>
+          <div id="export-options" hidden>
+            <button type="button" data-format="bambu" aria-pressed="true"><span data-i18n="ui.tools.downloadIn">Descarrega en</span> <span data-format-label data-i18n="ui.export.bambu">3MF per a Bambu Studio</span></button>
+            <button type="button" data-format="bambu-zip" aria-pressed="false" hidden><span data-i18n="ui.tools.downloadIn">Descarrega en</span> <span data-format-label data-i18n="ui.export.bambuZip">3MF Bambu · peces en ZIP</span></button>
+            <button type="button" data-format="3mf" aria-pressed="false"><span data-i18n="ui.tools.downloadIn">Descarrega en</span> <span data-format-label data-i18n="ui.export.standard">3MF estàndard</span></button>
+            <button type="button" data-format="stl" aria-pressed="false"><span data-i18n="ui.tools.downloadIn">Descarrega en</span> <span data-format-label data-i18n="ui.export.stl">STL per material</span></button>
+          </div>
         </div>
+        <button type="button" id="share-project" class="secondary" aria-haspopup="dialog" aria-controls="share-project-dialog" aria-label="Comparteix la configuració" title="Comparteix la configuració" data-i18n-aria="ui.share.open" data-i18n-title="ui.share.open" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4m-6.8 7 6.8 4"/></svg></button>
       </div>
       <p id="export-hint" class="hint" data-i18n="ui.export.bambuHint">Obre el 3MF com a projecte i comprova els filaments i el laminat.</p>
-      <button type="button" id="share-project" class="quiet-button" aria-haspopup="dialog" aria-controls="share-project-dialog" data-i18n="ui.share.open" disabled>Comparteix la configuració</button>
     </section>
   </aside>
   <nav id="mobile-workshop" aria-label="Taller de maquetes" hidden data-i18n-aria="ui.mobile.workshop">
@@ -295,7 +297,7 @@
       <path d="m27 9 7-6" stroke="var(--umbrella-accent)" stroke-width="4.5"/>
     </svg><span>ortogra<span class="umbrella-dot">.</span>fi</span>
   </a></p>
-  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer" data-i18n-text="ui.footer.openSource"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions" data-i18n-aria="ui.releases.title">v0.24.1</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V" data-i18n-aria="ui.footer.about"><span class="desktop-copy" data-i18n="ui.footer.aboutDesktop">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
+  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer" data-i18n-text="ui.footer.openSource"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions" data-i18n-aria="ui.releases.title">v0.24.2</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V" data-i18n-aria="ui.footer.about"><span class="desktop-copy" data-i18n="ui.footer.aboutDesktop">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
 </footer>
 
 <dialog id="projects-dialog" aria-labelledby="projects-title">

@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.24.2 — 2026-11-13
+
+- La icona de compartir és a la mateixa fila que el botó de descàrrega.
+
 ## v0.24.1 — 2026-11-13
 
 - Comparteix la configuració de la maqueta amb un enllaç. Conserva el retall, el zoom i els ajustos perquè es puguin revisar i generar en un altre navegador.
