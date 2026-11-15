@@ -26,12 +26,12 @@ export function prepareElevationTiles(tiles){
 }
 
 export function sampleHeight(tiles,lon,lat){
-  if(!tiles.length)throw Error('No hi ha dades d’elevació.');
+  if(!tiles.length)throw Object.assign(Error('No hi ha dades d’elevació.'),{code:'INVALID_ELEVATION'});
   return interpolateHeight(tiles[0],(x,y)=>tiles.find(t=>t.x===x&&t.y===y),lon,lat);
 }
 
 export function createElevationSampler(tiles){
-  if(!tiles.length)throw Error('No hi ha dades d’elevació.');
+  if(!tiles.length)throw Object.assign(Error('No hi ha dades d’elevació.'),{code:'INVALID_ELEVATION'});
   const lookup=new Map();
   for(const tile of tiles){
     if(!lookup.has(tile.y))lookup.set(tile.y,new Map());
@@ -50,7 +50,7 @@ function interpolateHeight({z,size},tileAt,lon,lat){
     const h=t?.elev[((py%size+size)%size)*size+(px%size+size)%size];
     if(Number.isFinite(h)&&h>=-12000&&h<=9000){weighted+=w*h;total+=w;}
   }
-  if(total<1e-10)throw Error('Falten dades d’elevació vàlides dins de la regió.');
+  if(total<1e-10)throw Object.assign(Error('Falten dades d’elevació vàlides dins de la regió.'),{code:'INVALID_ELEVATION'});
   return weighted/total;
 }
 

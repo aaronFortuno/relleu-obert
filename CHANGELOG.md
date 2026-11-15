@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.24.7 — 2026-11-15
+
+- Umami agrupa els errors de generació per fase, tipus d’error i font de dades. El seguiment també recull la versió i les franges de mida i escala.
+- Quan falla una generació, es pot revisar i enviar un informe voluntari amb el retall i els ajustos. També es pot descarregar l’informe complet en JSON.
+
 ## v0.24.6 — 2026-11-13
 
 - La icona de compartir del taller copia l’enllaç de la configuració en un clic i mostra «Enllaç copiat».

@@ -299,7 +299,7 @@
       <path d="m27 9 7-6" stroke="var(--umbrella-accent)" stroke-width="4.5"/>
     </svg><span>ortogra<span class="umbrella-dot">.</span>fi</span>
   </a></p>
-  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer" data-i18n-text="ui.footer.openSource"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions" data-i18n-aria="ui.releases.title">v0.24.6</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V" data-i18n-aria="ui.footer.about"><span class="desktop-copy" data-i18n="ui.footer.aboutDesktop">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
+  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer" data-i18n-text="ui.footer.openSource"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions" data-i18n-aria="ui.releases.title">v0.24.7</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V" data-i18n-aria="ui.footer.about"><span class="desktop-copy" data-i18n="ui.footer.aboutDesktop">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
 </footer>
 
 <dialog id="projects-dialog" aria-labelledby="projects-title">
@@ -384,6 +384,20 @@
       <button type="button" id="share-project-copy" class="primary" data-i18n="ui.share.copy" autofocus>Copia l’enllaç</button>
     </div>
     <p id="share-project-feedback" class="hint" role="status"></p>
+  </div>
+</dialog>
+<dialog id="generation-report-dialog" aria-labelledby="generation-report-title" aria-describedby="generation-report-intro">
+  <div class="dialog-heading"><h2 id="generation-report-title" data-i18n="ui.report.title">Vols comunicar l’error?</h2><button type="button" data-close aria-label="Tanca" data-i18n-aria="dialog.close">×</button></div>
+  <div class="dialog-content">
+    <p id="generation-report-error"></p>
+    <p id="generation-report-intro" data-i18n="ui.report.intro">Si envies l’informe, l’equip de Relleu Obert rebrà aquestes dades a través d’Umami per investigar l’error. El servidor també rep la IP de connexió.</p>
+    <dl id="generation-report-details" class="generation-report-details"></dl>
+    <p id="generation-report-feedback" role="status"></p>
+    <div class="generation-report-actions">
+      <button type="button" id="generation-report-download" class="quiet-button" data-i18n="ui.report.download">Descarrega el JSON</button>
+      <button type="button" id="generation-report-dismiss" class="secondary" data-close autofocus data-i18n="ui.report.skip">No l’enviïs</button>
+      <button type="button" id="generation-report-send" class="primary" data-i18n="ui.report.send">Envia l’informe</button>
+    </div>
   </div>
 </dialog>
 <dialog id="switch-project-dialog" aria-labelledby="switch-project-title">
@@ -477,7 +491,8 @@
       <h3 id="about-privacy-title" data-i18n="ui.about.privacy">Privacitat i estadístiques</h3>
       <p data-i18n="ui.about.privacyLocal">Les maquetes es calculen i s’exporten al navegador. Els projectes desats i les preferències es guarden en aquest navegador.</p>
       <p data-i18n="ui.about.privacyMaps">El navegador consulta les fonts cartogràfiques d’aquest quadre per mostrar el mapa i obtenir les dades del retall. Quan cerques un lloc o una adreça, envia a Photon el text i el centre del mapa.</p>
-      <p data-i18n="ui.about.privacyUmami">A relleu.ortogra.fi, Umami compta les visites, les obertures de la galeria, les generacions i descàrregues, i l’ús d’eines i ajustos. Les estadístiques inclouen el mode, la franja de mida, la font d’edificis triada, el format i el nombre de peces o materials. Exclouen les cerques, les coordenades i el contingut de projectes i fitxers. El servidor rep la IP de la connexió i el seguiment respecta Do Not Track i Global Privacy Control.</p>
+      <p data-i18n="ui.about.privacyUmami">A relleu.ortogra.fi, Umami compta les visites, les obertures de la galeria, les generacions i descàrregues, i l’ús d’eines i ajustos. Les estadístiques inclouen el mode, la franja de mida, la font d’edificis triada, el format i el nombre de peces o materials. En cas d’error de generació, es recullen la fase, el tipus d’error, la font de dades, la versió i la franja d’escala. Se n’exclouen les cerques, les coordenades, els missatges d’error i el contingut de projectes i fitxers. El servidor rep la IP de la connexió i el seguiment respecta Do Not Track i Global Privacy Control.</p>
+      <p data-i18n="ui.about.privacyErrorReport">Si decideixes comunicar un error de generació, Umami també rep les coordenades del retall i els ajustos que has pogut revisar al quadre d’enviament. L’equip de Relleu Obert els fa servir per investigar la fallada.</p>
       <p data-i18n="ui.share.analytics">Umami compta les pulsacions de «Copia l’enllaç». En compartir un exemple, també compta quin exemple públic s’ha triat. Els enllaços i els ajustos personals queden fora de les estadístiques.</p>
     </section>
     <section class="about-sources" aria-labelledby="about-sources-title">

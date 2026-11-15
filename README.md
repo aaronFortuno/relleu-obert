@@ -4,7 +4,7 @@ Relleu Obert és una eina educativa per crear i imprimir maquetes 3D de llocs re
 
 [Obre Relleu Obert](https://aaronFortuno.github.io/relleu-obert/)
 
-Al domini públic, l’Umami propi d’ortogra.fi compta visites, obertures de la galeria, generacions, descàrregues i l’ús de fonts, eines, talls i materials. El V4V explica quins camps s’envien i quins queden exclosos. El seguiment respecta Do Not Track i Global Privacy Control.
+Al domini públic, l’Umami propi d’ortogra.fi compta visites, obertures de la galeria, generacions, descàrregues i l’ús de fonts, eines, talls i materials. Els errors de generació s’agrupen per fase, tipus, font de dades, versió i franges de mida i escala. El quadre d’error permet revisar i enviar voluntàriament el retall i els ajustos o descarregar l’informe local en JSON. El recompte automàtic i l’enviament respecten Do Not Track i Global Privacy Control.
 
 ## Crear una maqueta
 

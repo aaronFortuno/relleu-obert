@@ -11,6 +11,7 @@ import {applyReliefPinHoles} from './relief-pin-holes.js';
 import Module from 'manifold-3d';
 import wasmURL from 'manifold-3d/manifold.wasm?url';
 import {createProcessingTiming} from './processing-timing.js';
+import {generationErrorReason} from './generation-error.js';
 let current,api;
 const progress=message=>self.postMessage({type:'progress',message});
 const pinFailures={
@@ -157,4 +158,5 @@ try{
     }
     self.postMessage({type:'download',format,archive,plateCount,bytes},[bytes.buffer]);
   }
-}catch(e){self.postMessage({type:'error',message:e.message,detail:e.stack,timing:timing?.finish()});}};
+}catch(e){self.postMessage({type:'error',message:e.message,detail:e.stack,timing:timing?.finish(),
+  ...(data.type==='build'?{diagnosticReason:generationErrorReason(e)}:{})});}};

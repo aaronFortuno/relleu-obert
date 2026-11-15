@@ -4,9 +4,32 @@ import {readFile} from 'node:fs/promises';
 import {buildRequest} from '../src/build-request.js';
 import {loadRegion} from '../src/sources.js';
 import {physicalBBox,selectionPose} from '../src/selection.js';
+import {generationErrorData} from '../src/analytics.js';
 
 const bbox=selectionPose(physicalBBox([42.8,.75],450,90),15).bbox;
 const decode=async(_,tile)=>({...tile,size:2,elev:new Float32Array(4).fill(700)});
+
+test('fatal data requests distinguish an unavailable map service from exhausted elevation sources',async t=>{
+  const previous=globalThis.fetch;
+  t.after(()=>{globalThis.fetch=previous;});
+  const selection=physicalBBox([47.65,9.37],1,1);
+  const settings={widthMM:100,heightMM:100,selectionPose:{widthM:1000}};
+  globalThis.fetch=async()=>new Response(null,{status:503});
+  await assert.rejects(loadRegion({bbox:selection,sample:false,decodeElevation:decode}),error=>{
+    const {fase,font,motiu}=generationErrorData({settings},error);
+    assert.deepEqual([fase,font,motiu],['carrega_cataleg','openfreemap','http_5xx']);
+    return true;
+  });
+  globalThis.fetch=async url=>{
+    if(url.includes('tiles.mapterhorn.com'))throw new DOMException('Private timeout detail','TimeoutError');
+    return new Response(null,{status:404});
+  };
+  await assert.rejects(loadRegion({bbox:selection,pureRelief:true,sample:false,decodeElevation:decode}),error=>{
+    const {fase,font,motiu}=generationErrorData({settings:{...settings,pureRelief:true}},error);
+    assert.deepEqual([fase,font,motiu],['carrega_relleu','fonts_globals_relleu','fonts_exhaurides']);
+    return true;
+  });
+});
 
 test('bundled Tamariu sea polygons reach the worker in both pure relief formats',async t=>{
   const previous=globalThis.fetch;

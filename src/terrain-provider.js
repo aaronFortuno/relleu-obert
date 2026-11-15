@@ -3,6 +3,7 @@ import {polygonOps} from './polygon-ops.js';
 import {regionTileCount} from './region-limits.js';
 import {loadMet5} from './met5.js';
 import {isMarineWater} from './standing-water.js';
+import {fetchGenerationData,generationErrorReason} from './generation-error.js';
 function tilesAt(bbox,z){const a=lonLatTile(bbox[0],bbox[3],z),b=lonLatTile(bbox[2],bbox[1],z),out=[];for(let x=Math.floor(a[0]);x<=Math.floor(b[0]);x++)for(let y=Math.floor(a[1]);y<=Math.floor(b[1]);y++)out.push({z,x,y});return out;}
 export function oceanTilePredicate(features,bbox){
   const pc=polygonOps(1e-10),polygons=[];
@@ -65,21 +66,21 @@ function resizeElevation(tile,maximumSide){
 export async function loadTerrain(bbox,decode,fetcher=fetch,progress=()=>{},isOcean=()=>false,{zooms=[14,12],maxTiles=Infinity,maxSamples=Infinity,concurrency=1}={}){
   const attempts=zooms.filter(z=>maxTiles===Infinity||regionTileCount(bbox,z)<=maxTiles).map(z=>({z,coordinates:tilesAt(bbox,z)}))
     .flatMap(({z,coordinates})=>providers.map(p=>({...p,z,coordinates})));
-  const failures=[];
+  const failures=new Set();
   for(const attempt of attempts){
     try{
       const maximumSide=Math.floor(Math.sqrt(maxSamples/attempt.coordinates.length));
       const loaded=[];
       async function loadTile(t){
-        const r=await fetcher(attempt.url(t),{signal:AbortSignal.timeout(15000)});
+        const r=await fetchGenerationData(fetcher,attempt.url(t),{signal:AbortSignal.timeout(15000)});
         if(!r.ok){
           if(r.status===404&&await isOcean(t))return t;
-          throw Error(`HTTP ${r.status}`);
+          throw Object.assign(Error(`HTTP ${r.status}`),{status:r.status});
         }
         const decoded=await decode(await r.blob(),t);
         if(!decoded.elev.some(Number.isFinite)){
           if(await isOcean(t))return t;
-          throw Error('La font no conté altituds vàlides.');
+          throw Object.assign(Error('La font no conté altituds vàlides.'),{code:'INVALID_ELEVATION'});
         }
         return resizeElevation(decoded,maximumSide);
       }
@@ -100,10 +101,13 @@ export async function loadTerrain(bbox,decode,fetcher=fetch,progress=()=>{},isOc
         oceanTiles++;
         return {...t,size:seaSize,elev:new Float32Array(seaSize**2)};
       });
-      return {tiles,metadata:{provider:attempt.provider,zoom:attempt.z,fallback:failures.length>0,oceanTiles,...(maxSamples<Infinity?{sampleSize:tiles[0]?.size}:{})},warnings:[...(failures.length?[`S’ha utilitzat ${attempt.provider}${attempt.z<14?' amb menys detall':''} perquè la font inicial de relleu no estava disponible per a aquesta àrea.`]:[]),...(oceanTiles?['Les zones íntegrament marines sense dades d’altitud es representen al nivell del mar; no s’hi representa la batimetria.']:[])]};
-    }catch(e){failures.push(`${attempt.provider}: ${e.message}`);}
+      return {tiles,metadata:{provider:attempt.provider,zoom:attempt.z,fallback:failures.size>0,oceanTiles,...(maxSamples<Infinity?{sampleSize:tiles[0]?.size}:{})},warnings:[...(failures.size?[`S’ha utilitzat ${attempt.provider}${attempt.z<14?' amb menys detall':''} perquè la font inicial de relleu no estava disponible per a aquesta àrea.`]:[]),...(oceanTiles?['Les zones íntegrament marines sense dades d’altitud es representen al nivell del mar; no s’hi representa la batimetria.']:[])]};
+    }catch(e){failures.add(generationErrorReason(e));}
   }
-  throw Error('No s’ha pogut obtenir relleu d’aquesta regió amb cap de les dues fonts. Prova una àrea més petita o torna-ho a intentar més tard.');
+  const diagnosticReason=failures.size===1?[...failures][0]:failures.size?'fonts_exhaurides':'limit_retall';
+  throw Object.assign(Error('No s’ha pogut obtenir relleu d’aquesta regió amb cap de les dues fonts. Prova una àrea més petita o torna-ho a intentar més tard.'),{
+    sourceProvider:'globalTerrain',diagnosticReason
+  });
 }
 
 export async function loadPreferredTerrain(bbox,decode,fetcher,progress,isOcean,options){

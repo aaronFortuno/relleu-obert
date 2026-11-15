@@ -143,6 +143,14 @@ body:has(#workshop-guide[data-guide-step="territory"]) [data-step-action="place"
 #share-project {display:grid;place-items:center;flex:0 0 32px;width:auto;margin:0;padding:0}
 .shared-icons {position:absolute}
 #share-project svg,.gallery-share svg {width:16px;height:16px}
+.generation-report-details {display:grid;gap:4px;margin:12px 0;padding:12px;border:1px solid var(--line);border-radius:5px}
+.generation-report-details dt {font-weight:600}
+.generation-report-details dd {margin:0 0 4px;overflow-wrap:anywhere}
+.generation-report-details dd:last-child {margin-bottom:0}
+.generation-report-actions {display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;align-items:center}
+.generation-report-actions button {width:auto;margin:0}
+.generation-report-actions .quiet-button {margin-inline-end:auto}
+#generation-report-feedback:empty {margin:0}
 .share-project-row {display:flex;align-items:stretch;gap:8px}
 .share-project-row input {
   flex:1;min-width:0;padding:8px;border:1px solid var(--ui-control-border);

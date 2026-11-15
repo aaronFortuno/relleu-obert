@@ -30,7 +30,8 @@ import changelog from '../CHANGELOG.md?raw';
 import {formatNumber,getLocale,initI18n,onLocaleChange,t,translateEngineMessage} from './i18n.js';
 import {createPreviewOrbit} from './preview-orbit.js';
 import {createPreviewPins} from './preview-pins.js';
-import {trackWorkshopEvent,workshopMode,workshopSize} from './analytics.js';
+import {canSendGenerationReport,generationErrorData,generationReportData,sendGenerationReport,trackWorkshopEvent,workshopMode,workshopSize} from './analytics.js';
+import {sourceError} from './generation-error.js';
 import {createBuildingUpdateScheduler} from './building-update-scheduler.js';
 import {createProjectBrushHistory} from './project-brush-history.js';
 import {withoutLastGesture} from './brush-coverage.js';
@@ -212,11 +213,12 @@ function downloadFile(blob,filename){
   link.click();
   setTimeout(()=>URL.revokeObjectURL(url),5000);
 }
-$('#download-processing').onclick=()=>{
-  if(!lastProcessingReport)return;
-  const blob=new Blob([JSON.stringify(lastProcessingReport,null,2)+'\n'],{type:'application/json'});
-  downloadFile(blob,'relleu-obert-informe-'+lastProcessingReport.startedAt.replaceAll(':','-')+'.json');
-};
+function downloadProcessingReport(report){
+  if(!report)return;
+  const blob=new Blob([JSON.stringify(report,null,2)+'\n'],{type:'application/json'});
+  downloadFile(blob,'relleu-obert-informe-'+report.startedAt.replaceAll(':','-')+'.json');
+}
+$('#download-processing').onclick=()=>downloadProcessingReport(lastProcessingReport);
 let contextLost=false;
 let landscapeMaterials={count:4,assignments:defaultAssignments(4)};
 let reliefMaterials={count:6,assignments:defaultReliefAssignments(6)};
@@ -823,7 +825,8 @@ async function generate(autoTransport=false){
       if(activeBoundaries(options.boundaryStyles).length){
         say('Carregant les fronteres i els límits…');
         const started=performance.now();
-        boundaryLayer=await loadBoundaryLayer(target,options.boundaryStyles,options.selectionPose.widthM*1000/options.widthMM);
+        boundaryLayer=await loadBoundaryLayer(target,options.boundaryStyles,options.selectionPose.widthM*1000/options.widthMM)
+          .catch(error=>{throw sourceError('source.boundaries',error);});
         processingRun.sources.push({phase:'source.boundaries',milliseconds:performance.now()-started,
           ok:!boundaryLayer.metadata?.failed.length});
       }
@@ -843,7 +846,8 @@ function acceptBuildings(){
   lastValidBuildings={source:region.meta.buildingSource,mode:model.provenance.options.buildingMode,height:model.provenance.options.maxBuildingHeight};
 }
 function recoverBuildings(error){
-  if(job==='build')trackWorkshopEvent('error_generacio',{mode:workshopMode(pureSelected())});
+  const summary=job==='build'&&processingRun?generationErrorData(processingRun,error):null;
+  if(summary)trackWorkshopEvent('error_generacio',summary);
   finishProcessing(error);
   clearBuildingPreview();
   restoreBuildPreview();
@@ -868,6 +872,7 @@ function recoverBuildings(error){
     showWorkshopPanel('settings');
   }
   say(model?statusMessage('status.keepBuildingSettings',()=>({error:messageText(error.uiMessage??error.message)})):error.uiMessage??error.message,true);
+  if(summary)offerGenerationReport(lastProcessingReport,summary);
 }
 
 function updateTrees(){
@@ -1046,7 +1051,7 @@ worker.onmessage=({data})=>{
     if(job==='relief'){recoverRelief(Error(data.message));console.error(data.detail);return;}
     if(processingRun&&data.timing)processingRun[processingRun.awaitingBuildings?'buildingWorker':'worker']=data.timing;
     pendingVegetation=false;
-    if(job==='build'||job==='buildings'||job==='transport')recoverBuildings(Error(data.message));
+    if(job==='build'||job==='buildings'||job==='transport')recoverBuildings(Object.assign(Error(data.message),{diagnosticReason:data.diagnosticReason}));
     else{
       lock(false);say(()=>translateEngineMessage(data.message),true);
       if(job==='export'){
@@ -1069,6 +1074,8 @@ worker.onmessage=({data})=>{
 };
 worker.onerror=event=>{
   const error=Error('No s’ha pogut actualitzar la maqueta: '+event.message);
+  error.diagnosticReason='error_worker';
+  error.engineStage=stagedBuild?.progress?.stage;
   error.uiMessage=statusMessage('status.modelError',()=>({error:translateEngineMessage(event.message)}));
   if(job==='relief'){recoverRelief(error);return;}
   pendingVegetation=false;
@@ -2025,6 +2032,49 @@ function captureProject({includeAnnotations=true}={}){
 }
 const feedbackMessages=new Map();
 function feedback(id,message){feedbackMessages.set(id,message);$('#'+id).textContent=messageText(message);}
+const generationReportDialog=$('#generation-report-dialog'),reportSend=$('#generation-report-send');
+let offeredReport;
+function renderGenerationReport(){
+  const details=$('#generation-report-details');
+  details.replaceChildren();
+  if(!offeredReport?.data)return;
+  const d=offeredReport.data;
+  const rows=[
+    ['area',`${d.centre} · ${d.amplada_m} × ${d.fondaria_m} m · ${d.gir}°`],
+    ['model',`${t(d.mode==='relleu_pur'?'ui.mode.relief':'ui.mode.complete')} · ${d.amplada_mm} × ${d.fondaria_mm} mm · 1:${d.escala_exacta}`],
+    ['geometry',t('ui.report.geometryValue',{exaggeration:d.exageracio,resolution:d.resolucio,base:d.base_mm})],
+    ['diagnostic',`${d.fase} · ${d.motiu} · ${d.font} · ${t('section.buildings')} ${d.font_edificis} · v${d.versio}`],
+  ];
+  for(const [key,value] of rows){
+    const term=document.createElement('dt'),description=document.createElement('dd');
+    term.textContent=t('ui.report.'+key);description.textContent=value;
+    details.append(term,description);
+  }
+}
+function offerGenerationReport(report,summary){
+  offeredReport={report,data:generationReportData(report,summary)};
+  const canSend=!!offeredReport.data&&canSendGenerationReport();
+  reportSend.disabled=!canSend;
+  feedback('generation-report-error',()=>translateEngineMessage(report.error));
+  feedback('generation-report-dismiss',baseMessage(canSend?'ui.report.skip':'dialog.close'));
+  feedback('generation-report-feedback',canSend?'':baseMessage('ui.report.unavailable'));
+  renderGenerationReport();
+  if(!generationReportDialog.open)generationReportDialog.showModal();
+}
+generationReportDialog.addEventListener('close',()=>{offeredReport=undefined;});
+$('#generation-report-download').onclick=()=>downloadProcessingReport(offeredReport?.report);
+reportSend.onclick=async()=>{
+  const request=offeredReport;
+  if(!request?.data||reportSend.disabled)return;
+  reportSend.disabled=true;
+  feedback('generation-report-dismiss',baseMessage('dialog.close'));
+  feedback('generation-report-feedback',baseMessage('ui.report.sending'));
+  const sent=await sendGenerationReport(request.data).catch(()=>false);
+  if(request!==offeredReport||!generationReportDialog.open)return;
+  reportSend.disabled=sent||!canSendGenerationReport();
+  feedback('generation-report-feedback',baseMessage(sent?'ui.report.sent':'ui.report.failed'));
+};
+onLocaleChange(renderGenerationReport);
 const shareDialog=$('#share-project-dialog'),shareLink=$('#share-project-link'),shareCopy=$('#share-project-copy');
 function openShareDialog(url,example){
   feedback('share-project-title',()=>example?t('ui.share.exampleName',{name:localizeExample(example).title}):t('ui.share.open'));

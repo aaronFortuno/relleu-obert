@@ -16,11 +16,12 @@ import {fetchOfficialBoundaries,isNationalBoundary,joinNationalBoundaryLines} fr
 import {isFlowingWater,isMarineWater,isStandingWater} from './standing-water.js';
 import {polygonOps} from './polygon-ops.js';
 import {MAX_MODEL_SIDE_MM,PURE_SCALE_RANGE} from './selection.js';
+import {fetchGenerationData,sourceError} from './generation-error.js';
 
 export {lonLatTile} from './elevation.js';
 import {lonLatTile} from './elevation.js';
 export function tileList(bbox,z=14,maxTiles=MAX_REGION_TILES){
-  if(regionTileCount(bbox,z)>maxTiles)throw Error('L’àrea seleccionada supera la capacitat actual de càrrega. Redueix la mida de la peça, tria una escala més detallada o apropa el mapa.');
+  if(regionTileCount(bbox,z)>maxTiles)throw Object.assign(Error('L’àrea seleccionada supera la capacitat actual de càrrega. Redueix la mida de la peça, tria una escala més detallada o apropa el mapa.'),{code:'REGION_LIMIT'});
   const a=lonLatTile(bbox[0],bbox[3],z),b=lonLatTile(bbox[2],bbox[1],z),out=[];
   for(let x=Math.floor(a[0]);x<=Math.floor(b[0]);x++)for(let y=Math.floor(a[1]);y<=Math.floor(b[1]);y++)out.push({z,x,y});
   return out;
@@ -36,7 +37,11 @@ export function readVector(bytes,{x,y,z},layers=['water','waterway','landcover',
     }
   }return features;
 }
-async function get(url){const r=await fetch(url,{signal:AbortSignal.timeout(25000),cache:url.endsWith('/planet')?'no-cache':'default'});if(!r.ok)throw Error(`No s’ha pogut carregar ${url.includes('openfreemap')?'la cartografia d’OpenFreeMap':'la mostra local'} (${r.status}). Torna-ho a provar més tard.`);return r;}
+async function get(url){
+  const r=await fetchGenerationData(fetch,url,{signal:AbortSignal.timeout(25000),cache:url.endsWith('/planet')?'no-cache':'default'});
+  if(!r.ok)throw Object.assign(Error(`No s’ha pogut carregar ${url.includes('openfreemap')?'la cartografia d’OpenFreeMap':'la mostra local'} (${r.status}). Torna-ho a provar més tard.`),{status:r.status});
+  return r;
+}
 const infrastructureJSON=async name=>(await get((import.meta.env?.BASE_URL||'./')+'data/'+name)).json();
 const vectorCatalog='https://tiles.openfreemap.org/planet';
 const vectorTemplate=async()=> (await(await get(vectorCatalog)).json()).tiles[0];
@@ -211,21 +216,22 @@ function reliefBounds(bbox,panoramic){
 
 export async function loadRegion({sample=true,bbox,buildingSource,decodeElevation=decodeDEM,localDEM,localBuildings,buildingFallbacks=[],onTiming,pureRelief=false,panoramic=false},progress=()=>{}){
   async function time(phase,run,details={}){
-    if(!onTiming)return run();
-    const start=performance.now();
+    const start=onTiming?performance.now():0;
     let ok=false;
     try{
       const result=await run();
       ok=true;
       return result;
+    }catch(error){
+      throw sourceError(phase,error,details.provider);
     }finally{
-      onTiming({phase,milliseconds:performance.now()-start,ok,...details});
+      onTiming?.({phase,milliseconds:performance.now()-start,ok,...details});
     }
   }
-  if(panoramic&&!pureRelief)throw Error('El format panoràmic només es pot generar en Relleu pur.');
+  if(panoramic&&!pureRelief)throw Object.assign(Error('El format panoràmic només es pot generar en Relleu pur.'),{code:'REGION_LIMIT'});
   if(pureRelief){
     const bounds=reliefBounds(bbox,panoramic);
-    if(!bounds)throw Error(panoramic?'Retall fora dels límits del format panoràmic.':'Retall fora dels límits de Relleu pur.');
+    if(!bounds)throw Object.assign(Error(panoramic?'Retall fora dels límits del format panoràmic.':'Retall fora dels límits de Relleu pur.'),{code:'REGION_LIMIT'});
     const {wide}=bounds;
     const singulars=!wide?time('source.singular-terrain',()=>loadSingularModels(bbox,['landform'])):null;
     const [w,s,e,n]=RELIEF_LAKE_SOURCE.bounds;
@@ -300,8 +306,9 @@ export async function loadRegion({sample=true,bbox,buildingSource,decodeElevatio
     const t=meta.tiles[i];progress(`Carregant dades ${i+1}/${meta.tiles.length}…`);
     const vectorURL=sample?base+t.vector:template.replace('{z}',t.z).replace('{x}',t.x).replace('{y}',t.y);
     const tile={z:t.z,x:t.x,y:t.y};
-    const bytes=await time('source.vector-fetch',async()=>(await get(vectorURL)).arrayBuffer(),{tile});
-    const vectors=await time('source.vector-decode',()=>readVector(new Uint8Array(bytes),t),{tile,bytes:bytes.byteLength});
+    const provider=sample?'sample':'OpenFreeMap';
+    const bytes=await time('source.vector-fetch',async()=>(await get(vectorURL)).arrayBuffer(),{tile,provider});
+    const vectors=await time('source.vector-decode',()=>readVector(new Uint8Array(bytes),t),{tile,provider,bytes:bytes.byteLength});
     features.push(...vectors);
     if(!sample)vectorEntries.push({tile:t,features:vectors});
     if(sample&&!localDEM)dem.push(await time('source.terrain',async()=>decodeElevation(await(await get(base+t.dem)).blob(),t),{tile,provider:'sample'}));

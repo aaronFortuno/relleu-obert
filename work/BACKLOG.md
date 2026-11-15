@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Revisat el **2026-11-13** amb la v0.24.6. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
+Revisat el **2026-11-15** amb la v0.24.7. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
 
 ## Validacions de la v0.24
 
@@ -129,7 +129,7 @@ La v0.23.51 destaca en taronja les rutes dibuixades i importades al visor. Tenen
 | Esdeveniment | Quan es compta | Camps |
 | --- | --- | --- |
 | `genera_model` | La generació arriba a un resultat utilitzable. | Mode i franja del costat més llarg (fins a 15 cm, fins a 25 cm, fins a 50 cm o més de 50 cm) |
-| `error_generacio` | La generació demanada acaba amb un error que l’usuari ha de resoldre. | Mode de maqueta |
+| `error_generacio` | La generació demanada acaba amb un error que l’usuari ha de resoldre. | Mode, fase (`fase`), categoria (`motiu`), font de la fase si es coneix (`font`), font d’edificis triada (`font_edificis`), versió i franges de mida i escala |
 | `descarrega_model` | L’exportació genera el fitxer i el navegador inicia la descàrrega. | Mode, format i nombre de peces |
 | `canvia_font_edificis` | Es tria una font diferent al selector. | Font |
 | `usa_eina` | S’acaba un traç de sender o ruta, s’importa un GPX vàlid o es marca un punt. | Eina |
@@ -140,4 +140,6 @@ La v0.23.51 destaca en taronja les rutes dibuixades i importades al visor. Tenen
 
 El fitxer lliurat al navegador és l’últim resultat observable de l’exportació. El recompte de generacions exclou els recàlculs de capes i els errors recuperats. Les obertures de la galeria es compten amb `obre_galeria`.
 
-Els esdeveniments admeten noms fixos i camps de valors tancats. El filtre exclou coordenades, noms de lloc i de projecte, text de cerca, fitxers, informes, missatges d’error, identificadors propis i adreces de procedència. Actualitzar el V4V si canvia l’abast. [Configuració d’Umami](https://umami.is/docs/tracker-configuration)
+**2026-11-15.** L’usuari veu errors al tauler d’Umami. La v0.24.7 distingeix la càrrega i el processament, i recull causes categoritzades. Davant d’una generació fallida, l’usuari pot revisar i enviar un `informe_error_generacio` voluntari amb el centre del retall (sis decimals), les mides, el gir, l’escala, l’exageració, la resolució, el gruix de la base, el tipus de fallada i les fonts. El JSON descarregable inclou també el missatge complet i els temps. Següent pas: comprovar els camps dels errors nous i la recepció d’un informe voluntari al tauler.
+
+El filtre automàtic només admet noms fixos i camps de valors tancats. Exclou coordenades, noms de lloc i de projecte, text de cerca, fitxers, informes, missatges d’error, identificadors propis i adreces de procedència. L’informe voluntari té una acció pròpia i respecta Do Not Track i Global Privacy Control. Actualitzar el V4V si canvia l’abast. [Configuració d’Umami](https://umami.is/docs/tracker-configuration)
