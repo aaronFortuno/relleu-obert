@@ -142,7 +142,11 @@
           <ol id="pin-list" class="pin-list"></ol><button type="button" id="undo-pin" class="quiet-button" hidden data-i18n="ui.action.undo">↶ Desfés</button>
         </section>
 </div></div>
-        <div data-viewer-pane="fences" hidden>
+        <div id="viewer-complete-tabs" class="viewer-edit-tabs" role="group" aria-label="Eines del visor" data-i18n-aria="ui.tools.title" hidden>
+          <button type="button" data-viewer-tool="fences" aria-controls="viewer-fences-pane" aria-pressed="false" data-i18n="ui.fence.title">Tanques</button>
+          <button type="button" data-viewer-tool="horizontal" aria-controls="viewer-horizontal-pane" aria-pressed="false" data-i18n="ui.horizontal.title">Superfície horitzontal</button>
+        </div>
+        <div id="viewer-fences-pane" data-viewer-pane="fences" hidden>
           <h3 id="fence-tools-title" class="section-heading" data-i18n="ui.fence.title">Tanques</h3>
           <p class="hint" data-i18n="ui.fence.hint">Dibuixa un mur continu punt per punt. Deixa un espai entre dos trams si hi ha una entrada.</p>
           <div class="two-fields">
@@ -162,6 +166,44 @@
           <p id="fence-feedback" class="hint" role="status"></p>
           <ol id="fence-list" class="pin-list"></ol>
           <p class="hint" data-i18n="ui.fence.saveNote">Les tanques fan servir el material d’Edificis i es conserven en desar el projecte.</p>
+        </div>
+        <div id="viewer-horizontal-pane" data-viewer-pane="horizontal" hidden>
+          <h3 id="horizontal-tools-title" class="section-heading" data-i18n="ui.horizontal.title">Superfície horitzontal</h3>
+          <p class="hint" data-i18n="ui.horizontal.hint">Marca el contorn d’un pati o una pista. El terreny es retalla o es rebleix fins a la cota triada.</p>
+          <div class="brush-tools" role="group" aria-labelledby="horizontal-tools-title">
+            <button type="button" data-brush="horizontal" aria-pressed="false" data-i18n="ui.horizontal.start">Dibuixa el contorn</button>
+          </div>
+          <div id="horizontal-draft-actions" hidden>
+            <div class="edit-actions">
+              <button type="button" id="horizontal-finish" class="quiet-button" disabled data-i18n="ui.horizontal.finish">Tanca el contorn</button>
+              <button type="button" id="horizontal-back" class="quiet-button" disabled data-i18n="ui.fence.undoPoint">Desfés el punt</button>
+            </div>
+          </div>
+          <p id="horizontal-feedback" class="hint" role="status"></p>
+          <ol id="horizontal-list" class="pin-list"></ol>
+          <div id="horizontal-settings" hidden>
+            <div class="two-fields">
+              <div>
+                <label for="horizontal-reference" data-i18n="ui.horizontal.reference">Cota de referència</label>
+                <select id="horizontal-reference">
+                  <option value="mean" data-i18n="ui.horizontal.mean">Mitjana</option>
+                  <option value="min" data-i18n="ui.horizontal.min">Mínima</option>
+                  <option value="max" data-i18n="ui.horizontal.max">Màxima</option>
+                </select>
+              </div>
+              <div>
+                <label for="horizontal-offset" data-i18n="ui.horizontal.offset">Ajust (mm)</label>
+                <input id="horizontal-offset" type="number" min="-20" max="20" step="0.1" value="0" inputmode="decimal">
+              </div>
+            </div>
+            <label for="horizontal-material" data-i18n="ui.horizontal.material">Acabat</label>
+            <select id="horizontal-material">
+              <option value="roads" data-i18n="ui.horizontal.roads">Paviment</option>
+              <option value="terrain" data-i18n="ui.horizontal.terrain">Terra</option>
+              <option value="grass" data-i18n="ui.horizontal.grass">Herba</option>
+            </select>
+            <p id="horizontal-level" class="hint" role="status"></p>
+          </div>
         </div>
         <p id="viewer-tool-status" class="hint" role="status"></p>
       </section>
@@ -319,7 +361,7 @@
       <path d="m27 9 7-6" stroke="var(--umbrella-accent)" stroke-width="4.5"/>
     </svg><span>ortogra<span class="umbrella-dot">.</span>fi</span>
   </a></p>
-  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer" data-i18n-text="ui.footer.openSource"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions" data-i18n-aria="ui.releases.title">v0.24.8</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V" data-i18n-aria="ui.footer.about"><span class="desktop-copy" data-i18n="ui.footer.aboutDesktop">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
+  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer" data-i18n-text="ui.footer.openSource"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions" data-i18n-aria="ui.releases.title">v0.24.9</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V" data-i18n-aria="ui.footer.about"><span class="desktop-copy" data-i18n="ui.footer.aboutDesktop">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
 </footer>
 
 <dialog id="projects-dialog" aria-labelledby="projects-title">

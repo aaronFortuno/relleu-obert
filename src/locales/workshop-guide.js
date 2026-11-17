@@ -65,11 +65,11 @@ export default {
   'guide.workshop.buildings.text': ["Tria la font dels edificis i com vols representar-ne l’alçada i les cobertes.","Elige la fuente de los edificios y cómo quieres representar su altura y sus cubiertas.","Escolle a fonte dos edificios e como queres representar a súa altura e as cubertas.","Aukeratu eraikinen iturria eta nola irudikatu haien altuera eta estalkiak.","Choose the building source and how to represent heights and roofs."],
   'guide.workshop.tools.title': ["Eines del visor","Herramientas del visor","Ferramentas do visor","Bisoreko tresnak","Viewer tools"],
   'guide.workshop.tools.text': [
-    "Obre «Eines» al visor per dibuixar tanques com a murs continus. Marca els punts del perímetre sobre la maqueta.",
-    "Abre «Herramientas» en el visor para dibujar vallas como muros continuos. Marca los puntos del perímetro sobre la maqueta.",
-    "Abre «Ferramentas» no visor para debuxar valados como muros continuos. Marca os puntos do perímetro sobre a maqueta.",
-    "Ireki bisoreko «Tresnak» hesiak horma jarraitu gisa marrazteko. Markatu perimetroaren puntuak maketan.",
-    "Open Tools in the viewer to draw fences as solid walls. Mark the perimeter points on the model.",
+    "Obre «Eines» al visor per dibuixar tanques o anivellar un pati. Marca els punts del contorn sobre la maqueta.",
+    "Abre «Herramientas» en el visor para dibujar vallas o nivelar un patio. Marca los puntos del contorno sobre la maqueta.",
+    "Abre «Ferramentas» no visor para debuxar valados ou nivelar un patio. Marca os puntos do contorno sobre a maqueta.",
+    "Ireki bisoreko «Tresnak» hesiak marrazteko edo patio bat nibelatzeko. Markatu inguruaren puntuak maketan.",
+    "Open Tools in the viewer to draw fences or level a yard. Mark the outline directly on the model.",
   ],
   'guide.workshop.tools.relief': [
     "Obre «Eines» per corregir senders, dibuixar o importar una ruta GPX i marcar punts destacats per posar-hi una xinxeta o un banderí.",

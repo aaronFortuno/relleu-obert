@@ -26,6 +26,10 @@ const fences=[
   {points:[[1.75,42.16],[1.751,42.16],[1.751,42.161]],widthMM:1,heightMM:2,closed:false},
   {points:[[1.752,42.164],[1.753,42.164],[1.753,42.165]],widthMM:1.2,heightMM:3,closed:true}
 ];
+const horizontalSurfaces=[
+  {points:[[1.75,42.16],[1.751,42.16],[1.751,42.161]],reference:'mean',offsetMM:0,material:'roads'},
+  {points:[[1.752,42.164],[1.753,42.164],[1.753,42.165]],reference:'min',offsetMM:1.25,material:'grass'}
+];
 
 test('project links preserve the crop and print settings while dropping private annotations',()=>{
   const {placeName,strokes,...publicSettings}=settings;
@@ -35,7 +39,7 @@ test('project links preserve the crop and print settings while dropping private 
     reliefMaterials:{count:2,assignments:[0,1,0,1,0,1,0,0,1]},
     print:{baseThickness:7,cuts:{columns:[210,220,230,240,100],rows:[200]}}};
   const url=new URL(projectLink('https://example.test/relleu-obert/?debug=1#old',{
-    ...shared,placeName,strokes,trailStrokes:strokes,drawnRouteStrokes:strokes,userRoute:{name:'private'},pins:[{id:1}],fences
+    ...shared,placeName,strokes,trailStrokes:strokes,drawnRouteStrokes:strokes,userRoute:{name:'private'},pins:[{id:1}],fences,horizontalSurfaces
   }));
   assert.equal(url.pathname,'/relleu-obert/');
   assert.equal(url.search,'');
@@ -203,6 +207,44 @@ test('malformed fence records cannot overwrite the local project catalog',()=>{
     const invalid={...settings,fences:[fence]},damaged=JSON.parse(backup);
     damaged.projects[0].settings=invalid;
     assert.throws(()=>saveProject(storage,{name:'Tanca invàlida',settings:invalid}),/no és vàlida/);
+    assert.throws(()=>importProjectLibrary(storage,JSON.stringify(damaged)),SyntaxError);
+    assert.equal(exportProjectLibrary(storage),backup);
+  }
+});
+
+test('horizontal surfaces retain their geographic footprint, selected levels and materials in backups',()=>{
+  const source=memoryStorage(),destination=memoryStorage(),input=structuredClone(horizontalSurfaces);
+  const project=saveProject(source,{name:'Pati',settings:{...settings,horizontalSurfaces:input}},firstDate);
+  assert.deepEqual(project.settings.horizontalSurfaces,horizontalSurfaces);
+  input[0].points[0][0]=0;
+  const complete=readProjects(source)[0];
+  assert.deepEqual(complete.settings.horizontalSurfaces,horizontalSurfaces);
+  const relief=saveProject(source,{
+    id:complete.id,name:complete.name,settings:{...complete.settings,pureRelief:true}
+  },secondDate);
+  assert.deepEqual(importProjectLibrary(destination,exportProjectLibrary(source)),{added:1,skipped:0});
+  assert.deepEqual(readProjects(destination),[relief]);
+  assert.deepEqual(relief.settings.horizontalSurfaces,horizontalSurfaces);
+  assert.deepEqual(saveProject(destination,{
+    name:'Sense superfícies',settings:{...settings,horizontalSurfaces:[]}
+  }).settings,settings);
+});
+
+test('invalid horizontal surface settings leave existing projects and backups intact',()=>{
+  const storage=memoryStorage(),[surface]=horizontalSurfaces;
+  saveProject(storage,{name:'Pati',settings:{...settings,horizontalSurfaces}},firstDate);
+  const backup=exportProjectLibrary(storage);
+  const malformed=[
+    {...surface,reference:'manual'},{...surface,offsetMM:21},{...surface,offsetMM:'0'},
+    {...surface,material:'buildings'},{...surface,points:surface.points.slice(0,2)},
+    {...surface,points:[...surface.points,surface.points[0]]},
+    {...surface,points:[[181,42],...surface.points.slice(1)]},
+    {...surface,points:[[1.75,91],...surface.points.slice(1)]}
+  ];
+  for(const horizontalSurfaces of [...malformed.map(record=>[record]),Array(13).fill(surface)]){
+    const invalid={...settings,horizontalSurfaces},damaged=JSON.parse(backup);
+    damaged.projects[0].settings=invalid;
+    assert.throws(()=>saveProject(storage,{name:'Superfície invàlida',settings:invalid}),/no és vàlida/);
     assert.throws(()=>importProjectLibrary(storage,JSON.stringify(damaged)),SyntaxError);
     assert.equal(exportProjectLibrary(storage),backup);
   }

@@ -10,19 +10,21 @@ import {locateReliefPins} from './relief-pin-placement.js';
 import {applyReliefPinHoles} from './relief-pin-holes.js';
 import {buildFenceMesh} from './fence-mesh.js';
 import {withPrintableFences} from './fence-export.js';
+import {applyHorizontalSurfaces} from './horizontal-surfaces.js';
 import Module from 'manifold-3d';
 import wasmURL from 'manifold-3d/manifold.wasm?url';
 import {createProcessingTiming} from './processing-timing.js';
 import {generationErrorReason} from './generation-error.js';
-let current,api,fencePart=null;
-async function computeFences(model,fences){
+let current,api,fencePart=null,horizontalState=null,horizontalSurfaces=[],fences=[];
+const visibleModel=()=>horizontalState?.model??current;
+async function computeFences(model,fences,ground){
   if(!model?.context||!fences?.length)return null;
   if(!api){api=await Module({locateFile:()=>wasmURL});api.setup();}
-  return buildFenceMesh(fences,{...model.context,api});
+  return buildFenceMesh(fences,{...model.context,ground:ground??model.context.ground,api});
 }
-async function refreshFences(model,fences){
+async function refreshFences(model){
   try{
-    fencePart=await computeFences(model,fences);
+    fencePart=await computeFences(model,fences,horizontalState?.ground);
     return {fencePart:fencePreview(fencePart)};
   }catch(error){
     fencePart=null;
@@ -30,6 +32,21 @@ async function refreshFences(model,fences){
   }
 }
 const fencePreview=mesh=>mesh&&{vertices:mesh.vertices,faces:mesh.faces};
+const horizontalError=error=>({code:error.code,index:error.surfaceIndex});
+async function computeHorizontal(model,edits){
+  if(!model?.context||!edits?.length)return null;
+  if(!api){api=await Module({locateFile:()=>wasmURL});api.setup();}
+  return applyHorizontalSurfaces(model,edits,api);
+}
+async function refreshHorizontal(model){
+  try{
+    horizontalState=await computeHorizontal(model,horizontalSurfaces);
+    return {horizontalLevels:horizontalState?.levels??[]};
+  }catch(error){
+    horizontalState=null;
+    return {horizontalLevels:[],horizontalError:horizontalError(error)};
+  }
+}
 const progress=message=>self.postMessage({type:'progress',message});
 const pinFailures={
   edge:'massa a prop d’una vora o d’un tall',overlap:'massa a prop d’un altre forat',
@@ -45,13 +62,12 @@ function perforatePiece(piece,pins){
   return {...drilled,categories:undefined};
 }
 const BUILD_STAGES=['terrain','transport','buildings','vegetation'];
-function postChangedModel(next,flags={}){
+function postChangedModel(previous,next,flags={},type='model'){
   const changedCategories=new Set();
-  for(const part of current.categories)if(!next.categories.includes(part))changedCategories.add(part.id);
-  for(const part of next.categories)if(!current.categories.includes(part))changedCategories.add(part.id);
-  current=next;
-  const categories=current.categories.filter(part=>changedCategories.has(part.id));
-  self.postMessage({type:'model',model:{...current,parts:undefined,reliefGrid:undefined,categories},
+  for(const part of previous.categories)if(!next.categories.includes(part))changedCategories.add(part.id);
+  for(const part of next.categories)if(!previous.categories.includes(part))changedCategories.add(part.id);
+  const categories=next.categories.filter(part=>changedCategories.has(part.id));
+  self.postMessage({type,model:{...next,parts:undefined,reliefGrid:undefined,categories},
     changedCategories:[...changedCategories],...flags});
 }
 function buildObserver(timing,pureRelief){
@@ -88,9 +104,18 @@ function buildObserver(timing,pureRelief){
 self.onmessage=async({data})=>{
 const timing=data.type==='build'||data.measureBuildings?createProcessingTiming():null;
 try{
+  if(data.type==='horizontal'){
+    const before=visibleModel(),next=await computeHorizontal(current,data.horizontalSurfaces);
+    const walls=await computeFences(current,fences,next?.ground);
+    horizontalSurfaces=data.horizontalSurfaces;
+    horizontalState=next;fencePart=walls;
+    postChangedModel(before,visibleModel(),{horizontalLevels:next?.levels??[],fencePart:fencePreview(walls)},'horizontal');
+    return;
+  }
   if(data.type==='fences'){
     // Keep the last valid wall when an edit fails.
-    fencePart=await computeFences(current,data.fences);
+    fencePart=await computeFences(current,data.fences,horizontalState?.ground);
+    fences=data.fences;
     self.postMessage({type:'fences',part:fencePreview(fencePart)});
     return;
   }
@@ -106,28 +131,46 @@ try{
     self.postMessage({type:'imported',kind:data.type,value},value.values?[value.values.buffer]:[]);return;
   }
   if(data.type==='build'||data.type==='vegetation'){
+    const before=visibleModel();
     const observer=data.type==='build'?buildObserver(timing,data.options.pureRelief):null;
     const needsSolidEngine=data.region?.singularModels?.length||!data.options.pureRelief&&(data.options.surfaceRoads||data.options.estimatedTunnels||data.options.majorRoads||data.region?.infrastructure?.items?.length||data.region?.features?.some(f=>f.properties?.sourceLayer==='transportation'&&f.properties.brunnel==='bridge'));
     if(observer&&!api&&needsSolidEngine){timing.mark('initialization','Preparant el motor de geometria…');progress('Preparant el motor de geometria…');api=await Module({locateFile:()=>wasmURL});api.setup();}
     current=observer?buildModel(data.region,data.options,observer.progress,api,timing.detail,observer):updateVegetation(current,data.options,progress);
-    const walls=observer?await refreshFences(current,data.fences):{};
-    self.postMessage({type:'model',model:{...current,parts:undefined,reliefGrid:undefined,categories:data.type==='vegetation'?current.categories.filter(p=>p.id==='trees'):current.categories},vegetation:data.type==='vegetation',timing:timing?.finish(),...walls});
+    if(observer){
+      fences=data.fences??[];
+      horizontalSurfaces=data.horizontalSurfaces??[];
+      const horizontal=await refreshHorizontal(current),walls=await refreshFences(current),model=visibleModel();
+      self.postMessage({type:'model',model:{...model,parts:undefined,reliefGrid:undefined},timing:timing.finish(),...walls,...horizontal});
+    }else if(horizontalSurfaces.length&&current.context){
+      const horizontal=await refreshHorizontal(current);
+      postChangedModel(before,visibleModel(),{vegetation:true,...horizontal,...await refreshFences(current)});
+    }else{
+      self.postMessage({type:'model',model:{...current,parts:undefined,reliefGrid:undefined,categories:current.categories.filter(p=>p.id==='trees')},vegetation:true});
+    }
   }
   if(data.type==='relief'){
-    postChangedModel(updatePureRelief(current,data.options,progress,data.boundaryLayer),{relief:true});
+    const before=current;
+    current=updatePureRelief(current,data.options,progress,data.boundaryLayer);
+    postChangedModel(before,current,{relief:true});
   }
   if(data.type==='buildings'){
+    const before=visibleModel();
     const report=message=>{timing?.mark('buildings',message);progress(message);};
     current=updateBuildings(current,data.layer,data.options,report);
-    self.postMessage({type:'model',model:{...current,parts:undefined,categories:current.categories.filter(p=>['buildings','trees','roads','railways'].includes(p.id))},buildings:true,timing:timing?.finish()});
+    if(horizontalSurfaces.length&&current.context){
+      const horizontal=await refreshHorizontal(current);
+      postChangedModel(before,visibleModel(),{buildings:true,timing:timing?.finish(),...horizontal,...await refreshFences(current)});
+    }else self.postMessage({type:'model',model:{...current,parts:undefined,categories:current.categories.filter(p=>['buildings','trees','roads','railways'].includes(p.id))},buildings:true,timing:timing?.finish()});
   }
   if(data.type==='transport'){
     if(!api&&(data.options.estimatedTunnels||data.options.majorRoads)){
       progress('Preparant les infraestructures…');
       api=await Module({locateFile:()=>wasmURL});api.setup();
     }
-    const next=updateTransport(current,data.options,progress,api);
-    postChangedModel(next,await refreshFences(next,data.fences));
+    const before=visibleModel();
+    current=updateTransport(current,data.options,progress,api);
+    const horizontal=await refreshHorizontal(current);
+    postChangedModel(before,visibleModel(),{...horizontal,...await refreshFences(current)});
   }
   if(data.type==='accessory'){
     if(!current)throw Error('Genera primer el model.');
@@ -143,8 +186,9 @@ try{
     const format=requested==='bambu-zip'?'bambu':requested;
     const pureRelief=current.provenance?.options?.pureRelief;
     // Keep the geometry inside the crop in the printable file, without embedding the full GPX.
-    let source=current.provenance.options?.userRoute?{...current,
-      provenance:{...current.provenance,options:{...current.provenance.options,userRoute:undefined}}}:current;
+    const modelWithSurfaces=visibleModel();
+    let source=current.provenance.options?.userRoute?{...modelWithSurfaces,
+      provenance:{...current.provenance,options:{...current.provenance.options,userRoute:undefined}}}:modelWithSurfaces;
     if(!pureRelief&&fencePart){
       try{source=withPrintableFences(source,fencePart,api);}
       catch(error){throw Error('FENCE_EXPORT_FAILED',{cause:error});}
@@ -157,8 +201,8 @@ try{
     let bytes,archive=false,plateCount;
     const split=plan.tiles.length>1;
     if(split||current.reliefGrid&&isPanoramicSize(current.width,current.height)){
-      const nativeFenceCut=!pureRelief&&!!fencePart;
-      let model=pureRelief||nativeFenceCut?source:groupMaterials(source,materialCount,assignments);
+      const nativeEditCut=!pureRelief&&(!!fencePart||!!horizontalState?.levels.some(Boolean));
+      let model=pureRelief||nativeEditCut?source:groupMaterials(source,materialCount,assignments);
       progress('Preparant els talls de les peces…');
       let pieces=model.reliefGrid&&!model.provenance.catalogueLandforms?.length&&splitPureRelief(model,plan,progress);
       if(!pieces){
@@ -174,7 +218,7 @@ try{
           pieces[i]=groupReliefMaterials({...perforatePiece(piece,pinTiles[i]),categories:undefined},materialCount,assignments);
         }
       }
-      if(nativeFenceCut){
+      if(nativeEditCut){
         pieces=pieces.map(piece=>groupMaterials({...piece,categories:undefined},materialCount,assignments));
         const byId=new Map(pieces.flatMap(piece=>piece.parts).map(part=>[part.id,part]));
         const palette=groupMaterials({...source,categories:[],parts:[]},materialCount,assignments);
@@ -197,4 +241,5 @@ try{
     self.postMessage({type:'download',format,archive,plateCount,bytes},[bytes.buffer]);
   }
 }catch(e){self.postMessage({type:'error',message:e.message,detail:e.stack,timing:timing?.finish(),
+  ...(data.type==='horizontal'?{horizontalError:horizontalError(e)}:{}),
   ...(data.type==='build'?{diagnosticReason:generationErrorReason(e)}:{})});}};

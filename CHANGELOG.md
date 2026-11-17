@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.24.9 — 2026-11-17
+
+- Superfícies horitzontals al calaix Eines de Model complet. En dibuixar el contorn d’un pati o una pista, es pot anivellar el terreny a la cota mitjana, mínima o màxima i ajustar-la en mil·límetres. El tall i el reblert s’inclouen a la maqueta i el contorn es conserva als projectes locals i a les còpies JSON.
+
 ## v0.24.8 — 2026-11-17
 
 - Tanques de mur continu al visor de Model complet, amb traç obert o tancat i gruix i alçada ajustables. S’inclouen al model imprimible i a les plantilles i còpies JSON, amb el material d’Edificis.
