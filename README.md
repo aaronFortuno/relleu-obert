@@ -22,6 +22,10 @@ Amb **Superfície horitzontal**, dibuixa el contorn d’un pati, plaça o pista 
 
 Per retocar una tanca o una superfície, selecciona-la al calaix Eines. Arrossega els punts numerats, prem **+** entre dos punts per afegir-ne un o selecciona un punt i prem **Treu el punt**. També es poden moure els punts amb les fletxes del teclat i treure’ls amb Supr. La maqueta s’actualitza després de cada canvi vàlid.
 
+**Ajusta als contorns** ajuda a situar els punts sobre les cantonades i vores disponibles dels edificis, les tanques i els patis. Pots desactivar l’imant o mantenir Maj premuda per moure lliurement. L’ajust utilitza la cartografia i els contorns ja dibuixats; no identifica elements que faltin a les fonts.
+
+A **Eines → Objectes**, tria un bloc, un cilindre o una esfera i situa’l sobre la maqueta. Les mides s’indiquen en mil·límetres d’impressió. Selecciona’l al llistat per modificar-lo, moure’l o retirar-lo. Els objectes utilitzen el material d’Edificis i es conserven al projecte local i a la còpia JSON; els enllaços compartits només transmeten la configuració general.
+
 La icona de compartir al costat de la descàrrega copia l’enllaç amb el retall i els ajustos actuals en un clic. En obrir-lo, la maqueta es genera automàticament al navegador. Els traços, les rutes i els punts destacats es poden conservar a la còpia JSON del projecte.
 
 La icona de compartir de cada fitxa de la galeria copia l’enllaç en un clic. En obrir-lo, la maqueta es genera amb els ajustos del catàleg.

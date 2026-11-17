@@ -11,12 +11,35 @@ import {applyReliefPinHoles} from './relief-pin-holes.js';
 import {buildFenceMesh} from './fence-mesh.js';
 import {withPrintableFences} from './fence-export.js';
 import {applyHorizontalSurfaces} from './horizontal-surfaces.js';
+import {applyBasicObjects} from './basic-objects.js';
 import Module from 'manifold-3d';
 import wasmURL from 'manifold-3d/manifold.wasm?url';
 import {createProcessingTiming} from './processing-timing.js';
 import {generationErrorReason} from './generation-error.js';
-let current,api,fencePart=null,horizontalState=null,horizontalSurfaces=[],fences=[];
-const visibleModel=()=>horizontalState?.model??current;
+let current,api,fencePart=null,horizontalState=null,horizontalSurfaces=[],fences=[],objects=[],objectState=null;
+const surfaceModel=()=>horizontalState?.model??current;
+const visibleModel=()=>objectState?.model??surfaceModel();
+async function computeObjects(model,edits){
+  if(!model?.context||!edits?.length)return null;
+  if(!api){api=await Module({locateFile:()=>wasmURL});api.setup();}
+  return applyBasicObjects(model,edits,api);
+}
+async function refreshObjects(){
+  try{
+    objectState=await computeObjects(surfaceModel(),objects);
+    return {objectLevels:objectState?.levels??[]};
+  }catch(error){
+    objectState=null;
+    return {objectLevels:[],objectError:{code:error.code}};
+  }
+}
+function contourTargets(){
+  const ctx=current?.context;
+  return ctx?.buildingMask?.flatMap(polygon=>polygon.map(ring=>{
+    const points=ring.slice(0,-1);
+    return {points:points.map(point=>ctx.proj.unproject(point)),heights:points.map(point=>ctx.ground(...point)),closed:true};
+  }))??[];
+}
 async function computeFences(model,fences,ground){
   if(!model?.context||!fences?.length)return null;
   if(!api){api=await Module({locateFile:()=>wasmURL});api.setup();}
@@ -68,7 +91,7 @@ function postChangedModel(previous,next,flags={},type='model'){
   for(const part of next.categories)if(!previous.categories.includes(part))changedCategories.add(part.id);
   const categories=next.categories.filter(part=>changedCategories.has(part.id));
   self.postMessage({type,model:{...next,parts:undefined,reliefGrid:undefined,categories},
-    changedCategories:[...changedCategories],...flags});
+    changedCategories:[...changedCategories],contourTargets:contourTargets(),...flags});
 }
 function buildObserver(timing,pureRelief){
   const stages=pureRelief?['terrain']:BUILD_STAGES;
@@ -106,10 +129,17 @@ const timing=data.type==='build'||data.measureBuildings?createProcessingTiming()
 try{
   if(data.type==='horizontal'){
     const before=visibleModel(),next=await computeHorizontal(current,data.horizontalSurfaces);
+    const placed=await computeObjects(next?.model??current,objects);
     const walls=await computeFences(current,fences,next?.ground);
     horizontalSurfaces=data.horizontalSurfaces;
-    horizontalState=next;fencePart=walls;
-    postChangedModel(before,visibleModel(),{horizontalLevels:next?.levels??[],fencePart:fencePreview(walls)},'horizontal');
+    horizontalState=next;objectState=placed;fencePart=walls;
+    postChangedModel(before,visibleModel(),{horizontalLevels:next?.levels??[],objectLevels:placed?.levels??[],fencePart:fencePreview(walls)},'horizontal');
+    return;
+  }
+  if(data.type==='objects'){
+    const before=visibleModel(),next=await computeObjects(surfaceModel(),data.objects);
+    objects=data.objects;objectState=next;
+    postChangedModel(before,visibleModel(),{objectLevels:next?.levels??[]},'objects');
     return;
   }
   if(data.type==='fences'){
@@ -139,11 +169,12 @@ try{
     if(observer){
       fences=data.fences??[];
       horizontalSurfaces=data.horizontalSurfaces??[];
-      const horizontal=await refreshHorizontal(current),walls=await refreshFences(current),model=visibleModel();
-      self.postMessage({type:'model',model:{...model,parts:undefined,reliefGrid:undefined},timing:timing.finish(),...walls,...horizontal});
-    }else if(horizontalSurfaces.length&&current.context){
-      const horizontal=await refreshHorizontal(current);
-      postChangedModel(before,visibleModel(),{vegetation:true,...horizontal,...await refreshFences(current)});
+      objects=data.objects??[];
+      const horizontal=await refreshHorizontal(current),placed=await refreshObjects(),walls=await refreshFences(current),model=visibleModel();
+      self.postMessage({type:'model',model:{...model,parts:undefined,reliefGrid:undefined},timing:timing.finish(),contourTargets:contourTargets(),...walls,...horizontal,...placed});
+    }else if((horizontalSurfaces.length||objects.length)&&current.context){
+      const horizontal=await refreshHorizontal(current),placed=await refreshObjects();
+      postChangedModel(before,visibleModel(),{vegetation:true,...horizontal,...placed,...await refreshFences(current)});
     }else{
       self.postMessage({type:'model',model:{...current,parts:undefined,reliefGrid:undefined,categories:current.categories.filter(p=>p.id==='trees')},vegetation:true});
     }
@@ -157,10 +188,10 @@ try{
     const before=visibleModel();
     const report=message=>{timing?.mark('buildings',message);progress(message);};
     current=updateBuildings(current,data.layer,data.options,report);
-    if(horizontalSurfaces.length&&current.context){
-      const horizontal=await refreshHorizontal(current);
-      postChangedModel(before,visibleModel(),{buildings:true,timing:timing?.finish(),...horizontal,...await refreshFences(current)});
-    }else self.postMessage({type:'model',model:{...current,parts:undefined,categories:current.categories.filter(p=>['buildings','trees','roads','railways'].includes(p.id))},buildings:true,timing:timing?.finish()});
+    if((horizontalSurfaces.length||objects.length)&&current.context){
+      const horizontal=await refreshHorizontal(current),placed=await refreshObjects();
+      postChangedModel(before,visibleModel(),{buildings:true,timing:timing?.finish(),...horizontal,...placed,...await refreshFences(current)});
+    }else self.postMessage({type:'model',model:{...current,parts:undefined,categories:current.categories.filter(p=>['buildings','trees','roads','railways'].includes(p.id))},buildings:true,timing:timing?.finish(),contourTargets:contourTargets()});
   }
   if(data.type==='transport'){
     if(!api&&(data.options.estimatedTunnels||data.options.majorRoads)){
@@ -169,8 +200,8 @@ try{
     }
     const before=visibleModel();
     current=updateTransport(current,data.options,progress,api);
-    const horizontal=await refreshHorizontal(current);
-    postChangedModel(before,visibleModel(),{...horizontal,...await refreshFences(current)});
+    const horizontal=await refreshHorizontal(current),placed=await refreshObjects();
+    postChangedModel(before,visibleModel(),{...horizontal,...placed,...await refreshFences(current)});
   }
   if(data.type==='accessory'){
     if(!current)throw Error('Genera primer el model.');
@@ -201,7 +232,7 @@ try{
     let bytes,archive=false,plateCount;
     const split=plan.tiles.length>1;
     if(split||current.reliefGrid&&isPanoramicSize(current.width,current.height)){
-      const nativeEditCut=!pureRelief&&(!!fencePart||!!horizontalState?.levels.some(Boolean));
+      const nativeEditCut=!pureRelief&&(!!fencePart||!!horizontalState?.levels.some(Boolean)||!!objectState?.levels.some(Boolean));
       let model=pureRelief||nativeEditCut?source:groupMaterials(source,materialCount,assignments);
       progress('Preparant els talls de les peces…');
       let pieces=model.reliefGrid&&!model.provenance.catalogueLandforms?.length&&splitPureRelief(model,plan,progress);
@@ -242,4 +273,5 @@ try{
   }
 }catch(e){self.postMessage({type:'error',message:e.message,detail:e.stack,timing:timing?.finish(),
   ...(data.type==='horizontal'?{horizontalError:horizontalError(e)}:{}),
+  ...(data.type==='objects'?{objectError:{code:e.code}}:{}),
   ...(data.type==='build'?{diagnosticReason:generationErrorReason(e)}:{})});}};

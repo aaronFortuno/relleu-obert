@@ -35,6 +35,9 @@ import {FENCE_DEFAULT_WIDTH_MM,FENCE_DEFAULT_HEIGHT_MM,FENCE_MIN_WIDTH_MM,FENCE_
 import {MAX_HORIZONTAL_SURFACE_POINTS,normalizeHorizontalSurfaces} from './horizontal-surface-settings.js';
 import {createHorizontalSurfaceEditor,horizontalErrorKey} from './horizontal-surface-editor.js';
 import {createContourEditor} from './contour-editor.js';
+import {snapToContours} from './contour-snap.js';
+import {normalizeBasicObjects} from './basic-object-settings.js';
+import {createBasicObjectEditor} from './basic-object-editor.js';
 import {canSendGenerationReport,generationErrorData,generationReportData,sendGenerationReport,trackWorkshopEvent,workshopMode,workshopSize} from './analytics.js';
 import {sourceError} from './generation-error.js';
 import {createBuildingUpdateScheduler} from './building-update-scheduler.js';
@@ -187,6 +190,8 @@ let trailStrokes=[],drawnRouteStrokes=[],pendingTrailFrame=null,pendingRouteFram
 let userRoute=null,pins=[],nextPinId=1,selectedPinId=null,removedPin=null,pinPointer=null;
 let fences=[],fencePreview=null,fenceError=false,pendingFences=null;
 let horizontalSurfaces=[],horizontalLevels=[],horizontalFailure=null,pendingHorizontal=null;
+let objects=[],objectLevels=[],objectFailure=null,pendingObjects=null,objectMoveIndex=null,selectedObjectIndex=null;
+let buildingContours=[],buildingContourHeights=new Map();
 let pendingBrushFrame=null,transportTimer=null,reliefTimer=null;
 let exportFormat='bambu';
 let baseThickness=DEFAULT_BASE_THICKNESS_MM,cutPreviewFrame=null,cutChangedDuringDrag=false;
@@ -261,7 +266,7 @@ const lineStrokes=()=>routeBrush()?drawnRouteStrokes:trailStrokes;
 const canPlacePin=canEditRelief;
 const canEditFences=()=>!!model&&!isPure(model)&&!pureSelected()&&!busy&&!needsBuild&&!pendingVegetation;
 const pointDraftBrush=mode=>mode==='fence'||mode==='horizontal';
-const canPaintWithBrush=()=>pointDraftBrush(brush)?canEditFences():brush==='pin'||routeBrush()?canEditRelief():trailBrush()?canPaintTrails():canPaint();
+const canPaintWithBrush=()=>pointDraftBrush(brush)||brush==='object'?canEditFences():brush==='pin'||routeBrush()?canEditRelief():trailBrush()?canPaintTrails():canPaint();
 const trailWidthControl=$('#relief-trail-width'),trailEraserControl=$('#trail-eraser-radius');
 const reliefTrailWidth=()=>{
   const value=Number(committedFieldValue(trailWidthControl));
@@ -285,7 +290,7 @@ const badge=message=>{currentBadge=message;$('#model-badge').textContent=message
 const workLabels={
   relief:'status.workRelief',vegetation:'status.workVegetation',buildings:'status.workBuildings',
   transport:'status.workTransport',accessory:'status.workAccessory',export:'status.workExport',fences:'fence.working',
-  horizontal:'horizontal.working'
+  horizontal:'horizontal.working',objects:'object.working'
 };
 function lock(value){
   busy=value;
@@ -507,7 +512,7 @@ function metrics(){
   const buildings=formatNumber(model.buildingCount);
   $('#metrics').innerHTML=`<div><strong>${model.width.toFixed(0)} × ${model.height.toFixed(0)}</strong><span>${text('metrics.size')}</span></div><div><strong>1:${formatNumber(model.scale)}</strong><span>${text('metrics.scale')}</span></div><div><strong>${vegetationValue}</strong><span>${vegetationLabel}</span></div><div><strong>${used} / ${settings.count}</strong><span>${text('metrics.usedMaterials')}</span></div><div><strong>${buildings}</strong><span>${text('metrics.buildings')}</span></div><div><strong>×${formatNumber(model.provenance.verticalExaggeration)}</strong><span>${text('metrics.exaggeration')}</span></div><div class="metric-wide"><strong>${formatNumber(model.triangles)}</strong><span>${text('metrics.triangles')}</span></div>`;
 }
-function dispose(mesh){mesh.geometry.dispose();mesh.material.dispose();group.remove(mesh);}
+function dispose(mesh){mesh.geometry.dispose();mesh.material.dispose();mesh.removeFromParent();}
 function addModelMesh(part){
   const geometry=new THREE.BufferGeometry();
   geometry.setAttribute('position',new THREE.BufferAttribute(part.vertices,3));
@@ -601,6 +606,7 @@ function display(m,changedCategories=null,refit=true){
   group.position.set(-m.width/2,-m.height/2,0);recolor();tiling();if(refit)home();
   showModelNotes(m);
   refreshPinMarkers();
+  refreshObjectGuide();
   if(!brushHasGeometry()&&brush!=='navigate')selectNavigate();
 }
 function showModelNotes(m){
@@ -862,7 +868,7 @@ async function generate(autoTransport=false){
         ...(options.pureRelief?{demZoom:meta.terrain?.zoom,demSampleSize:meta.terrain?.sampleSize,coverage:meta.coverage}:{})};
       processingRun.workerStartMilliseconds=performance.now()-processingRun.started;
       stagedBuild={bbox:meta.bbox,pose:options.selectionPose,pureRelief:options.pureRelief};
-      worker.postMessage({...buildRequest({...target,boundaryLayer},options),fences,horizontalSurfaces});
+      worker.postMessage({...buildRequest({...target,boundaryLayer},options),fences,horizontalSurfaces,objects});
     }
   }catch(e){pendingVegetation=false;recoverBuildings(e);}
 }
@@ -989,6 +995,28 @@ function settleBuildings(error){
   if(error)reject(error);else resolve();
 }
 worker.onmessage=({data})=>{
+  if('contourTargets' in data){
+    buildingContours=data.contourTargets;
+    buildingContourHeights=new Map(buildingContours.flatMap(ring=>ring.points.map((point,i)=>[point.join(','),ring.heights[i]])));
+  }
+  if(data.type==='objects'){
+    const {next,selection,message,finish,focus}=pendingObjects;
+    pendingObjects=null;objects=next;
+    applyObjectLevels(data);
+    const changed=data.changedCategories;
+    data.model.categories=[...model.categories.filter(part=>!changed.includes(part.id)),...data.model.categories];
+    model=data.model;
+    display(model,changed,false);
+    if(finish&&brush==='object')selectNavigate();
+    selectedObjectIndex=selection;
+    objectEditor.refresh(selection);
+    refreshObjectGuide();
+    lock(false);
+    objectEditor.say(message);
+    if(focus&&!viewerToolsPanel.hidden)objectEditor.focusSelection();
+    flushTrees();scheduler.flush();
+    return;
+  }
   if(data.type==='horizontal'){
     const {next,selection,message,finish,focus,contour}=pendingHorizontal;
     pendingHorizontal=null;
@@ -996,6 +1024,7 @@ worker.onmessage=({data})=>{
     const changed=data.changedCategories;
     data.model.categories=[...model.categories.filter(part=>!changed.includes(part.id)),...data.model.categories];
     model=data.model;
+    applyObjectLevels(data);
     setFencePreview(data.fencePart);fenceError=false;
     setFenceFeedback('');
     display(model,changed,false);
@@ -1064,6 +1093,7 @@ worker.onmessage=({data})=>{
       if(!contextLost)renderer.setAnimationLoop(renderWorkshop);
     }
     model=data.model;
+    applyObjectLevels(data);
     if('horizontalLevels' in data){
       const previousFailure=horizontalFailure;
       horizontalLevels=data.horizontalLevels;horizontalFailure=data.horizontalError??null;
@@ -1126,6 +1156,7 @@ worker.onmessage=({data})=>{
   }
   if(data.type==='error'){
     if(job==='horizontal'){recoverHorizontal(data.horizontalError);console.error(data.detail);return;}
+    if(job==='objects'){recoverObjects(data.objectError);console.error(data.detail);return;}
     if(job==='fences'){recoverFenceEdit();console.error(data.detail);return;}
     if(job==='relief'){recoverRelief(Error(data.message));console.error(data.detail);return;}
     if(processingRun&&data.timing)processingRun[processingRun.awaitingBuildings?'buildingWorker':'worker']=data.timing;
@@ -1163,6 +1194,7 @@ worker.onerror=event=>{
   error.engineStage=stagedBuild?.progress?.stage;
   error.uiMessage=statusMessage('status.modelError',()=>({error:translateEngineMessage(event.message)}));
   if(job==='horizontal'){recoverHorizontal();return;}
+  if(job==='objects'){recoverObjects();return;}
   if(job==='fences'){recoverFenceEdit();return;}
   if(job==='relief'){recoverRelief(error);return;}
   pendingVegetation=false;
@@ -1397,6 +1429,8 @@ function selectCuratedExample(example,{keepLink=false}={}){
   routeHistory=createProjectBrushHistory({breakOnClipped:true});
   strokes=[];trailStrokes=[];drawnRouteStrokes=[];userRoute=null;pins=[];fences=[];
   horizontalSurfaces=[];horizontalLevels=[];horizontalFailure=null;
+  objects=[];objectLevels=[];objectFailure=null;selectedObjectIndex=null;
+  objectEditor.refresh(null);objectEditor.say();refreshObjectGuide();
   horizontalEditor.refresh(null);horizontalEditor.say();
   renderFenceList();setFenceFeedback('');
   nextPinId=1;selectedPinId=null;removedPin=null;
@@ -1718,6 +1752,13 @@ function exportModel(){
     horizontalEditor.say(key);
     return;
   }
+  if(objectFailure&&!isPure(model)){
+    const key=objectErrorKey(objectFailure);
+    feedback('export-feedback',statusMessage('object.'+key));
+    showViewerTools(true,{pane:'objects',focus:true});
+    objectEditor.say(key);
+    return;
+  }
   if(fenceError&&!isPure(model)){
     feedback('export-feedback',statusMessage('fence.failed'));
     showViewerTools(true,{pane:'fences',focus:true});
@@ -1811,7 +1852,7 @@ function syncVegetationControls(updating){
   const paintDisabled=updating||!canPaint();
   for(const button of document.querySelectorAll('[data-brush]')){
     const mode=button.dataset.brush;
-    if(mode==='horizontal')continue; // The editor controls its drawing and row states together.
+    if(mode==='horizontal'||mode==='object')continue; // Their editors control placement and saved rows together.
     const reliefBrush=mode==='pin'||mode.startsWith('route-')||mode.startsWith('trail-');
     button.disabled=mode!=='navigate'&&(mode==='fence'?!canEditFences()||fences.length>=MAX_FENCES:
       reliefBrush?updating||drawing||!(mode.startsWith('trail-')?canPaintTrails():canEditRelief()):paintDisabled);
@@ -1828,11 +1869,12 @@ const viewerToolPanes=[...document.querySelectorAll('[data-viewer-pane]')];
 let viewerTool='trails';
 function syncViewerTools(){
   const pure=pureSelected(),visible=!viewerToolsPanel.hidden;
-  const completeTool=viewerTool==='fences'||viewerTool==='horizontal';
+  const completeTool=['fences','horizontal','objects'].includes(viewerTool);
   if(pure&&completeTool)viewerTool='trails';
   if(!pure&&!completeTool)viewerTool='fences';
   $('#viewer-tools-content').hidden=!pure;
   $('#viewer-complete-tabs').hidden=pure;
+  $('#contour-snap').closest('label').hidden=viewerTool==='objects';
   viewerToolsOpen.setAttribute('aria-expanded',String(visible));
   $('#enable-trails').hidden=$('#relief-trails').checked;
   $('#enable-trails').disabled=busy||drawing||needsBuild||reliefTimer!==null;
@@ -1848,12 +1890,14 @@ function syncViewerTools(){
   for(const pane of viewerToolPanes)pane.hidden=pane.dataset.viewerPane!==viewerTool;
   syncFenceEditor();
   horizontalEditor.sync();
+  objectEditor.sync();
+  refreshObjectGuide();
   if(pure&&contourEditor.active)stopContour();
   contourEditor.sync();
 }
 function showViewerTools(open,{pane,focus=false}={}){
   if(!open||pane&&pane!==viewerTool)stopContour();
-  if((!open||pane&&pane!==viewerTool)&&(pointDraftBrush(brush)||['pin','trail-add','trail-erase','route-add','route-erase'].includes(brush)))selectNavigate();
+  if((!open||pane&&pane!==viewerTool)&&(pointDraftBrush(brush)||['pin','object','trail-add','trail-erase','route-add','route-erase'].includes(brush)))selectNavigate();
   viewerToolsPanel.hidden=!open;
   if(pane)viewerTool=pane;
   if(open&&narrowWorkshop.matches)showWorkshopPanel('preview');
@@ -1894,19 +1938,21 @@ $('#clear-route').onclick=()=>{drawnRouteStrokes=[];requestTrailUpdate();};
 function setBrush(button){
   if(!button)return;
   stopContour();
+  contourEditor.clearSnap();
   const before=brush;
   finishStroke();brush=button.dataset.brush;
   if(pointDraftBrush(before)&&before!==brush){
     pointDraft=[];drawPointDraft();
     if(before==='horizontal')horizontalEditor.say();else setFenceFeedback('');
   }
-  if(pointDraftBrush(brush)&&brush!==before){
+  if((pointDraftBrush(brush)||brush==='object')&&brush!==before){
     lookDownForDrawing();
-    if(brush==='horizontal')horizontalEditor.say('place');else setFenceFeedback('place');
+    if(brush==='object')objectEditor.say('placeHint');
+    else if(brush==='horizontal')horizontalEditor.say('place');else setFenceFeedback('place');
   }
   const navigating=brush==='navigate';
-  controls.enabled=navigating||pointDraftBrush(brush);
-  controls.enableRotate=!pointDraftBrush(brush);
+  controls.enabled=navigating||pointDraftBrush(brush)||brush==='object';
+  controls.enableRotate=!pointDraftBrush(brush)&&brush!=='object';
   document.querySelectorAll('[data-brush]').forEach(x=>{
     const selected=x.dataset.brush===brush;
     x.classList.toggle('selected',selected);
@@ -1924,13 +1970,13 @@ function lookDownForDrawing(){
 }
 function syncViewerHint(){
   const navigating=brush==='navigate';
-  const special=brush==='pin'?'pin.placeHint':pointDraftBrush(brush)?brush+'.place':null;
+  const special=brush==='pin'?'pin.placeHint':brush==='object'?'object.placeHint':pointDraftBrush(brush)?brush+'.place':null;
   $('#viewer-hint .desktop-copy').textContent=text(special||(navigating?'viewer.navigateDesktop':'viewer.paintDesktop'));
   $('#viewer-hint .mobile-copy').textContent=text(special||(navigating?'viewer.navigateMobile':'viewer.paintMobile'));
 }
 function selectNavigate(){setBrush(document.querySelector('[data-brush="navigate"]'));}
 function endVegetationEditing(){finishStroke();if(brush!=='navigate')selectNavigate();else $('#brush-cursor').hidden=true;}
-document.querySelectorAll('[data-brush]').forEach(b=>{if(!pointDraftBrush(b.dataset.brush))b.onclick=()=>setBrush(b);});
+document.querySelectorAll('[data-brush]').forEach(b=>{if(!pointDraftBrush(b.dataset.brush)&&b.dataset.brush!=='object')b.onclick=()=>setBrush(b);});
 const ray=new THREE.Raycaster(),pointer=new THREE.Vector2();
 const brushGround=new Set(['terrain','forest','grass','rock','snow']);
 const brushSurfaces=new Set([...brushGround,'water','inland-water']);
@@ -2026,9 +2072,12 @@ function placeDraftPoint(event){
   if(pointDraft.length>=(horizontal?MAX_HORIZONTAL_SURFACE_POINTS:MAX_FENCE_POINTS)){say('limit');return;}
   const hit=contourLandAt(event.clientX,event.clientY);
   if(!hit){say('land');return;}
-  const x=hit.x+model.width/2,y=hit.y+model.height/2;
+  let lonLat=pinProjection(model).unproject([hit.x+model.width/2,hit.y+model.height/2]);
+  const snapped=resolveContourSnap(lonLat,{kind:brush,clientX:event.clientX,clientY:event.clientY,bypass:event.shiftKey});
+  if(snapped)lonLat=snapped.point;
+  const [x,y]=pinProjection(model).project(lonLat);
   if(pointDraft.some(point=>Math.hypot(point.x-x,point.y-y)<.2)){say('near');return;}
-  pointDraft.push({x,y,lonLat:pinProjection(model).unproject([x,y]),hit});
+  pointDraft.push({x,y,lonLat,hit:snapped?contourWorldAnchor(lonLat):hit});
   drawPointDraft();syncFenceEditor();horizontalEditor.sync();
   say(pointDraft.length>=(horizontal?3:2)?'continue':'place');
 }
@@ -2086,22 +2135,8 @@ const contourEditor=createContourEditor($('#contour-overlay'),{
   available:canEditFences,
   record:(kind,index)=>kind==='fence'?fences[index]:
     horizontalSurfaces[index]&&{points:horizontalSurfaces[index].points,closed:true},
-  anchor(lonLat,{insert=false}={}){
-    if(!model)return null;
-    if(model!==contourAnchorModel){
-      contourAnchorModel=model;contourAnchors=new Map();group.updateMatrixWorld(true);
-    }
-    const key=lonLat.join(',')+(insert?' midpoint':'');
-    if(contourAnchors.has(key))return contourAnchors.get(key);
-    const [x,y]=pinProjection(model).project(lonLat);
-    if(x<0||x>model.width||y<0||y>model.height)return null;
-    contourRay.set(new THREE.Vector3(x-model.width/2,y-model.height/2,10000),contourDown);
-    const point=contourLandHit();
-    // A clipped or conflicting outline remains editable on the visible side.
-    const anchor=point??(insert?null:new THREE.Vector3(x-model.width/2,y-model.height/2,0));
-    contourAnchors.set(key,anchor);
-    return anchor;
-  },
+  anchor:contourWorldAnchor,
+  snap:resolveContourSnap,
   locate(clientX,clientY){
     const hit=contourLandAt(clientX,clientY);
     return hit?pinProjection(model).unproject([hit.x+model.width/2,hit.y+model.height/2]):null;
@@ -2160,6 +2195,122 @@ function finishContour(){
   stopContour();
   const field=active.kind==='fence'?'fence':'horizontal';
   $(`[data-${field}-select="${active.index}"]`)?.focus({preventScroll:true});
+}
+
+function contourWorldAnchor(lonLat,{insert=false,building=false}={}){
+  if(!model)return null;
+  if(model!==contourAnchorModel){
+    contourAnchorModel=model;contourAnchors=new Map();group.updateMatrixWorld(true);
+  }
+  const key=lonLat.join(',')+(insert?' midpoint':'')+(building?' building':'');
+  if(contourAnchors.has(key))return contourAnchors.get(key);
+  const [x,y]=pinProjection(model).project(lonLat);
+  if(x<0||x>model.width||y<0||y>model.height)return null;
+  contourRay.set(new THREE.Vector3(x-model.width/2,y-model.height/2,10000),contourDown);
+  const targets=building?group.children.filter(mesh=>contourGroundMesh(mesh)||mesh.name==='buildings'):contourRayTargets();
+  const [hit]=contourRay.intersectObjects(targets);
+  const point=hit&&hit.face.normal.z>0?hit.point:null;
+  const anchor=point??(insert?null:new THREE.Vector3(x-model.width/2,y-model.height/2,0));
+  contourAnchors.set(key,anchor);
+  return anchor;
+}
+function resolveContourSnap(lonLat,{kind,index,clientX,clientY,bypass=false}={}){
+  if(!$('#contour-snap').checked||bypass||!model)return null;
+  const rect=view.getBoundingClientRect(),point=[clientX-rect.left,clientY-rect.top];
+  const contours=[...buildingContours,
+    ...horizontalSurfaces.filter((_,i)=>kind!=='horizontal'||i!==index).map(row=>({points:row.points,closed:true})),
+    ...fences.filter((_,i)=>kind!=='fence'||i!==index).map(row=>({points:row.points,closed:row.closed}))];
+  return snapToContours(point,contours,{project:coords=>{
+    const height=buildingContourHeights.get(coords.join(','));
+    const xy=Number.isFinite(height)&&pinProjection(model).project(coords);
+    const world=xy?new THREE.Vector3(xy[0]-model.width/2,xy[1]-model.height/2,height):contourWorldAnchor(coords,{building:true});
+    if(!world)return null;
+    contourProjectionPoint.copy(world).project(camera);
+    return Math.abs(contourProjectionPoint.z)<=1?[(contourProjectionPoint.x+1)*rect.width/2,(1-contourProjectionPoint.y)*rect.height/2]:null;
+  }});
+}
+$('#contour-snap').onchange=()=>contourEditor.clearSnap();
+renderer.domElement.addEventListener('pointermove',event=>{
+  if(!pointDraftBrush(brush)||!canEditFences())return;
+  const hit=contourLandAt(event.clientX,event.clientY);
+  const point=hit&&pinProjection(model).unproject([hit.x+model.width/2,hit.y+model.height/2]);
+  contourEditor.showSnap(point&&resolveContourSnap(point,{kind:brush,clientX:event.clientX,clientY:event.clientY,bypass:event.shiftKey}));
+});
+renderer.domElement.addEventListener('pointerleave',()=>{if(!contourEditor.active)contourEditor.clearSnap();});
+
+const objectGuide=new THREE.Group();scene.add(objectGuide);
+let objectGuideKey='';
+function refreshObjectGuide(){
+  const item=objects[selectedObjectIndex],level=objectLevels[selectedObjectIndex];
+  const shown=!!item&&!!level&&!!model&&!pureSelected()&&!viewerToolsPanel.hidden&&viewerTool==='objects';
+  objectGuide.visible=shown;
+  if(!shown)return;
+  const key=JSON.stringify([item,level,model.width,model.height,model.provenance.bbox,model.provenance.options.selectionPose]);
+  if(key===objectGuideKey)return;
+  objectGuideKey=key;
+  for(const mesh of [...objectGuide.children])dispose(mesh);
+  const geometry=new THREE.BoxGeometry(item.widthMM,item.depthMM,item.heightMM),edges=new THREE.EdgesGeometry(geometry);
+  geometry.dispose();
+  const outline=new THREE.LineSegments(edges,new THREE.LineBasicMaterial({color:pointGuideColor,depthTest:false,depthWrite:false}));
+  const [x,y]=pinProjection(model).project(item.position);
+  outline.position.set(x-model.width/2,y-model.height/2,(level.baseMM+level.topMM)/2);
+  outline.rotation.z=item.rotation*Math.PI/180;
+  outline.renderOrder=12;
+  objectGuide.add(outline);
+}
+function objectErrorKey(error){
+  return {OBJECT_NO_SUPPORT:'noSupport',OBJECT_INVALID:'invalid'}[error?.code]??'failed';
+}
+function applyObjectLevels(data){
+  if(!('objectLevels' in data))return;
+  const previous=objectFailure;
+  objectLevels=data.objectLevels;objectFailure=data.objectError??null;
+  objectEditor.refresh();
+  if(objectFailure)objectEditor.say(objectErrorKey(objectFailure));
+  else if(previous)objectEditor.say();
+}
+const objectEditor=createBasicObjectEditor($('[data-viewer-pane="objects"]'),{
+  records:()=>objects,levels:()=>objectLevels,available:canEditFences,isPlacing:()=>brush==='object',
+  start(index){
+    if(!canEditFences())return;
+    objectMoveIndex=index;
+    setBrush($('[data-brush="object"]'));
+  },
+  cancel:selectNavigate,submit:updateObjects,
+  select(index){
+    if(brush!=='navigate')selectNavigate();
+    stopContour();
+    selectedObjectIndex=index;
+    if(index!=null)setOrbitEnabled(false);
+    refreshObjectGuide();
+  }
+});
+function updateObjects(next,operation){
+  if(!canEditFences())return false;
+  try{next=normalizeBasicObjects(next);}
+  catch{objectEditor.refresh();objectEditor.say('invalid');return false;}
+  pendingObjects={next,...operation};
+  job='objects';lock(true);
+  objectEditor.say('working');
+  worker.postMessage({type:'objects',objects:next});
+  return true;
+}
+function placeObject(event){
+  const rect=renderer.domElement.getBoundingClientRect();
+  contourRay.setFromCamera(pointer.set((event.clientX-rect.left)/rect.width*2-1,1-(event.clientY-rect.top)/rect.height*2),camera);
+  const [hit]=contourRay.intersectObjects(group.children.filter(mesh=>contourGroundMesh(mesh)||['buildings','water','inland-water'].includes(mesh.name)));
+  if(!hit||hit.face.normal.z<=0||['water','inland-water'].includes(hit.object.name)){objectEditor.say('noSupport');return;}
+  const position=pinProjection(model).unproject([hit.point.x+model.width/2,hit.point.y+model.height/2]);
+  const moved=objectMoveIndex!=null,index=moved?objectMoveIndex:objects.length;
+  const item={...(moved?objects[index]:objectEditor.draft()),position};
+  updateObjects(moved?objects.map((row,i)=>i===index?item:row):[...objects,item],
+    {selection:index,message:moved?'updated':'saved',finish:true,focus:true});
+}
+function recoverObjects(error){
+  pendingObjects=null;
+  objectEditor.refresh();
+  lock(false);objectEditor.say(objectErrorKey(error));
+  flushTrees();scheduler.flush();
 }
 
 const pinRay=new THREE.Raycaster();
@@ -2299,7 +2450,7 @@ $('#pin-coordinates-form').onsubmit=event=>{
   if(addPin(lon,lat))input.value='';
 };
 function paint(event){
-  if(brush==='navigate'||brush==='pin'||pointDraftBrush(brush)||!canPaintWithBrush()||pendingVegetation&&!drawing)return;
+  if(brush==='navigate'||brush==='pin'||brush==='object'||pointDraftBrush(brush)||!canPaintWithBrush()||pendingVegetation&&!drawing)return;
   const trails=lineBrush(),erase=brush.endsWith('erase');
   const rect=renderer.domElement.getBoundingClientRect();
   pointer.set((event.clientX-rect.left)/rect.width*2-1,-(event.clientY-rect.top)/rect.height*2+1);
@@ -2344,7 +2495,7 @@ function finishStroke(){
 }
 renderer.domElement.addEventListener('pointerdown',event=>{
   if(brush==='navigate'||event.button!==0||drawing||pendingVegetation||!canPaintWithBrush())return;
-  if(brush==='pin'||pointDraftBrush(brush)){
+  if(brush==='pin'||brush==='object'||pointDraftBrush(brush)){
     if(!event.isPrimary){pinPointer=null;return;}
     pinPointer={id:event.pointerId,x:event.clientX,y:event.clientY};
     renderer.domElement.setPointerCapture(event.pointerId);
@@ -2362,6 +2513,7 @@ renderer.domElement.addEventListener('pointerup',event=>{
     const start=pinPointer;pinPointer=null;
     if(Math.hypot(event.clientX-start.x,event.clientY-start.y)<=8){
       if(brush==='pin'&&canPlacePin())placePin(event);
+      if(brush==='object'&&canEditFences())placeObject(event);
       if(pointDraftBrush(brush)&&canEditFences())placeDraftPoint(event);
     }
   }
@@ -2392,6 +2544,7 @@ function captureProject({includeAnnotations=true}={}){
     strokes:brushHistory.prepare(modelOptions(),strokes).strokes,
     ...(fences.length?{fences}:{}),
     ...(horizontalSurfaces.length?{horizontalSurfaces}:{}),
+    ...(objects.length?{objects}:{}),
     ...(pureSelected()?{trailStrokes:trailHistory.prepare(modelOptions(),trailStrokes).strokes,
       drawnRouteStrokes:routeHistory.prepare(modelOptions(),drawnRouteStrokes).strokes,userRoute,pins}:{})};
 }
@@ -2608,11 +2761,13 @@ function restoreProject(){
 function applyProjectSettings(settings,name=''){
   const {sizePreset,pose,pureRelief,materials,reliefMaterials:savedReliefMaterials,options,print,historical,
     placeName:savedPlace,exampleId,mapZoom,strokes:savedStrokes,trailStrokes:savedTrails,
-    drawnRouteStrokes:savedDrawnRoute,userRoute:savedRoute,pins:savedPins,fences:savedFences,horizontalSurfaces:savedSurfaces}=settings;
+    drawnRouteStrokes:savedDrawnRoute,userRoute:savedRoute,pins:savedPins,fences:savedFences,horizontalSurfaces:savedSurfaces,objects:savedObjects}=settings;
   stopContour();
   fences=savedFences??[];renderFenceList();setFenceFeedback('');
   horizontalSurfaces=savedSurfaces??[];horizontalLevels=[];horizontalFailure=null;
   horizontalEditor.refresh(null);horizontalEditor.say();
+  objects=savedObjects??[];objectLevels=[];objectFailure=null;selectedObjectIndex=null;
+  objectEditor.refresh(null);objectEditor.say();refreshObjectGuide();
   userRoute=savedRoute??null;
   nextPinId=Math.max(0,...(savedPins??[]).map(pin=>pin.id??0))+1;
   pins=(savedPins??[]).map(pin=>({...pin,id:pin.id??nextPinId++}));
@@ -2772,6 +2927,7 @@ function refreshWorkshopLanguage(){
   renderFenceList();setFenceFeedback(fenceFeedback);
   horizontalEditor.localize();
   contourEditor.localize();
+  objectEditor.localize();
   if(pins.length)refreshPinMarkers();
   workshopGuide.update();
   selectExportFormat(exportFormat);

@@ -108,6 +108,14 @@ test('rejects bad outlines, overlapping surfaces and protected buildings instead
   ])assert.throws(()=>applyHorizontalSurfaces(source,edits,api),{code,surfaceIndex});
 });
 
+test('a courtyard can meet a mapped building edge without cutting into its volume',()=>{
+  const source=modelOf(layer('terrain',0,0,24,20,()=>0,ground),layer('buildings',18,8,20,10,ground,()=>30));
+  const {model}=applyHorizontalSurfaces(source,[edit(ring(12,8,18,10))],api);
+  assert.deepEqual(model.categories.find(part=>part.id==='buildings'),source.categories.find(part=>part.id==='buildings'));
+  assert.deepEqual(auditPart(model.parts.find(part=>part.id==='roads')).errors,[]);
+  assert.throws(()=>applyHorizontalSurfaces(source,[edit(ring(12,8,18.1,10))],api),{code:'HORIZONTAL_SURFACE_CONFLICT'});
+});
+
 test('joins over a formerly excavated patch and leaves distant grid patches intact',()=>{
   const terrain=combine([
     layer('terrain',0,0,8,20,()=>0,ground),

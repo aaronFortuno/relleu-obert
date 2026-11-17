@@ -307,6 +307,12 @@ body:has(#workshop-guide[data-guide-step="territory"]) [data-step-action="place"
 #viewer-tool-status:not(:empty) {padding-top:6px;border-top:1px solid var(--line)}
 #export-feedback:empty,#pin-feedback:empty,#fence-feedback:empty,#fence-list:empty,#viewer-tool-status:empty,
 #horizontal-feedback:empty,#horizontal-list:empty,#horizontal-level:empty {display:none}
+#object-feedback:empty,#object-list:empty,#object-level:empty {display:none}
+#object-list li {grid-template-columns:minmax(0,1fr) auto}
+#viewer-complete-tabs {flex-wrap:wrap}
+#viewer-complete-tabs .contour-snap-option {flex:1 0 100%;margin:2px 0 0;gap:6px;font-size:var(--ui-control)}
+.contour-snap-target {fill:var(--paper);stroke:var(--green);stroke-width:2;pointer-events:none;filter:drop-shadow(0 0 2px var(--paper))}
+.contour-guide .contour-snap-edge {fill:none;stroke:var(--green);stroke-width:4;stroke-linecap:round;stroke-dasharray:none;pointer-events:none;filter:drop-shadow(0 0 2px var(--paper))}
 :is(#fence-draft-actions,#horizontal-draft-actions) .edit-actions {justify-content:flex-start;flex-wrap:wrap;gap:4px 8px}
 #fence-list li {grid-template-columns:minmax(0,1fr) auto}
 :is(#fence-list,#horizontal-list) li span {font-size:var(--ui-control)}
@@ -336,7 +342,7 @@ body:has(#workshop-guide[data-guide-step="territory"]) [data-step-action="place"
 @media(max-width:900px){
   #viewer-edit-panel {inset:55px auto auto 8px;width:min(245px,calc(100% - 16px));max-height:min(50%,calc(100% - 60px))}
   #viewer-edit-panel :is(button,select,input:not([type=file])) {min-height:44px}
-  #pin-coordinates,#fence-width,#fence-height,#horizontal-offset {font-size:16px!important}
+  #pin-coordinates,#fence-width,#fence-height,#horizontal-offset,[data-object-field] {font-size:16px!important}
 }
 .boundary-control-row {
   display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:8px;align-items:center;

@@ -65,11 +65,11 @@ export default {
   'guide.workshop.buildings.text': ["Tria la font dels edificis i com vols representar-ne l’alçada i les cobertes.","Elige la fuente de los edificios y cómo quieres representar su altura y sus cubiertas.","Escolle a fonte dos edificios e como queres representar a súa altura e as cubertas.","Aukeratu eraikinen iturria eta nola irudikatu haien altuera eta estalkiak.","Choose the building source and how to represent heights and roofs."],
   'guide.workshop.tools.title': ["Eines del visor","Herramientas del visor","Ferramentas do visor","Bisoreko tresnak","Viewer tools"],
   'guide.workshop.tools.text': [
-    "Obre «Eines» al visor per dibuixar tanques o anivellar un pati. Marca els punts del contorn sobre la maqueta.",
-    "Abre «Herramientas» en el visor para dibujar vallas o nivelar un patio. Marca los puntos del contorno sobre la maqueta.",
-    "Abre «Ferramentas» no visor para debuxar valados ou nivelar un patio. Marca os puntos do contorno sobre a maqueta.",
-    "Ireki bisoreko «Tresnak» hesiak marrazteko edo patio bat nibelatzeko. Markatu inguruaren puntuak maketan.",
-    "Open Tools in the viewer to draw fences or level a yard. Mark the outline directly on the model.",
+    "Obre «Eines» al visor per dibuixar tanques, anivellar un pati o afegir formes bàsiques. Pots ajustar els punts als contorns dels edificis.",
+    "Abre «Herramientas» en el visor para dibujar vallas, nivelar un patio o añadir formas básicas. Puedes ajustar los puntos a los contornos de los edificios.",
+    "Abre «Ferramentas» no visor para debuxar valados, nivelar un patio ou engadir formas básicas. Podes axustar os puntos aos contornos dos edificios.",
+    "Ireki bisoreko «Tresnak» hesiak marrazteko, patio bat nibelatzeko edo oinarrizko formak gehitzeko. Puntuak eraikinen inguruetara doi ditzakezu.",
+    "Open Tools in the viewer to draw fences, level a yard or add basic shapes. You can snap points to building outlines.",
   ],
   'guide.workshop.tools.relief': [
     "Obre «Eines» per corregir senders, dibuixar o importar una ruta GPX i marcar punts destacats per posar-hi una xinxeta o un banderí.",

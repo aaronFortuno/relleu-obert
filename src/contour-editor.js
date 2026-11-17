@@ -18,21 +18,40 @@ function outlinePath(positions,closed){
   return path;
 }
 
-export function createContourEditor(root,{available,record,anchor,midpoint,locate,submit,invalid,finish}){
+export function createContourEditor(root,{available,record,anchor,midpoint,locate,snap,submit,invalid,finish}){
   const overlay=root.id==='contour-overlay'?root:root.querySelector('#contour-overlay');
   const doc=overlay.ownerDocument;
   const actionPanels=[...doc.querySelectorAll('[data-contour-actions]')];
   const guide=doc.createElementNS(svgNS,'svg'),path=doc.createElementNS(svgNS,'path');
+  const snapEdge=doc.createElementNS(svgNS,'path'),snapTarget=doc.createElementNS(svgNS,'circle');
   guide.classList.add('contour-guide');
   guide.setAttribute('aria-hidden','true');
-  guide.append(path);
+  snapEdge.classList.add('contour-snap-edge');
+  snapTarget.classList.add('contour-snap-target');
+  snapTarget.setAttribute('r','5');
+  guide.append(path,snapEdge,snapTarget);
   overlay.append(guide);
   let active=null,trace=null,selected=null,drag=null,focusAfterRender=false;
   let vertices=[],segments=[],previousPath='';
+  let snapPreview=null;
+
+  function showSnap(result){
+    snapPreview=result?.screen?result:null;
+    overlay.hidden=!active&&!snapPreview;
+    snapTarget.setAttribute('visibility',snapPreview?'visible':'hidden');
+    snapEdge.setAttribute('visibility',snapPreview?.edge?'visible':'hidden');
+    if(snapPreview){
+      snapTarget.setAttribute('cx',snapPreview.screen[0]);
+      snapTarget.setAttribute('cy',snapPreview.screen[1]);
+      if(snapPreview.edge)snapEdge.setAttribute('d','M'+snapPreview.edge[0].join(' ')+'L'+snapPreview.edge[1].join(' '));
+    }
+  }
+  const clearSnap=()=>showSnap(null);
+  clearSnap();
 
   function sync(){
     const enabled=!!active&&available(),min=trace?.closed?3:2;
-    if(!enabled)drag=null;
+    if(!enabled){drag=null;clearSnap();}
     for(const panel of actionPanels){
       panel.hidden=panel.dataset.contourActions!==active?.kind;
       panel.querySelector('[data-contour-remove]').disabled=!enabled||selected==null||trace.points.length<=min;
@@ -51,6 +70,7 @@ export function createContourEditor(root,{available,record,anchor,midpoint,locat
 
   function apply(points,selection,focus){
     if(!active||!available())return;
+    clearSnap();
     if(submit(active.kind,active.index,points,{selection,focus})!==false)sync();
   }
 
@@ -94,6 +114,13 @@ export function createContourEditor(root,{available,record,anchor,midpoint,locat
     const bounds=overlay.getBoundingClientRect();
     return locate(bounds.left+point[0],bounds.top+point[1]);
   };
+  function resolvedPoint(position,index,bypass=false){
+    const point=clientPoint(position),bounds=overlay.getBoundingClientRect();
+    const result=point&&!bypass&&snap?.(point,{...active,pointIndex:index,
+      clientX:bounds.left+position[0],clientY:bounds.top+position[1]});
+    showSnap(result);
+    return {point:result?.point??point,screen:result?.screen??position};
+  }
 
   function bindVertex(handle,index){
     const {button}=handle;
@@ -113,7 +140,12 @@ export function createContourEditor(root,{available,record,anchor,midpoint,locat
     function updateDrag(event){
       const dx=event.clientX-drag.start[0],dy=event.clientY-drag.start[1];
       drag.moved||=Math.hypot(dx,dy)>=4;
-      if(drag.moved)drag.position=[drag.startScreen[0]+dx,drag.startScreen[1]+dy];
+      if(drag.moved){
+        const position=[drag.startScreen[0]+dx,drag.startScreen[1]+dy];
+        const resolved=resolvedPoint(position,index,event.shiftKey);
+        drag.position=resolved.screen;
+        drag.point=resolved.point;
+      }
     }
     button.addEventListener('pointermove',event=>{
       if(drag?.id!==event.pointerId)return;
@@ -124,11 +156,12 @@ export function createContourEditor(root,{available,record,anchor,midpoint,locat
       if(drag?.id!==event.pointerId)return;
       event.stopPropagation();
       updateDrag(event);
-      const {position,moved}=drag;
+      const {point,moved}=drag;
       drag=null;
-      if(moved&&available())move(index,clientPoint(position),doc.activeElement===button);
+      clearSnap();
+      if(moved&&available())move(index,point,doc.activeElement===button);
     });
-    const cancel=event=>{if(drag?.id===event.pointerId)drag=null;};
+    const cancel=event=>{if(drag?.id===event.pointerId){drag=null;clearSnap();}};
     button.addEventListener('pointercancel',cancel);
     button.addEventListener('lostpointercapture',cancel);
     button.addEventListener('keydown',event=>{
@@ -141,7 +174,9 @@ export function createContourEditor(root,{available,record,anchor,midpoint,locat
       if(removing)remove();
       else{
         const distance=event.shiftKey?8:2;
-        move(index,clientPoint(handle.screen.map((value,axis)=>value+direction[axis]*distance)),true);
+        const position=handle.screen.map((value,axis)=>value+direction[axis]*distance);
+        move(index,resolvedPoint(position,index,event.shiftKey).point,true);
+        clearSnap();
       }
     });
   }
@@ -161,6 +196,7 @@ export function createContourEditor(root,{available,record,anchor,midpoint,locat
     vertices=[];segments=[];previousPath='';
     overlay.replaceChildren(guide);
     path.removeAttribute('d');
+    clearSnap();
     sync();
   }
 
@@ -169,6 +205,7 @@ export function createContourEditor(root,{available,record,anchor,midpoint,locat
     trace=record(active.kind,active.index);
     if(!trace){end();return;}
     drag=null;
+    clearSnap();
     focusAfterRender=focus;
     overlay.replaceChildren(guide);
     const makeHandle=(kind,point)=>{
@@ -241,5 +278,5 @@ export function createContourEditor(root,{available,record,anchor,midpoint,locat
     panel.querySelector('[data-contour-remove]').addEventListener('click',remove);
     panel.querySelector('[data-contour-done]').addEventListener('click',finish);
   }
-  return {start,end,get active(){return active;},sync,refresh,render,localize};
+  return {start,end,get active(){return active;},sync,refresh,render,localize,showSnap,clearSnap};
 }

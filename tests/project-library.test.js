@@ -30,6 +30,22 @@ const horizontalSurfaces=[
   {points:[[1.75,42.16],[1.751,42.16],[1.751,42.161]],reference:'mean',offsetMM:0,material:'roads'},
   {points:[[1.752,42.164],[1.753,42.164],[1.753,42.165]],reference:'min',offsetMM:1.25,material:'grass'}
 ];
+const objects=[{shape:'cylinder',position:[1.75,42.16],widthMM:4,depthMM:6,heightMM:8,rotation:45}];
+
+test('objects preserve editable geographic anchors and dimensions in local backups',()=>{
+  const source=memoryStorage(),target=memoryStorage();
+  const saved=saveProject(source,{name:'Objectes',settings:{...settings,objects}},firstDate);
+  assert.deepEqual(saved.settings.objects,objects);
+  saved.settings.objects[0].position[0]=0;
+  assert.deepEqual(readProjects(source)[0].settings.objects,objects);
+  importProjectLibrary(target,exportProjectLibrary(source));
+  assert.deepEqual(readProjects(target)[0].settings.objects,objects);
+  const pure=saveProject(source,{name:'Mode canviat',settings:{...settings,pureRelief:true,objects}},secondDate);
+  assert.deepEqual(pure.settings.objects,objects);
+  const before=exportProjectLibrary(source);
+  assert.throws(()=>saveProject(source,{name:'Invàlid',settings:{...settings,objects:[{...objects[0],heightMM:-2}]}},secondDate));
+  assert.equal(exportProjectLibrary(source),before);
+});
 
 test('project links preserve the crop and print settings while dropping private annotations',()=>{
   const {placeName,strokes,...publicSettings}=settings;
@@ -39,7 +55,7 @@ test('project links preserve the crop and print settings while dropping private 
     reliefMaterials:{count:2,assignments:[0,1,0,1,0,1,0,0,1]},
     print:{baseThickness:7,cuts:{columns:[210,220,230,240,100],rows:[200]}}};
   const url=new URL(projectLink('https://example.test/relleu-obert/?debug=1#old',{
-    ...shared,placeName,strokes,trailStrokes:strokes,drawnRouteStrokes:strokes,userRoute:{name:'private'},pins:[{id:1}],fences,horizontalSurfaces
+    ...shared,placeName,strokes,trailStrokes:strokes,drawnRouteStrokes:strokes,userRoute:{name:'private'},pins:[{id:1}],fences,horizontalSurfaces,objects
   }));
   assert.equal(url.pathname,'/relleu-obert/');
   assert.equal(url.search,'');

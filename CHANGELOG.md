@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.24.11 — 2026-11-17
+
+- Imant opcional per ajustar punts de tanques i superfícies a les cantonades i vores disponibles. Ressalta el contorn de destinació; Maj permet moure el punt lliurement.
+- Objectes bàsics a Eines de Model complet: blocs, cilindres i esferes amb mides i gir editables, sobre el terreny, un pati o una coberta. Es poden moure i retirar, es conserven als projectes locals i a les còpies JSON i s’inclouen al model imprimible amb el material d’Edificis.
+
 ## v0.24.10 — 2026-11-17
 
 - Les tanques i les superfícies horitzontals es poden editar un cop dibuixades. Selecciona un traç a Eines per arrossegar-ne els punts, inserir-ne entre dos punts o treure’ls. També es pot retocar el gruix i l’alçada d’una tanca existent.

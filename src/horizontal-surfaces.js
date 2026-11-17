@@ -107,6 +107,21 @@ function protectedFootprints(context){
   return footprints.filter(footprint=>footprint?.length).flatMap(polygons=>polygons.map(p=>({polygon:[p],box:bounds([p])})));
 }
 
+function intersectsVolume(part,cutter,api){
+  const owned=[];
+  const own=solid=>(owned.push(solid),solid);
+  const make=p=>{
+    const mesh=new api.Mesh({numProp:3,vertProperties:p.vertices,triVerts:p.faces});
+    mesh.merge();
+    return own(new api.Manifold(mesh));
+  };
+  try{
+    const solid=own(make(part).intersect(make(cutter)));
+    if(solid.status()!=='NoError')throw Error('Invalid protected intersection');
+    return solid.volume()>1e-5;
+  }finally{for(const solid of owned.reverse())solid.delete();}
+}
+
 const emptyPart=part=>({...part,vertices:new Float32Array(),faces:new Uint32Array()});
 const metadata=id=>CATEGORIES.find(mat=>mat.id===id);
 
@@ -155,9 +170,10 @@ export function applyHorizontalSurfaces(model,edits,api){
     // for example, need not be fully represented in the source masks.
     const protectedMeshes=selectSurfaceComponents(model.categories,cutters,{categories:PROTECTED,footprints});
     if(protectedMeshes.selected.length){
-      const culprit=pads.length===1?0:pads.findIndex((p,i)=>
-        selectSurfaceComponents(protectedMeshes.selected,[cutters[i]],{categories:PROTECTED,footprints:[p.footprint]}).selected.length);
-      throw error('HORIZONTAL_SURFACE_CONFLICT',pads[culprit]?.index);
+      const culprit=pads.findIndex((p,i)=>
+        selectSurfaceComponents(protectedMeshes.selected,[cutters[i]],{categories:PROTECTED,footprints:[p.footprint]}).selected
+          .some(part=>intersectsVolume(part,cutters[i],api)));
+      if(culprit>=0)throw error('HORIZONTAL_SURFACE_CONFLICT',pads[culprit].index);
     }
     const {selected,restore}=selectSurfaceComponents(model.categories,cutters,{categories:[...REPLACE,'trees'],footprints});
     const sculpt=selected.filter(part=>part.id!=='trees'),trees=selected.find(part=>part.id==='trees');
