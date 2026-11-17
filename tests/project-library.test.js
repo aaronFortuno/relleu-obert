@@ -22,6 +22,10 @@ function memoryStorage(){
   return {getItem:key=>values.get(key)??null,setItem:(key,value)=>values.set(key,value)};
 }
 const firstDate=new Date('2026-11-03T12:00:00Z'),secondDate=new Date('2026-11-03T12:01:00Z');
+const fences=[
+  {points:[[1.75,42.16],[1.751,42.16],[1.751,42.161]],widthMM:1,heightMM:2,closed:false},
+  {points:[[1.752,42.164],[1.753,42.164],[1.753,42.165]],widthMM:1.2,heightMM:3,closed:true}
+];
 
 test('project links preserve the crop and print settings while dropping private annotations',()=>{
   const {placeName,strokes,...publicSettings}=settings;
@@ -31,7 +35,7 @@ test('project links preserve the crop and print settings while dropping private 
     reliefMaterials:{count:2,assignments:[0,1,0,1,0,1,0,0,1]},
     print:{baseThickness:7,cuts:{columns:[210,220,230,240,100],rows:[200]}}};
   const url=new URL(projectLink('https://example.test/relleu-obert/?debug=1#old',{
-    ...shared,placeName,strokes,trailStrokes:strokes,drawnRouteStrokes:strokes,userRoute:{name:'private'},pins:[{id:1}]
+    ...shared,placeName,strokes,trailStrokes:strokes,drawnRouteStrokes:strokes,userRoute:{name:'private'},pins:[{id:1}],fences
   }));
   assert.equal(url.pathname,'/relleu-obert/');
   assert.equal(url.search,'');
@@ -173,6 +177,35 @@ test('project backup restores distinct drawn and GPX routes and geographically a
   assert.throws(()=>saveProject(source,{name:'Identificador invàlid',settings:{...saved,pins:[{...pins[0],id:0}]}}));
   assert.throws(()=>saveProject(source,{name:'Ruta invàlida',settings:{...saved,drawnRouteStrokes:[{...drawnRouteStrokes[0],x:200}]}}));
   assert.throws(()=>saveProject(source,{name:'Mode invàlid',settings:{...settings,drawnRouteStrokes}}));
+});
+
+test('local projects keep geographically anchored fences through a mode change and a backup',()=>{
+  const source=memoryStorage(),destination=memoryStorage(),input=structuredClone(fences);
+  const project=saveProject(source,{name:'Institut',settings:{...settings,fences:input}},firstDate);
+  assert.deepEqual(project.settings.fences,fences);
+  input[0].points[0][0]=0;
+  const complete=readProjects(source)[0];
+  assert.deepEqual(complete.settings.fences,fences);
+  const relief=saveProject(source,
+    {id:complete.id,name:complete.name,settings:{...complete.settings,pureRelief:true}},secondDate);
+  assert.deepEqual(importProjectLibrary(destination,exportProjectLibrary(source)),{added:1,skipped:0});
+  assert.deepEqual(readProjects(destination),[relief]);
+  assert.deepEqual(relief.settings.fences,fences);
+  assert.deepEqual(saveProject(destination,{name:'Sense tanques',settings:{...settings,fences:[]}}).settings,settings);
+});
+
+test('malformed fence records cannot overwrite the local project catalog',()=>{
+  const storage=memoryStorage();
+  saveProject(storage,{name:'Institut',settings:{...settings,fences}},firstDate);
+  const backup=exportProjectLibrary(storage);
+  for(const fence of [{...fences[0],widthMM:-1},{...fences[0],heightMM:'2'},
+    {...fences[0],points:[[181,42],[1.751,42]]},{...fences[1],points:fences[1].points.slice(0,2)}]){
+    const invalid={...settings,fences:[fence]},damaged=JSON.parse(backup);
+    damaged.projects[0].settings=invalid;
+    assert.throws(()=>saveProject(storage,{name:'Tanca invàlida',settings:invalid}),/no és vàlida/);
+    assert.throws(()=>importProjectLibrary(storage,JSON.stringify(damaged)),SyntaxError);
+    assert.equal(exportProjectLibrary(storage),backup);
+  }
 });
 
 test('older projects use the default trail width and texture controls, and new choices persist',()=>{

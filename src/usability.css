@@ -305,13 +305,16 @@ body:has(#workshop-guide[data-guide-step="territory"]) [data-step-action="place"
 .pin-list li select {margin:0}
 .pin-list .pin-problem {grid-column:1/-1}
 #viewer-tool-status:not(:empty) {padding-top:6px;border-top:1px solid var(--line)}
-#export-feedback:empty,#pin-feedback:empty,#viewer-tool-status:empty {display:none}
+#export-feedback:empty,#pin-feedback:empty,#fence-feedback:empty,#fence-list:empty,#viewer-tool-status:empty {display:none}
+#fence-draft-actions .edit-actions {justify-content:flex-start;flex-wrap:wrap;gap:4px 8px}
+#fence-list li {grid-template-columns:minmax(0,1fr) auto}
+#fence-list li span {font-size:var(--ui-control)}
 #export-feedback:not(:empty) {color:#963b23}
 #welcome-guide {margin:0 0 5px}
 @media(max-width:900px){
   #viewer-edit-panel {inset:55px auto auto 8px;width:min(245px,calc(100% - 16px));max-height:min(50%,calc(100% - 60px))}
   #viewer-edit-panel :is(button,select,input:not([type=file])) {min-height:44px}
-  #pin-coordinates {font-size:16px!important}
+  #pin-coordinates,#fence-width,#fence-height {font-size:16px!important}
 }
 .boundary-control-row {
   display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:8px;align-items:center;

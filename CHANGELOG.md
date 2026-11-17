@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.24.8 — 2026-11-17
+
+- Tanques de mur continu al visor de Model complet, amb traç obert o tancat i gruix i alçada ajustables. S’inclouen al model imprimible i a les plantilles i còpies JSON, amb el material d’Edificis.
+
 ## v0.24.7 — 2026-11-15
 
 - Umami agrupa els errors de generació per fase, tipus d’error i font de dades. El seguiment també recull la versió i les franges de mida i escala.

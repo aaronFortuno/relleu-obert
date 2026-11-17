@@ -16,6 +16,7 @@ Al domini públic, l’Umami propi d’ortogra.fi compta visites, obertures de l
 Les dades i el detall disponible varien segons el lloc i l’escala. Els ponts, els túnels i la vegetació poden incloure geometria estimada. Revisa al laminador els materials, les unions i els passos estrets abans d’imprimir.
 
 «Projectes desats» permet guardar els ajustos al navegador i exportar o importar una còpia JSON.
+En **Model complet**, obre **Eines** al visor per dibuixar una tanca punt per punt. Pots fer un tram o tancar el perímetre, i triar-ne el gruix i l’alçada. Les tanques es descarreguen amb la maqueta i es conserven quan deses el projecte o n’exportes la còpia JSON.
 
 La icona de compartir al costat de la descàrrega copia l’enllaç amb el retall i els ajustos actuals en un clic. En obrir-lo, la maqueta es genera automàticament al navegador. Els traços, les rutes i els punts destacats es poden conservar a la còpia JSON del projecte.
 

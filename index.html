@@ -119,7 +119,6 @@
       </div>
       <section id="viewer-edit-panel" hidden aria-labelledby="viewer-edit-title">
         <div class="viewer-edit-header"><h2 id="viewer-edit-title" class="section-heading" tabindex="-1" data-i18n="ui.tools.title">Eines</h2><button type="button" id="viewer-tools-close" class="quiet-button" data-i18n="ui.tools.done">Fet</button></div>
-        <p id="viewer-tools-unavailable" class="hint" data-i18n="ui.tools.pureOnly" hidden>Pots editar senders i rutes i marcar punts destacats en mode Relleu pur.</p>
         <div id="viewer-tools-content"><div class="viewer-edit-tabs" role="group" aria-label="Eines del visor" data-i18n-aria="ui.tools.title"><button type="button" data-viewer-tool="trails" aria-pressed="true" data-i18n="ui.tools.trails">Senders</button><button type="button" data-viewer-tool="route" aria-pressed="false" data-i18n="ui.tools.routes">Rutes</button><button type="button" data-viewer-tool="pins" aria-pressed="false" data-i18n-text="ui.tools.points">Punts destacats <span id="viewer-pin-count" hidden></span></button></div><div data-viewer-pane="trails"><h3 class="section-heading" data-i18n="ui.tools.editTrails">Edita senders</h3><p class="hint" data-i18n="ui.tools.trailHint">Completa o corregeix la cartografia. Els senders són blancs.</p><button type="button" id="enable-trails" class="secondary" data-i18n="ui.transport.showReliefTrails">Mostra els senders</button>        <div class="two-fields">
           <div><label for="relief-trail-width" data-i18n="ui.transport.reliefTrailWidth">Amplada (mm)</label><input id="relief-trail-width" type="number" min=".3" max="3" step=".01" value=".42" inputmode="decimal"></div>
           <div><label for="trail-eraser-radius" data-i18n="ui.transport.trailEraser">Radi de goma (mm)</label><input id="trail-eraser-radius" type="number" min="2" max="12" step="1" value="3" inputmode="numeric"></div>
@@ -143,6 +142,27 @@
           <ol id="pin-list" class="pin-list"></ol><button type="button" id="undo-pin" class="quiet-button" hidden data-i18n="ui.action.undo">↶ Desfés</button>
         </section>
 </div></div>
+        <div data-viewer-pane="fences" hidden>
+          <h3 id="fence-tools-title" class="section-heading" data-i18n="ui.fence.title">Tanques</h3>
+          <p class="hint" data-i18n="ui.fence.hint">Dibuixa un mur continu punt per punt. Deixa un espai entre dos trams si hi ha una entrada.</p>
+          <div class="two-fields">
+            <div><label for="fence-width" data-i18n="ui.fence.width">Gruix imprès (mm)</label><input id="fence-width" type="number" step="0.1" inputmode="decimal"></div>
+            <div><label for="fence-height" data-i18n="ui.fence.height">Alçada impresa (mm)</label><input id="fence-height" type="number" step="0.1" inputmode="decimal"></div>
+          </div>
+          <div class="brush-tools" role="group" aria-labelledby="fence-tools-title">
+            <button type="button" data-brush="fence" aria-pressed="false" data-i18n="ui.fence.start">Dibuixa una tanca</button>
+          </div>
+          <div id="fence-draft-actions" hidden>
+            <div class="edit-actions">
+              <button type="button" id="fence-open" class="quiet-button" data-i18n="ui.fence.finish">Acaba el tram</button>
+              <button type="button" id="fence-close" class="quiet-button" data-i18n="ui.fence.close">Tanca el perímetre</button>
+              <button type="button" id="fence-back" class="quiet-button" data-i18n="ui.fence.undoPoint">Desfés el punt</button>
+            </div>
+          </div>
+          <p id="fence-feedback" class="hint" role="status"></p>
+          <ol id="fence-list" class="pin-list"></ol>
+          <p class="hint" data-i18n="ui.fence.saveNote">Les tanques fan servir el material d’Edificis i es conserven en desar el projecte.</p>
+        </div>
         <p id="viewer-tool-status" class="hint" role="status"></p>
       </section>
       <div id="work-indicator" role="status" aria-live="polite" hidden><span class="work-spinner" aria-hidden="true"></span><span id="work-label" data-i18n="ui.preview.preparing">Preparant el model…</span></div>
@@ -299,7 +319,7 @@
       <path d="m27 9 7-6" stroke="var(--umbrella-accent)" stroke-width="4.5"/>
     </svg><span>ortogra<span class="umbrella-dot">.</span>fi</span>
   </a></p>
-  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer" data-i18n-text="ui.footer.openSource"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions" data-i18n-aria="ui.releases.title">v0.24.7</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V" data-i18n-aria="ui.footer.about"><span class="desktop-copy" data-i18n="ui.footer.aboutDesktop">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
+  <div><a href="https://github.com/aaronFortuno/relleu-obert" target="_blank" rel="noreferrer" data-i18n-text="ui.footer.openSource"><svg class="repo-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M1 8h4m6 0h4"/><circle cx="8" cy="8" r="3"/></svg>Codi obert</a><a href="https://github.com/aaronFortuno/relleu-obert/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT</a><button id="version-open" class="version-button" aria-label="Historial de versions" data-i18n-aria="ui.releases.title">v0.24.8</button><button data-open="about-dialog" class="v4v-button" aria-label="Sobre el projecte · V4V" data-i18n-aria="ui.footer.about"><span class="desktop-copy" data-i18n="ui.footer.aboutDesktop">♡ Sobre el projecte · V4V</span><span class="mobile-copy">V4V</span></button></div>
 </footer>
 
 <dialog id="projects-dialog" aria-labelledby="projects-title">

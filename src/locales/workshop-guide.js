@@ -65,11 +65,11 @@ export default {
   'guide.workshop.buildings.text': ["Tria la font dels edificis i com vols representar-ne l’alçada i les cobertes.","Elige la fuente de los edificios y cómo quieres representar su altura y sus cubiertas.","Escolle a fonte dos edificios e como queres representar a súa altura e as cubertas.","Aukeratu eraikinen iturria eta nola irudikatu haien altuera eta estalkiak.","Choose the building source and how to represent heights and roofs."],
   'guide.workshop.tools.title': ["Eines del visor","Herramientas del visor","Ferramentas do visor","Bisoreko tresnak","Viewer tools"],
   'guide.workshop.tools.text': [
-    "El botó «Eines» és al visor. En mode Relleu pur hi pots corregir senders, dibuixar o importar rutes i marcar punts destacats per posar-hi una xinxeta o un banderí.",
-    "El botón «Herramientas» está en el visor. En modo Relieve puro puedes corregir senderos, dibujar o importar rutas y marcar puntos destacados para colocar una chincheta o un banderín.",
-    "O botón «Ferramentas» está no visor. No modo Relevo puro podes corrixir sendeiros, debuxar ou importar rutas e marcar puntos destacados para colocar unha chincheta ou un bandeirín.",
-    "«Tresnak» botoia bisorean dago. Erliebe hutsa moduan, bidezidorrak zuzendu, ibilbideak marraztu edo inportatu, eta leku nabarmenak markatu ditzakezu txintxeta edo banderatxo bat jartzeko.",
-    "The Tools button is in the viewer. In Pure terrain mode, use it to correct trails, draw or import routes, and mark places for a pin or flag.",
+    "Obre «Eines» al visor per dibuixar tanques com a murs continus. Marca els punts del perímetre sobre la maqueta.",
+    "Abre «Herramientas» en el visor para dibujar vallas como muros continuos. Marca los puntos del perímetro sobre la maqueta.",
+    "Abre «Ferramentas» no visor para debuxar valados como muros continuos. Marca os puntos do perímetro sobre a maqueta.",
+    "Ireki bisoreko «Tresnak» hesiak horma jarraitu gisa marrazteko. Markatu perimetroaren puntuak maketan.",
+    "Open Tools in the viewer to draw fences as solid walls. Mark the perimeter points on the model.",
   ],
   'guide.workshop.tools.relief': [
     "Obre «Eines» per corregir senders, dibuixar o importar una ruta GPX i marcar punts destacats per posar-hi una xinxeta o un banderí.",

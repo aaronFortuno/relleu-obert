@@ -8,11 +8,28 @@ import {printExportFormat} from './print-settings.js';
 import {previewPieces} from './preview-pieces.js';
 import {locateReliefPins} from './relief-pin-placement.js';
 import {applyReliefPinHoles} from './relief-pin-holes.js';
+import {buildFenceMesh} from './fence-mesh.js';
+import {withPrintableFences} from './fence-export.js';
 import Module from 'manifold-3d';
 import wasmURL from 'manifold-3d/manifold.wasm?url';
 import {createProcessingTiming} from './processing-timing.js';
 import {generationErrorReason} from './generation-error.js';
-let current,api;
+let current,api,fencePart=null;
+async function computeFences(model,fences){
+  if(!model?.context||!fences?.length)return null;
+  if(!api){api=await Module({locateFile:()=>wasmURL});api.setup();}
+  return buildFenceMesh(fences,{...model.context,api});
+}
+async function refreshFences(model,fences){
+  try{
+    fencePart=await computeFences(model,fences);
+    return {fencePart:fencePreview(fencePart)};
+  }catch(error){
+    fencePart=null;
+    return {fencePart,fenceError:error.message};
+  }
+}
+const fencePreview=mesh=>mesh&&{vertices:mesh.vertices,faces:mesh.faces};
 const progress=message=>self.postMessage({type:'progress',message});
 const pinFailures={
   edge:'massa a prop d’una vora o d’un tall',overlap:'massa a prop d’un altre forat',
@@ -71,6 +88,12 @@ function buildObserver(timing,pureRelief){
 self.onmessage=async({data})=>{
 const timing=data.type==='build'||data.measureBuildings?createProcessingTiming():null;
 try{
+  if(data.type==='fences'){
+    // Keep the last valid wall when an edit fails.
+    fencePart=await computeFences(current,data.fences);
+    self.postMessage({type:'fences',part:fencePreview(fencePart)});
+    return;
+  }
   if(data.type==='preview-buildings'){
     let part;
     try{part=previewBuildingLayer(current,data.features,data.options);}
@@ -86,7 +109,9 @@ try{
     const observer=data.type==='build'?buildObserver(timing,data.options.pureRelief):null;
     const needsSolidEngine=data.region?.singularModels?.length||!data.options.pureRelief&&(data.options.surfaceRoads||data.options.estimatedTunnels||data.options.majorRoads||data.region?.infrastructure?.items?.length||data.region?.features?.some(f=>f.properties?.sourceLayer==='transportation'&&f.properties.brunnel==='bridge'));
     if(observer&&!api&&needsSolidEngine){timing.mark('initialization','Preparant el motor de geometria…');progress('Preparant el motor de geometria…');api=await Module({locateFile:()=>wasmURL});api.setup();}
-    current=observer?buildModel(data.region,data.options,observer.progress,api,timing.detail,observer):updateVegetation(current,data.options,progress);self.postMessage({type:'model',model:{...current,parts:undefined,reliefGrid:undefined,categories:data.type==='vegetation'?current.categories.filter(p=>p.id==='trees'):current.categories},vegetation:data.type==='vegetation',timing:timing?.finish()});
+    current=observer?buildModel(data.region,data.options,observer.progress,api,timing.detail,observer):updateVegetation(current,data.options,progress);
+    const walls=observer?await refreshFences(current,data.fences):{};
+    self.postMessage({type:'model',model:{...current,parts:undefined,reliefGrid:undefined,categories:data.type==='vegetation'?current.categories.filter(p=>p.id==='trees'):current.categories},vegetation:data.type==='vegetation',timing:timing?.finish(),...walls});
   }
   if(data.type==='relief'){
     postChangedModel(updatePureRelief(current,data.options,progress,data.boundaryLayer),{relief:true});
@@ -101,7 +126,8 @@ try{
       progress('Preparant les infraestructures…');
       api=await Module({locateFile:()=>wasmURL});api.setup();
     }
-    postChangedModel(updateTransport(current,data.options,progress,api));
+    const next=updateTransport(current,data.options,progress,api);
+    postChangedModel(next,await refreshFences(next,data.fences));
   }
   if(data.type==='accessory'){
     if(!current)throw Error('Genera primer el model.');
@@ -117,8 +143,12 @@ try{
     const format=requested==='bambu-zip'?'bambu':requested;
     const pureRelief=current.provenance?.options?.pureRelief;
     // Keep the geometry inside the crop in the printable file, without embedding the full GPX.
-    const source=current.provenance.options?.userRoute?{...current,
+    let source=current.provenance.options?.userRoute?{...current,
       provenance:{...current.provenance,options:{...current.provenance.options,userRoute:undefined}}}:current;
+    if(!pureRelief&&fencePart){
+      try{source=withPrintableFences(source,fencePart,api);}
+      catch(error){throw Error('FENCE_EXPORT_FAILED',{cause:error});}
+    }
     const pinTiles=pureRelief&&data.pins?.length?locateReliefPins(current,data.pins,plan):[];
     if(pinTiles.some(pins=>pins.length)){
       progress('Preparant els forats per a xinxetes…');
@@ -127,7 +157,8 @@ try{
     let bytes,archive=false,plateCount;
     const split=plan.tiles.length>1;
     if(split||current.reliefGrid&&isPanoramicSize(current.width,current.height)){
-      let model=pureRelief?source:groupMaterials(source,materialCount,assignments);
+      const nativeFenceCut=!pureRelief&&!!fencePart;
+      let model=pureRelief||nativeFenceCut?source:groupMaterials(source,materialCount,assignments);
       progress('Preparant els talls de les peces…');
       let pieces=model.reliefGrid&&!model.provenance.catalogueLandforms?.length&&splitPureRelief(model,plan,progress);
       if(!pieces){
@@ -142,6 +173,13 @@ try{
           // Generic cuts retain the original model categories. Only group the cut geometry.
           pieces[i]=groupReliefMaterials({...perforatePiece(piece,pinTiles[i]),categories:undefined},materialCount,assignments);
         }
+      }
+      if(nativeFenceCut){
+        pieces=pieces.map(piece=>groupMaterials({...piece,categories:undefined},materialCount,assignments));
+        const byId=new Map(pieces.flatMap(piece=>piece.parts).map(part=>[part.id,part]));
+        const palette=groupMaterials({...source,categories:[],parts:[]},materialCount,assignments);
+        const order=id=>materialCount===4?['terrain','water','built','green'].indexOf(id):Number(id.slice(9));
+        model={...palette,parts:[...byId.values()].sort((a,b)=>order(a.id)-order(b.id)).map(({id,name,color})=>({id,name,color}))};
       }
       if(!split){
         bytes=format==='stl'?stlZip(pieces[0]):threeMF(pieces[0],{bambu:format==='bambu'});

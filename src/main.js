@@ -30,6 +30,8 @@ import changelog from '../CHANGELOG.md?raw';
 import {formatNumber,getLocale,initI18n,onLocaleChange,t,translateEngineMessage} from './i18n.js';
 import {createPreviewOrbit} from './preview-orbit.js';
 import {createPreviewPins} from './preview-pins.js';
+import {FENCE_DEFAULT_WIDTH_MM,FENCE_DEFAULT_HEIGHT_MM,FENCE_MIN_WIDTH_MM,FENCE_MAX_WIDTH_MM,
+  FENCE_MIN_HEIGHT_MM,FENCE_MAX_HEIGHT_MM,MAX_FENCES,MAX_FENCE_POINTS,normalizeFences} from './fence-settings.js';
 import {canSendGenerationReport,generationErrorData,generationReportData,sendGenerationReport,trackWorkshopEvent,workshopMode,workshopSize} from './analytics.js';
 import {sourceError} from './generation-error.js';
 import {createBuildingUpdateScheduler} from './building-update-scheduler.js';
@@ -180,6 +182,7 @@ let brushHistory=createProjectBrushHistory();
 let trailHistory=createProjectBrushHistory({breakOnClipped:true}),routeHistory=createProjectBrushHistory({breakOnClipped:true});
 let trailStrokes=[],drawnRouteStrokes=[],pendingTrailFrame=null,pendingRouteFrame=null,lineStrokeStart=0;
 let userRoute=null,pins=[],nextPinId=1,selectedPinId=null,removedPin=null,pinPointer=null;
+let fences=[],fencePreview=null,fenceError=false,pendingFences=null;
 let pendingBrushFrame=null,transportTimer=null,reliefTimer=null;
 let exportFormat='bambu';
 let baseThickness=DEFAULT_BASE_THICKNESS_MM,cutPreviewFrame=null,cutChangedDuringDrag=false;
@@ -252,7 +255,8 @@ const routeBrush=()=>brush.startsWith('route-');
 const lineBrush=()=>trailBrush()||routeBrush();
 const lineStrokes=()=>routeBrush()?drawnRouteStrokes:trailStrokes;
 const canPlacePin=canEditRelief;
-const canPaintWithBrush=()=>brush==='pin'||routeBrush()?canEditRelief():trailBrush()?canPaintTrails():canPaint();
+const canEditFences=()=>!!model&&!isPure(model)&&!pureSelected()&&!busy&&!needsBuild&&!pendingVegetation;
+const canPaintWithBrush=()=>brush==='fence'?canEditFences():brush==='pin'||routeBrush()?canEditRelief():trailBrush()?canPaintTrails():canPaint();
 const trailWidthControl=$('#relief-trail-width'),trailEraserControl=$('#trail-eraser-radius');
 const reliefTrailWidth=()=>{
   const value=Number(committedFieldValue(trailWidthControl));
@@ -275,7 +279,7 @@ const say=(message,error=false)=>{currentStatus=message;$('#status').textContent
 const badge=message=>{currentBadge=message;$('#model-badge').textContent=messageText(message);$('#model-badge').hidden=!message;};
 const workLabels={
   relief:'status.workRelief',vegetation:'status.workVegetation',buildings:'status.workBuildings',
-  transport:'status.workTransport',accessory:'status.workAccessory',export:'status.workExport'
+  transport:'status.workTransport',accessory:'status.workAccessory',export:'status.workExport',fences:'fence.working'
 };
 function lock(value){
   busy=value;
@@ -434,7 +438,7 @@ function materialProfile(pure){
   const settings=pure?reliefMaterials:landscapeMaterials;
   const palettes=pure?RELIEF_PALETTES:PALETTES;
   const categories=pure?RELIEF_MATERIALS:CATEGORIES;
-  const categoryId=pure?reliefMaterialId:id=>id;
+  const categoryId=pure?reliefMaterialId:id=>id==='fences'?'buildings':id;
   const index=id=>categories.findIndex(category=>category.id===categoryId(id));
   return {settings,palettes,categories,categoryId,index,color:id=>palettes[settings.count][settings.assignments[index(id)]]};
 }
@@ -464,7 +468,7 @@ function legend(){
   categories.forEach((category,i)=>{
     const row=document.createElement('div'),swatch=document.createElement('i');
     const label=document.createElement('span'),select=document.createElement('select');
-    const absent=model&&!stagedBuild?.preview&&!model.categories.some(part=>categoryId(part.id)===category.id);
+    const absent=model&&!stagedBuild?.preview&&!model.categories.some(part=>categoryId(part.id)===category.id)&&!(fencePreview&&category.id==='buildings');
     row.className='material-row'+(absent?' absent':'');
     swatch.style.setProperty('--swatch',color(category.id));
     const categoryName=text('material.'+(pure&&category.id==='terrain'?'relief':category.id));
@@ -486,7 +490,7 @@ function metrics(){
   const pure=isPure(model),{settings,index}=materialProfile(pure);
   const vegetationValue=pure?formatNumber((model.provenance.treeRepresentation?.areaMM2??0)/100,{maximumFractionDigits:1}):formatNumber(model.treeCount);
   const vegetationLabel=pure?text('metrics.texture'):text('metrics.vegetation');
-  const used=new Set(model.categories.map(part=>settings.assignments[index(part.id)])).size;
+  const used=new Set([...model.categories,...(fencePreview?[fencePreview]:[])].map(part=>settings.assignments[index(part.id)])).size;
   const buildings=formatNumber(model.buildingCount);
   $('#metrics').innerHTML=`<div><strong>${model.width.toFixed(0)} × ${model.height.toFixed(0)}</strong><span>${text('metrics.size')}</span></div><div><strong>1:${formatNumber(model.scale)}</strong><span>${text('metrics.scale')}</span></div><div><strong>${vegetationValue}</strong><span>${vegetationLabel}</span></div><div><strong>${used} / ${settings.count}</strong><span>${text('metrics.usedMaterials')}</span></div><div><strong>${buildings}</strong><span>${text('metrics.buildings')}</span></div><div><strong>×${formatNumber(model.provenance.verticalExaggeration)}</strong><span>${text('metrics.exaggeration')}</span></div><div class="metric-wide"><strong>${formatNumber(model.triangles)}</strong><span>${text('metrics.triangles')}</span></div>`;
 }
@@ -503,6 +507,12 @@ function addModelMesh(part){
   mesh.name=part.id;mesh.castShadow=true;mesh.receiveShadow=true;
   group.add(mesh);
   return mesh;
+}
+function setFencePreview(part,render=true){
+  fencePreview=part&&{...part,id:'fences'};
+  const mesh=group.getObjectByName('fences');
+  if(mesh)dispose(mesh);
+  if(render&&fencePreview)addModelMesh(fencePreview);
 }
 const stageLabels={terrain:'runtime.material.relief',transport:'section.transport',buildings:'section.buildings',vegetation:'section.vegetation'};
 function showBuildProgress(progress){
@@ -573,6 +583,7 @@ function restoreBuildPreview(){
 function display(m,changedCategories=null,refit=true){
   for(const mesh of [...group.children])if(!changedCategories||changedCategories.includes(mesh.name))dispose(mesh);
   for(const part of m.categories)if(!changedCategories||changedCategories.includes(part.id))addModelMesh(part);
+  if(!changedCategories&&fencePreview&&!isPure(m))addModelMesh(fencePreview);
   group.position.set(-m.width/2,-m.height/2,0);recolor();tiling();if(refit)home();
   showModelNotes(m);
   refreshPinMarkers();
@@ -780,7 +791,7 @@ async function generate(autoTransport=false){
     ['buildingMode','maxBuildingHeight','trees','treeType'].every(key=>options[key]===applied[key]);
   if(transportOnly){
     say(statusMessage('status.transportUpdating'));
-    worker.postMessage({type:'transport',options:{roadRise:options.roadRise,railRise:options.railRise,estimatedTunnels:options.estimatedTunnels,majorRoads:options.majorRoads}});
+    worker.postMessage({type:'transport',fences,options:{roadRise:options.roadRise,railRise:options.railRise,estimatedTunnels:options.estimatedTunnels,majorRoads:options.majorRoads}});
     return;
   }
   const incremental=!options.pureRelief&&!reload&&sameTerrain(options);
@@ -837,7 +848,7 @@ async function generate(autoTransport=false){
         ...(options.pureRelief?{demZoom:meta.terrain?.zoom,demSampleSize:meta.terrain?.sampleSize,coverage:meta.coverage}:{})};
       processingRun.workerStartMilliseconds=performance.now()-processingRun.started;
       stagedBuild={bbox:meta.bbox,pose:options.selectionPose,pureRelief:options.pureRelief};
-      worker.postMessage(buildRequest({...target,boundaryLayer},options));
+      worker.postMessage({...buildRequest({...target,boundaryLayer},options),fences});
     }
   }catch(e){pendingVegetation=false;recoverBuildings(e);}
 }
@@ -964,6 +975,21 @@ function settleBuildings(error){
   if(error)reject(error);else resolve();
 }
 worker.onmessage=({data})=>{
+  if(data.type==='fences'){
+    const {next,drawing:committed,removed}=pendingFences;
+    pendingFences=null;fences=next;fenceError=false;
+    setFencePreview(data.part);recolor();
+    if(committed)selectNavigate();
+    renderFenceList();
+    lock(false);
+    setFenceFeedback(committed?'saved':'removed');
+    if(!viewerToolsPanel.hidden){
+      const buttons=$('#fence-list').querySelectorAll('button'),start=$('[data-brush="fence"]');
+      (committed&&!start.disabled?start:buttons[Math.min(removed??(buttons.length-1),buttons.length-1)]||start).focus({preventScroll:true});
+    }
+    flushTrees();scheduler.flush();
+    return;
+  }
   if(data.type==='building-preview'){showBuildingPreview(data);return;}
   if(data.type==='build-progress'){showBuildProgress(data);return;}
   if(data.type==='build-preview'){showBuildPreview(data);return;}
@@ -1004,6 +1030,11 @@ worker.onmessage=({data})=>{
       if(!contextLost)renderer.setAnimationLoop(renderWorkshop);
     }
     model=data.model;
+    if('fencePart' in data){
+      fenceError=!!data.fenceError;
+      setFencePreview(data.fencePart,!!changed);
+      setFenceFeedback(fenceError?'failed':'');
+    }
     if(pendingCatalogPlace!==undefined){
       modelCatalogPlace=pendingCatalogPlace;
       pendingCatalogPlace=undefined;
@@ -1048,6 +1079,7 @@ worker.onmessage=({data})=>{
     }
   }
   if(data.type==='error'){
+    if(job==='fences'){recoverFenceEdit();console.error(data.detail);return;}
     if(job==='relief'){recoverRelief(Error(data.message));console.error(data.detail);return;}
     if(processingRun&&data.timing)processingRun[processingRun.awaitingBuildings?'buildingWorker':'worker']=data.timing;
     pendingVegetation=false;
@@ -1055,7 +1087,13 @@ worker.onmessage=({data})=>{
     else{
       lock(false);say(()=>translateEngineMessage(data.message),true);
       if(job==='export'){
-        feedback('export-feedback',()=>translateEngineMessage(data.message));
+        const fencesFailed=data.message==='FENCE_EXPORT_FAILED';
+        feedback('export-feedback',fencesFailed?statusMessage('fence.exportFailed'):()=>translateEngineMessage(data.message));
+        if(fencesFailed){
+          say(statusMessage('fence.exportFailed'),true);
+          showViewerTools(true,{pane:'fences'});
+          setFenceFeedback('exportFailed');
+        }
         if(/^Forat \d+ rebutjat:/.test(data.message)){
           showViewerTools(true,{pane:'pins'});
           const id=Number(data.message.match(/^Forat (\d+)/)?.[1]);selectPin(id);
@@ -1077,6 +1115,7 @@ worker.onerror=event=>{
   error.diagnosticReason='error_worker';
   error.engineStage=stagedBuild?.progress?.stage;
   error.uiMessage=statusMessage('status.modelError',()=>({error:translateEngineMessage(event.message)}));
+  if(job==='fences'){recoverFenceEdit();return;}
   if(job==='relief'){recoverRelief(error);return;}
   pendingVegetation=false;
   if(job==='build'||job==='buildings'||job==='transport')recoverBuildings(error);
@@ -1308,7 +1347,8 @@ function selectCuratedExample(example,{keepLink=false}={}){
   brushHistory=createProjectBrushHistory();
   trailHistory=createProjectBrushHistory({breakOnClipped:true});
   routeHistory=createProjectBrushHistory({breakOnClipped:true});
-  strokes=[];trailStrokes=[];drawnRouteStrokes=[];userRoute=null;pins=[];
+  strokes=[];trailStrokes=[];drawnRouteStrokes=[];userRoute=null;pins=[];fences=[];
+  renderFenceList();setFenceFeedback('');
   nextPinId=1;selectedPinId=null;removedPin=null;
   showViewerTools(false);
   setPinFeedback('');
@@ -1620,6 +1660,11 @@ function syncExport(disabled){
 }
 function exportModel(){
   if($('#export-model').disabled)return;
+  if(fenceError&&!isPure(model)){
+    feedback('export-feedback',statusMessage('fence.failed'));
+    showViewerTools(true,{pane:'fences',focus:true});
+    return;
+  }
   feedback('export-feedback','');
   job='export';
   lock(true);
@@ -1709,7 +1754,8 @@ function syncVegetationControls(updating){
   for(const button of document.querySelectorAll('[data-brush]')){
     const mode=button.dataset.brush;
     const reliefBrush=mode==='pin'||mode.startsWith('route-')||mode.startsWith('trail-');
-    button.disabled=mode!=='navigate'&&(reliefBrush?updating||drawing||!(mode.startsWith('trail-')?canPaintTrails():canEditRelief()):paintDisabled);
+    button.disabled=mode!=='navigate'&&(mode==='fence'?!canEditFences()||fences.length>=MAX_FENCES:
+      reliefBrush?updating||drawing||!(mode.startsWith('trail-')?canPaintTrails():canEditRelief()):paintDisabled);
   }
 }
 function editButtons(){
@@ -1723,8 +1769,9 @@ const viewerToolPanes=[...document.querySelectorAll('[data-viewer-pane]')];
 let viewerTool='trails';
 function syncViewerTools(){
   const pure=pureSelected(),visible=!viewerToolsPanel.hidden;
+  if(pure&&viewerTool==='fences')viewerTool='trails';
+  if(!pure)viewerTool='fences';
   $('#viewer-tools-content').hidden=!pure;
-  $('#viewer-tools-unavailable').hidden=pure;
   viewerToolsOpen.setAttribute('aria-expanded',String(visible));
   $('#enable-trails').hidden=$('#relief-trails').checked;
   $('#enable-trails').disabled=busy||drawing||needsBuild||reliefTimer!==null;
@@ -1733,14 +1780,15 @@ function syncViewerTools(){
   for(const control of document.querySelectorAll('#pin-list button, #pin-list select, #undo-pin'))control.disabled=busy||drawing;
   previewPins.setDisabled(busy||drawing);
   const state=$('#viewer-tool-status');
-  state.textContent=pure&&(!isPure(model)||needsBuild)?text('tools.pending'):
+  state.textContent=needsBuild||model&&pure!==isPure(model)?text('tools.pending'):
     brush==='pin'?text('pin.placeHint'):trailBrush()?text('tools.trailActive'):
     routeBrush()?text('tools.routeActive'):'';
   for(const tab of viewerToolTabs)tab.setAttribute('aria-pressed',String(tab.dataset.viewerTool===viewerTool));
   for(const pane of viewerToolPanes)pane.hidden=pane.dataset.viewerPane!==viewerTool;
+  syncFenceEditor();
 }
 function showViewerTools(open,{pane,focus=false}={}){
-  if((!open||pane&&pane!==viewerTool)&&['pin','trail-add','trail-erase','route-add','route-erase'].includes(brush))selectNavigate();
+  if((!open||pane&&pane!==viewerTool)&&['pin','trail-add','trail-erase','route-add','route-erase','fence'].includes(brush))selectNavigate();
   viewerToolsPanel.hidden=!open;
   if(pane)viewerTool=pane;
   if(open&&narrowWorkshop.matches)showWorkshopPanel('preview');
@@ -1769,7 +1817,7 @@ document.addEventListener('keydown',event=>{
   event.preventDefault();
   if(brush!=='navigate'){
     selectNavigate();
-    viewerToolTabs.find(tab=>tab.dataset.viewerTool===viewerTool)?.focus({preventScroll:true});
+    (viewerToolTabs.find(tab=>tab.dataset.viewerTool===viewerTool)||$('[data-brush="fence"]')).focus({preventScroll:true});
   }else closeViewerToolFromUser();
 });
 $('#undo-brush').onclick=()=>{strokes=withoutLastGesture(strokes);editButtons();updateTrees();};$('#clear-brush').onclick=()=>{strokes=[];editButtons();updateTrees();};$('#brush-radius').oninput=()=>$('#brush-value').textContent=formatNumber(Number($('#brush-radius').value))+' mm';
@@ -1779,9 +1827,19 @@ $('#undo-route').onclick=()=>{drawnRouteStrokes=withoutLastGesture(drawnRouteStr
 $('#clear-route').onclick=()=>{drawnRouteStrokes=[];requestTrailUpdate();};
 function setBrush(button){
   if(!button)return;
+  const before=brush;
   finishStroke();brush=button.dataset.brush;
+  if(before==='fence'&&brush!=='fence'){fenceDraft=[];drawFenceDraft();setFenceFeedback('');}
+  if(brush==='fence'&&before!=='fence'){
+    setOrbitEnabled(false);
+    const distance=camera.position.distanceTo(controls.target);
+    camera.position.copy(controls.target).add(new THREE.Vector3(0,-.01,distance));
+    controls.update();
+    setFenceFeedback('place');
+  }
   const navigating=brush==='navigate';
-  controls.enabled=navigating;
+  controls.enabled=navigating||brush==='fence';
+  controls.enableRotate=brush!=='fence';
   document.querySelectorAll('[data-brush]').forEach(x=>{
     const selected=x.dataset.brush===brush;
     x.classList.toggle('selected',selected);
@@ -1793,15 +1851,111 @@ function setBrush(button){
 }
 function syncViewerHint(){
   const navigating=brush==='navigate';
-  $('#viewer-hint .desktop-copy').textContent=text(brush==='pin'?'pin.placeHint':navigating?'viewer.navigateDesktop':'viewer.paintDesktop');
-  $('#viewer-hint .mobile-copy').textContent=text(brush==='pin'?'pin.placeHint':navigating?'viewer.navigateMobile':'viewer.paintMobile');
+  const special=brush==='pin'?'pin.placeHint':brush==='fence'?'fence.place':null;
+  $('#viewer-hint .desktop-copy').textContent=text(special||(navigating?'viewer.navigateDesktop':'viewer.paintDesktop'));
+  $('#viewer-hint .mobile-copy').textContent=text(special||(navigating?'viewer.navigateMobile':'viewer.paintMobile'));
 }
 function selectNavigate(){setBrush(document.querySelector('[data-brush="navigate"]'));}
 function endVegetationEditing(){finishStroke();if(brush!=='navigate')selectNavigate();else $('#brush-cursor').hidden=true;}
-document.querySelectorAll('[data-brush]').forEach(b=>b.onclick=()=>setBrush(b));
+document.querySelectorAll('[data-brush]:not([data-brush="fence"])').forEach(b=>b.onclick=()=>setBrush(b));
 const ray=new THREE.Raycaster(),pointer=new THREE.Vector2();
 const brushGround=new Set(['terrain','forest','grass','rock','snow']);
 const brushSurfaces=new Set([...brushGround,'water','inland-water']);
+
+const fenceWidth=$('#fence-width'),fenceHeight=$('#fence-height');
+for(const [field,min,max,initial] of [
+  [fenceWidth,FENCE_MIN_WIDTH_MM,FENCE_MAX_WIDTH_MM,FENCE_DEFAULT_WIDTH_MM],
+  [fenceHeight,FENCE_MIN_HEIGHT_MM,FENCE_MAX_HEIGHT_MM,FENCE_DEFAULT_HEIGHT_MM]
+]){
+  field.min=min;field.max=max;field.value=initial;
+  bindFieldCommit(field,previous=>{
+    const n=field.valueAsNumber;
+    field.value=Number.isFinite(n)?Math.max(min,Math.min(max,Math.round(n*10)/10)):previous;
+  });
+}
+const fenceGuide=new THREE.Group();scene.add(fenceGuide);
+const fenceGuideColor=0x28583c;
+let fenceDraft=[],fenceFeedback='';
+function setFenceFeedback(key){
+  fenceFeedback=key;
+  $('#fence-feedback').textContent=key?text('fence.'+key):'';
+}
+function drawFenceDraft(){
+  for(const marker of [...fenceGuide.children]){
+    marker.geometry.dispose();marker.material.dispose();fenceGuide.remove(marker);
+  }
+  if(!fenceDraft.length)return;
+  const points=fenceDraft.map(({hit})=>hit);
+  const vertices=()=>new THREE.BufferGeometry().setFromPoints(points);
+  const dots=new THREE.Points(vertices(),new THREE.PointsMaterial({color:fenceGuideColor,size:6,sizeAttenuation:false,depthTest:false,depthWrite:false}));
+  const line=new THREE.Line(vertices(),new THREE.LineBasicMaterial({color:fenceGuideColor,depthTest:false,depthWrite:false}));
+  line.renderOrder=10;dots.renderOrder=11;
+  fenceGuide.add(line,dots);
+}
+function syncFenceEditor(){
+  const enabled=canEditFences(),active=brush==='fence',points=fenceDraft.length;
+  const start=$('[data-brush="fence"]');
+  start.disabled=!enabled||fences.length>=MAX_FENCES;
+  start.textContent=t(active?'ui.fence.cancel':'ui.fence.start');
+  fenceWidth.disabled=fenceHeight.disabled=!enabled;
+  $('#fence-draft-actions').hidden=!active;
+  $('#fence-open').disabled=!enabled||points<2;
+  $('#fence-close').disabled=!enabled||points<3;
+  $('#fence-back').disabled=!enabled||!points;
+  for(const button of $('#fence-list').querySelectorAll('button'))button.disabled=!enabled||active;
+}
+function renderFenceList(){
+  const list=$('#fence-list');list.replaceChildren();
+  fences.forEach((fence,i)=>{
+    const item=document.createElement('li'),name=document.createElement('span'),remove=document.createElement('button');
+    name.textContent=text('fence.entry',{number:formatNumber(i+1),height:formatNumber(fence.heightMM),width:formatNumber(fence.widthMM)});
+    remove.type='button';remove.className='quiet-button';remove.textContent=t('ui.fence.remove');
+    remove.setAttribute('aria-label',text('fence.removeItem',{number:formatNumber(i+1)}));
+    remove.onclick=()=>{
+      if(!canEditFences())return;
+      updateFences(fences.filter((_,index)=>index!==i),{removed:i});
+    };
+    item.append(name,remove);list.append(item);
+  });
+  syncFenceEditor();
+}
+function updateFences(next,change){
+  try{next=normalizeFences(next);}
+  catch{setFenceFeedback('invalid');return;}
+  pendingFences={next,...change};
+  job='fences';lock(true);
+  setFenceFeedback('working');
+  worker.postMessage({type:'fences',fences:next});
+}
+function recoverFenceEdit(){
+  pendingFences=null;
+  lock(false);setFenceFeedback('failed');
+  flushTrees();scheduler.flush();
+}
+function placeFencePoint(event){
+  if(fenceDraft.length>=MAX_FENCE_POINTS){setFenceFeedback('limit');return;}
+  const rect=renderer.domElement.getBoundingClientRect();
+  pointer.set((event.clientX-rect.left)/rect.width*2-1,-(event.clientY-rect.top)/rect.height*2+1);
+  ray.setFromCamera(pointer,camera);
+  const [hit]=ray.intersectObjects(group.children.filter(mesh=>brushSurfaces.has(mesh.name)||['roads','railways'].includes(mesh.name)));
+  if(!hit||!brushGround.has(hit.object.name)&&!['roads','railways'].includes(hit.object.name)||hit.face.normal.z<=0){
+    setFenceFeedback('land');return;
+  }
+  const x=hit.point.x+model.width/2,y=hit.point.y+model.height/2;
+  if(fenceDraft.some(point=>Math.hypot(point.x-x,point.y-y)<.2)){setFenceFeedback('near');return;}
+  fenceDraft.push({x,y,lonLat:pinProjection(model).unproject([x,y]),hit:hit.point});
+  drawFenceDraft();syncFenceEditor();
+  setFenceFeedback(fenceDraft.length>=2?'continue':'place');
+}
+function completeFence(closed){
+  if(!canEditFences()||brush!=='fence'||fences.length>=MAX_FENCES||fenceDraft.length<(closed?3:2))return;
+  const widthMM=Number(committedFieldValue(fenceWidth)),heightMM=Number(committedFieldValue(fenceHeight));
+  updateFences([...fences,{points:fenceDraft.map(point=>point.lonLat),widthMM,heightMM,closed}],{drawing:true});
+}
+$('#fence-open').onclick=()=>completeFence(false);
+$('#fence-close').onclick=()=>completeFence(true);
+$('#fence-back').onclick=()=>{fenceDraft.pop();drawFenceDraft();syncFenceEditor();setFenceFeedback('place');};
+$('[data-brush="fence"]').onclick=()=>brush==='fence'?selectNavigate():setBrush($('[data-brush="fence"]'));
 
 const pinRay=new THREE.Raycaster();
 const previewPins=createPreviewPins(view,scene,camera,{onSelect:selectPin,onRemove:id=>removePin(id,true)});
@@ -1940,7 +2094,7 @@ $('#pin-coordinates-form').onsubmit=event=>{
   if(addPin(lon,lat))input.value='';
 };
 function paint(event){
-  if(brush==='navigate'||brush==='pin'||!canPaintWithBrush()||pendingVegetation&&!drawing)return;
+  if(brush==='navigate'||brush==='pin'||brush==='fence'||!canPaintWithBrush()||pendingVegetation&&!drawing)return;
   const trails=lineBrush(),erase=brush.endsWith('erase');
   const rect=renderer.domElement.getBoundingClientRect();
   pointer.set((event.clientX-rect.left)/rect.width*2-1,-(event.clientY-rect.top)/rect.height*2+1);
@@ -1985,7 +2139,8 @@ function finishStroke(){
 }
 renderer.domElement.addEventListener('pointerdown',event=>{
   if(brush==='navigate'||event.button!==0||drawing||pendingVegetation||!canPaintWithBrush())return;
-  if(brush==='pin'){
+  if(brush==='pin'||brush==='fence'){
+    if(!event.isPrimary){pinPointer=null;return;}
     pinPointer={id:event.pointerId,x:event.clientX,y:event.clientY};
     renderer.domElement.setPointerCapture(event.pointerId);
     return;
@@ -2000,7 +2155,10 @@ renderer.domElement.addEventListener('pointermove',paint);
 renderer.domElement.addEventListener('pointerup',event=>{
   if(pinPointer?.id===event.pointerId){
     const start=pinPointer;pinPointer=null;
-    if(brush==='pin'&&canPlacePin()&&Math.hypot(event.clientX-start.x,event.clientY-start.y)<=8)placePin(event);
+    if(Math.hypot(event.clientX-start.x,event.clientY-start.y)<=8){
+      if(brush==='pin'&&canPlacePin())placePin(event);
+      if(brush==='fence'&&canEditFences())placeFencePoint(event);
+    }
   }
   finishStroke();
 });
@@ -2027,6 +2185,7 @@ function captureProject({includeAnnotations=true}={}){
   if(!includeAnnotations)return {...settings,mapZoom:placeMap.map.getZoom()};
   return {...settings,placeName:placeName||undefined,
     strokes:brushHistory.prepare(modelOptions(),strokes).strokes,
+    ...(fences.length?{fences}:{}),
     ...(pureSelected()?{trailStrokes:trailHistory.prepare(modelOptions(),trailStrokes).strokes,
       drawnRouteStrokes:routeHistory.prepare(modelOptions(),drawnRouteStrokes).strokes,userRoute,pins}:{})};
 }
@@ -2243,7 +2402,8 @@ function restoreProject(){
 function applyProjectSettings(settings,name=''){
   const {sizePreset,pose,pureRelief,materials,reliefMaterials:savedReliefMaterials,options,print,historical,
     placeName:savedPlace,exampleId,mapZoom,strokes:savedStrokes,trailStrokes:savedTrails,
-    drawnRouteStrokes:savedDrawnRoute,userRoute:savedRoute,pins:savedPins}=settings;
+    drawnRouteStrokes:savedDrawnRoute,userRoute:savedRoute,pins:savedPins,fences:savedFences}=settings;
+  fences=savedFences??[];renderFenceList();setFenceFeedback('');
   userRoute=savedRoute??null;
   nextPinId=Math.max(0,...(savedPins??[]).map(pin=>pin.id??0))+1;
   pins=(savedPins??[]).map(pin=>({...pin,id:pin.id??nextPinId++}));
@@ -2400,6 +2560,7 @@ function refreshWorkshopLanguage(){
   syncPrintSettings();
   syncRouteSettings(busy||drawing||pendingVegetation);
   syncViewerTools();
+  renderFenceList();setFenceFeedback(fenceFeedback);
   if(pins.length)refreshPinMarkers();
   workshopGuide.update();
   selectExportFormat(exportFormat);
@@ -2476,7 +2637,7 @@ const workshopGuide=createWorkshopGuide($('#workshop-guide'),{
       return step==='vegetation'?[controls,renderer.domElement]:[controls];
     }
     if(step==='tools')return viewerToolsPanel.hidden?[viewerToolsOpen]:
-      [viewerToolsOpen,viewerToolsPanel,...(pureSelected()?[renderer.domElement,previewPins.element]:[])];
+      [viewerToolsOpen,viewerToolsPanel,renderer.domElement,...(pureSelected()?[previewPins.element]:[])];
     if(step==='preview')return [view];
     return [step==='download'?$('.download-panel'):document.getElementById(guideOutputs[step])];
   }

@@ -1,6 +1,7 @@
 import {normalizeAssignments,normalizeReliefAssignments} from './materials.js';
 import {normalizeUserRoute} from './relief-user-route.js';
 import {normalizeReliefPins} from './relief-pin-placement.js';
+import {normalizeFences} from './fence-settings.js';
 import {pieceDimensions,isPanoramicSize,validPrintCuts,PURE_SCALE_RANGE,PANORAMIC_SCALE_RANGE} from './selection.js';
 import {validBaseThickness} from './print-settings.js';
 import {TRAIL_WIDTH_MULTIPLIERS} from './transport-width.js';
@@ -36,7 +37,7 @@ export function validatedSettings(settings){
   if(!object(settings)||!pieceDimensions(settings.sizePreset)||!boolean(settings.pureRelief)||
     !object(settings.pose)||!object(settings.materials)||!object(settings.options)||!Array.isArray(settings.strokes))
     throw invalid();
-  const {sizePreset,pureRelief,pose,materials,reliefMaterials,options,strokes,trailStrokes,drawnRouteStrokes,userRoute,pins,print,historical,placeName,exampleId}=settings;
+  const {sizePreset,pureRelief,pose,materials,reliefMaterials,options,strokes,trailStrokes,drawnRouteStrokes,userRoute,pins,fences,print,historical,placeName,exampleId}=settings;
   const {center,widthM,heightM,rotation}=pose,[width,height]=pieceDimensions(sizePreset);
   const panoramic=isPanoramicSize(width,height);
   const [minScale,maxScale]=panoramic?PANORAMIC_SCALE_RANGE:[0,pureRelief?PURE_SCALE_RANGE[1]:100000];
@@ -94,17 +95,19 @@ export function validatedSettings(settings){
     });
   }
   const cleanedTrails=cleanLineStrokes(trailStrokes),cleanedDrawnRoute=cleanLineStrokes(drawnRouteStrokes);
-  let cleanedRoute,cleanedPins;
+  let cleanedRoute,cleanedPins,cleanedFences;
   try{
     if(!pureRelief&&(userRoute!=null||pins!==undefined))throw invalid();
     cleanedRoute=normalizeUserRoute(userRoute);
     if(pins!==undefined)cleanedPins=normalizeReliefPins(pins);
+    if(fences!==undefined)cleanedFences=normalizeFences(fences);
   }catch{throw invalid();}
   return {sizePreset,pureRelief,pose:{center:center.slice(),widthM,heightM,rotation},
     materials:{count:materials.count,assignments},options:cleanedOptions,strokes:cleanedStrokes,
     ...(cleanedTrails?{trailStrokes:cleanedTrails}:{}),
     ...(cleanedDrawnRoute?{drawnRouteStrokes:cleanedDrawnRoute}:{}),
     ...(cleanedRoute?{userRoute:cleanedRoute}:{}),...(cleanedPins?.length?{pins:cleanedPins}:{}),
+    ...(cleanedFences?.length?{fences:cleanedFences}:{}),
     ...(print?{print:{baseThickness:print.baseThickness,cuts:Object.fromEntries(
       ['columns','rows'].filter(key=>print.cuts[key]!==undefined).map(key=>[key,[...print.cuts[key]]]))}}:{}),
     ...(cleanedReliefMaterials?{reliefMaterials:cleanedReliefMaterials}:{}),
