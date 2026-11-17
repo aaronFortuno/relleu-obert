@@ -209,6 +209,7 @@ export default {
   "runtime.fence.removeItem": ["Treu la tanca {number}","Quitar la valla {number}","Retirar o valado {number}","Kendu {number}. hesia","Remove fence {number}"],
   "runtime.fence.working": ["Preparant les tanques…","Preparando las vallas…","Preparando os valados…","Hesiak prestatzen…","Preparing fences…"],
   "runtime.fence.saved": ["Tanca afegida.","Valla añadida.","Valado engadido.","Hesia gehitu da.","Fence added."],
+  "runtime.fence.updated": ["Tanca actualitzada.","Valla actualizada.","Valado actualizado.","Hesia eguneratu da.","Fence updated."],
   "runtime.fence.removed": ["Tanca retirada.","Valla eliminada.","Valado retirado.","Hesia kendu da.","Fence removed."],
   "runtime.fence.invalid": ["El traç no és vàlid. Revisa els punts.","El trazado no es válido. Revisa los puntos.","O trazado non é válido. Revisa os puntos.","Trazatua ez da baliozkoa. Berrikusi puntuak.","The line is invalid. Check its points."],
   "runtime.fence.failed": ["No s’han pogut calcular les tanques. Revisa el traç o retira la tanca que falla.","No se han podido calcular las vallas. Revisa el trazado o elimina la valla que falla.","Non se puideron calcular os valados. Revisa o trazado ou retira o valado que falla.","Ezin izan dira hesiak kalkulatu. Berrikusi trazatua edo kendu huts egiten duen hesia.","Could not calculate the fences. Check the line or remove the fence that failed."],
@@ -230,4 +231,8 @@ export default {
   "runtime.horizontal.level": ["Des de sota la maqueta: {level} mm. Terreny original: {min}–{max} mm.","Desde la parte inferior de la maqueta: {level} mm. Terreno original: {min}–{max} mm.","Desde a parte inferior da maqueta: {level} mm. Terreo orixinal: {min}–{max} mm.","Maketaren behetik: {level} mm. Jatorrizko lurra: {min}–{max} mm.","From the bottom of the model: {level} mm. Original terrain: {min}–{max} mm."],
   "runtime.horizontal.editItem": ["Edita la superfície {number}","Editar la superficie {number}","Editar a superficie {number}","Editatu {number}. gainazala","Edit surface {number}"],
   "runtime.horizontal.removeItem": ["Treu la superfície {number}","Quitar la superficie {number}","Retirar a superficie {number}","Kendu {number}. gainazala","Remove surface {number}"],
+  "runtime.contour.point": ["Punt {number}","Punto {number}","Punto {number}","{number}. puntua","Point {number}"],
+  "runtime.contour.insert": ["Afegeix un punt al tram {number}","Añadir un punto al tramo {number}","Engadir un punto no tramo {number}","Gehitu puntu bat {number}. zatian","Add a point to segment {number}"],
+  "runtime.contour.invalid": ["No es pot posar el punt aquí. Mou-lo a un altre lloc. Es conserva el traç anterior.","No se puede colocar el punto aquí. Muévelo a otro sitio. Se conserva el trazado anterior.","Non se pode colocar o punto aquí. Móveo a outro lugar. Consérvase o trazado anterior.","Ezin da puntua hemen jarri. Mugitu beste leku batera. Aurreko trazatua mantendu da.","The point cannot go here. Move it somewhere else. The previous outline is kept."],
+  "runtime.contour.editFence": ["Edita la tanca {number}","Editar la valla {number}","Editar o valado {number}","Editatu {number}. hesia","Edit fence {number}"],
 };

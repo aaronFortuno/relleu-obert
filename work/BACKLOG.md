@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Revisat el **2026-11-17** amb la v0.24.9. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
+Revisat el **2026-11-17** amb la v0.24.10. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
 
 ## Validacions de la v0.24
 
@@ -50,9 +50,13 @@ Al-Khazneh r1 passa els controls d’encaix locals a 1:500 i 1:1.000 i en un ret
 
 **P2.** El visor de Tamariu permet dibuixar i ajustar un pati en pendent. La prova de malla comprova el tall, el reblert i la continuïtat en dues peces. Queda provar-ho al laminador amb un pati real i recuperar-ne el contorn des d’una còpia JSON en un altre navegador.
 
+Des de la v0.24.10, el contorn es pot retocar amb punts editables al visor. Comprovar al laminador un pati que s’hagi modificat després de dibuixar-lo.
+
 ### RO-060 — Tanques imprimibles
 
 **P2.** L’eina de Model complet permet dibuixar i retirar murs, i desar-los a la galeria local o a la còpia JSON. Provar al laminador el perímetre de l’institut: cantonades, entrada i un tram amb pendent o que travessi un tall. Comprovar-ne també la recuperació en un altre navegador. Les finestres queden ajornades fins que es reprengui l’edició de façanes.
+
+Des de la v0.24.10, es pot canviar el traç, el gruix i l’alçada d’una tanca existent. Provar de retocar l’entrada sense tornar a dibuixar el perímetre.
 
 ### RO-050 — Ferrocarrils diferenciats
 

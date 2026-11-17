@@ -9,7 +9,7 @@ export function horizontalErrorKey(error){
     HORIZONTAL_SURFACE_CONFLICT:'conflict'}[error?.code]??'failed';
 }
 
-export function createHorizontalSurfaceEditor(root,{records,levels,available,isDrawing,points,start,cancel,undo,submit}){
+export function createHorizontalSurfaceEditor(root,{records,levels,available,isDrawing,points,start,cancel,undo,edit,beforeRemove,submit}){
   const get=selector=>root.querySelector(selector);
   const startButton=get('[data-brush="horizontal"]'),finish=get('#horizontal-finish'),back=get('#horizontal-back');
   const actions=get('#horizontal-draft-actions'),list=get('#horizontal-list'),settings=get('#horizontal-settings');
@@ -19,7 +19,7 @@ export function createHorizontalSurfaceEditor(root,{records,levels,available,isD
   offset.min=MIN_HORIZONTAL_SURFACE_OFFSET_MM;
   offset.max=MAX_HORIZONTAL_SURFACE_OFFSET_MM;
   function say(key=''){
-    message=key;feedback.textContent=key?text(key):'';
+    message=key;feedback.textContent=key==='invalidPoint'?t('runtime.contour.invalid'):key?text(key):'';
   }
   function sync(){
     const ready=available(),drawing=isDrawing(),count=points().length;
@@ -47,11 +47,15 @@ export function createHorizontalSurfaceEditor(root,{records,levels,available,isD
       remove.setAttribute('aria-label',text('removeItem',params));
       edit.onclick=()=>{
         refresh(index);
+        editOutline(index);
         list.querySelector('[data-horizontal-select="'+index+'"]').focus({preventScroll:true});
       };
-      remove.onclick=()=>submit(items.filter((_,i)=>i!==index),{
-        selection:items.length>1?Math.min(index,items.length-2):null,message:'removed',focus:true
-      });
+      remove.onclick=()=>{
+        beforeRemove();
+        submit(items.filter((_,i)=>i!==index),{
+          selection:items.length>1?Math.min(index,items.length-2):null,message:'removed',focus:true
+        });
+      };
       row.append(edit,remove);list.append(row);
     });
     if(selected!=null){
@@ -89,5 +93,6 @@ export function createHorizontalSurfaceEditor(root,{records,levels,available,isD
   function focusSelection(){
     (list.querySelector('[data-horizontal-select="'+selected+'"]')||startButton).focus({preventScroll:true});
   }
+  const editOutline=edit;
   return {refresh,sync,say,focusSelection,localize:()=>{refresh();say(message);}};
 }

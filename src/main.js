@@ -34,6 +34,7 @@ import {FENCE_DEFAULT_WIDTH_MM,FENCE_DEFAULT_HEIGHT_MM,FENCE_MIN_WIDTH_MM,FENCE_
   FENCE_MIN_HEIGHT_MM,FENCE_MAX_HEIGHT_MM,MAX_FENCES,MAX_FENCE_POINTS,normalizeFences} from './fence-settings.js';
 import {MAX_HORIZONTAL_SURFACE_POINTS,normalizeHorizontalSurfaces} from './horizontal-surface-settings.js';
 import {createHorizontalSurfaceEditor,horizontalErrorKey} from './horizontal-surface-editor.js';
+import {createContourEditor} from './contour-editor.js';
 import {canSendGenerationReport,generationErrorData,generationReportData,sendGenerationReport,trackWorkshopEvent,workshopMode,workshopSize} from './analytics.js';
 import {sourceError} from './generation-error.js';
 import {createBuildingUpdateScheduler} from './building-update-scheduler.js';
@@ -412,7 +413,7 @@ const renderWorkshop=time=>{
   orbitOffset.subVectors(camera.position,controls.target);
   const horizontal=Math.hypot(orbitOffset.x,orbitOffset.y);
   const motion=previewOrbit.step(time,Math.atan2(orbitOffset.z,horizontal),
-    orbitEnabled&&!!model&&!stagedBuild?.preview&&!orbitPointers.size&&brush==='navigate'&&!previewPins.interacting());
+    orbitEnabled&&!!model&&!stagedBuild?.preview&&!orbitPointers.size&&brush==='navigate'&&!contourEditor.active&&!previewPins.interacting());
   if(motion){
     const distance=orbitOffset.length(),heading=Math.atan2(orbitOffset.y,orbitOffset.x)+motion.turn;
     const radius=distance*Math.cos(motion.elevation);
@@ -420,6 +421,13 @@ const renderWorkshop=time=>{
   }
   controls.update();
   previewPins.render(!stagedBuild?.preview);
+  if(contourEditor.active&&!stagedBuild?.preview){
+    const {clientWidth:w,clientHeight:h}=view;
+    contourEditor.render(point=>{
+      contourProjectionPoint.copy(point).project(camera);
+      return Math.abs(contourProjectionPoint.z)<=1?[(contourProjectionPoint.x+1)*w/2,(1-contourProjectionPoint.y)*h/2]:null;
+    });
+  }
   renderer.render(scene,camera);
 };
 home();
@@ -546,6 +554,7 @@ function showBuildPreview({categories,width,height,mode,piece}){
   if(first){
     stagedBuild.camera={position:camera.position.clone(),target:controls.target.clone(),zoom:camera.zoom,maxDistance:controls.maxDistance};
     endVegetationEditing();
+    stopContour();
     $('#welcome').hidden=true;
     $('.preview-toolbar').hidden=false;
     showCatalogPlace(pendingCatalogPlace);
@@ -981,7 +990,7 @@ function settleBuildings(error){
 }
 worker.onmessage=({data})=>{
   if(data.type==='horizontal'){
-    const {next,selection,message,finish,focus}=pendingHorizontal;
+    const {next,selection,message,finish,focus,contour}=pendingHorizontal;
     pendingHorizontal=null;
     horizontalSurfaces=next;horizontalLevels=data.horizontalLevels;horizontalFailure=null;
     const changed=data.changedCategories;
@@ -993,20 +1002,22 @@ worker.onmessage=({data})=>{
     if(finish&&brush==='horizontal')selectNavigate();
     horizontalEditor.refresh(selection);
     lock(false);
+    if(contourEditor.active?.kind==='horizontal')contourEditor.refresh(contour);
     horizontalEditor.say(message);
     if(focus&&!viewerToolsPanel.hidden)horizontalEditor.focusSelection();
     flushTrees();scheduler.flush();
     return;
   }
   if(data.type==='fences'){
-    const {next,drawing:committed,removed}=pendingFences;
+    const {next,drawing:committed,removed,contour,updated}=pendingFences;
     pendingFences=null;fences=next;fenceError=false;
     setFencePreview(data.part);recolor();
     if(committed)selectNavigate();
     renderFenceList();
     lock(false);
-    setFenceFeedback(committed?'saved':'removed');
-    if(!viewerToolsPanel.hidden){
+    if(contourEditor.active?.kind==='fence')contourEditor.refresh(contour);
+    setFenceFeedback(committed?'saved':updated?'updated':'removed');
+    if(!updated&&!viewerToolsPanel.hidden){
       const buttons=$('#fence-list').querySelectorAll('button'),start=$('[data-brush="fence"]');
       (committed&&!start.disabled?start:buttons[Math.min(removed??(buttons.length-1),buttons.length-1)]||start).focus({preventScroll:true});
     }
@@ -1093,6 +1104,7 @@ worker.onmessage=({data})=>{
     }
     badge(needsBuild?statusMessage('pending.changes'):'');
     lock(false);
+    if(contourEditor.active)contourEditor.refresh();
     const profiles=model.provenance.majorRoads;
     const surface=model.provenance.surfaceRoads;
     let profileNotice='';
@@ -1836,8 +1848,11 @@ function syncViewerTools(){
   for(const pane of viewerToolPanes)pane.hidden=pane.dataset.viewerPane!==viewerTool;
   syncFenceEditor();
   horizontalEditor.sync();
+  if(pure&&contourEditor.active)stopContour();
+  contourEditor.sync();
 }
 function showViewerTools(open,{pane,focus=false}={}){
+  if(!open||pane&&pane!==viewerTool)stopContour();
   if((!open||pane&&pane!==viewerTool)&&(pointDraftBrush(brush)||['pin','trail-add','trail-erase','route-add','route-erase'].includes(brush)))selectNavigate();
   viewerToolsPanel.hidden=!open;
   if(pane)viewerTool=pane;
@@ -1865,7 +1880,8 @@ $('#enable-trails').onclick=()=>{
 document.addEventListener('keydown',event=>{
   if(event.key!=='Escape'||event.defaultPrevented||viewerToolsPanel.hidden||document.querySelector('dialog[open]'))return;
   event.preventDefault();
-  if(brush!=='navigate'){
+  if(contourEditor.active){finishContour();}
+  else if(brush!=='navigate'){
     selectNavigate();
     (viewerToolTabs.find(tab=>tab.dataset.viewerTool===viewerTool)||$('[data-brush="fence"]')).focus({preventScroll:true});
   }else closeViewerToolFromUser();
@@ -1877,6 +1893,7 @@ $('#undo-route').onclick=()=>{drawnRouteStrokes=withoutLastGesture(drawnRouteStr
 $('#clear-route').onclick=()=>{drawnRouteStrokes=[];requestTrailUpdate();};
 function setBrush(button){
   if(!button)return;
+  stopContour();
   const before=brush;
   finishStroke();brush=button.dataset.brush;
   if(pointDraftBrush(before)&&before!==brush){
@@ -1884,10 +1901,7 @@ function setBrush(button){
     if(before==='horizontal')horizontalEditor.say();else setFenceFeedback('');
   }
   if(pointDraftBrush(brush)&&brush!==before){
-    setOrbitEnabled(false);
-    const distance=camera.position.distanceTo(controls.target);
-    camera.position.copy(controls.target).add(new THREE.Vector3(0,-.01,distance));
-    controls.update();
+    lookDownForDrawing();
     if(brush==='horizontal')horizontalEditor.say('place');else setFenceFeedback('place');
   }
   const navigating=brush==='navigate';
@@ -1901,6 +1915,12 @@ function setBrush(button){
   syncViewerHint();
   syncViewerTools();
   $('#brush-cursor').hidden=true;
+}
+function lookDownForDrawing(){
+  setOrbitEnabled(false);
+  const distance=camera.position.distanceTo(controls.target);
+  camera.position.copy(controls.target).add(new THREE.Vector3(0,-.01,distance));
+  controls.update();
 }
 function syncViewerHint(){
   const navigating=brush==='navigate';
@@ -1924,6 +1944,11 @@ for(const [field,min,max,initial] of [
   bindFieldCommit(field,previous=>{
     const n=field.valueAsNumber;
     field.value=Number.isFinite(n)?Math.max(min,Math.min(max,Math.round(n*10)/10)):previous;
+    const active=contourEditor.active;
+    if(active?.kind==='fence'&&canEditFences()){
+      const name=field===fenceWidth?'widthMM':'heightMM',value=Number(field.value),fence=fences[active.index];
+      if(fence&&value!==fence[name])updateFences(fences.map((item,i)=>i===active.index?{...item,[name]:value}:item),{updated:true});
+    }
   });
 }
 const pointGuide=new THREE.Group();scene.add(pointGuide);
@@ -1931,7 +1956,7 @@ const pointGuideColor=0x28583c;
 let pointDraft=[],fenceFeedback='';
 function setFenceFeedback(key){
   fenceFeedback=key;
-  $('#fence-feedback').textContent=key?text('fence.'+key):'';
+  $('#fence-feedback').textContent=key?text(key==='invalidPoint'?'contour.invalid':'fence.'+key):'';
 }
 function drawPointDraft(){
   for(const marker of [...pointGuide.children]){
@@ -1961,12 +1986,17 @@ function syncFenceEditor(){
 function renderFenceList(){
   const list=$('#fence-list');list.replaceChildren();
   fences.forEach((fence,i)=>{
-    const item=document.createElement('li'),name=document.createElement('span'),remove=document.createElement('button');
+    const item=document.createElement('li'),name=document.createElement('button'),remove=document.createElement('button');
     name.textContent=text('fence.entry',{number:formatNumber(i+1),height:formatNumber(fence.heightMM),width:formatNumber(fence.widthMM)});
+    name.type='button';name.className='quiet-button';name.dataset.fenceSelect=i;
+    name.setAttribute('aria-label',text('contour.editFence',{number:formatNumber(i+1)}));
+    name.setAttribute('aria-pressed',String(contourEditor.active?.kind==='fence'&&contourEditor.active.index===i));
+    name.onclick=()=>startContour('fence',i);
     remove.type='button';remove.className='quiet-button';remove.textContent=t('ui.fence.remove');
     remove.setAttribute('aria-label',text('fence.removeItem',{number:formatNumber(i+1)}));
     remove.onclick=()=>{
       if(!canEditFences())return;
+      stopContour();
       updateFences(fences.filter((_,index)=>index!==i),{removed:i});
     };
     item.append(name,remove);list.append(item);
@@ -1975,30 +2005,30 @@ function renderFenceList(){
 }
 function updateFences(next,change){
   try{next=normalizeFences(next);}
-  catch{setFenceFeedback('invalid');return;}
+  catch{setFenceFeedback('invalid');return false;}
   pendingFences={next,...change};
   job='fences';lock(true);
   setFenceFeedback('working');
   worker.postMessage({type:'fences',fences:next});
+  return true;
 }
 function recoverFenceEdit(){
   pendingFences=null;
   lock(false);setFenceFeedback('failed');
+  if(contourEditor.active?.kind==='fence'){
+    fillFenceFields(fences[contourEditor.active.index]);
+    contourEditor.refresh();
+  }
   flushTrees();scheduler.flush();
 }
 function placeDraftPoint(event){
   const horizontal=brush==='horizontal',say=horizontal?key=>horizontalEditor.say(key):setFenceFeedback;
   if(pointDraft.length>=(horizontal?MAX_HORIZONTAL_SURFACE_POINTS:MAX_FENCE_POINTS)){say('limit');return;}
-  const rect=renderer.domElement.getBoundingClientRect();
-  pointer.set((event.clientX-rect.left)/rect.width*2-1,-(event.clientY-rect.top)/rect.height*2+1);
-  ray.setFromCamera(pointer,camera);
-  const [hit]=ray.intersectObjects(group.children.filter(mesh=>brushSurfaces.has(mesh.name)||['roads','railways'].includes(mesh.name)));
-  if(!hit||!brushGround.has(hit.object.name)&&!['roads','railways'].includes(hit.object.name)||hit.face.normal.z<=0){
-    say('land');return;
-  }
-  const x=hit.point.x+model.width/2,y=hit.point.y+model.height/2;
+  const hit=contourLandAt(event.clientX,event.clientY);
+  if(!hit){say('land');return;}
+  const x=hit.x+model.width/2,y=hit.y+model.height/2;
   if(pointDraft.some(point=>Math.hypot(point.x-x,point.y-y)<.2)){say('near');return;}
-  pointDraft.push({x,y,lonLat:pinProjection(model).unproject([x,y]),hit:hit.point});
+  pointDraft.push({x,y,lonLat:pinProjection(model).unproject([x,y]),hit});
   drawPointDraft();syncFenceEditor();horizontalEditor.sync();
   say(pointDraft.length>=(horizontal?3:2)?'continue':'place');
 }
@@ -2016,23 +2046,120 @@ const horizontalEditor=createHorizontalSurfaceEditor($('[data-viewer-pane="horiz
   isDrawing:()=>brush==='horizontal',points:()=>pointDraft.map(point=>point.lonLat),
   start:()=>setBrush($('[data-brush="horizontal"]')),cancel:selectNavigate,
   undo:()=>{pointDraft.pop();drawPointDraft();horizontalEditor.sync();horizontalEditor.say('place');},
+  edit:index=>startContour('horizontal',index),beforeRemove:stopContour,
   submit:updateHorizontal
 });
 function updateHorizontal(next,operation){
-  if(!canEditFences())return;
+  if(!canEditFences())return false;
   try{next=normalizeHorizontalSurfaces(next);}
-  catch{horizontalEditor.refresh();horizontalEditor.say('invalid');return;}
+  catch{horizontalEditor.refresh();horizontalEditor.say('invalid');return false;}
   pendingHorizontal={next,...operation};
   job='horizontal';lock(true);
   horizontalEditor.say('working');
   worker.postMessage({type:'horizontal',horizontalSurfaces:next});
+  return true;
 }
 function recoverHorizontal(error){
   pendingHorizontal=null;
   horizontalEditor.refresh();
   lock(false);
   horizontalEditor.say(horizontalErrorKey(error));
+  if(contourEditor.active?.kind==='horizontal')contourEditor.refresh();
   flushTrees();scheduler.flush();
+}
+
+const contourRay=new THREE.Raycaster(),contourProjectionPoint=new THREE.Vector3(),contourDown=new THREE.Vector3(0,0,-1);
+const contourGroundMesh=mesh=>brushGround.has(mesh.name)||mesh.name==='roads'||mesh.name==='railways';
+const contourRayTargets=()=>group.children.filter(mesh=>contourGroundMesh(mesh)||brushSurfaces.has(mesh.name));
+function contourLandHit(){
+  const [hit]=contourRay.intersectObjects(contourRayTargets());
+  return hit&&contourGroundMesh(hit.object)&&hit.face.normal.z>0?hit.point:null;
+}
+function contourLandAt(clientX,clientY){
+  const rect=renderer.domElement.getBoundingClientRect();
+  if(!rect.width||!rect.height||clientX<rect.left||clientX>=rect.right||clientY<rect.top||clientY>=rect.bottom)return null;
+  contourRay.setFromCamera(pointer.set((clientX-rect.left)/rect.width*2-1,1-(clientY-rect.top)/rect.height*2),camera);
+  return contourLandHit();
+}
+let contourAnchorModel,contourAnchors=new Map(),lastFenceFields;
+const contourEditor=createContourEditor($('#contour-overlay'),{
+  available:canEditFences,
+  record:(kind,index)=>kind==='fence'?fences[index]:
+    horizontalSurfaces[index]&&{points:horizontalSurfaces[index].points,closed:true},
+  anchor(lonLat,{insert=false}={}){
+    if(!model)return null;
+    if(model!==contourAnchorModel){
+      contourAnchorModel=model;contourAnchors=new Map();group.updateMatrixWorld(true);
+    }
+    const key=lonLat.join(',')+(insert?' midpoint':'');
+    if(contourAnchors.has(key))return contourAnchors.get(key);
+    const [x,y]=pinProjection(model).project(lonLat);
+    if(x<0||x>model.width||y<0||y>model.height)return null;
+    contourRay.set(new THREE.Vector3(x-model.width/2,y-model.height/2,10000),contourDown);
+    const point=contourLandHit();
+    // A clipped or conflicting outline remains editable on the visible side.
+    const anchor=point??(insert?null:new THREE.Vector3(x-model.width/2,y-model.height/2,0));
+    contourAnchors.set(key,anchor);
+    return anchor;
+  },
+  locate(clientX,clientY){
+    const hit=contourLandAt(clientX,clientY);
+    return hit?pinProjection(model).unproject([hit.x+model.width/2,hit.y+model.height/2]):null;
+  },
+  midpoint(a,b){
+    const {project,unproject}=pinProjection(model),[ax,ay]=project(a),[bx,by]=project(b);
+    return unproject([(ax+bx)/2,(ay+by)/2]);
+  },
+  submit(kind,index,points,contour){
+    if(!canEditFences())return false;
+    const rows=kind==='fence'?fences:horizontalSurfaces;
+    const next=rows.map((row,i)=>i===index?{...row,points}:row);
+    return kind==='fence'?updateFences(next,{updated:true,contour}):
+      updateHorizontal(next,{selection:index,message:'updated',contour});
+  },
+  invalid(kind){
+    if(kind==='fence')setFenceFeedback('invalidPoint');
+    else horizontalEditor.say('invalidPoint');
+  },
+  finish:finishContour
+});
+function fillFenceFields(fence){
+  if(fence){fenceWidth.value=fence.widthMM;fenceHeight.value=fence.heightMM;}
+}
+function startContour(kind,index){
+  if(!canEditFences())return;
+  if(brush!=='navigate')selectNavigate();
+  const wasActive=!!contourEditor.active;
+  stopContour();
+  if(!wasActive)lookDownForDrawing();
+  controls.enableRotate=false;
+  if(kind==='fence'){
+    lastFenceFields=[committedFieldValue(fenceWidth),committedFieldValue(fenceHeight)];
+    fillFenceFields(fences[index]);
+    setFenceFeedback('');
+  }else horizontalEditor.say();
+  contourEditor.start(kind,index);
+  if(kind==='fence'){
+    renderFenceList();
+    $(`[data-fence-select="${index}"]`)?.focus({preventScroll:true});
+  }
+}
+function stopContour(){
+  if(!contourEditor.active)return;
+  contourEditor.end();
+  controls.enableRotate=!pointDraftBrush(brush);
+  if(lastFenceFields){
+    [fenceWidth.value,fenceHeight.value]=lastFenceFields;
+    lastFenceFields=null;
+    renderFenceList();
+  }
+}
+function finishContour(){
+  const active=contourEditor.active;
+  if(!active)return;
+  stopContour();
+  const field=active.kind==='fence'?'fence':'horizontal';
+  $(`[data-${field}-select="${active.index}"]`)?.focus({preventScroll:true});
 }
 
 const pinRay=new THREE.Raycaster();
@@ -2482,6 +2609,7 @@ function applyProjectSettings(settings,name=''){
   const {sizePreset,pose,pureRelief,materials,reliefMaterials:savedReliefMaterials,options,print,historical,
     placeName:savedPlace,exampleId,mapZoom,strokes:savedStrokes,trailStrokes:savedTrails,
     drawnRouteStrokes:savedDrawnRoute,userRoute:savedRoute,pins:savedPins,fences:savedFences,horizontalSurfaces:savedSurfaces}=settings;
+  stopContour();
   fences=savedFences??[];renderFenceList();setFenceFeedback('');
   horizontalSurfaces=savedSurfaces??[];horizontalLevels=[];horizontalFailure=null;
   horizontalEditor.refresh(null);horizontalEditor.say();
@@ -2643,6 +2771,7 @@ function refreshWorkshopLanguage(){
   syncViewerTools();
   renderFenceList();setFenceFeedback(fenceFeedback);
   horizontalEditor.localize();
+  contourEditor.localize();
   if(pins.length)refreshPinMarkers();
   workshopGuide.update();
   selectExportFormat(exportFormat);

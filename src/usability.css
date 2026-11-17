@@ -310,6 +310,27 @@ body:has(#workshop-guide[data-guide-step="territory"]) [data-step-action="place"
 :is(#fence-draft-actions,#horizontal-draft-actions) .edit-actions {justify-content:flex-start;flex-wrap:wrap;gap:4px 8px}
 #fence-list li {grid-template-columns:minmax(0,1fr) auto}
 :is(#fence-list,#horizontal-list) li span {font-size:var(--ui-control)}
+[data-contour-actions] {border-top:1px solid var(--line);margin-top:8px;padding-top:4px}
+[data-contour-actions] .edit-actions {justify-content:flex-start;flex-wrap:wrap;gap:4px 12px}
+#contour-overlay {position:absolute;inset:0;z-index:2;pointer-events:none}
+.contour-guide {position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.contour-guide path {
+  fill:none;stroke:var(--green);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;
+  stroke-dasharray:4 3;filter:drop-shadow(0 0 1px var(--paper));
+}
+.contour-handle {
+  position:absolute;z-index:1;transform:translate(-50%,-50%);display:grid;place-items:center;
+  width:24px;height:24px;padding:0;border:1px solid var(--green);border-radius:50%;
+  background:var(--paper);box-shadow:0 0 0 1px var(--paper);color:var(--green);
+  font-size:var(--ui-control);font-weight:600;line-height:1;font-variant-numeric:tabular-nums;
+  pointer-events:auto;touch-action:none;user-select:none;cursor:grab;
+}
+.contour-handle[data-kind=insert] {
+  z-index:0;width:22px;height:22px;border-style:dashed;font-size:14px;font-weight:500;cursor:pointer;
+}
+.contour-handle[aria-pressed=true] {background:var(--green);color:var(--paper)}
+.contour-handle[data-kind=point]:active {cursor:grabbing}
+.contour-handle:focus-visible {z-index:2;outline-color:var(--green)}
 #export-feedback:not(:empty) {color:#963b23}
 #welcome-guide {margin:0 0 5px}
 @media(max-width:900px){

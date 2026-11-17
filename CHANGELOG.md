@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.24.10 — 2026-11-17
+
+- Les tanques i les superfícies horitzontals es poden editar un cop dibuixades. Selecciona un traç a Eines per arrossegar-ne els punts, inserir-ne entre dos punts o treure’ls. També es pot retocar el gruix i l’alçada d’una tanca existent.
+
 ## v0.24.9 — 2026-11-17
 
 - Superfícies horitzontals al calaix Eines de Model complet. En dibuixar el contorn d’un pati o una pista, es pot anivellar el terreny a la cota mitjana, mínima o màxima i ajustar-la en mil·límetres. El tall i el reblert s’inclouen a la maqueta i el contorn es conserva als projectes locals i a les còpies JSON.

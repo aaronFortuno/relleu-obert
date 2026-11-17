@@ -20,6 +20,8 @@ En **Model complet**, obre **Eines** al visor per dibuixar una tanca punt per pu
 
 Amb **Superfície horitzontal**, dibuixa el contorn d’un pati, plaça o pista al visor. Tria la cota mitjana, mínima o màxima del terreny dins del contorn i afina-la en mil·límetres de maqueta. L’eina retalla i rebleix el terreny; pots tornar a ajustar la cota i el material després de dibuixar. Els contorns es conserven als projectes locals i a les còpies JSON.
 
+Per retocar una tanca o una superfície, selecciona-la al calaix Eines. Arrossega els punts numerats, prem **+** entre dos punts per afegir-ne un o selecciona un punt i prem **Treu el punt**. També es poden moure els punts amb les fletxes del teclat i treure’ls amb Supr. La maqueta s’actualitza després de cada canvi vàlid.
+
 La icona de compartir al costat de la descàrrega copia l’enllaç amb el retall i els ajustos actuals en un clic. En obrir-lo, la maqueta es genera automàticament al navegador. Els traços, les rutes i els punts destacats es poden conservar a la còpia JSON del projecte.
 
 La icona de compartir de cada fitxa de la galeria copia l’enllaç en un clic. En obrir-lo, la maqueta es genera amb els ajustos del catàleg.
