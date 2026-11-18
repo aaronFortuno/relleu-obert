@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.24.12 — 2026-11-18
+
+- Els models d’edificis del catàleg poden substituir la seva part d’una petjada que agrupa tota una mançana, conservant els edificis veïns. Els patis es mantenen oberts també als retalls parcials.
+
 ## v0.24.11 — 2026-11-17
 
 - Imant opcional per ajustar punts de tanques i superfícies a les cantonades i vores disponibles. Ressalta el contorn de destinació; Maj permet moure el punt lliurement.

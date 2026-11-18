@@ -1,6 +1,14 @@
 # Historial i validacions de Relleu Obert
 
-Actualitzat el 2026-11-12. Les entrades validades surten del [backlog actiu](../BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
+Actualitzat el 2026-11-18. Les entrades validades surten del [backlog actiu](../BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
+
+## v0.24.12 — Substitució parcial de mançanes
+
+RO-032 detecta a La Pedrera una petjada RTT que agrupa tota la mançana: `icgc-1518230` cobreix el 99,43% del monument, que només ocupa el 12,38% de la petjada general. La v0.24.11 conserva aquesta extrusió i el control real falla perquè tapa el primer pati. La v0.24.12 retalla només l'envolupant del model, inclosos els seus patis. La proporció per considerar una petjada com a edifici propi es calcula abans del retall de la maqueta. Les substitucions per identificadors verificats i les façanes excavades mantenen la seva política.
+
+Proves locals del 18 de novembre de 2026 amb La Pedrera r1, MET5 i RTT: 140 × 140 mm a 1:1.000 / +10°, 160 × 140 mm a 1:2.500 / −23° i un retall parcial de 65 × 65 mm a 1:1.000 / −19°. Els quatre buits continuen oberts entre 45 i 80 m ASL. Tres columnes de coberta baixa coincideixen amb la malla original, sense el sostre pla de la mançana al damunt; al retall parcial se'n conserven dues. Els quatre contactes amb terreny passen als retalls complets i dos al parcial. La comparació amb el catàleg desactivat conserva els tres identificadors generals, inclosa la mançana retallada. També passen l'auditoria de materials, el límit de 5 m i els edificis ocults.
+
+La suite específica de catàleg, edificis i relleus passa 32 casos, inclosos els controls de pati tallat a la vora i veí unit a la mateixa petjada. Build local correcte. Queden la revisió visual de l'usuari, el laminat i la impressió; el control del navegador d'aquest torn s'ha aturat perquè no podia determinar l'URL actual. [Model i informes](https://github.com/aaronFortuno/open-place-models/tree/main/models/la-pedrera-casa-mila/r1)
 
 ## v0.23.55 — Visita guiada validada
 

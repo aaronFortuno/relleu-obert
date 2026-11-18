@@ -27,9 +27,9 @@ const sources={
   catastre:[feature('catastre-part',[polygon(-5,-5,8,12)],{family:'cadastre-tower'}),feature('house',[neighbour])],
   osm:[feature('osm-tower',[polygon(-8,-5,8,5)]),feature('house',[neighbour])]
 };
-function generate({source='icgc',denominator=2000,rotation=0,center=centre,models=[landmark],api}={}){
+function generate({source='icgc',features=sources[source],denominator=2000,rotation=0,center=centre,models=[landmark],api}={}){
   const pose=selectionPose(scaledBBox(center,100,100,denominator),rotation);
-  const region={meta:{bbox:pose.bbox,buildingSource:source},features:sources[source],
+  const region={meta:{bbox:pose.bbox,buildingSource:source},features,
     dem:[{z:0,x:0,y:0,size:2,elev:new Float32Array(4)}],singularModels:models};
   const message=structuredClone(buildRequest(region,{size:100,widthMM:100,heightMM:100,targetScale:denominator,
     selectionPose:pose,resolution:4,trees:false,majorRoads:false,buildingMode:'source'}));
@@ -62,6 +62,48 @@ test('catalogue solid projects from its geographic anchor at different scales an
     const coordinates=buildings(model).vertices;
     assert.ok(Array.from({length:coordinates.length/3},(_,i)=>i*3).some(i=>
       Math.abs(coordinates[i]-x)<.002&&Math.abs(coordinates[i+1]-y)<.002&&Math.abs(coordinates[i+2]-tower(model).roof)<.002));
+  }
+});
+
+test('catalogue replacement cuts its footprint out of a merged block and keeps adjacent buildings',async()=>{
+  const api=await Module();api.setup();
+  const block=feature('icgc-block',[polygon(-40,-35,42,35)],{render_height:30});
+  for(const [denominator,rotation,east] of [[1000,0,0],[2500,31,0],[1000,19,50]]){
+    const center=geo([east,0]);
+    const model=generate({features:[block],denominator,rotation,center:[center[1],center[0]],api});
+    assert.equal(tower(model)?.roofShape,'catalogue');
+    assert(model.provenance.buildingVolumes.some(volume=>volume.id==='icgc-block'));
+    const part=buildings(model),solid=new api.Manifold(new api.Mesh({numProp:3,vertProperties:part.vertices,triVerts:part.faces}));
+    assert.equal(solid.status(),'NoError');
+    const hits=east=>{
+      const [x,y]=model.context.proj.project(geo([east,0])),floor=model.context.ground(x,y),scale=model.context.proj.scale;
+      return solid.rayCast([x,y,floor+25*scale],[x,y,floor+40*scale]);
+    };
+    assert.equal(hits(4).length,0,'The former flat roof must be absent above the catalogue model');
+    assert(hits(30).length>0,'The connected neighbour must retain its original roof');
+    assert.equal(auditPart(part).closed,true);
+    assert.deepEqual(auditPart(part).errors,[]);
+    solid.delete();
+  }
+});
+
+test('partial block replacement clears a courtyard even when the crop opens its boundary',async()=>{
+  const api=await Module();api.setup();
+  const rings=[rectangle(-8,-5,8,5),rectangle(-2,-2,2,2).reverse()],surface=new Surface();
+  surface.polygon(rings,()=>20);
+  const shell=surface.solid(()=>0);
+  const vertices=Float32Array.from(shell.vertices,(_,i)=>i%3===0?shell.vertices[i]:i%3===1?shell.vertices[i+1]:-shell.vertices[i-1]);
+  const modelWithCourt={...landmark,footprint:{type:'Polygon',coordinates:rings.map(ring=>ring.map(geo))},vertices,faces:shell.faces};
+  const block=feature('icgc-block',[polygon(-40,-35,42,35)],{render_height:30});
+  for(const east of [0,50]){
+    const center=geo([east,0]);
+    const model=generate({features:[block],denominator:1000,models:[modelWithCourt],center:[center[1],center[0]],api});
+    const part=buildings(model),solid=new api.Manifold(new api.Mesh({numProp:3,vertProperties:part.vertices,triVerts:part.faces}));
+    assert.equal(solid.status(),'NoError');
+    const [x,y]=model.context.proj.project(geo([1,0])),floor=model.context.ground(x,y);
+    assert.equal(solid.rayCast([x,y,floor+.1],[x,y,floor+40]).length,0,'The courtyard must remain open');
+    assert.equal(auditPart(part).closed,true);
+    solid.delete();
   }
 });
 

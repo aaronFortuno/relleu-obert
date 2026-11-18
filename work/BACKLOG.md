@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Revisat el **2026-11-17** amb la v0.24.11. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
+Revisat el **2026-11-18** amb la v0.24.12. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
 
 ## Validacions de la v0.24
 
@@ -41,6 +41,8 @@ Al-Khazneh r1 passa els controls d’encaix locals a 1:500 i 1:1.000 i en un ret
 **P1.** Comparar petjades i parts d’ICGC, Catastre i OSM en una segona zona i comprovar que es preserven els edificis independents quan la font els distingeix. L’estudi de fonts fora d’Espanya i de GlobalBuildingAtlas queda com a referència. [Comparativa](RO-026-FONTS-EDIFICIS.md)
 
 ### RO-032 — Cobertes i volums singulars
+
+La v0.24.12 retalla l'àrea d'un model del catàleg dins d'una petjada que agrupa tota una mançana, conservant els veïns i els patis. La Pedrera passa tres casos locals amb MET5/RTT; queden la revisió al visor i el laminat de l'usuari. [Controls](arxiu/HISTORIAL.md#v02412--substitució-parcial-de-mançanes)
 
 **P1.** Revisar al visor els tres volums de Guiza i l’encaix de Mont-Saint-Michel, i comprovar-ne el laminat. [Proves d’ancoratge](arxiu/HISTORIAL.md#v02336--ancoratge-en-terrenys-en-pendent) Per a les cobertes generals, queda identificar una font de geometria 3D consultable des del navegador. El servei de careners documentat és en 2D. [Integració](RO-032-INTEGRACIO.md) · [Estudi de fonts](arxiu/RO-032-DADES-COBERTES.md)
 

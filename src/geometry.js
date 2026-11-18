@@ -1626,7 +1626,7 @@ function buildTransport(data,options,terrain,progress,infrastructureApi,diagnost
 
 function prepareLandmark(ctx,model,config){
   const {proj:{project},rect,land,ground,width,height,scale,options:{resolution},infrastructureApi}=ctx,grid=ctx.terrain?.terrainGrid;
-  const footprint=intersect(geoPolys({geometry:model.footprint},project),rect);
+  const originalFootprint=geoPolys({geometry:model.footprint},project),footprint=intersect(originalFootprint,rect);
   if(!footprint.length)return null;
   if(footprintArea(intersect(footprint,land))<footprintArea(footprint)-1e-5)throw Error('La petjada queda en aigua.');
   if(!validBuildingMesh(model))throw Error('La malla original no té una base o altura vàlida.');
@@ -1673,19 +1673,31 @@ function prepareLandmark(ctx,model,config){
   return {id,h:model.height,valid:true,p:{landmark:{name,revision,license,spatialDataLicense,attribution,sources,
     ...(anchorElevation===undefined?{}:{anchorElevation}),
     ...(terrainBaseElevation===undefined?{}:{terrainBaseElevation})}},
-    footprints:footprint,fragments:[{solid,count:1}],replacement};
+    footprints:footprint,fragments:[{solid,count:1}],replacement,
+    partialReplacementFootprints:intersect(originalFootprint.map(([outer])=>[outer]),rect)};
 }
 
-function coveredByLandmark(poly,id,family,landmarks){
-  if(!landmarks.length)return false;
+function outsideLandmarks(poly,id,family,sourcePoly,landmarks){
+  if(!landmarks.length)return [poly];
   const [ring]=poly,xs=ring.map(p=>p[0]),ys=ring.map(p=>p[1]);
   const west=Math.min(...xs),east=Math.max(...xs),south=Math.min(...ys),north=Math.max(...ys);
-  return landmarks.some(({footprints,replacement,bounds:[w,s,e,n]})=>{
-    if(e<=west||east<=w||n<=south||north<=s)return false;
-    const common=footprintArea(intersect([poly],footprints));
+  let remaining=[poly];
+  for(const {footprints,replacement,partialReplacementFootprints,bounds:[w,s,e,n]} of landmarks){
+    if(e<=west||east<=w||n<=south||north<=s)continue;
+    const common=footprintArea(intersect(remaining,footprints));
+    if(!common)continue;
     const identified=replacement?.featureIds?.includes(String(id))||replacement?.families?.includes(family);
-    return common>0&&(identified||common>=footprintArea([poly])*.55);
-  });
+    const comparisonArea=footprintArea([partialReplacementFootprints?sourcePoly:poly]);
+    if(identified||common>=comparisonArea*.55)return [];
+    // Some providers merge a whole connected block into one polygon. Remove
+    // just the catalogue footprint when that block covers most of the model.
+    // The original source area keeps a crop from turning a neighbour into a
+    // majority match. Terrain façades retain their explicit replacement policy.
+    // Clear the courtyard interiors too, deriving the outer mask before the
+    // crop can turn a closed courtyard into an open recess at the boundary.
+    if(partialReplacementFootprints&&common>=footprintArea(footprints)*.55)remaining=subtract(remaining,partialReplacementFootprints);
+  }
+  return remaining;
 }
 
 function prepareBuildingGeometry(ctx,config,progress,preview,measure=(_phase,run)=>run()){
@@ -1745,7 +1757,8 @@ function prepareBuildingGeometry(ctx,config,progress,preview,measure=(_phase,run
       for(const poly of polygons){
         const supportMask=bridgeSupports.get(String(id));
         const inside=intersect([poly],rect).filter(part=>
-          !(supportMask&&intersect([part],supportMask).length)&&!coveredByLandmark(part,id,p.family,landmarks));
+          !(supportMask&&intersect([part],supportMask).length)).flatMap(part=>
+          outsideLandmarks(part,id,p.family,poly,landmarks));
         if(buildingMode==='none'&&!urbanCover){footprints.push(...inside);continue;}
         const cover=urbanCover&&p.historical_urban;
         const dry=isDry(inside)?inside:intersect(inside,land);

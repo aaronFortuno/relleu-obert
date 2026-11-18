@@ -134,3 +134,9 @@ El motor col·loca la malla amb l’àncora WGS84, la posa a la cota superior de
 Amb exageració ×1,5, les dues maquetes conserven els 2.310 triangles de la torre amb OSM, ICGC i Catastre. La cota de la cúpula sobre el terreny a l’àncora és de 96,95 mm i 36,54 mm, respectivament. El 3MF registra la revisió i els crèdits. Les proves de regressió també cobreixen el tall a vora de peça i una malla invàlida.
 
 Al visor local s’ha comprovat la silueta amb la font per defecte, una peça de 10 × 10 cm i el centre de la torre a 1:2.000 sense gir i a 1:5.000 amb 15°. Queden pendents la revisió de l’usuari i el laminat.
+
+## Edificis dins de petjades agregades · v0.24.12
+
+Una petjada general pot representar tota una mançana connectada. Si cobreix almenys el 55% del model del catàleg però no es correspon majoritàriament amb aquest edifici, es retalla només l'envolupant del model. El retall inclou els patis interiors i es prepara abans de tallar la maqueta, per conservar també els buits que s'obren a la vora de la peça. La proporció de coincidència majoritària utilitza la superfície original de la font, evitant que un retall petit elimini un veí. Els identificadors explícits continuen reservats a contraparts verificades, sense afegir el d'una mançana sencera com si fos un sol monument.
+
+La Pedrera r1 passa els controls amb MET5/RTT a dues escales, dos girs i en un retall parcial. Els quatre buits es mantenen oberts i la coberta baixa conserva l'altura de la malla pròpia. La versió anterior omplia un pati amb la petjada general. Queden la revisió visual i el laminat de l'usuari. [Evidència i controls](arxiu/HISTORIAL.md#v02412--substitució-parcial-de-mançanes)
