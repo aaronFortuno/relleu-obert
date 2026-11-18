@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.24.13 — 2026-11-18
+
+- Els conjunts del catàleg poden carregar fins a 32 peces per retall, amb quatre càrregues simultànies, conservant l'ordre i els reintents. Això permet incorporar els tretze cossos de Sant Pau.
+- Els models que indiquen substitució per petjada conserven els volums exteriors no modelats encara que cobreixin la major part de la petjada general. Els identificadors verificats continuen substituint la seva contrapart completa.
+
 ## v0.24.12 — 2026-11-18
 
 - Els models d’edificis del catàleg poden substituir la seva part d’una petjada que agrupa tota una mançana, conservant els edificis veïns. Els patis es mantenen oberts també als retalls parcials.

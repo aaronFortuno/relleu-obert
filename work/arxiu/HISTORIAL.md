@@ -2,6 +2,14 @@
 
 Actualitzat el 2026-11-18. Les entrades validades surten del [backlog actiu](../BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.24.13 — Conjunts de més de vuit components
+
+RO-032 amplia el carregador de vuit a 32 components del catàleg per retall, amb quatre descàrregues i validacions simultànies i ordre estable. Sant Pau necessita tretze peces amb cotes pròpies sobre un desnivell de més de quinze metres. El mode opcional `replacement.mode: "footprint"` conserva les parts exteriors d'una petjada general encara que el model en cobreixi la majoria; els identificadors i les famílies verificats continuen substituint la contrapart completa.
+
+Les 39 proves específiques de catàleg, edificis, cobertes, aïllament, relleus i historial passen localment el 18 de novembre de 2026. Inclouen tretze càrregues, un màxim de quatre treballadors, ordre estable, límit de 32, reintents, una ala no modelada amb un 80% de solapament i el comportament anterior sense el nou mode. Build local correcte. La primera reconstrucció real amb el mode explícit de petjada serà Santa Maria del Mar; queda pendent d'aquella integració. La revisió de la web publicada i de CI correspon a l'usuari.
+
+Sant Pau passa tres casos locals amb MET5 i RTT: 240 × 260 mm a 1:2.000 / +10°, 200 × 180 mm a 1:3.500 / −23° i un retall parcial de 100 × 120 mm a 1:1.200 / −19°. S'integren tretze peces als casos complets i vuit al parcial. Els casos complets passen 50 contactes de fonament, 88 columnes de coberta, 37 raigs de façana i tres buits; el parcial passa 19, 28, 13 i dos respectivament. Es conserven les fonts veïnes, inclosa `icgc-1518054` al context ampli. Es retiren les catorze contraparts RTT i un fragment vectorial duplicat de Puríssima de 3,911 m², comprovat per polígon i sense convertir l'identificador agrupat en una substitució global. Malles de material tancades, límit de 5 m i ocultació correctes. Queden la revisió visual, el laminat i la impressió de l'usuari. [Model, diagnosi i informes](https://github.com/aaronFortuno/open-place-models/tree/main/models/recinte-modernista-sant-pau/r1)
+
 ## v0.24.12 — Substitució parcial de mançanes
 
 RO-032 detecta a La Pedrera una petjada RTT que agrupa tota la mançana: `icgc-1518230` cobreix el 99,43% del monument, que només ocupa el 12,38% de la petjada general. La v0.24.11 conserva aquesta extrusió i el control real falla perquè tapa el primer pati. La v0.24.12 retalla només l'envolupant del model, inclosos els seus patis. La proporció per considerar una petjada com a edifici propi es calcula abans del retall de la maqueta. Les substitucions per identificadors verificats i les façanes excavades mantenen la seva política.

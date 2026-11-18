@@ -1,5 +1,15 @@
 # RO-032 — Cobertes originals i primer singular
 
+## Conjunts i substitució per petjada · v0.24.13
+
+El carregador accepta fins a 32 components del catàleg per retall. Quatre treballadors completen cadascun la descàrrega, lectura i validació abans de començar una altra peça; els resultats conserven l'ordre de l'índex. Es mantenen la memòria cau, els reintents i l'avís quan hi ha més de 32 candidats. Sant Pau necessita tretze components amb ancoratges independents pel pendent del recinte.
+
+Un edifici pot declarar `replacement: {mode: "footprint"}`. En aquest cas es resta només l'envolupant del model de les petjades generals, inclosos els patis, encara que el model cobreixi la major part del polígon original. Això conserva les ales exteriors que no s'han reconstruït ni identificat amb certesa. La coincidència amb `featureIds` o `families` verificats continua substituint la contrapart completa; no s'ha d'afegir un identificador agregat sense comprovar-ne tot l'abast. Sense el nou mode, es conserva el comportament anterior. El parser l'admet només per a edificis i rebutja valors desconeguts.
+
+Les proves locals cobreixen una font amb el 80% modelat i una ala exterior conservada, un solapament petit, identificadors i famílies explícits, el comportament per defecte, tretze càrregues ordenades i el límit de 32 amb quatre treballadors. La comprovació visual d'usuari i el laminat es registren separadament.
+
+## Implementació inicial · v0.18.0
+
 Implementació v0.18.0, 2026-11-02. La cobertura general de Tamariu continua
 oberta: Catastre aporta volums, però no plans de teulada. No s'han inventat
 pendents sobre aquestes parts ni fusionat proveïdors per proximitat.
