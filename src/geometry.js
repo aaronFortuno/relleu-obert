@@ -1687,8 +1687,16 @@ function outsideLandmarks(poly,id,family,sourcePoly,landmarks){
     const common=footprintArea(intersect(remaining,footprints));
     if(!common)continue;
     const identified=replacement?.featureIds?.includes(String(id))||replacement?.families?.includes(family);
+    if(identified)return [];
+    // A verified equivalent may replace the complete source polygon. An
+    // opt-in footprint mask must preserve every unmodelled wing, including
+    // when the catalogue model covers most of that source polygon.
+    if(replacement?.mode==='footprint'){
+      remaining=subtract(remaining,partialReplacementFootprints||footprints);
+      continue;
+    }
     const comparisonArea=footprintArea([partialReplacementFootprints?sourcePoly:poly]);
-    if(identified||common>=comparisonArea*.55)return [];
+    if(common>=comparisonArea*.55)return [];
     // Some providers merge a whole connected block into one polygon. Remove
     // just the catalogue footprint when that block covers most of the model.
     // The original source area keeps a crop from turning a neighbour into a

@@ -96,6 +96,29 @@ test('catalogue and model failures can be retried while usable models remain ava
   assert.deepEqual([catalogueCalls,meshCalls,otherCalls],[2,2,1]);
 });
 
+test('footprint replacement mode loads only on buildings and rejects unknown values',async()=>{
+  const footprintReplacement={...replacement,mode:'footprint'},requests=[];
+  const load=createLandmarkLoader(catalogue,url=>{
+    requests.push(url);
+    return url===catalogue?collection(
+      tower({id:'legacy'}),
+      tower({id:'footprint',properties:{kind:'building',replacement:footprintReplacement}}),
+      tower({id:'default-building',properties:{replacement:{mode:'footprint'}}}),
+      tower({id:'unknown',properties:{replacement:{mode:'whole-block'}}}),
+      tower({id:'null-mode',properties:{replacement:{mode:null}}}),
+      tower({id:'landform-mode',properties:{kind:'landform',landform:{data:'terrain.json',verticalDatum:'EGM08D595',minimumWidth:10},replacement:footprintReplacement}}),
+      tower({id:'railway-mode',properties:{kind:'railway',railway:{data:'route.json'},replacement:footprintReplacement}})
+    ):glb();
+  });
+  const {models,warnings}=await load(crop);
+  assert.deepEqual(models.map(m=>m.id),['legacy','footprint','default-building']);
+  assert.deepEqual(models[0].replacement,replacement);
+  assert.deepEqual(models[1].replacement,footprintReplacement);
+  assert.deepEqual(models[2].replacement,{mode:'footprint'});
+  assert.equal(warnings.length,1);
+  assert.deepEqual(requests,[catalogue,mesh]);
+});
+
 test('bridge metadata is required and future model types do not affect buildings',async()=>{
   const axis=[[2.189,41.403,600],[2.189,41.405,607]];
   const deckRows=axis.map(([lon,lat,z])=>[[lon-.0001,lat,z],[lon+.0001,lat,z]]);
@@ -112,6 +135,16 @@ test('bridge metadata is required and future model types do not affect buildings
   assert.deepEqual(models[1].bridge,bridge);
   assert.deepEqual(catalogueBridgeItem(models[1]).supportFeatureIds,['42','icgc-808434','icgc-808442']);
   assert.equal(warnings.length,1);
+
+  const bridgeRequests=[];
+  const footprintBridge=createLandmarkLoader(catalogue,url=>{
+    bridgeRequests.push(url);
+    return url===catalogue?collection(tower({properties:{kind:'bridge',bridge,replacement:{mode:'footprint'}}})):glb();
+  });
+  const rejected=await footprintBridge(crop);
+  assert.deepEqual(rejected.models,[]);
+  assert.equal(rejected.warnings.length,1);
+  assert.deepEqual(bridgeRequests,[catalogue]);
 });
 
 test('pure terrain loads only the intersecting landform sidecar and rejects an unsafe cutter',async()=>{

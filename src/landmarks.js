@@ -53,7 +53,8 @@ function readCatalogue(data,directory){
       check([name,revision,mesh,attribution,license].every(label)&&Number.isFinite(height)&&height>0&&height<=1200&&
         Array.isArray(sources)&&sources.every(label)&&(spatialDataLicense===undefined||label(spatialDataLicense)));
       check(replacement===undefined||replacement&&typeof replacement==='object'&&!Array.isArray(replacement)&&
-        optionalIds(replacement.featureIds)&&optionalIds(replacement.families));
+        optionalIds(replacement.featureIds)&&optionalIds(replacement.families)&&
+        (replacement.mode===undefined||kind==='building'&&replacement.mode==='footprint'));
       if(kind==='bridge')check(validBridgeProfile(bridge)&&footprint.type==='Polygon');
       if(kind==='landform')check(validLandformProfile(landform));
       if(anchorElevation!==undefined)check(kind==='building'&&terrainBaseElevation===undefined&&Number.isFinite(anchorElevation)&&anchorElevation>=-500&&anchorElevation<=9000);

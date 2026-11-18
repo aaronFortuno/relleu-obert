@@ -87,6 +87,65 @@ test('catalogue replacement cuts its footprint out of a merged block and keeps a
   }
 });
 
+test('footprint replacement preserves an unmodelled wing despite majority overlap at rotated scales and crops',async()=>{
+  const api=await Module();api.setup();
+  // The model covers 80% of this continuous source, so the legacy majority
+  // heuristic would also discard its unmodelled four-metre eastern wing.
+  const block=feature('icgc-merged',[polygon(-8,-5,12,5)],{render_height:30});
+  const modelWithFootprint={...landmark,replacement:{...landmark.replacement,mode:'footprint'}};
+  for(const [denominator,rotation,east] of [[1000,0,0],[2500,31,0],[1000,19,50]]){
+    const center=geo([east,0]);
+    const model=generate({features:[block],denominator,rotation,center:[center[1],center[0]],models:[modelWithFootprint],api});
+    assert.equal(tower(model)?.roofShape,'catalogue');
+    assert(model.provenance.buildingVolumes.some(volume=>volume.id==='icgc-merged'),'The wing must retain its source identity');
+    const part=buildings(model),solid=new api.Manifold(new api.Mesh({numProp:3,vertProperties:part.vertices,triVerts:part.faces}));
+    assert.equal(solid.status(),'NoError');
+    const hits=east=>{
+      const [x,y]=model.context.proj.project(geo([east,0])),floor=model.context.ground(x,y),scale=model.context.proj.scale;
+      return solid.rayCast([x,y,floor+25*scale],[x,y,floor+40*scale]);
+    };
+    assert.equal(hits(4).length,0,'No general source roof may remain above the catalogue mesh');
+    assert(hits(10).length>0,'The unmodelled wing must keep its original 30 m roof');
+    const audit=auditPart(part);
+    assert.equal(audit.closed,true);
+    assert.deepEqual(audit.errors,[]);
+    assert(audit.bbox.min[0]>=-.001&&audit.bbox.min[1]>=-.001&&audit.bbox.max[0]<=100.001&&audit.bbox.max[1]<=100.001);
+    solid.delete();
+  }
+});
+
+test('footprint replacement cuts small intersections without requiring the source to cover most of the model',async()=>{
+  const api=await Module();api.setup();
+  const block=feature('icgc-merged',[polygon(-40,-5,-4,5)],{render_height:30});
+  const model=generate({features:[block],denominator:1000,models:[{...landmark,replacement:{mode:'footprint'}}],api});
+  const part=buildings(model),solid=new api.Manifold(new api.Mesh({numProp:3,vertProperties:part.vertices,triVerts:part.faces}));
+  assert.equal(solid.status(),'NoError');
+  const hits=east=>{
+    const [x,y]=model.context.proj.project(geo([east,0])),floor=model.context.ground(x,y);
+    return solid.rayCast([x,y,floor+25],[x,y,floor+40]);
+  };
+  assert.equal(hits(-6).length,0,'The source must be removed even from a small intersection with the model');
+  assert(hits(-20).length>0,'The source outside the footprint must remain');
+  assert.equal(auditPart(part).closed,true);
+  solid.delete();
+});
+
+test('footprint replacement retains complete substitution for verified IDs and families, with legacy behaviour unchanged',async()=>{
+  const api=await Module();api.setup();
+  for(const [id,family,mode] of [['icgc-tower',undefined,'footprint'],['other','cadastre-tower','footprint'],['icgc-merged',undefined,undefined]]){
+    const block=feature(id,[polygon(-8,-5,12,5)],{render_height:30,...(family?{family}:{})});
+    const model=generate({features:[block],denominator:1000,models:[{...landmark,replacement:{...landmark.replacement,...(mode?{mode}:{})}}],api});
+    assert.equal(tower(model)?.roofShape,'catalogue');
+    assert(!model.provenance.buildingVolumes.some(volume=>volume.id===id),'The complete equivalent/legacy majority source must be replaced');
+    const part=buildings(model),solid=new api.Manifold(new api.Mesh({numProp:3,vertProperties:part.vertices,triVerts:part.faces}));
+    assert.equal(solid.status(),'NoError');
+    const [x,y]=model.context.proj.project(geo([10,0])),floor=model.context.ground(x,y);
+    assert.equal(solid.rayCast([x,y,floor+25],[x,y,floor+40]).length,0);
+    assert.equal(auditPart(part).closed,true);
+    solid.delete();
+  }
+});
+
 test('partial block replacement clears a courtyard even when the crop opens its boundary',async()=>{
   const api=await Module();api.setup();
   const rings=[rectangle(-8,-5,8,5),rectangle(-2,-2,2,2).reverse()],surface=new Surface();
