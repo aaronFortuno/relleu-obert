@@ -1,5 +1,13 @@
 # RO-032 — Cobertes originals i primer singular
 
+## Conservació de les cares en retallar · v0.24.14
+
+El retall assigna un `faceID` propi a cada triangle d'entrada abans de construir el sòlid natiu. Això conserva les separacions entre les cares de la malla durant l'agrupació coplanària. La reparació topològica de la biblioteca continua activa; els identificadors no certifiquen ni substitueixen l'auditoria de la malla.
+
+Una regressió conserva l'esborrany Float32 de Santa Maria del Mar que reproduïa una elevació artificial de 2,547 mm al terrat lateral després de retallar. Cinc punts es contrasten directament contra els triangles originals, juntament amb el tancament, el volum positiu i la conservació dels buffers d'entrada. La prova falla abans de la correcció i passa després. La reconstrucció publicada del model elimina també els triangles degenerats del seu propi fitxer.
+
+Els controls regionals utilitzen raigs sobre els triangles exportats. La reconstrucció d'un sòlid auxiliar per llegir-lo pot reparar o retriangular l'entrada i comprovar una geometria diferent. Els controls de transport, les referències CAD/DSM i l'aprovació de semblança es documenten per separat. [Regressió i atribució](../tests/fixtures/santa-maria-roof-pre-cleanup.md)
+
 ## Conjunts i substitució per petjada · v0.24.13
 
 El carregador accepta fins a 32 components del catàleg per retall. Quatre treballadors completen cadascun la descàrrega, lectura i validació abans de començar una altra peça; els resultats conserven l'ordre de l'índex. Es mantenen la memòria cau, els reintents i l'avís quan hi ha més de 32 candidats. Sant Pau necessita tretze components amb ancoratges independents pel pendent del recinte.

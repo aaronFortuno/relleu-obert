@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.24.14 — 2026-11-18
+
+- Els retalls dels models singulars conserven les cares originals de les cobertes i els terrats. Es corregeix una deformació observada a Santa Maria del Mar quan el model travessava la vora de la maqueta.
+
 ## v0.24.13 — 2026-11-18
 
 - Els conjunts del catàleg poden carregar fins a 32 peces per retall, amb quatre càrregues simultànies, conservant l'ordre i els reintents. Això permet incorporar els tretze cossos de Sant Pau.

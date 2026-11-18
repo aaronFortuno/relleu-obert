@@ -2,6 +2,16 @@
 
 Actualitzat el 2026-11-18. Les entrades validades surten del [backlog actiu](../BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.24.14 — Terrats conservats als retalls
+
+RO-032 conserva els identificadors de cada cara triangular abans d'importar una malla al motor de retall. El cas real de Santa Maria del Mar reproduïa una elevació artificial del terrat lateral de 31,826 a 34,373 m ASL al retall parcial a 1:1.000. La màscara 2D ja era correcta i conservava els 111,67 m² d'annex nord; el canvi apareixia en reconstruir i tallar el sòlid 3D. La regressió amb l'esborrany anterior a la neteja falla abans de la correcció i passa després, contrastant cinc punts directament sobre els triangles exportats, el tancament i la immutabilitat dels buffers.
+
+Les 19 proves locals de retalls, juntes, cobertura de ponts, catàleg i historial passen amb heap de 256 MiB. Build local correcte. Els tres controls reals de Santa Maria del Mar passen amb la malla neta: 140 × 140 mm a 1:1.000 / +10°, 160 × 140 mm a 1:2.500 / −23° i 65 × 80 mm a 1:1.000 / −19°. Els dos casos complets conserven sis contactes, 49 columnes de superfície, deu raigs de façana i set buits; el parcial conserva quatre, 37, quatre i cap buit de la llista. Quatre punts dels volums generals del nord continuen presents en els tres casos. Només es retiren les dues contraparts RTT dels campanars als casos complets. Queden la revisió de l'usuari, el laminat i la impressió. [Model i informes](https://github.com/aaronFortuno/open-place-models/tree/main/models/santa-maria-del-mar/r1)
+
+## Protocol de memòria ajustat · 2026-11-18
+
+L'usuari autoritza reduir l'exigència de memòria per continuar els models. Les proves individuals o els retalls amb dades carregades poden començar amb 1,25 GiB lliures i heap de 256 MiB; per a suites, builds o heap de 512 MiB es procura un marge inicial de 2 GiB. Es conserva una sola operació pesada i s'atura només la cua pròpia si el marge baixa de 0,75 GiB. Les dues proves especials amb heap de 1.536 MiB mantenen el requisit de 4 GiB. Es treballa per retalls seqüencials i es conserven els resultats parcials. El canvi és del protocol de desenvolupament, sense canvi de versió de l'aplicació.
+
 ## v0.24.13 — Conjunts de més de vuit components
 
 RO-032 amplia el carregador de vuit a 32 components del catàleg per retall, amb quatre descàrregues i validacions simultànies i ordre estable. Sant Pau necessita tretze peces amb cotes pròpies sobre un desnivell de més de quinze metres. El mode opcional `replacement.mode: "footprint"` conserva les parts exteriors d'una petjada general encara que el model en cobreixi la majoria; els identificadors i les famílies verificats continuen substituint la contrapart completa.

@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Revisat el **2026-11-18** amb la v0.24.13. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
+Revisat el **2026-11-18** amb la v0.24.14. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
 
 ## Validacions de la v0.24
 
@@ -45,6 +45,8 @@ Al-Khazneh r1 passa els controls d’encaix locals a 1:500 i 1:1.000 i en un ret
 La v0.24.12 retalla l'àrea d'un model del catàleg dins d'una petjada que agrupa tota una mançana, conservant els veïns i els patis. La Pedrera passa tres casos locals amb MET5/RTT; queden la revisió al visor i el laminat de l'usuari. [Controls](arxiu/HISTORIAL.md#v02412--substitució-parcial-de-mançanes)
 
 La v0.24.13 amplia el carregador a 32 components per retall, amb quatre càrregues simultànies. Incorpora també una substitució explícita per petjada per conservar ales no modelades d'una font agregada. Sant Pau passa tres retalls locals amb tretze peces completes i vuit al parcial; Santa Maria del Mar serà el primer control real del nou mode de substitució. [Contracte](RO-032-INTEGRACIO.md#conjunts-i-substitució-per-petjada--v02413)
+
+La v0.24.14 conserva les cares dels terrats durant el retall. Santa Maria del Mar passa tres casos locals amb la malla neta, inclosa la conservació dels 111,67 m² d'annex general no modelat. La regressió específica reprodueix l'error anterior i passa amb la correcció. Els controls llegeixen directament els triangles exportats; queden la revisió visual de l'usuari i el laminat. [Controls](arxiu/HISTORIAL.md#v02414--terrats-conservats-als-retalls)
 
 **P1.** Revisar al visor els tres volums de Guiza i l’encaix de Mont-Saint-Michel, i comprovar-ne el laminat. [Proves d’ancoratge](arxiu/HISTORIAL.md#v02336--ancoratge-en-terrenys-en-pendent) Per a les cobertes generals, queda identificar una font de geometria 3D consultable des del navegador. El servei de careners documentat és en 2D. [Integració](RO-032-INTEGRACIO.md) · [Estudi de fonts](arxiu/RO-032-DADES-COBERTES.md)
 

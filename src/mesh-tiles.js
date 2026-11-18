@@ -5,7 +5,15 @@ import {zipSync,strToU8} from 'fflate';
 export function splitModel(model,api,maxOrPlan=MAX_PRINT_TILE_MM,progress=()=>{}){
   const plan=maxOrPlan?.tiles?maxOrPlan:tilePlan(model.width,model.height,maxOrPlan),solids=[];
   try{
-    for(const part of model.parts){const mesh=new api.Mesh({numProp:3,vertProperties:part.vertices,triVerts:part.faces});mesh.merge();const solid=new api.Manifold(mesh);solids.push({part,solid});if(solid.status()!=='NoError')throw Error(`No es pot dividir la capa «${part.name}»: cal revisar-ne la malla.`);}
+    for(const part of model.parts){
+      // Preserve each input triangle's plane during native coplanar grouping.
+      // Float32 degeneracies can otherwise join a terrace to a higher roof.
+      // Native topology repair still applies; this is not a mesh-validity bypass.
+      const faceID=Uint32Array.from({length:part.faces.length/3},(_,index)=>index);
+      const mesh=new api.Mesh({numProp:3,vertProperties:part.vertices,triVerts:part.faces,faceID});
+      mesh.merge();const solid=new api.Manifold(mesh);solids.push({part,solid});
+      if(solid.status()!=='NoError')throw Error(`No es pot dividir la capa «${part.name}»: cal revisar-ne la malla.`);
+    }
     return plan.tiles.map((tile,i)=>{
       progress(`Tancant la peça ${i+1}/${plan.tiles.length}…`);const parts=[];
       for(const {part,solid}of solids){let cut=solid;try{
