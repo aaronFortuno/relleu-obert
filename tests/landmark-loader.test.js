@@ -72,6 +72,45 @@ test('only intersecting landmarks load and concurrent requests share both caches
   assert.deepEqual(requests,[catalogue,mesh]);
 });
 
+test('thirteen components load in catalogue order with at most four complete asset loads',async()=>{
+  const entries=Array.from({length:13},(_,i)=>tower({id:'component-'+i,properties:{mesh:`models/component-${i}/r1/print.glb`}}));
+  const bytes=new Uint8Array(await glb().arrayBuffer()),requests=[],completed=[];
+  let active=0,maximumActive=0;
+  const load=createLandmarkLoader(catalogue,url=>{
+    requests.push(url);
+    if(url===catalogue)return collection(...entries);
+    const index=Number(url.match(/component-(\d+)/)[1]);
+    return new Response(new ReadableStream({async start(controller){
+      active++;maximumActive=Math.max(maximumActive,active);
+      await new Promise(resolve=>setTimeout(resolve,index===0?25:1+(index%3)*2));
+      controller.enqueue(bytes);active--;completed.push(index);controller.close();
+    }}));
+  });
+  const [first,concurrent]=await Promise.all([load(crop),load(crop)]);
+  assert.deepEqual(first.models.map(m=>m.id),entries.map(e=>e.id));
+  assert.deepEqual(first.warnings,[]);
+  assert.deepEqual(concurrent,first);
+  assert.equal(maximumActive,4);
+  assert.equal(active,0);
+  assert.notEqual(completed[0],0,'The responses must finish out of catalogue order');
+  assert.deepEqual(await load(crop),first);
+  assert.equal(requests.length,14,'Concurrent calls and cached repeats must share catalogue and asset requests');
+  assert.equal(new Set(requests).size,14);
+});
+
+test('more than thirty-two candidates keeps the first thirty-two and reports the limit',async()=>{
+  const entries=Array.from({length:34},(_,i)=>tower({id:'component-'+i,properties:{mesh:`models/component-${i}/r1/print.glb`}})),requests=[];
+  const load=createLandmarkLoader(catalogue,url=>{
+    requests.push(url);
+    return url===catalogue?collection(...entries):glb();
+  });
+  const {models,warnings}=await load(crop);
+  assert.deepEqual(models.map(m=>m.id),entries.slice(0,32).map(e=>e.id));
+  assert.equal(warnings.length,1);
+  assert.match(warnings[0],/Es conserva la geometria/);
+  assert.deepEqual(requests,[catalogue,...entries.slice(0,32).map(e=>new URL(e.properties.mesh,catalogue).href)]);
+});
+
 test('catalogue and model failures can be retried while usable models remain available',async()=>{
   let catalogueCalls=0,meshCalls=0,otherCalls=0;
   const load=createLandmarkLoader(catalogue,url=>{

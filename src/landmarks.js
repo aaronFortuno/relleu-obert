@@ -183,12 +183,21 @@ export function createLandmarkLoader(catalogueURL,fetcher=fetch){
     try{catalogueData=await catalogueRequest;}
     catch{return {models,warnings:[catalogueWarning]};}
     const candidates=catalogueData.entries.filter(entry=>(!kinds||kinds.includes(entry.kind))&&intersects(entry.bbox,bbox));
-    const results=await Promise.allSettled(candidates.slice(0,8).map(async ({url,...entry})=>{
-      const asset=await assetRequest(url,entry.kind);
-      if(entry.kind==='railway')check(asset.paths.every(path=>path.points.every(point=>inside(entry.bbox,point.slice(0,2)))));
-      return {...entry,...asset};
+    const selected=candidates.slice(0,32),results=new Array(selected.length);
+    let next=0;
+    // Keep fetching, decoding and validation in the same bounded worker. A
+    // slow asset must not reorder the catalogue or stop the remaining queue.
+    await Promise.all(Array.from({length:Math.min(4,selected.length)},async()=>{
+      while(next<selected.length){
+        const index=next++,{url,...entry}=selected[index];
+        try{
+          const asset=await assetRequest(url,entry.kind);
+          if(entry.kind==='railway')check(asset.paths.every(path=>path.points.every(point=>inside(entry.bbox,point.slice(0,2)))));
+          results[index]={...entry,...asset};
+        }catch{/* Keep general geometry and allow a later load to retry. */}
+      }
     }));
-    for(const result of results)if(result.status==='fulfilled')models.push(result.value);
+    for(const result of results)if(result)models.push(result);
     if(catalogueData.incomplete||models.length<candidates.length)warnings.push(meshWarning);
     return {models,warnings};
   };
