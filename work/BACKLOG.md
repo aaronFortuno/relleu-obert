@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Revisat el **2026-11-18** amb la v0.24.15. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
+Revisat el **2026-11-18** amb la v0.24.16. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
 
 ## Validacions de la v0.24
 
@@ -51,6 +51,8 @@ La v0.24.14 conserva les cares dels terrats durant el retall. Santa Maria del Ma
 La v0.24.15 retira el pont procedimental duplicat quan una malla pròpia acceptada inclou el pont i declara l'identificador i l'àmbit verificats. Es conserven els altres trams de l'agregat i els accessos; la font es recupera en canviar de mode. Les 65 regressions i el build local passen. Montjuïc supera els tres controls regionals: 27 peus i nou suports laterals als casos complets, quatre i dos al parcial. Dos buits del pont gairebé ocupats per MET5 es registren com a limitacions del terreny, contrastades amb DTM de 0,5 m; no es donen per nets o imprimibles. Queden la revisió visual i el laminat de l'usuari. [Contracte](RO-032-INTEGRACIO.md#pont-inclòs-en-una-malla-dedifici--v02415) · [Controls](arxiu/HISTORIAL.md#v02415--ponts-inclosos-en-models-singulars)
 
 **P1.** Revisar al visor els tres volums de Guiza i l’encaix de Mont-Saint-Michel, i comprovar-ne el laminat. [Proves d’ancoratge](arxiu/HISTORIAL.md#v02336--ancoratge-en-terrenys-en-pendent) Per a les cobertes generals, queda identificar una font de geometria 3D consultable des del navegador. El servei de careners documentat és en 2D. [Integració](RO-032-INTEGRACIO.md) · [Estudi de fonts](arxiu/RO-032-DADES-COBERTES.md)
+
+La v0.24.16 amplia l'índex estàtic a 2 MiB, coordinat amb el formatador d'Open Place Models per sostenir la cua aprovada. Manté el format v1, les petjades completes i la càrrega regional limitada. Les 66 regressions i el build passen; l'índex actual de 456.963 bytes continua idèntic. [Capacitat i límits](RO-032-INTEGRACIO.md#capacitat-de-líndex-estàtic--v02416)
 
 ## Validació en ús i seguiment
 

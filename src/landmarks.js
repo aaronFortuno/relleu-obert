@@ -3,7 +3,7 @@ import {decodeLandform,validLandformProfile} from './catalogue-landforms.js';
 import {decodeRailway} from './catalogue-railways.js';
 import {validTransportReplacement} from './catalogue-transport.js';
 
-const catalogueLimit=512*1024,meshLimit=4*1024*1024,sidecarLimit=256*1024;
+const catalogueLimit=2*1024*1024,meshLimit=4*1024*1024,sidecarLimit=256*1024;
 const catalogueWarning='No s’ha pogut carregar el catàleg de models singulars.';
 const meshWarning='No s’ha pogut carregar algun model singular. Es conserva la geometria de la cartografia general.';
 const decoder=new TextDecoder('utf-8',{fatal:true});

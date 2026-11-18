@@ -2,6 +2,12 @@
 
 Actualitzat el 2026-11-18. Les entrades validades surten del [backlog actiu](../BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.24.16 — Capacitat per al creixement del catàleg
+
+RO-032 coordina amb Open Place Models un pressupost d'índex de 2 MiB. El catàleg actual ocupa 456.963 bytes amb 53 llocs i 77 features; la cua aprovada necessita més marge que els 512 KiB anteriors. El formatador conserva el llindar de compactació de 512 KiB i el fitxer actual és idèntic byte per byte. No es redueixen petjades ni es modifica l'esquema v1. Es mantenen els altres pressupostos de malla, sidecars, candidats i càrregues simultànies.
+
+Les 66 regressions passen amb heap de 256 MiB i el build local és correcte. El carregador accepta un índex declarat de 600 KiB i un flux de 2 MiB exactes, i només demana la malla del retall. Els excessos declarats i transmesos es cancel·len abans de descodificar; el límit separat de 4 MiB de GLB es conserva. El formatador s'ha comprovat amb 634.198 bytes i amb un fitxer superior a 2 MiB, que rebutja sense sobreescriure. La web publicada i CI els revisa l'usuari.
+
 ## v0.24.15 — Ponts inclosos en models singulars
 
 RO-032 incorpora una substitució opcional de trams de pont per identificador i àmbit geogràfic, condicionada a l'admissió real de la malla pròpia. Conserva els altres membres d'un agregat, els forats de petjada, els accessos i les parts exteriors de les línies. Els canvis a altura limitada o ocultació recuperen el transport ordinari. Les regressions cobreixen també una malla invàlida i els petits buits que el muntador de ponts podria tornar a unir.

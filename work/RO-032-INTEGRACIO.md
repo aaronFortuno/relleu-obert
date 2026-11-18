@@ -1,5 +1,11 @@
 # RO-032 — Cobertes originals i primer singular
 
+## Capacitat de l'índex estàtic · v0.24.16
+
+El catàleg compta 53 llocs i 77 features; l'índex font compactat ocupa 456.963 bytes. La cua aprovada de nous llocs superaria el marge anterior de 512 KiB. El consumidor i el formatador d'Open Place Models coordinen un pressupost de 2 MiB sense canviar l'esquema v1, les petjades o les adreces dels fitxers. Es conserva el format compacte quan la versió indentada supera 512 KiB, evitant que ampliar el límit engreixi les dades existents.
+
+El carregador controla tant el Content-Length com els bytes reals del flux abans de descodificar el JSON. Es mantenen els 4 MiB per malla, els 256 KiB per sidecar, els 32 candidats regionals i quatre treballadors. Les versions anteriors continuen admetent els índexs de menys de 512 KiB; si el catàleg supera aquella mida cal actualitzar el consumidor. Qualsevol futura partició geogràfica requerirà un contracte coordinat, no retallar les petjades existents per encabir-les.
+
 ## Pont inclòs en una malla d'edifici · v0.24.15
 
 Un model d'edifici pot incloure el pont d'accés dins de la seva maçoneria. En aquest cas pot declarar `replacement.transport: [{featureId, bbox}]`: identificador decimal de la font vectorial i àmbit WGS84 dins del bbox del model. El contracte admet fins a 32 entrades i rebutja camps o límits invàlids. L'identificador pot agrupar molts elements: no es retira globalment.

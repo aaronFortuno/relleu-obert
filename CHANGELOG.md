@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.24.16 — 2026-11-18
+
+- El catàleg de models singulars admet un índex de fins a 2 MiB per donar marge als llocs previstos. Es mantenen la selecció geogràfica, els límits de cada malla i la protecció davant respostes massa grans.
+
 ## v0.24.15 — 2026-11-18
 
 - Un model singular que ja inclou un pont pot substituir-ne el tram procedimental dins d'un àmbit verificat. Es conserven altres trams del mateix identificador, els accessos i la font general quan la malla falla o s'utilitza un altre mode d'edificis.

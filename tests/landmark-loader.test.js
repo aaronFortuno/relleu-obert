@@ -322,16 +322,47 @@ test('GLB rejects unsupported transforms, oversized accessors and indices outsid
   }
 });
 
+test('catalogue growth above 512 KiB and up to 2 MiB retains the v1 format and selective mesh loading',async()=>{
+  const json=new TextEncoder().encode(JSON.stringify({type:'FeatureCollection',schemaVersion:1,
+    features:[tower(),tower({id:'outside',bbox:[10,50,11,51],properties:{mesh:'outside.glb'}})]}));
+  for(const [size,chunked]of[[600*1024,false],[2*1024*1024,true]]){
+    const body=new Uint8Array(size).fill(32);body.set(json);
+    const requests=[];
+    const load=createLandmarkLoader(catalogue,url=>{
+      requests.push(url);if(url!==catalogue)return glb();
+      return chunked?new Response(new ReadableStream({start(controller){
+        controller.enqueue(body.subarray(0,size/2));controller.enqueue(body.subarray(size/2));controller.close();
+      }})):new Response(body,{headers:{'content-length':String(size)}});
+    });
+    const result=await load(crop);
+    assert.deepEqual(result.models.map(m=>m.id),['tower']);
+    assert.deepEqual(result.warnings,[]);
+    assert.deepEqual(requests,[catalogue,mesh]);
+  }
+});
+
 test('byte limits reject declared and streamed oversize responses before parsing',async()=>{
   const stated=new Response('small',{headers:{'content-length':'4194305'}});
   const load=createLandmarkLoader(catalogue,url=>url===catalogue?collection(tower()):stated);
   assert.deepEqual((await load(crop)).models,[]);
   let cancelled=false;
   const streamed=new Response(new ReadableStream({
-    start(controller){controller.enqueue(new Uint8Array(512*1024+1));},
+    start(controller){controller.enqueue(new Uint8Array(2*1024*1024+1));},
     cancel(){cancelled=true;}
   }));
   const unavailable=createLandmarkLoader(catalogue,()=>streamed);
   assert.match((await unavailable(crop)).warnings[0],/catàleg/);
   assert.equal(cancelled,true);
+  let declaredCancelled=false,meshRequests=0;
+  const oversized=new Response(new ReadableStream({
+    start(controller){controller.enqueue(new Uint8Array([123]));},
+    cancel(){declaredCancelled=true;}
+  }),{headers:{'content-length':String(2*1024*1024+1)}});
+  const declared=createLandmarkLoader(catalogue,url=>{
+    if(url===catalogue)return oversized;
+    meshRequests++;return glb();
+  });
+  assert.match((await declared(crop)).warnings[0],/catàleg/);
+  assert.equal(declaredCancelled,true);
+  assert.equal(meshRequests,0);
 });
