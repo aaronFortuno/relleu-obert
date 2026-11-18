@@ -1,6 +1,7 @@
 import {validBridgeProfile} from './catalogue-bridges.js';
 import {decodeLandform,validLandformProfile} from './catalogue-landforms.js';
 import {decodeRailway} from './catalogue-railways.js';
+import {validTransportReplacement} from './catalogue-transport.js';
 
 const catalogueLimit=512*1024,meshLimit=4*1024*1024,sidecarLimit=256*1024;
 const catalogueWarning='No s’ha pogut carregar el catàleg de models singulars.';
@@ -54,7 +55,8 @@ function readCatalogue(data,directory){
         Array.isArray(sources)&&sources.every(label)&&(spatialDataLicense===undefined||label(spatialDataLicense)));
       check(replacement===undefined||replacement&&typeof replacement==='object'&&!Array.isArray(replacement)&&
         optionalIds(replacement.featureIds)&&optionalIds(replacement.families)&&
-        (replacement.mode===undefined||kind==='building'&&replacement.mode==='footprint'));
+        (replacement.mode===undefined||kind==='building'&&replacement.mode==='footprint')&&
+        validTransportReplacement(replacement.transport,kind,bbox));
       if(kind==='bridge')check(validBridgeProfile(bridge)&&footprint.type==='Polygon');
       if(kind==='landform')check(validLandformProfile(landform));
       if(anchorElevation!==undefined)check(kind==='building'&&terrainBaseElevation===undefined&&Number.isFinite(anchorElevation)&&anchorElevation>=-500&&anchorElevation<=9000);

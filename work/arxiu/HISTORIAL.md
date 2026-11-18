@@ -2,6 +2,14 @@
 
 Actualitzat el 2026-11-18. Les entrades validades surten del [backlog actiu](../BACKLOG.md), mantenint identificadors i evidència. Una incidència nova es pot reobrir sense renumerar-la.
 
+## v0.24.15 — Ponts inclosos en models singulars
+
+RO-032 incorpora una substitució opcional de trams de pont per identificador i àmbit geogràfic, condicionada a l'admissió real de la malla pròpia. Conserva els altres membres d'un agregat, els forats de petjada, els accessos i les parts exteriors de les línies. Els canvis a altura limitada o ocultació recuperen el transport ordinari. Les regressions cobreixen també una malla invàlida i els petits buits que el muntador de ponts podria tornar a unir.
+
+La comprovació de Montjuïc identifica un pont genèric superposat: arriba a 177,338 m al tram curt, mentre el tauler propi és a 176,419 m. Els tres diagnòstics regionals conserven les 36 columnes de superfície després de la correcció. La validació final de la maçoneria continua en curs: les bases d'alguns murs es contrasten amb perfils fins del costat baix. El terreny MET5 encara ocupa el centre de l'arc exterior i gairebé tot el buit sota el tram llevadís, tot i que el DTM de 0,5 m confirma els buits reals. Aquesta versió no modifica el terreny per compensar-ho.
+
+Les 65 regressions locals de carregador, catàleg, substitució de transport, ponts, retalls i historial passen amb heap de 256 MiB. Inclouen els marcadors de tall després d'unir continuacions d'altres identificadors, en tots dos ordres. Build local correcte. La revisió al visor, el laminat i la impressió física corresponen a l'usuari.
+
 ## v0.24.14 — Terrats conservats als retalls
 
 RO-032 conserva els identificadors de cada cara triangular abans d'importar una malla al motor de retall. El cas real de Santa Maria del Mar reproduïa una elevació artificial del terrat lateral de 31,826 a 34,373 m ASL al retall parcial a 1:1.000. La màscara 2D ja era correcta i conservava els 111,67 m² d'annex nord; el canvi apareixia en reconstruir i tallar el sòlid 3D. La regressió amb l'esborrany anterior a la neteja falla abans de la correcció i passa després, contrastant cinc punts directament sobre els triangles exportats, el tancament i la immutabilitat dels buffers.

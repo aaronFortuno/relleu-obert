@@ -1,5 +1,9 @@
 # Canvis
 
+## v0.24.15 — 2026-11-18
+
+- Un model singular que ja inclou un pont pot substituir-ne el tram procedimental dins d'un àmbit verificat. Es conserven altres trams del mateix identificador, els accessos i la font general quan la malla falla o s'utilitza un altre mode d'edificis.
+
 ## v0.24.14 — 2026-11-18
 
 - Els retalls dels models singulars conserven les cares originals de les cobertes i els terrats. Es corregeix una deformació observada a Santa Maria del Mar quan el model travessava la vora de la maqueta.

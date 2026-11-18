@@ -158,6 +158,29 @@ test('footprint replacement mode loads only on buildings and rejects unknown val
   assert.deepEqual(requests,[catalogue,mesh]);
 });
 
+test('building transport replacement requires explicit valid local source scopes',async()=>{
+  const rule={featureId:'618920730',bbox:[2.185,41.402,2.19,41.405]};
+  const invalid=[null,{},'618920730',[null],[{...rule,featureId:618920730}],[{...rule,featureId:'all'}],
+    [{...rule,bbox:[2.185,41.402,2.185,41.405]}],[{...rule,bbox:[-181,41.4,2.19,41.405]}],
+    [{...rule,bbox:[2.17,41.402,2.19,41.405]}],[{...rule,bbox:[2.185,41.402,Infinity,41.405]}],
+    [{...rule,bbox:[2.185,41.402,2.19]}],[{...rule,wholeFeature:true}],[rule,rule],Array(33).fill(rule)];
+  const requests=[],load=createLandmarkLoader(catalogue,url=>{
+    requests.push(url);
+    return url===catalogue?collection(
+      tower({id:'legacy'}),tower({id:'scoped',properties:{replacement:{mode:'footprint',transport:[rule]}}}),
+      tower({id:'empty',properties:{replacement:{transport:[]}}}),
+      ...invalid.map((transport,i)=>tower({id:'invalid-'+i,properties:{replacement:{transport}}})),
+      tower({id:'bridge-transport',properties:{kind:'bridge',replacement:{transport:[rule]}}}),
+      tower({id:'landform-transport',properties:{kind:'landform',replacement:{transport:[rule]}}})
+    ):glb();
+  });
+  const {models,warnings}=await load(crop);
+  assert.deepEqual(models.map(model=>model.id),['legacy','scoped','empty']);
+  assert.deepEqual(models[1].replacement.transport,[rule]);
+  assert.equal(warnings.length,1);
+  assert.deepEqual(requests,[catalogue,mesh]);
+});
+
 test('bridge metadata is required and future model types do not affect buildings',async()=>{
   const axis=[[2.189,41.403,600],[2.189,41.405,607]];
   const deckRows=axis.map(([lon,lat,z])=>[[lon-.0001,lat,z],[lon+.0001,lat,z]]);

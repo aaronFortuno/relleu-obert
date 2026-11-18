@@ -162,7 +162,7 @@ function joinTileOverlaps(fragments){
 
 // Join only compatible route/level/width fragments at unambiguous degree-2
 // endpoints. A width change stays explicit instead of inheriting A.props.
-function joinFragments(fragments){
+function joinFragments(fragments,cutEnds){
   const groups=new Map();
   for(const f of fragments){
     const key=f.group;
@@ -177,8 +177,12 @@ function joinFragments(fragments){
       changed=false;
       const ends=new Map();
       frags.forEach((f,i)=>{
-        ends.set(endKey(f.points[0]),(ends.get(endKey(f.points[0]))||[]).concat([[i,0]]));
-        ends.set(endKey(f.points[f.points.length-1]),(ends.get(endKey(f.points[f.points.length-1]))||[]).concat([[i,1]]));
+        // A catalogue building deliberately cut this axis. The usual metre
+        // seam tolerance must not reconnect the two sides across a small cut.
+        const cut=point=>cutEnds.get(f.group)?.some(p=>
+          Math.abs(p[0]-point[0])<1e-10&&Math.abs(p[1]-point[1])<1e-10);
+        if(!cut(f.points[0]))ends.set(endKey(f.points[0]),(ends.get(endKey(f.points[0]))||[]).concat([[i,0]]));
+        if(!cut(f.points.at(-1)))ends.set(endKey(f.points.at(-1)),(ends.get(endKey(f.points.at(-1)))||[]).concat([[i,1]]));
       });
       for(const list of ends.values()){
         if(list.length!==2)continue; // grau 3+ (bifurcació) o extrem lliure: no s'hi toca
@@ -239,7 +243,14 @@ export function generateProceduralBridgeItems(features,elevationAt,{scale=.1,min
     }
   });
   if(droppedFragments)warnings.push(`Pressupost d'unió aplicat: ${droppedFragments} fragments omesos (límits de ${MAX_FRAGMENTS} fragments i ${MAX_TOTAL_POINTS} punts).`);
-  const axes=joinFragments(joinTileOverlaps(fragments));
+  // Keep deliberate cut ends before overlap/continuation joins can inherit
+  // another fragment's properties or discard a contained tile copy.
+  const cutEnds=new Map();
+  for(const f of fragments)if(Array.isArray(f.props.catalogueTransportCuts)){
+    const points=f.props.catalogueTransportCuts.filter(p=>Array.isArray(p)&&p.length>=2&&p.slice(0,2).every(Number.isFinite));
+    if(points.length)cutEnds.set(f.group,[...(cutEnds.get(f.group)||[]),...points]);
+  }
+  const axes=joinFragments(joinTileOverlaps(fragments),cutEnds);
   // Orientació canònica per coordenades d'extrems: invertir l'ordre dels
   // fragments d'entrada no pot canviar la posició dels pilars entre retalls.
   for(const axis of axes){

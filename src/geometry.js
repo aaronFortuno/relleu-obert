@@ -22,6 +22,7 @@ import {lineBuffer} from './roads.js';
 import {isRailway,isInactiveRailway,railwayOptions,railwayWidthMetres} from './railways.js';
 import {surfaceRailAxes,railwaySections,corridorPatches} from './railway-surface.js';
 import {applyCatalogueRailways} from './catalogue-railways.js';
+import {applyBuildingTransportReplacements,validTransportReplacement} from './catalogue-transport.js';
 import {principalSurface,principalAxes,principalSections} from './principal-road-surface.js';
 import {buildingOptions,buildingRise} from './building-options.js';
 import {splitModel} from './mesh-tiles.js';
@@ -782,8 +783,34 @@ export function buildModel(data,options={},progress=()=>{},infrastructureApi=nul
   options={...options,baseThickness:modelBaseThickness(options.baseThickness)};
   if(options.pureRelief)return buildPureRelief(data,options,progress,preview,infrastructureApi);
   preview?.stage('terrain','Preparant el relleu…');
+  const originalData=data;
   data=applyCatalogueRailways(data);
-  const terrain=prepareTerrain(data,options,progress,preview,phaseTimer(diagnostics));
+  const measure=phaseTimer(diagnostics);
+  let terrain=prepareTerrain(data,options,progress,preview,measure);
+  const transportModels=(data.singularModels??[]).filter(model=>model.replacement?.transport?.length&&
+    validTransportReplacement(model.replacement.transport,model.kind??'building',model.bbox));
+  if(transportModels.length){
+    // Ordinary catalogue entries retain the existing one-pass path. Only an
+    // explicit transport override requires admitting the real building solid
+    // before changing any procedural source, including at a crop boundary.
+    terrain.catalogueTransportOriginalData=originalData;
+    const config=buildingOptions(options);
+    if(config.buildingMode==='source'&&data.meta.historical?.layer!=='urban'){
+      const accepted=measure('catalogue.transport-admission',()=>transportModels.flatMap(model=>{
+        try{
+          const prepared=prepareLandmark({...terrain,...terrain.proj,terrain,options,infrastructureApi},model,config);
+          return prepared?[{model,prepared}]:[];
+        }catch{return [];}
+      }));
+      const replaced=applyBuildingTransportReplacements(data,accepted);
+      if(replaced!==data){
+        data=replaced;
+        terrain=measure('catalogue.transport-terrain',()=>prepareTerrain(data,options,progress,preview,measure));
+        terrain.catalogueTransportOriginalData=originalData;
+        terrain.catalogueTransportLandmarks=new Map(accepted.map(entry=>[entry.model.id,entry]));
+      }
+    }
+  }
   preview?.parts('terrain',terrain.surfaces,terrain.proj);
   return buildTransport(data,options,terrain,progress,infrastructureApi,diagnostics,undefined,undefined,preview);
 }
@@ -1734,7 +1761,8 @@ function prepareBuildingGeometry(ctx,config,progress,preview,measure=(_phase,run
   if(buildingMode!=='none'&&!urbanCover)for(const model of ctx.singularModels||[]){
     if(model.kind&&model.kind!=='building')continue;
     try{
-      const landmark=prepareLandmark(ctx,model,config);
+      const admitted=buildingMode==='source'?ctx.terrain?.catalogueTransportLandmarks?.get(model.id):null;
+      const landmark=admitted?.model===model?admitted.prepared:prepareLandmark(ctx,model,config);
       if(!landmark)continue;
       landmarks.push(withBounds(landmark));
       prepared.push(landmark);
@@ -1834,6 +1862,16 @@ export function updateBuildings(previous,layer={},changes={},progress=()=>{},pre
   const old=previous.context,options={...old.options,...changes},config=buildingOptions(options),{buildingMode,maxBuildingHeight}=config;
   const switchingHistory=Object.hasOwn(layer,'historical');
   const historical=switchingHistory?layer.historical??undefined:old.meta.historical;
+  const originalData=old.terrain?.catalogueTransportOriginalData;
+  if(originalData&&((buildingOptions(old.options).buildingMode==='source')!==(buildingMode==='source')||switchingHistory)){
+    // Hiding/flattening a catalogue mesh must restore its ordinary bridge.
+    // Preserve the original transport, not the locally filtered aggregation.
+    const meta={...old.meta,...layer.meta,historical};
+    delete meta.catalogueTransportReplacements;
+    const features=[...originalData.features.filter(f=>f.properties?.sourceLayer!=='building'),
+      ...(layer.features||old.buildingFeatures).filter(f=>f.properties?.sourceLayer==='building')];
+    return buildModel({...originalData,meta,features},options,progress,old.infrastructureApi,null,preview);
+  }
   const ctx={...old,options:{...options,...config},meta:{...(layer.meta||old.meta),historical,infrastructure:old.meta.infrastructure,tunnels:old.meta.tunnels,railways:old.meta.railways,majorRoads:old.meta.majorRoads,transportContinuity:old.meta.transportContinuity,catalogueLandforms:old.meta.catalogueLandforms,catalogueLandformOmissions:old.meta.catalogueLandformOmissions},buildingFeatures:layer.features||old.buildingFeatures,vegetationCache:null};
   const {width,height,ground,scale,rect}=ctx;
   const cached=old.buildingGeometry;

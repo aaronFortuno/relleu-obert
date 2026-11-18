@@ -1,5 +1,15 @@
 # RO-032 — Cobertes originals i primer singular
 
+## Pont inclòs en una malla d'edifici · v0.24.15
+
+Un model d'edifici pot incloure el pont d'accés dins de la seva maçoneria. En aquest cas pot declarar `replacement.transport: [{featureId, bbox}]`: identificador decimal de la font vectorial i àmbit WGS84 dins del bbox del model. El contracte admet fins a 32 entrades i rebutja camps o límits invàlids. L'identificador pot agrupar molts elements: no es retira globalment.
+
+La substitució només retalla segments de transport marcats com a pont que coincideixen amb l'identificador, dins de la intersecció de l'àmbit i la petjada acceptada. Es conserven els forats, les tangències, els fragments exteriors d'un tram llarg, altres línies del mateix agregat i els accessos sense etiqueta de pont. Els extrems retallats no es tornen a unir amb la tolerància ordinària de costures.
+
+Abans de canviar la font, el motor admet la malla real amb l'auditoria, el retall i les comprovacions d'aigua habituals; reutilitza aquest sòlid a la capa d'edificis. Els models sense l'opció conserven el camí d'una sola passada. Una malla invàlida o un mode que no utilitza la malla pròpia manté el transport general. El canvi entre font, altura limitada i ocultació reconstrueix el context afectat perquè la font de transport es recuperi quan correspon.
+
+El cas de Montjuïc mostra un tauler procedimental a 177,338 m damunt del tram propi a 176,419 m. L'identificador vectorial `618920730` conté tres ponts: l'àmbit declarat comprèn només el del castell. La substitució del tauler no modifica les elevacions del fossat. Les diferències locals entre MET5 i DTM de 0,5 m, la fidelitat de la maçoneria i el laminat es comproven per separat.
+
 ## Conservació de les cares en retallar · v0.24.14
 
 El retall assigna un `faceID` propi a cada triangle d'entrada abans de construir el sòlid natiu. Això conserva les separacions entre les cares de la malla durant l'agrupació coplanària. La reparació topològica de la biblioteca continua activa; els identificadors no certifiquen ni substitueixen l'auditoria de la malla.
