@@ -1,6 +1,6 @@
 # Backlog actiu de Relleu Obert
 
-Revisat el **2026-11-18** amb la v0.24.16. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
+Revisat el **2026-11-27** amb la v0.25.0. [Historial i validacions](arxiu/HISTORIAL.md) · [Ajornaments i idees](arxiu/AJORNATS.md) · [Criteri d’arxiu](README.md)
 
 ## Validacions de la v0.24
 
@@ -55,6 +55,10 @@ La v0.24.15 retira el pont procedimental duplicat quan una malla pròpia accepta
 La v0.24.16 amplia l'índex estàtic a 2 MiB, coordinat amb el formatador d'Open Place Models per sostenir la cua aprovada. Manté el format v1, les petjades completes i la càrrega regional limitada. Les 66 regressions i el build passen; l'índex actual de 456.963 bytes continua idèntic. [Capacitat i límits](RO-032-INTEGRACIO.md#capacitat-de-líndex-estàtic--v02416)
 
 ## Validació en ús i seguiment
+
+### RO-063 — Esborrany automàtic i historial d’edició
+
+**P1.** La v0.25.0 incorpora l’esborrany local i fins a 20 accions de Desfés i Refés per a tanques, superfícies horitzontals i objectes. La cua només canvia de posició quan la modificació de geometria acaba bé; es reinicia en canviar de territori, mida, mode o projecte. Al visor s’han contrastat la retirada i recuperació successives de dues capes, i la recuperació d’objecte, pati i tanca després de recarregar la pàgina. Queda provar el flux al pati de l’institut i validar al laminador el resultat que quedi al visor després de refer. La cua es conserva durant la sessió; l’esborrany conserva els ajustos, no les malles ni l’historial.
 
 ### RO-062 — Ajust als contorns i objectes bàsics
 

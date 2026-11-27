@@ -38,6 +38,8 @@ import {createContourEditor} from './contour-editor.js';
 import {snapToContours} from './contour-snap.js';
 import {normalizeBasicObjects} from './basic-object-settings.js';
 import {createBasicObjectEditor} from './basic-object-editor.js';
+import {createEditHistory} from './edit-history.js';
+import {readProjectDraft,writeProjectDraft,clearProjectDraft} from './project-draft.js';
 import {canSendGenerationReport,generationErrorData,generationReportData,sendGenerationReport,trackWorkshopEvent,workshopMode,workshopSize} from './analytics.js';
 import {sourceError} from './generation-error.js';
 import {createBuildingUpdateScheduler} from './building-update-scheduler.js';
@@ -191,6 +193,14 @@ let userRoute=null,pins=[],nextPinId=1,selectedPinId=null,removedPin=null,pinPoi
 let fences=[],fencePreview=null,fenceError=false,pendingFences=null;
 let horizontalSurfaces=[],horizontalLevels=[],horizontalFailure=null,pendingHorizontal=null;
 let objects=[],objectLevels=[],objectFailure=null,pendingObjects=null,objectMoveIndex=null,selectedObjectIndex=null;
+const annotationState=()=>({fences,horizontalSurfaces,objects});
+const annotationHistory=createEditHistory({normalize:state=>({
+  fences:normalizeFences(state.fences),horizontalSurfaces:normalizeHorizontalSurfaces(state.horizontalSurfaces),
+  objects:normalizeBasicObjects(state.objects)
+})});
+annotationHistory.reset(annotationState());
+let annotationFrame=null,pendingHistory=null;
+let draftBootstrapping=true,draftClaimed=false,draftTimer=null,availableDraft=null,draftReadError=null,draftStatus='',draftFingerprint=null,draftErrorNotice=null;
 let buildingContours=[],buildingContourHeights=new Map();
 let pendingBrushFrame=null,transportTimer=null,reliefTimer=null;
 let exportFormat='bambu';
@@ -290,7 +300,7 @@ const badge=message=>{currentBadge=message;$('#model-badge').textContent=message
 const workLabels={
   relief:'status.workRelief',vegetation:'status.workVegetation',buildings:'status.workBuildings',
   transport:'status.workTransport',accessory:'status.workAccessory',export:'status.workExport',fences:'fence.working',
-  horizontal:'horizontal.working',objects:'object.working'
+  horizontal:'horizontal.working',objects:'object.working',history:'history.working'
 };
 function lock(value){
   busy=value;
@@ -330,6 +340,8 @@ function lock(value){
   editButtons();
   syncOrbitControl();
   syncViewerTools();
+  syncEditHistory();
+  if(!value)queueProjectDraft();
   updateWorkshopGuide();
 }
 function markDirty(){
@@ -358,6 +370,7 @@ const placeMap=createPlaceMap($('#place-map'),{
     scaleHint();
     buildingControls();
     if(region)markDirty();
+    queueProjectDraft(true);
   },
   onName(name){placeName=name;}
 });
@@ -999,6 +1012,32 @@ worker.onmessage=({data})=>{
     buildingContours=data.contourTargets;
     buildingContourHeights=new Map(buildingContours.flatMap(ring=>ring.points.map((point,i)=>[point.join(','),ring.heights[i]])));
   }
+  if(data.type==='annotations'){
+    const {direction,target,focus}=pendingHistory;
+    const surfaceSelection=horizontalEditor.selection,objectSelection=selectedObjectIndex;
+    pendingHistory=null;
+    fences=target.fences;horizontalSurfaces=target.horizontalSurfaces;objects=target.objects;
+    horizontalLevels=data.horizontalLevels;horizontalFailure=null;applyObjectLevels(data);
+    fenceError=false;setFencePreview(data.fencePart);
+    const changed=data.changedCategories;
+    data.model.categories=[...model.categories.filter(part=>!changed.includes(part.id)),...data.model.categories];
+    model=data.model;
+    if(direction==='undo')annotationHistory.commitUndo();else annotationHistory.commitRedo();
+    selectedObjectIndex=objectSelection!=null&&objectSelection<objects.length?objectSelection:null;
+    horizontalEditor.refresh(surfaceSelection);horizontalEditor.say();
+    objectEditor.refresh(selectedObjectIndex);objectEditor.say();
+    renderFenceList();setFenceFeedback('');
+    display(model,changed,false);
+    lock(false);
+    $('#edit-history-feedback').textContent=text('history.applied');
+    if(focus){
+      const primary=$('#edit-'+direction),other=$('#edit-'+(direction==='undo'?'redo':'undo'));
+      (primary.disabled?other:primary).focus({preventScroll:true});
+    }
+    queueProjectDraft(true);
+    flushTrees();scheduler.flush();
+    return;
+  }
   if(data.type==='objects'){
     const {next,selection,message,finish,focus}=pendingObjects;
     pendingObjects=null;objects=next;
@@ -1011,6 +1050,7 @@ worker.onmessage=({data})=>{
     selectedObjectIndex=selection;
     objectEditor.refresh(selection);
     refreshObjectGuide();
+    acceptManualEdit('object');
     lock(false);
     objectEditor.say(message);
     if(focus&&!viewerToolsPanel.hidden)objectEditor.focusSelection();
@@ -1030,6 +1070,7 @@ worker.onmessage=({data})=>{
     display(model,changed,false);
     if(finish&&brush==='horizontal')selectNavigate();
     horizontalEditor.refresh(selection);
+    acceptManualEdit('horizontal');
     lock(false);
     if(contourEditor.active?.kind==='horizontal')contourEditor.refresh(contour);
     horizontalEditor.say(message);
@@ -1043,6 +1084,7 @@ worker.onmessage=({data})=>{
     setFencePreview(data.part);recolor();
     if(committed)selectNavigate();
     renderFenceList();
+    acceptManualEdit('fence');
     lock(false);
     if(contourEditor.active?.kind==='fence')contourEditor.refresh(contour);
     setFenceFeedback(committed?'saved':updated?'updated':'removed');
@@ -1118,6 +1160,7 @@ worker.onmessage=({data})=>{
     if(!data.vegetation){if(!isPure(model))acceptBuildings();buildingInfo();buildingControls();}
     const displayStarted=performance.now();
     display(model,changed,refit);
+    syncHistoryModel();
     if(job==='build'&&!data.buildings)trackWorkshopEvent('genera_model',{
       mode:workshopMode(isPure(model)),mida:workshopSize(model.width,model.height)
     });
@@ -1157,6 +1200,7 @@ worker.onmessage=({data})=>{
   if(data.type==='error'){
     if(job==='horizontal'){recoverHorizontal(data.horizontalError);console.error(data.detail);return;}
     if(job==='objects'){recoverObjects(data.objectError);console.error(data.detail);return;}
+    if(job==='history'){recoverHistory();console.error(data.detail);return;}
     if(job==='fences'){recoverFenceEdit();console.error(data.detail);return;}
     if(job==='relief'){recoverRelief(Error(data.message));console.error(data.detail);return;}
     if(processingRun&&data.timing)processingRun[processingRun.awaitingBuildings?'buildingWorker':'worker']=data.timing;
@@ -1195,6 +1239,7 @@ worker.onerror=event=>{
   error.uiMessage=statusMessage('status.modelError',()=>({error:translateEngineMessage(event.message)}));
   if(job==='horizontal'){recoverHorizontal();return;}
   if(job==='objects'){recoverObjects();return;}
+  if(job==='history'){recoverHistory();return;}
   if(job==='fences'){recoverFenceEdit();return;}
   if(job==='relief'){recoverRelief(error);return;}
   pendingVegetation=false;
@@ -1418,6 +1463,7 @@ function selectPieceSize(preset){
   tiling();
   workshopGuide.update();
   if(firstSize)projectSnapshot=projectFingerprint();
+  queueProjectDraft(true);
 }
 initPiecePicker($('#piece-choice'),selectPieceSize);
 function selectCuratedExample(example,{keepLink=false}={}){
@@ -1431,6 +1477,7 @@ function selectCuratedExample(example,{keepLink=false}={}){
   horizontalSurfaces=[];horizontalLevels=[];horizontalFailure=null;
   objects=[];objectLevels=[];objectFailure=null;selectedObjectIndex=null;
   objectEditor.refresh(null);objectEditor.say();refreshObjectGuide();
+  resetManualHistory();
   horizontalEditor.refresh(null);horizontalEditor.say();
   renderFenceList();setFenceFeedback('');
   nextPinId=1;selectedPinId=null;removedPin=null;
@@ -1894,6 +1941,7 @@ function syncViewerTools(){
   refreshObjectGuide();
   if(pure&&contourEditor.active)stopContour();
   contourEditor.sync();
+  syncEditHistory();
 }
 function showViewerTools(open,{pane,focus=false}={}){
   if(!open||pane&&pane!==viewerTool)stopContour();
@@ -2313,6 +2361,70 @@ function recoverObjects(error){
   flushTrees();scheduler.flush();
 }
 
+function resetManualHistory(){
+  annotationHistory.reset(annotationState());
+  annotationFrame=null;
+  $('#edit-history-feedback').textContent='';
+  syncEditHistory();
+}
+function syncHistoryModel(){
+  const frame=JSON.stringify([model.width,model.height,model.provenance.bbox,
+    model.provenance.options.selectionPose?.rotation,isPure(model)]);
+  if(frame!==annotationFrame){
+    annotationHistory.reset(annotationState());
+    annotationFrame=frame;
+    $('#edit-history-feedback').textContent='';
+  }
+  syncEditHistory();
+}
+function acceptManualEdit(label){
+  annotationHistory.record(annotationState(),label);
+  $('#edit-history-feedback').textContent='';
+  queueProjectDraft(true);
+}
+function syncEditHistory(){
+  const shown=!!model&&!isPure(model)&&!pureSelected();
+  $('#edit-history-controls').hidden=!shown;
+  const ready=shown&&canEditFences()&&!drawing&&brush==='navigate';
+  for(const [direction,enabled,label] of [
+    ['undo',annotationHistory.canUndo,annotationHistory.undoLabel],
+    ['redo',annotationHistory.canRedo,annotationHistory.redoLabel]
+  ]){
+    const button=$('#edit-'+direction);
+    button.disabled=!ready||!enabled;
+    button.setAttribute('aria-label',label?text('history.'+direction+'Action',{action:text('history.'+label)}):t('ui.history.'+direction+'Label'));
+    button.title=t('ui.history.'+direction+'Title');
+  }
+}
+function travelHistory(direction,focus=false){
+  if(!canEditFences()||drawing||brush!=='navigate')return;
+  const target=direction==='undo'?annotationHistory.peekUndo():annotationHistory.peekRedo();
+  if(!target)return;
+  focus||=!!contourEditor.active;
+  stopContour();
+  pendingHistory={direction,target,focus};
+  job='history';lock(true);
+  $('#edit-history-feedback').textContent=text('history.working');
+  worker.postMessage({type:'annotations',...target});
+}
+function recoverHistory(){
+  pendingHistory=null;
+  lock(false);
+  $('#edit-history-feedback').textContent=text('history.failed');
+  say(statusMessage('history.failed'),true);
+  flushTrees();scheduler.flush();
+}
+$('#edit-undo').onclick=()=>travelHistory('undo',true);
+$('#edit-redo').onclick=()=>travelHistory('redo',true);
+document.addEventListener('keydown',event=>{
+  if(event.defaultPrevented||event.isComposing||!event.ctrlKey&&!event.metaKey||event.altKey||
+    document.querySelector('dialog[open]')||event.target.closest('input,textarea,select,[contenteditable="true"]'))return;
+  const key=event.key.toLowerCase(),direction=key==='z'?(event.shiftKey?'redo':'undo'):key==='y'?'redo':null;
+  if(!direction||!canEditFences()||brush!=='navigate'||drawing)return;
+  const enabled=direction==='undo'?annotationHistory.canUndo:annotationHistory.canRedo;
+  if(enabled){event.preventDefault();travelHistory(direction);}
+});
+
 const pinRay=new THREE.Raycaster();
 const previewPins=createPreviewPins(view,scene,camera,{onSelect:selectPin,onRemove:id=>removePin(id,true)});
 function setPinFeedback(key,params){
@@ -2333,6 +2445,7 @@ function removePin(id,fromPreview=false){
   if(selectedPinId===id)selectedPinId=null;
   setPinFeedback('tools.holeRemoved',{number:formatNumber(id)});
   refreshPinMarkers();
+  queueProjectDraft(true);
   if(!fromPreview)$('#undo-pin').focus();
   else if(!previewPins.focus(pins[Math.min(index,pins.length-1)]?.id))viewerToolsOpen.focus({preventScroll:true});
 }
@@ -2409,6 +2522,7 @@ $('#undo-pin').onclick=()=>{
   if(!removedPin||pins.length>=MAX_RELIEF_PINS)return;
   const {pin,index}=removedPin;removedPin=null;pins.splice(index,0,pin);
   selectedPinId=pin.id;setPinFeedback('tools.holeAdded',{number:formatNumber(pin.id)});refreshPinMarkers();
+  queueProjectDraft(true);
   $('#pin-list [data-pin-select="'+pin.id+'"]')?.focus({preventScroll:true});
 };
 function addPin(lon,lat,hit){
@@ -2423,6 +2537,7 @@ function addPin(lon,lat,hit){
   const id=nextPinId++;
   removedPin=null;
   pins.push({id,lon,lat,depth});
+  queueProjectDraft(true);
   trackWorkshopEvent('usa_eina',{eina:'marca_punt'});
   selectedPinId=id;
   setPinFeedback('tools.holeAdded',{number:formatNumber(id)});
@@ -2492,6 +2607,7 @@ function finishStroke(){
     requestTrailUpdate();
   }else if(pendingVegetation)updateTrees();
   else lock(busy);
+  queueProjectDraft(true);
 }
 renderer.domElement.addEventListener('pointerdown',event=>{
   if(brush==='navigate'||event.button!==0||drawing||pendingVegetation||!canPaintWithBrush())return;
@@ -2548,6 +2664,73 @@ function captureProject({includeAnnotations=true}={}){
     ...(pureSelected()?{trailStrokes:trailHistory.prepare(modelOptions(),trailStrokes).strokes,
       drawnRouteStrokes:routeHistory.prepare(modelOptions(),drawnRouteStrokes).strokes,userRoute,pins}:{})};
 }
+function showDraftStatus(key){
+  draftStatus=key;
+  $('#project-draft-status').textContent=key?text('draft.'+key):'';
+}
+function updateDraftOffer(){
+  const offer=$('#project-draft-offer'),present=!!availableDraft||!!draftReadError;
+  offer.hidden=!present||!!selectedSize;
+  $('#project-draft-resume').disabled=!availableDraft;
+  $('#project-draft-time').textContent=draftReadError?text('draft.invalid'):availableDraft?
+    text('draft.savedAt',{date:new Intl.DateTimeFormat(getLocale(),{dateStyle:'short',timeStyle:'short'}).format(new Date(availableDraft.savedAt))}):'';
+}
+function queueProjectDraft(claim=false){
+  if(draftBootstrapping)return;
+  if(claim)draftClaimed=true;
+  if(!draftClaimed||!selectedSize||!selectedPose||draftReadError)return;
+  clearTimeout(draftTimer);
+  draftTimer=setTimeout(flushProjectDraft,600);
+}
+function flushProjectDraft(){
+  clearTimeout(draftTimer);draftTimer=null;
+  if(draftBootstrapping||!draftClaimed||!selectedSize||!selectedPose||draftReadError||tooLargeRegion)return;
+  if(busy||pendingVegetation||drawing||pendingHistory){
+    draftTimer=setTimeout(flushProjectDraft,700);
+    return;
+  }
+  try{
+    const settings=captureProject(),fingerprint=JSON.stringify(settings);
+    if(fingerprint===draftFingerprint)return;
+    showDraftStatus('saving');
+    const draft=writeProjectDraft(localStorage,settings);
+    draftFingerprint=fingerprint;
+    availableDraft=draft;draftErrorNotice=null;
+    showDraftStatus('saved');
+  }catch(error){
+    showDraftStatus('failed');
+    if(draftErrorNotice!==error.code){draftErrorNotice=error.code;say(statusMessage('draft.failed'),true);}
+  }
+}
+$('#project-draft-resume').onclick=()=>{
+  if(!availableDraft)return;
+  if(welcomeTour.open)welcomeTour.close();
+  const draft=availableDraft;
+  draftBootstrapping=true;
+  try{
+    applyProjectSettings(draft.settings,draft.settings.placeName||'');
+    draftClaimed=true;
+    draftFingerprint=JSON.stringify(captureProject());
+    updateDraftOffer();
+    showDraftStatus('saved');
+    say(statusMessage('draft.recovered'));
+  }catch{
+    showDraftStatus('invalid');
+    say(statusMessage('draft.invalid'),true);
+  }finally{draftBootstrapping=false;}
+};
+$('#project-draft-discard').onclick=()=>{
+  try{
+    clearProjectDraft(localStorage);
+    availableDraft=null;draftReadError=null;draftFingerprint=null;draftErrorNotice=null;
+    updateDraftOffer();showDraftStatus('');
+  }catch{showDraftStatus('failed');say(statusMessage('draft.failed'),true);}
+};
+document.addEventListener('change',event=>{
+  if(event.target.closest('.sidebar,#viewer-edit-panel'))queueProjectDraft(true);
+});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushProjectDraft();});
+window.addEventListener('pagehide',flushProjectDraft);
 const feedbackMessages=new Map();
 function feedback(id,message){feedbackMessages.set(id,message);$('#'+id).textContent=messageText(message);}
 const generationReportDialog=$('#generation-report-dialog'),reportSend=$('#generation-report-send');
@@ -2752,11 +2935,12 @@ function renderProjectGallery(preserveConfirm=false){
 }
 function restoreProject(){
   const id=sessionStorage.getItem(projectRestoreKey);
-  if(!id)return;
+  if(!id)return false;
   sessionStorage.removeItem(projectRestoreKey);
   const project=readProjects(localStorage).find(item=>item.id===id);
   if(!project)throw Error(text('project.notFound'));
   applyProjectSettings(project.settings,project.name);
+  return true;
 }
 function applyProjectSettings(settings,name=''){
   const {sizePreset,pose,pureRelief,materials,reliefMaterials:savedReliefMaterials,options,print,historical,
@@ -2768,6 +2952,7 @@ function applyProjectSettings(settings,name=''){
   horizontalEditor.refresh(null);horizontalEditor.say();
   objects=savedObjects??[];objectLevels=[];objectFailure=null;selectedObjectIndex=null;
   objectEditor.refresh(null);objectEditor.say();refreshObjectGuide();
+  resetManualHistory();
   userRoute=savedRoute??null;
   nextPinId=Math.max(0,...(savedPins??[]).map(pin=>pin.id??0))+1;
   pins=(savedPins??[]).map(pin=>({...pin,id:pin.id??nextPinId++}));
@@ -2928,6 +3113,9 @@ function refreshWorkshopLanguage(){
   horizontalEditor.localize();
   contourEditor.localize();
   objectEditor.localize();
+  syncEditHistory();
+  showDraftStatus(draftStatus);
+  updateDraftOffer();
   if(pins.length)refreshPinMarkers();
   workshopGuide.update();
   selectExportFormat(exportFormat);
@@ -3051,6 +3239,8 @@ $('#welcome-start-tour').onclick=()=>{
 onLocaleChange(refreshWorkshopLanguage);
 initI18n();
 const openingSharedLink=isSharedLink(location.hash);
+try{availableDraft=readProjectDraft(localStorage);}
+catch(error){draftReadError=error;showDraftStatus(error.code==='DRAFT_INVALID'||error.code==='DRAFT_TOO_LARGE'?'invalid':'failed');}
 try{
   if(openingSharedLink){
     const example=readExampleLink(location.hash);
@@ -3059,8 +3249,11 @@ try{
       applyProjectSettings(readProjectLink(location.hash));
       generate();
     }
-  }else restoreProject();
+  }else if(restoreProject())draftClaimed=true;
 }catch(error){say(openingSharedLink?statusMessage('share.invalid'):error.message,true);}
+draftBootstrapping=false;
+updateDraftOffer();
+if(draftClaimed)queueProjectDraft();
 let firstWorkshopVisit=true;
 try{firstWorkshopVisit=!localStorage.getItem(welcomeTourKey);}catch{}
-if(firstWorkshopVisit&&!selectedSize&&!openingSharedLink)openWorkshopWelcome($('#welcome-guide'));
+if(firstWorkshopVisit&&!selectedSize&&!openingSharedLink&&!availableDraft&&!draftReadError)openWorkshopWelcome($('#welcome-guide'));

@@ -1,5 +1,10 @@
 # Canvis
 
+## v0.25.0 — 2026-11-27
+
+- Desfés i Refés al visor de Model complet, amb fins a 20 accions de tanques, superfícies horitzontals i objectes. Els botons i les dreceres Ctrl/Cmd+Z, Ctrl/Cmd+Maj+Z i Ctrl+Y recuperen les edicions sobre el terreny carregat, sense consultar de nou la cartografia. L’historial conserva només punts i ajustos.
+- Esborrany automàtic en aquest navegador, amb la configuració i les edicions manuals. En tornar-hi, es pot recuperar o descartar des de la pantalla inicial. Les plantilles desades continuen sent independents i una fallada de desament conserva la còpia anterior.
+
 ## v0.24.16 — 2026-11-18
 
 - El catàleg de models singulars admet un índex de fins a 2 MiB per donar marge als llocs previstos. Es mantenen la selecció geogràfica, els límits de cada malla i la protecció davant respostes massa grans.

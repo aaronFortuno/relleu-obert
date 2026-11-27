@@ -1,5 +1,17 @@
 // Català, castellano, galego, euskara, English.
 export default {
+  "ui.history.title": ["Historial d’edició", "Historial de edición", "Historial de edición", "Edizioen historia", "Edit history"],
+  "ui.history.undo": ["Desfés", "Deshaz", "Desfai", "Desegin", "Undo"],
+  "ui.history.redo": ["Refés", "Rehaz", "Refai", "Berregin", "Redo"],
+  "ui.history.undoLabel": ["Desfés l’última edició", "Deshacer la última edición", "Desfacer a última edición", "Desegin azken edizioa", "Undo the last edit"],
+  "ui.history.redoLabel": ["Refés l’edició", "Rehacer la edición", "Refacer a edición", "Berregin edizioa", "Redo the edit"],
+  "ui.history.undoTitle": ["Desfés · Ctrl+Z", "Deshacer · Ctrl+Z", "Desfacer · Ctrl+Z", "Desegin · Ctrl+Z", "Undo · Ctrl+Z"],
+  "ui.history.redoTitle": ["Refés · Ctrl+Maj+Z", "Rehacer · Ctrl+Mayús+Z", "Refacer · Ctrl+Maiús+Z", "Berregin · Ctrl+Maius+Z", "Redo · Ctrl+Shift+Z"],
+  "ui.draft.title": ["Continua la teva última maqueta", "Continúa tu última maqueta", "Continúa a túa última maqueta", "Jarraitu zure azken maketa", "Continue your last model"],
+  "ui.draft.offerHint": ["Aquest navegador conserva els ajustos i les edicions del teu últim esborrany.", "Este navegador conserva los ajustes y las ediciones de tu último borrador.", "Este navegador conserva os axustes e as edicións do teu último borrador.", "Nabigatzaile honek zure azken zirriborroaren ezarpenak eta edizioak gordetzen ditu.", "This browser keeps the settings and edits from your last draft."],
+  "ui.draft.resume": ["Recupera l’esborrany", "Recuperar el borrador", "Recuperar o borrador", "Berreskuratu zirriborroa", "Restore draft"],
+  "ui.draft.discard": ["Descarta’l", "Descartarlo", "Descartalo", "Baztertu", "Discard"],
+  "ui.draft.savedHint": ["L’esborrany es desa automàticament en aquest navegador. Conserva els ajustos i les edicions per tornar a generar la maqueta.", "El borrador se guarda automáticamente en este navegador. Conserva los ajustes y las ediciones para volver a generar la maqueta.", "O borrador gárdase automaticamente neste navegador. Conserva os axustes e as edicións para volver xerar a maqueta.", "Zirriborroa automatikoki gordetzen da nabigatzaile honetan. Ezarpenak eta edizioak gordetzen ditu maketa berriro sortzeko.", "Your draft is saved automatically in this browser. It keeps settings and edits so you can regenerate the model."],
   "ui.app.description": ["Projecte educatiu gratuït i de codi obert per explorar a l’aula el relleu de llocs reals amb maquetes 3D.","Proyecto educativo gratuito y de código abierto para explorar en el aula el relieve de lugares reales con maquetas 3D.","Proxecto educativo gratuíto e de código aberto para explorar na aula o relevo de lugares reais con maquetas 3D.","Benetako lekuen erliebea ikasgelan 3Dko maketekin aztertzeko doako eta kode irekiko hezkuntza-proiektua.","A free, open-source educational project for exploring the terrain of real places in the classroom with 3D models."],
   "ui.app.title": ["Relleu Obert — Geografia que pots tocar","Relleu Obert — Geografía que puedes tocar","Relleu Obert — Xeografía que podes tocar","Relleu Obert — Ukitu dezakezun geografia","Relleu Obert — Geography you can touch"],
   "ui.app.education": ["Un projecte per a l’aula.","Un proyecto para el aula.","Un proxecto para a aula.","Ikasgelarako proiektua.","A project for the classroom."],

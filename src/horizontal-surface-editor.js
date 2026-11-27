@@ -94,5 +94,5 @@ export function createHorizontalSurfaceEditor(root,{records,levels,available,isD
     (list.querySelector('[data-horizontal-select="'+selected+'"]')||startButton).focus({preventScroll:true});
   }
   const editOutline=edit;
-  return {refresh,sync,say,focusSelection,localize:()=>{refresh();say(message);}};
+  return {refresh,sync,say,focusSelection,get selection(){return selected;},localize:()=>{refresh();say(message);}};
 }

@@ -12,6 +12,9 @@ import {buildFenceMesh} from './fence-mesh.js';
 import {withPrintableFences} from './fence-export.js';
 import {applyHorizontalSurfaces} from './horizontal-surfaces.js';
 import {applyBasicObjects} from './basic-objects.js';
+import {normalizeFences} from './fence-settings.js';
+import {normalizeHorizontalSurfaces} from './horizontal-surface-settings.js';
+import {normalizeBasicObjects} from './basic-object-settings.js';
 import Module from 'manifold-3d';
 import wasmURL from 'manifold-3d/manifold.wasm?url';
 import {createProcessingTiming} from './processing-timing.js';
@@ -127,6 +130,25 @@ function buildObserver(timing,pureRelief){
 self.onmessage=async({data})=>{
 const timing=data.type==='build'||data.measureBuildings?createProcessingTiming():null;
 try{
+  if(data.type==='annotations'){
+    // Calculate a history target completely before replacing the accepted state.
+    const nextSurfaces=normalizeHorizontalSurfaces(data.horizontalSurfaces);
+    const nextPlacements=normalizeBasicObjects(data.objects);
+    const nextWalls=normalizeFences(data.fences);
+    const before=visibleModel();
+    const surfacesChanged=JSON.stringify(nextSurfaces)!==JSON.stringify(horizontalSurfaces);
+    const objectsChanged=surfacesChanged||JSON.stringify(nextPlacements)!==JSON.stringify(objects);
+    const fencesChanged=surfacesChanged||JSON.stringify(nextWalls)!==JSON.stringify(fences);
+    const nextSurface=surfacesChanged?await computeHorizontal(current,nextSurfaces):horizontalState;
+    const nextObjects=objectsChanged?await computeObjects(nextSurface?.model??current,nextPlacements):objectState;
+    const nextFences=fencesChanged?await computeFences(current,nextWalls,nextSurface?.ground):fencePart;
+    horizontalSurfaces=nextSurfaces;objects=nextPlacements;fences=nextWalls;
+    horizontalState=nextSurface;objectState=nextObjects;fencePart=nextFences;
+    postChangedModel(before,visibleModel(),{
+      horizontalLevels:nextSurface?.levels??[],objectLevels:nextObjects?.levels??[],fencePart:fencePreview(nextFences)
+    },'annotations');
+    return;
+  }
   if(data.type==='horizontal'){
     const before=visibleModel(),next=await computeHorizontal(current,data.horizontalSurfaces);
     const placed=await computeObjects(next?.model??current,objects);

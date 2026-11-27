@@ -26,6 +26,10 @@ Per retocar una tanca o una superfície, selecciona-la al calaix Eines. Arrosseg
 
 A **Eines → Objectes**, tria un bloc, un cilindre o una esfera i situa’l sobre la maqueta. Les mides s’indiquen en mil·límetres d’impressió. Selecciona’l al llistat per modificar-lo, moure’l o retirar-lo. Els objectes utilitzen el material d’Edificis i es conserven al projecte local i a la còpia JSON; els enllaços compartits només transmeten la configuració general.
 
+**Desfés i Refés**, al costat d’Eines, recuperen fins a 20 edicions de tanques, patis i objectes durant la sessió. També pots fer servir Ctrl/Cmd+Z, Ctrl/Cmd+Maj+Z o Ctrl+Y. Cada acció s’aplica a les capes afectades del model carregat; una fallada manté el resultat anterior. Triar un altre territori, canviar la mida o obrir un altre projecte comença un historial nou.
+
+Els ajustos i les edicions manuals es desen automàticament com a **esborrany local**. En tornar a l’aplicació, la pantalla inicial permet recuperar-lo i generar de nou la maqueta. L’esborrany no desa la malla ni la cua de Desfés i Refés. Continua desant les plantilles que vulguis conservar o exportant-ne el JSON per canviar de navegador o dispositiu.
+
 La icona de compartir al costat de la descàrrega copia l’enllaç amb el retall i els ajustos actuals en un clic. En obrir-lo, la maqueta es genera automàticament al navegador. Els traços, les rutes i els punts destacats es poden conservar a la còpia JSON del projecte.
 
 La icona de compartir de cada fitxa de la galeria copia l’enllaç en un clic. En obrir-lo, la maqueta es genera amb els ajustos del catàleg.

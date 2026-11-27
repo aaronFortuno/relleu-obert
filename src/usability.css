@@ -79,6 +79,10 @@
 
 
 .preview-toolbar .viewer-tools{flex-wrap:wrap}
+#edit-history-controls:not([hidden]) {display:inline-flex;align-items:center;gap:4px}
+#edit-history-controls button {display:inline-flex;align-items:center;justify-content:center;gap:4px}
+#edit-history-controls svg {width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#edit-history-feedback:empty,#project-draft-status:empty,#project-draft-time:empty {display:none}
 body:has(#workshop-guide[data-guide-step="territory"]) [data-step-action="place"].is-build:not(:disabled) {
   background:var(--green);color:var(--paper);border-color:var(--green);
 }
@@ -169,6 +173,11 @@ body:has(#workshop-guide[data-guide-step="territory"]) [data-step-action="place"
 #welcome {position:absolute;inset:0;z-index:2;display:grid;align-content:center;justify-items:center;text-align:center;padding:24px;pointer-events:none}
 #welcome h2 {font-size:17px;color:var(--green)}
 #welcome p {margin:8px 0 16px;color:#65755d;font-size:var(--ui-control)}
+#project-draft-offer {width:min(640px,100%);margin:0 0 12px;padding:0 0 12px;border-bottom:1px solid var(--line);pointer-events:auto}
+#project-draft-offer h3 {margin:0;color:var(--green);font-size:var(--ui-title);font-weight:650}
+#welcome #project-draft-offer .hint {margin:4px 0 8px;font-size:var(--ui-control);line-height:1.4}
+.draft-actions {display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px 12px}
+.draft-actions :is(.secondary,.quiet-button) {width:auto;margin:0;font-size:var(--ui-control)}
 #welcome:has(#piece-choice:not([hidden])) {
   container:landing / size;
   align-content:safe center;overflow:auto;padding:12px 16px;pointer-events:auto;
